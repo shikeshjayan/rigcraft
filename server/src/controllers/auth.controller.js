@@ -39,16 +39,16 @@ export const resetPassword = asyncHandler(async (req, res) => {
   ApiResponse.ok(null, 'Password reset successful').send(res);
 });
 
-export const sendOtp = asyncHandler(async (req, res) => {
-  await authService.sendOtp(req.body.phone);
-  ApiResponse.ok(null, 'OTP sent successfully').send(res);
+export const updateUserRole = asyncHandler(async (req, res) => {
+  const user = await authService.updateUserRole(req.params.id, req.body.role);
+  ApiResponse.ok(user, 'User role updated').send(res);
 });
 
-export const loginWithOtp = asyncHandler(async (req, res) => {
-  await authService.loginWithOtp(req.body, res);
+export const refresh = asyncHandler(async (req, res) => {
+  await authService.refreshToken(req.cookies.refreshToken, res);
 });
 
 export const logout = asyncHandler(async (req, res) => {
-  authService.logout(res);
+  await authService.logout(res);
   ApiResponse.ok(null, 'Logged out successfully').send(res);
 });
