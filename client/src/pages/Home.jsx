@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import StarOutlineOutlinedIcon from '@mui/icons-material/StarOutlineOutlined';
@@ -117,7 +118,8 @@ const Home = () => {
               >
                 START YOUR BUILD
               </button>
-              <button 
+              <Link 
+                to="/prebuild"
                 className="w-full sm:w-auto flex items-center justify-center font-semibold transition-all duration-300 ease-in-out group cursor-pointer"
                 style={{
                   backgroundColor: 'transparent',
@@ -137,7 +139,7 @@ const Home = () => {
                 }}
               >
                 SHOP PREBUILTS
-              </button>
+              </Link>
             </div>
             
             {/* Statistics Bar */}

@@ -1,10 +1,26 @@
 import React from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import SearchIcon from '@mui/icons-material/Search';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import MemoryIcon from '@mui/icons-material/Memory';
+import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
+import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
+import SaveIcon from '@mui/icons-material/Save';
+import BoltIcon from '@mui/icons-material/Bolt';
+import ComputerIcon from '@mui/icons-material/Computer';
+import AcUnitIcon from '@mui/icons-material/AcUnit';
+import MouseIcon from '@mui/icons-material/Mouse';
+import MonitorIcon from '@mui/icons-material/Monitor';
+import BuildIcon from '@mui/icons-material/Build';
 
 const Navbar = () => {
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+  const isPrebuild = location.pathname === '/prebuild';
+
   return (
     <header className="sticky top-0 z-50 flex flex-col w-full animate-fade-in-down">
       {/* Announcement Top Bar */}
@@ -39,18 +55,74 @@ const Navbar = () => {
         {/* Navbar Content */}
         <div className="relative z-10 flex items-center justify-between w-full max-w-[1400px] mx-auto px-6 lg:px-8">
           {/* Left: Logo */}
-          <a href="/" className="flex items-center cursor-pointer text-2xl font-black tracking-tight hover:opacity-80 transition-opacity" style={{ color: 'var(--color-text)' }}>
+          <Link to="/" className="flex items-center cursor-pointer text-2xl font-black tracking-tight hover:opacity-80 transition-opacity" style={{ color: 'var(--color-text)' }}>
             <span style={{ color: 'var(--color-primary)' }}>Rig</span>Craft
-          </a>
+          </Link>
 
+
+
+// ... (Inside the nav section)
           {/* Center: Links */}
-          <nav className="hidden lg:flex items-center gap-8 font-semibold text-[15px]">
-            <a href="#" className="transition-colors underline decoration-2 underline-offset-8 cursor-pointer" style={{ color: 'var(--color-primary)', textDecorationColor: 'var(--color-primary)' }}>Home</a>
-            <a href="#" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer" style={{ color: 'var(--color-text)' }}>Prebuild</a>
-            <a href="#" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer" style={{ color: 'var(--color-text)' }}>Components</a>
-            <a href="#" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer" style={{ color: 'var(--color-text)' }}>PC Builder</a>
-            <a href="#" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer" style={{ color: 'var(--color-text)' }}>Deals</a>
-            <a href="#" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer" style={{ color: 'var(--color-text)' }}>Blog</a>
+          <nav className="hidden lg:flex items-center gap-8 font-semibold text-[15px] h-full">
+            <Link to="/" className={`transition-colors cursor-pointer flex items-center h-full ${isHome ? 'underline decoration-2 underline-offset-8' : 'hover:text-[var(--color-primary)]'}`} style={{ color: isHome ? 'var(--color-primary)' : 'var(--color-text)', textDecorationColor: 'var(--color-primary)' }}>Home</Link>
+            <Link to="/prebuild" className={`transition-colors cursor-pointer flex items-center h-full ${isPrebuild ? 'underline decoration-2 underline-offset-8' : 'hover:text-[var(--color-primary)]'}`} style={{ color: isPrebuild ? 'var(--color-primary)' : 'var(--color-text)', textDecorationColor: 'var(--color-primary)' }}>Prebuild</Link>
+            
+            {/* Components Dropdown */}
+            <div className="relative group h-full flex items-center">
+              <a href="#" className="flex items-center gap-1 transition-colors group-hover:text-[var(--color-primary)] cursor-pointer h-full" style={{ color: 'var(--color-text)' }}>
+                Components
+                <KeyboardArrowDownIcon sx={{ fontSize: 18 }} className="transition-transform duration-200 group-hover:rotate-180" />
+              </a>
+              
+              {/* Mega Menu */}
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-0 w-[850px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 pt-2 cursor-default">
+                <div 
+                  className="p-8 shadow-2xl border border-[var(--color-border)]"
+                  style={{ 
+                    backgroundColor: 'var(--color-bg-secondary)', 
+                    borderRadius: 'var(--radius-sm)'
+                  }}
+                >
+                  <h4 className="text-[12px] font-bold tracking-widest text-[#6B7280] mb-6 uppercase">Shop By Category</h4>
+                  
+                  {/* Grid */}
+                  <div className="grid grid-cols-5 gap-4 mb-8">
+                    {[
+                      { icon: <MemoryIcon sx={{ fontSize: 28, color: '#8B5CF6' }}/>, title: 'CPU', desc: 'Intel & AMD Processors', link: '/components/cpu' },
+                      { icon: <VideogameAssetIcon sx={{ fontSize: 28, color: '#3B82F6' }}/>, title: 'GPU', desc: 'NVIDIA & AMD Cards', link: '/components/gpu' },
+                      { icon: <DeveloperBoardIcon sx={{ fontSize: 28, color: '#10B981' }}/>, title: 'Motherboard', desc: 'ATX, mATX, ITX', link: '/components/motherboard' },
+                      { icon: <MemoryIcon sx={{ fontSize: 28, color: '#F43F5E' }}/>, title: 'RAM', desc: 'DDR4 & DDR5 Memory', link: '/components/ram' },
+                      { icon: <SaveIcon sx={{ fontSize: 28, color: '#6366F1' }}/>, title: 'SSD / Storage', desc: 'NVMe, SATA, HDD', link: '/components/storage' },
+                      { icon: <BoltIcon sx={{ fontSize: 28, color: '#F59E0B' }}/>, title: 'Power Supply', desc: 'Modular & Semi-Modular', link: '/components/power-supply' },
+                      { icon: <ComputerIcon sx={{ fontSize: 28, color: '#06B6D4' }}/>, title: 'Cabinet', desc: 'Mid, Full & Mini Tower', link: '/components/cabinet' },
+                      { icon: <AcUnitIcon sx={{ fontSize: 28, color: '#0EA5E9' }}/>, title: 'Cooling', desc: 'Air & Liquid Coolers', link: '/components/cooling' },
+                      { icon: <MouseIcon sx={{ fontSize: 28, color: '#8B5CF6' }}/>, title: 'Peripherals', desc: 'Keyboard, Mouse, Headset', link: '/components/peripherals' },
+                      { icon: <MonitorIcon sx={{ fontSize: 28, color: '#14B8A6' }}/>, title: 'Monitor', desc: '4K, 144Hz, OLED', link: '/components/monitor' },
+                    ].map((item, idx) => (
+                      <Link to={item.link} key={idx} className="flex flex-col items-center justify-center p-4 border border-[var(--color-border)] transition-all hover:border-[var(--color-primary)] hover:shadow-md cursor-pointer text-center group/card" style={{ backgroundColor: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-sm)' }}>
+                        <div className="mb-2 opacity-80 group-hover/card:opacity-100 group-hover/card:scale-110 transition-transform">{item.icon}</div>
+                        <h5 className="text-[13px] font-bold text-[var(--color-text)] mb-1">{item.title}</h5>
+                        <p className="text-[11px] text-[var(--color-muted)] leading-tight">{item.desc}</p>
+                      </Link>
+                    ))}
+                  </div>
+
+                  {/* Footer Buttons */}
+                  <div className="flex items-center gap-4 border-t border-[var(--color-border)] pt-6">
+                    <button className="flex items-center gap-2 bg-[var(--color-primary)] text-white font-bold py-2.5 px-6 transition-opacity hover:opacity-90" style={{ borderRadius: 'var(--radius-sm)' }}>
+                      <BuildIcon sx={{ fontSize: 18 }} /> Build Custom PC
+                    </button>
+                    <button className="bg-transparent text-[var(--color-primary)] border-2 border-[var(--color-primary)] font-bold py-2 px-6 transition-colors hover:bg-[var(--color-primary)] hover:text-white" style={{ borderRadius: 'var(--radius-sm)' }}>
+                      View All Components
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <a href="#" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer flex items-center h-full" style={{ color: 'var(--color-text)' }}>PC Builder</a>
+            <a href="#" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer flex items-center h-full" style={{ color: 'var(--color-text)' }}>Deals</a>
+            <a href="#" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer flex items-center h-full" style={{ color: 'var(--color-text)' }}>Blog</a>
           </nav>
 
           {/* Right: Searchbar & Icons */}
