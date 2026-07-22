@@ -1,4 +1,5 @@
 import crypto from 'crypto';
+import jwt from 'jsonwebtoken';
 import userRepository from '../repositories/user.repository.js';
 import ApiError from '../utils/ApiError.js';
 import { sendResetPasswordEmail } from './email.service.js';
@@ -43,8 +44,25 @@ const createTokenResponse = async (user, statusCode, res, rememberMe = false) =>
 
   return res.status(statusCode).json({
     success: true,
-    data: { user, rememberMe, accessToken  },
+    data: { user, rememberMe, accessToken },
   });
+};
+
+export const refreshToken = async (token, res) => {
+  if (!token) throw ApiError.unauthorized('No refresh token');
+
+  const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+  const user = await userRepository.findByIdWithRefreshToken(decoded.id);
+  if (!user || user.refreshToken !== token)
+    throw ApiError.unauthorized('Invalid or expired refresh token');
+
+  return createTokenResponse(user, 200, res, true);
+};
+
+export const updateUserRole = async (userId, role) => {
+  const user = await userRepository.findById(userId);
+  if (user.role === role) throw ApiError.conflict('User already has this role');
+  return userRepository.updateById(userId, { role });
 };
 
 export const logout = (res) => {
@@ -67,22 +85,72 @@ export const register = async (userData, res) => {
   return createTokenResponse(user, 201, res);
 };
 
-export const login = async ({ email, phone, password, rememberMe }, res) => {
-  let user;
-  if (email) {
-    user = await userRepository.findByEmailWithPassword(email);
-  } else if (phone) {
-    user = await userRepository.findByPhoneWithPassword(phone);
+export const login = async (body, res) => {
+  const { email, phone, password, otp, rememberMe } = body;
+
+  // ── Email + Password ─────────────────────────────────────────
+  if (email && password) {
+    const user = await userRepository.findByEmailWithPassword(email);
+    if (!user) throw ApiError.unauthorized('Invalid credentials');
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) throw ApiError.unauthorized('Invalid credentials');
+
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
+
+    return createTokenResponse(user, 200, res, rememberMe);
   }
-  if (!user) throw ApiError.unauthorized('Invalid credentials');
 
-  const isMatch = await user.comparePassword(password);
-  if (!isMatch) throw ApiError.unauthorized('Invalid credentials');
+  // ── Phone + Password ─────────────────────────────────────────
+  if (phone && password && !otp) {
+    const user = await userRepository.findByPhoneWithPassword(phone);
+    if (!user) throw ApiError.unauthorized('Invalid credentials');
 
-  user.lastLogin = new Date();
-  await user.save({ validateBeforeSave: false });
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) throw ApiError.unauthorized('Invalid credentials');
 
-  return createTokenResponse(user, 200, res, rememberMe);
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
+
+    return createTokenResponse(user, 200, res, rememberMe);
+  }
+
+  // ── Phone only — send OTP ────────────────────────────────────
+  if (phone && !password && !otp) {
+    const user = await userRepository.findByPhone(phone);
+    if (!user) throw ApiError.notFound('No account found with this phone number');
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    user.otp = otpCode;
+    user.otpExpire = Date.now() + 10 * 60 * 1000;
+    await user.save({ validateBeforeSave: false });
+
+    await sendOtpSms(phone, otpCode);
+
+    return res.status(200).json({
+      success: true,
+      message: 'OTP sent to your phone',
+    });
+  }
+
+  // ── Phone + OTP — verify and log in ──────────────────────────
+  if (phone && otp) {
+    const user = await userRepository.findByPhoneWithOtp(phone);
+    if (!user) throw ApiError.notFound('No account found with this phone number');
+
+    if (!user.otp || user.otp !== otp) throw ApiError.badRequest('Invalid OTP');
+    if (user.otpExpire < Date.now()) throw ApiError.badRequest('OTP has expired');
+
+    user.otp = undefined;
+    user.otpExpire = undefined;
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
+
+    return createTokenResponse(user, 200, res, rememberMe);
+  }
+
+  throw ApiError.badRequest('Invalid login request');
 };
 
 export const getProfile = async (userId) => {
@@ -140,31 +208,4 @@ export const resetPassword = async (token, password) => {
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
   await user.save();
-};
-
-export const sendOtp = async (phone) => {
-  const user = await userRepository.findByPhone(phone);
-  if (!user) throw ApiError.notFound('No account found with this phone number');
-
-  const otp = Math.floor(100000 + Math.random() * 900000).toString();
-  user.otp = otp;
-  user.otpExpire = Date.now() + 10 * 60 * 1000;
-  await user.save({ validateBeforeSave: false });
-
-  await sendOtpSms(phone, otp);
-};
-
-export const loginWithOtp = async ({ phone, otp }, res) => {
-  const user = await userRepository.findByPhoneWithOtp(phone);
-  if (!user) throw ApiError.notFound('No account found with this phone number');
-
-  if (!user.otp || user.otp !== otp) throw ApiError.badRequest('Invalid OTP');
-  if (user.otpExpire < Date.now()) throw ApiError.badRequest('OTP has expired');
-
-  user.otp = undefined;
-  user.otpExpire = undefined;
-  user.lastLogin = new Date();
-  await user.save({ validateBeforeSave: false });
-
-  return createTokenResponse(user, 200, res);
 };

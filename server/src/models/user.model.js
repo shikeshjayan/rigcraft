@@ -78,7 +78,7 @@ userSchema.methods.comparePassword = async function (candidate) {
 };
 
 userSchema.methods.generateRefreshToken = function () {
-  return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
+  return jwt.sign({ id: this._id }, process.env.JWT_REFRESH_SECRET, {
     expiresIn: '30d',
   });
 };
