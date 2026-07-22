@@ -2,6 +2,15 @@ import React from 'react';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import StarOutlineOutlinedIcon from '@mui/icons-material/StarOutlineOutlined';
+import HeroOffer from '../sections/HeroOffer';
+import HeroDeals from '../sections/HeroDeals';
+import HeroToday from '../sections/HeroToday';
+import HeroNewArrival from '../sections/HeroNewArrival';
+import HeroReview from '../sections/HeroReview';
+import WhyChooseUs from '../sections/WhyChooseUs';
+import HomeCategory from '../sections/HomeCategory';
+import HomePrebuildSection from '../sections/HomePrebuildSection';
+import HomeParallax from '../sections/HomeParallax';
 
 const SpecBadge = ({ title, positionClass, lineTransform, isRight }) => {
   return (
@@ -60,7 +69,9 @@ const SpecBadge = ({ title, positionClass, lineTransform, isRight }) => {
 
 const Home = () => {
   return (
-    <section className="relative w-full overflow-hidden min-h-[calc(100vh-72px)] lg:h-[calc(100vh-72px)] flex items-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+    <>
+      {/* ================= HERO SECTION ================= */}
+      <section className="relative w-full overflow-hidden min-h-[calc(100vh-72px)] lg:h-[calc(100vh-72px)] flex items-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       
       <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-8 py-12 lg:py-0 animate-fade-in-up">
         <div className="flex flex-col-reverse lg:flex-row items-center justify-between gap-12 lg:gap-8">
@@ -101,7 +112,7 @@ const Home = () => {
                   height: '52px',
                   padding: '0 28px',
                   borderRadius: 'var(--radius-sm)',
-                  boxShadow: '0 10px 25px -5px rgba(37, 99, 235, 0.4)'
+                  // boxShadow: '0 10px 25px -5px rgba(37, 99, 235, 0.4)'
                 }}
               >
                 START YOUR BUILD
@@ -209,6 +220,35 @@ const Home = () => {
         </div>
       </div>
     </section>
+
+      {/* ================= HERO OFFER SECTION ================= */}
+      <HeroOffer />
+
+
+      {/* ================= HOME CATEGORY SECTION ================= */}
+      <HomeCategory />
+
+      {/* ================= HOME PREBUILT SECTION ================= */}
+      <HomePrebuildSection />
+
+      {/* ================= HOME PARALLAX SECTION ================= */}
+      <HomeParallax />
+      
+      {/* ================= HERO DEALS SECTION ================= */}
+      <HeroDeals />
+
+      {/* ================= WHY CHOOSE US SECTION ================= */}
+      <WhyChooseUs />
+      
+      {/* ================= TODAY'S DEALS SECTION ================= */}
+      <HeroToday />
+
+      {/* ================= NEW ARRIVALS SECTION ================= */}
+      <HeroNewArrival />
+
+      {/* ================= REVIEW SECTION ================= */}
+      <HeroReview />
+    </>
   );
 };
 

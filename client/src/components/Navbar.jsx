@@ -20,19 +20,19 @@ const Navbar = () => {
       </div>
 
       {/* Main Navbar */}
-      <div className="relative w-full h-[72px] flex items-center">
+      <div className="relative w-full h-[75px] flex items-center">
         {/* Background layer: solid top, gradient transparent bottom with blur */}
         <div 
-          className="absolute top-0 left-0 w-full pointer-events-none z-[-1]" 
+          className="absolute top-0 left-0 w-full pointer-events-none z-[-1] bg-[var(--color-bg-primary)] border-b border-[var(--color-border)] shadow-xl" 
           style={{
             height: '100%',
-            paddingBottom: '24px', // Extends the background slightly for the fade effect
+            // paddingBottom: '24px', // Extends the background slightly for the fade effect
             boxSizing: 'content-box',
-            background: 'linear-gradient(to bottom, var(--color-bg-primary) 0%, var(--color-bg-primary) calc(100% - 24px), transparent 100%)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            maskImage: 'linear-gradient(to bottom, black 0%, black calc(100% - 24px), transparent 100%)',
-            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black calc(100% - 24px), transparent 100%)'
+            // background: 'linear-gradient(to bottom, var(--color-bg-primary) 0%, var(--color-bg-primary) calc(100% - 24px), transparent 100%)',
+            // backdropFilter: 'blur(12px)',
+            // WebkitBackdropFilter: 'blur(12px)',
+            // maskImage: 'linear-gradient(to bottom, black 0%, black calc(100% - 24px), transparent 100%)',
+            // WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black calc(100% - 24px), transparent 100%)'
           }}
         />
 
@@ -60,7 +60,7 @@ const Navbar = () => {
               <input 
                 type="text" 
                 placeholder="Search products..." 
-                className="pl-5 pr-10 py-2 rounded-full text-[14px] font-medium outline-none transition-all w-[240px] focus:w-[280px] focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-opacity-20 placeholder:text-[var(--color-muted)]"
+                className="pl-5 pr-10 py-2 rounded-[var(--radius-sm)] text-[14px] font-medium outline-none transition-all w-[280px] focus:w-[280px] focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-opacity-20 placeholder:text-[var(--color-muted)]"
                 style={{
                   backgroundColor: 'var(--color-bg-secondary)',
                   color: 'var(--color-text)',
