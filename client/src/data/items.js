@@ -12,11 +12,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Intel",
-    "rating": "4.3",
-    "reviews": 233,
+    "rating": "4.7",
+    "reviews": 249,
     "specs": [
       "24 Cores, 32 Threads, 6.2 GHz Boost"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the Intel Core i9-14900KS. Experience incredible speed and efficiency."
   },
   {
     "id": 1001,
@@ -28,11 +29,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "Intel",
-    "rating": "4.6",
-    "reviews": 50,
+    "rating": "4.3",
+    "reviews": 449,
     "specs": [
       "24 Cores, 32 Threads, 6.0 GHz Boost"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the Intel Core i9-14900K. Experience incredible speed and efficiency."
   },
   {
     "id": 1002,
@@ -44,11 +46,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1624701928517-44c8ac49d93c?w=600&q=80",
     "brand": "Intel",
-    "rating": "4.2",
-    "reviews": 423,
+    "rating": "4.5",
+    "reviews": 164,
     "specs": [
       "20 Cores, 28 Threads, 5.6 GHz Boost"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the Intel Core i7-14700K. Experience incredible speed and efficiency."
   },
   {
     "id": 1003,
@@ -61,10 +64,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Intel",
     "rating": "4.6",
-    "reviews": 207,
+    "reviews": 341,
     "specs": [
       "14 Cores, 20 Threads, 5.3 GHz Boost"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the Intel Core i5-14600K. Experience incredible speed and efficiency."
   },
   {
     "id": 1004,
@@ -76,11 +80,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "Intel",
-    "rating": "4.8",
-    "reviews": 323,
+    "rating": "4.9",
+    "reviews": 185,
     "specs": [
       "10 Cores, 16 Threads, 4.7 GHz Boost"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the Intel Core i5-14400F. Experience incredible speed and efficiency."
   },
   {
     "id": 1005,
@@ -92,11 +97,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1624701928517-44c8ac49d93c?w=600&q=80",
     "brand": "Intel",
-    "rating": "4.6",
-    "reviews": 315,
+    "rating": "4.7",
+    "reviews": 71,
     "specs": [
       "24 Cores, 32 Threads, 5.8 GHz Boost"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the Intel Core i9-13900K. Experience incredible speed and efficiency."
   },
   {
     "id": 1006,
@@ -108,11 +114,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Intel",
-    "rating": "5.0",
-    "reviews": 463,
+    "rating": "4.7",
+    "reviews": 216,
     "specs": [
       "16 Cores, 24 Threads, 5.4 GHz Boost"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the Intel Core i7-13700K. Experience incredible speed and efficiency."
   },
   {
     "id": 1007,
@@ -124,11 +131,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "Intel",
-    "rating": "4.9",
-    "reviews": 485,
+    "rating": "4.3",
+    "reviews": 480,
     "specs": [
       "14 Cores, 20 Threads, 5.1 GHz Boost"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the Intel Core i5-13600K. Experience incredible speed and efficiency."
   },
   {
     "id": 1008,
@@ -140,11 +148,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1624701928517-44c8ac49d93c?w=600&q=80",
     "brand": "Intel",
-    "rating": "4.6",
-    "reviews": 247,
+    "rating": "4.9",
+    "reviews": 492,
     "specs": [
       "4 Cores, 8 Threads, 4.5 GHz Boost"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the Intel Core i3-13100F. Experience incredible speed and efficiency."
   },
   {
     "id": 1009,
@@ -156,11 +165,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.5",
-    "reviews": 343,
+    "rating": "4.7",
+    "reviews": 421,
     "specs": [
       "16 Cores, 32 Threads, 5.7 GHz, 144MB Cache"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the AMD Ryzen 9 7950X3D. Experience incredible speed and efficiency."
   },
   {
     "id": 1010,
@@ -172,11 +182,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.9",
-    "reviews": 148,
+    "rating": "4.4",
+    "reviews": 316,
     "specs": [
       "16 Cores, 32 Threads, 5.7 GHz"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the AMD Ryzen 9 7950X. Experience incredible speed and efficiency."
   },
   {
     "id": 1011,
@@ -188,11 +199,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1624701928517-44c8ac49d93c?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.2",
-    "reviews": 457,
+    "rating": "4.6",
+    "reviews": 129,
     "specs": [
       "12 Cores, 24 Threads, 5.6 GHz, 128MB Cache"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the AMD Ryzen 9 7900X3D. Experience incredible speed and efficiency."
   },
   {
     "id": 1012,
@@ -204,11 +216,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.3",
-    "reviews": 197,
+    "rating": "5.0",
+    "reviews": 24,
     "specs": [
       "12 Cores, 24 Threads, 5.6 GHz"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the AMD Ryzen 9 7900X. Experience incredible speed and efficiency."
   },
   {
     "id": 1013,
@@ -220,11 +233,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.5",
-    "reviews": 210,
+    "rating": "4.9",
+    "reviews": 266,
     "specs": [
       "8 Cores, 16 Threads, 5.0 GHz, 104MB Cache"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the AMD Ryzen 7 7800X3D. Experience incredible speed and efficiency."
   },
   {
     "id": 1014,
@@ -236,11 +250,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1624701928517-44c8ac49d93c?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.3",
-    "reviews": 343,
+    "rating": "4.5",
+    "reviews": 57,
     "specs": [
       "8 Cores, 16 Threads, 5.4 GHz"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the AMD Ryzen 7 7700X. Experience incredible speed and efficiency."
   },
   {
     "id": 1015,
@@ -252,11 +267,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.9",
-    "reviews": 392,
+    "rating": "5.0",
+    "reviews": 30,
     "specs": [
       "6 Cores, 12 Threads, 5.3 GHz"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the AMD Ryzen 5 7600X. Experience incredible speed and efficiency."
   },
   {
     "id": 1016,
@@ -268,11 +284,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.7",
-    "reviews": 344,
+    "rating": "4.8",
+    "reviews": 66,
     "specs": [
       "6 Cores, 12 Threads, 5.1 GHz"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the AMD Ryzen 5 7600. Experience incredible speed and efficiency."
   },
   {
     "id": 1017,
@@ -284,11 +301,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1624701928517-44c8ac49d93c?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.3",
-    "reviews": 272,
+    "rating": "4.8",
+    "reviews": 374,
     "specs": [
       "8 Cores, 16 Threads, 4.5 GHz, 96MB Cache"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the AMD Ryzen 7 5800X3D. Experience incredible speed and efficiency."
   },
   {
     "id": 1018,
@@ -300,11 +318,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.4",
-    "reviews": 82,
+    "rating": "4.3",
+    "reviews": 173,
     "specs": [
       "6 Cores, 12 Threads, 4.6 GHz"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the AMD Ryzen 5 5600X. Experience incredible speed and efficiency."
   },
   {
     "id": 1019,
@@ -317,10 +336,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "AMD",
     "rating": "4.4",
-    "reviews": 178,
+    "reviews": 402,
     "specs": [
       "6 Cores, 12 Threads, 4.4 GHz"
-    ]
+    ],
+    "description": "Power through intense workloads and high-FPS gaming with the AMD Ryzen 5 5600. Experience incredible speed and efficiency."
   },
   {
     "id": 1020,
@@ -332,11 +352,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "NVIDIA",
-    "rating": "4.9",
-    "reviews": 50,
+    "rating": "4.5",
+    "reviews": 213,
     "specs": [
       "24GB GDDR6X, 16384 CUDA Cores"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the NVIDIA GeForce RTX 4090 24GB."
   },
   {
     "id": 1021,
@@ -348,11 +369,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=600&q=80",
     "brand": "NVIDIA",
-    "rating": "4.8",
-    "reviews": 95,
+    "rating": "4.9",
+    "reviews": 335,
     "specs": [
       "16GB GDDR6X, 10240 CUDA Cores"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the NVIDIA GeForce RTX 4080 SUPER 16GB."
   },
   {
     "id": 1022,
@@ -364,11 +386,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1625907402636-f33190fc2f1a?w=600&q=80",
     "brand": "NVIDIA",
-    "rating": "4.6",
-    "reviews": 54,
+    "rating": "4.8",
+    "reviews": 430,
     "specs": [
       "16GB GDDR6X, 9728 CUDA Cores"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the NVIDIA GeForce RTX 4080 16GB."
   },
   {
     "id": 1023,
@@ -380,11 +403,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "NVIDIA",
-    "rating": "4.6",
-    "reviews": 379,
+    "rating": "5.0",
+    "reviews": 324,
     "specs": [
       "16GB GDDR6X, 8448 CUDA Cores"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the NVIDIA GeForce RTX 4070 Ti SUPER 16GB."
   },
   {
     "id": 1024,
@@ -396,11 +420,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=600&q=80",
     "brand": "NVIDIA",
-    "rating": "4.8",
-    "reviews": 23,
+    "rating": "4.7",
+    "reviews": 443,
     "specs": [
       "12GB GDDR6X, 7680 CUDA Cores"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the NVIDIA GeForce RTX 4070 Ti 12GB."
   },
   {
     "id": 1025,
@@ -412,11 +437,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1625907402636-f33190fc2f1a?w=600&q=80",
     "brand": "NVIDIA",
-    "rating": "4.4",
-    "reviews": 307,
+    "rating": "5.0",
+    "reviews": 456,
     "specs": [
       "12GB GDDR6X, 7168 CUDA Cores"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the NVIDIA GeForce RTX 4070 SUPER 12GB."
   },
   {
     "id": 1026,
@@ -428,11 +454,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "NVIDIA",
-    "rating": "4.5",
-    "reviews": 460,
+    "rating": "4.4",
+    "reviews": 27,
     "specs": [
       "12GB GDDR6X, 5888 CUDA Cores"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the NVIDIA GeForce RTX 4070 12GB."
   },
   {
     "id": 1027,
@@ -444,11 +471,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=600&q=80",
     "brand": "NVIDIA",
-    "rating": "4.2",
-    "reviews": 363,
+    "rating": "4.5",
+    "reviews": 440,
     "specs": [
       "16GB GDDR6, 4352 CUDA Cores"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the NVIDIA GeForce RTX 4060 Ti 16GB."
   },
   {
     "id": 1028,
@@ -460,11 +488,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1625907402636-f33190fc2f1a?w=600&q=80",
     "brand": "NVIDIA",
-    "rating": "4.9",
-    "reviews": 82,
+    "rating": "4.4",
+    "reviews": 444,
     "specs": [
       "8GB GDDR6, 4352 CUDA Cores"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the NVIDIA GeForce RTX 4060 Ti 8GB."
   },
   {
     "id": 1029,
@@ -476,11 +505,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "NVIDIA",
-    "rating": "4.8",
-    "reviews": 28,
+    "rating": "4.7",
+    "reviews": 322,
     "specs": [
       "8GB GDDR6, 3072 CUDA Cores"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the NVIDIA GeForce RTX 4060 8GB."
   },
   {
     "id": 1030,
@@ -492,11 +522,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.9",
-    "reviews": 376,
+    "rating": "4.5",
+    "reviews": 182,
     "specs": [
       "24GB GDDR6, 6144 Stream Processors"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the AMD Radeon RX 7900 XTX 24GB."
   },
   {
     "id": 1031,
@@ -508,11 +539,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1625907402636-f33190fc2f1a?w=600&q=80",
     "brand": "AMD",
-    "rating": "5.0",
-    "reviews": 451,
+    "rating": "4.6",
+    "reviews": 223,
     "specs": [
       "20GB GDDR6, 5376 Stream Processors"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the AMD Radeon RX 7900 XT 20GB."
   },
   {
     "id": 1032,
@@ -524,11 +556,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.9",
-    "reviews": 251,
+    "rating": "4.4",
+    "reviews": 209,
     "specs": [
       "16GB GDDR6, 5120 Stream Processors"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the AMD Radeon RX 7900 GRE 16GB."
   },
   {
     "id": 1033,
@@ -540,11 +573,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.5",
-    "reviews": 480,
+    "rating": "4.9",
+    "reviews": 270,
     "specs": [
       "16GB GDDR6, 3840 Stream Processors"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the AMD Radeon RX 7800 XT 16GB."
   },
   {
     "id": 1034,
@@ -556,11 +590,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1625907402636-f33190fc2f1a?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.9",
-    "reviews": 398,
+    "rating": "4.8",
+    "reviews": 238,
     "specs": [
       "12GB GDDR6, 3456 Stream Processors"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the AMD Radeon RX 7700 XT 12GB."
   },
   {
     "id": 1035,
@@ -572,11 +607,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.3",
-    "reviews": 503,
+    "rating": "4.8",
+    "reviews": 405,
     "specs": [
       "16GB GDDR6, 2048 Stream Processors"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the AMD Radeon RX 7600 XT 16GB."
   },
   {
     "id": 1036,
@@ -588,11 +624,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372634-32705e3bf49c?w=600&q=80",
     "brand": "AMD",
-    "rating": "4.2",
-    "reviews": 455,
+    "rating": "4.4",
+    "reviews": 225,
     "specs": [
       "8GB GDDR6, 2048 Stream Processors"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the AMD Radeon RX 7600 8GB."
   },
   {
     "id": 1037,
@@ -604,11 +641,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1625907402636-f33190fc2f1a?w=600&q=80",
     "brand": "Intel",
-    "rating": "4.8",
-    "reviews": 295,
+    "rating": "4.9",
+    "reviews": 181,
     "specs": [
       "16GB GDDR6, 32 Xe Cores"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the Intel Arc A770 16GB."
   },
   {
     "id": 1038,
@@ -620,11 +658,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "Intel",
-    "rating": "4.9",
-    "reviews": 89,
+    "rating": "4.5",
+    "reviews": 62,
     "specs": [
       "8GB GDDR6, 28 Xe Cores"
-    ]
+    ],
+    "description": "Unlock lifelike graphics, ultra-high framerates, and advanced ray tracing with the Intel Arc A750 8GB."
   },
   {
     "id": 1039,
@@ -636,11 +675,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
     "brand": "ASUS",
-    "rating": "4.5",
-    "reviews": 197,
+    "rating": "5.0",
+    "reviews": 105,
     "specs": [
       "LGA 1700, DDR5, PCIe 5.0, Wi-Fi 6E"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the ASUS ROG MAXIMUS Z790 HERO, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1040,
@@ -652,11 +692,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "MSI",
-    "rating": "4.2",
-    "reviews": 72,
+    "rating": "4.7",
+    "reviews": 398,
     "specs": [
       "LGA 1700, E-ATX, DDR5, Dual Thunderbolt 4"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the MSI MEG Z790 ACE, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1041,
@@ -668,11 +709,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
     "brand": "GIGABYTE",
-    "rating": "4.8",
-    "reviews": 435,
+    "rating": "4.6",
+    "reviews": 190,
     "specs": [
       "LGA 1700, E-ATX, 10GbE LAN"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the GIGABYTE Z790 AORUS MASTER, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1042,
@@ -685,10 +727,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "ASUS",
     "rating": "4.4",
-    "reviews": 416,
+    "reviews": 445,
     "specs": [
       "LGA 1700, ATX, DDR5, Wi-Fi 6E"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the ASUS ROG STRIX Z790-E GAMING WIFI, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1043,
@@ -700,11 +743,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
     "brand": "MSI",
-    "rating": "4.8",
-    "reviews": 421,
+    "rating": "4.9",
+    "reviews": 318,
     "specs": [
       "LGA 1700, ATX, DDR5, Wi-Fi 6E"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the MSI MAG Z790 TOMAHAWK WIFI, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1044,
@@ -716,11 +760,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "GIGABYTE",
-    "rating": "4.6",
-    "reviews": 35,
+    "rating": "4.8",
+    "reviews": 200,
     "specs": [
       "LGA 1700, ATX, DDR5, Wi-Fi 6E"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the GIGABYTE Z790 AORUS ELITE AX, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1045,
@@ -733,10 +778,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
     "brand": "ASUS",
     "rating": "4.8",
-    "reviews": 67,
+    "reviews": 155,
     "specs": [
       "LGA 1700, ATX, DDR5, Wi-Fi 6E"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the ASUS TUF GAMING Z790-PLUS WIFI, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1046,
@@ -748,11 +794,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "MSI",
-    "rating": "4.2",
-    "reviews": 445,
+    "rating": "4.6",
+    "reviews": 30,
     "specs": [
       "LGA 1700, ATX, DDR5, Wi-Fi 6E"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the MSI PRO Z790-A WIFI, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1047,
@@ -764,11 +811,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
     "brand": "ASUS",
-    "rating": "4.7",
-    "reviews": 505,
+    "rating": "4.6",
+    "reviews": 223,
     "specs": [
       "LGA 1700, ATX, DDR5, Wi-Fi 6E"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the ASUS ROG STRIX B760-F GAMING, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1048,
@@ -780,11 +828,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "MSI",
-    "rating": "4.7",
-    "reviews": 148,
+    "rating": "4.2",
+    "reviews": 68,
     "specs": [
       "LGA 1700, ATX, DDR5, Wi-Fi 6E"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the MSI MAG B760 TOMAHAWK WIFI, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1049,
@@ -796,11 +845,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
     "brand": "GIGABYTE",
-    "rating": "4.8",
-    "reviews": 408,
+    "rating": "4.7",
+    "reviews": 120,
     "specs": [
       "LGA 1700, ATX, DDR5, Wi-Fi 6E"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the GIGABYTE B760 AORUS ELITE AX, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1050,
@@ -812,11 +862,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "ASUS",
-    "rating": "4.4",
-    "reviews": 186,
+    "rating": "4.6",
+    "reviews": 196,
     "specs": [
       "AM5, ATX, DDR5, PCIe 5.0"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the ASUS ROG CROSSHAIR X670E HERO, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1051,
@@ -828,11 +879,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
     "brand": "MSI",
-    "rating": "4.3",
-    "reviews": 375,
+    "rating": "4.4",
+    "reviews": 140,
     "specs": [
       "AM5, E-ATX, DDR5, Dual Thunderbolt 4"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the MSI MEG X670E ACE, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1052,
@@ -844,11 +896,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "GIGABYTE",
-    "rating": "4.4",
-    "reviews": 55,
+    "rating": "4.2",
+    "reviews": 26,
     "specs": [
       "AM5, E-ATX, DDR5, PCIe 5.0"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the GIGABYTE X670E AORUS MASTER, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1053,
@@ -860,11 +913,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
     "brand": "ASUS",
-    "rating": "4.2",
-    "reviews": 85,
+    "rating": "4.5",
+    "reviews": 417,
     "specs": [
       "AM5, ATX, DDR5, Wi-Fi 6E"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the ASUS ROG STRIX X670E-E GAMING WIFI, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1054,
@@ -876,11 +930,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "MSI",
-    "rating": "4.6",
-    "reviews": 353,
+    "rating": "4.8",
+    "reviews": 500,
     "specs": [
       "AM5, ATX, DDR5, Wi-Fi 6E"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the MSI MPG X670E CARBON WIFI, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1055,
@@ -893,10 +948,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
     "brand": "ASUS",
     "rating": "4.2",
-    "reviews": 406,
+    "reviews": 37,
     "specs": [
       "AM5, ATX, DDR5, Wi-Fi 6E"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the ASUS TUF GAMING X670E-PLUS WIFI, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1056,
@@ -908,11 +964,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "GIGABYTE",
-    "rating": "4.3",
-    "reviews": 396,
+    "rating": "4.4",
+    "reviews": 54,
     "specs": [
       "AM5, ATX, DDR5, PCIe 4.0"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the GIGABYTE B650 AORUS ELITE AX, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1057,
@@ -924,11 +981,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&q=80",
     "brand": "MSI",
-    "rating": "4.4",
-    "reviews": 436,
+    "rating": "4.3",
+    "reviews": 287,
     "specs": [
       "AM5, ATX, DDR5, Wi-Fi 6E"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the MSI MAG B650 TOMAHAWK WIFI, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1058,
@@ -940,11 +998,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "ASRock",
-    "rating": "4.7",
-    "reviews": 35,
+    "rating": "4.9",
+    "reviews": 300,
     "specs": [
       "AM5, Micro-ATX, DDR5, Wi-Fi 6"
-    ]
+    ],
+    "description": "Build a rock-solid foundation with the ASRock B650M Pro RS WiFi, featuring premium VRMs, robust connectivity, and overclocking support."
   },
   {
     "id": 1059,
@@ -956,11 +1015,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
     "brand": "Corsair",
-    "rating": "4.9",
-    "reviews": 471,
+    "rating": "4.7",
+    "reviews": 365,
     "specs": [
       "6600MHz, CL32, RGB"
-    ]
+    ],
+    "description": "Boost your system's responsiveness and multitasking capabilities with this high-speed Corsair memory kit."
   },
   {
     "id": 1060,
@@ -973,10 +1033,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
     "brand": "Corsair",
     "rating": "5.0",
-    "reviews": 334,
+    "reviews": 325,
     "specs": [
       "6000MHz, CL30, RGB"
-    ]
+    ],
+    "description": "Boost your system's responsiveness and multitasking capabilities with this high-speed Corsair memory kit."
   },
   {
     "id": 1061,
@@ -988,11 +1049,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
     "brand": "G.Skill",
-    "rating": "4.2",
-    "reviews": 176,
+    "rating": "4.9",
+    "reviews": 504,
     "specs": [
       "6400MHz, CL32"
-    ]
+    ],
+    "description": "Boost your system's responsiveness and multitasking capabilities with this high-speed G.Skill memory kit."
   },
   {
     "id": 1062,
@@ -1004,11 +1066,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
     "brand": "Corsair",
-    "rating": "4.3",
-    "reviews": 293,
+    "rating": "4.7",
+    "reviews": 272,
     "specs": [
       "6000MHz, CL30"
-    ]
+    ],
+    "description": "Boost your system's responsiveness and multitasking capabilities with this high-speed Corsair memory kit."
   },
   {
     "id": 1063,
@@ -1020,11 +1083,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
     "brand": "G.Skill",
-    "rating": "4.4",
-    "reviews": 434,
+    "rating": "4.2",
+    "reviews": 53,
     "specs": [
       "6000MHz, CL30, AMD EXPO"
-    ]
+    ],
+    "description": "Boost your system's responsiveness and multitasking capabilities with this high-speed G.Skill memory kit."
   },
   {
     "id": 1064,
@@ -1036,11 +1100,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
     "brand": "Corsair",
-    "rating": "4.5",
-    "reviews": 247,
+    "rating": "4.4",
+    "reviews": 361,
     "specs": [
       "6000MHz, CL36, Intel XMP"
-    ]
+    ],
+    "description": "Boost your system's responsiveness and multitasking capabilities with this high-speed Corsair memory kit."
   },
   {
     "id": 1065,
@@ -1052,11 +1117,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
     "brand": "Kingston",
-    "rating": "4.7",
-    "reviews": 227,
+    "rating": "4.9",
+    "reviews": 502,
     "specs": [
       "5600MHz, CL40, Non-RGB"
-    ]
+    ],
+    "description": "Boost your system's responsiveness and multitasking capabilities with this high-speed Kingston memory kit."
   },
   {
     "id": 1066,
@@ -1068,11 +1134,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
     "brand": "TeamGroup",
-    "rating": "4.3",
-    "reviews": 40,
+    "rating": "4.8",
+    "reviews": 248,
     "specs": [
       "6400MHz, CL40, White"
-    ]
+    ],
+    "description": "Boost your system's responsiveness and multitasking capabilities with this high-speed TeamGroup memory kit."
   },
   {
     "id": 1067,
@@ -1085,10 +1152,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
     "brand": "G.Skill",
     "rating": "4.4",
-    "reviews": 154,
+    "reviews": 90,
     "specs": [
       "6000MHz, CL32"
-    ]
+    ],
+    "description": "Boost your system's responsiveness and multitasking capabilities with this high-speed G.Skill memory kit."
   },
   {
     "id": 1068,
@@ -1100,11 +1168,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
     "brand": "Crucial",
-    "rating": "4.5",
-    "reviews": 127,
+    "rating": "4.4",
+    "reviews": 149,
     "specs": [
       "5600MHz, CL46"
-    ]
+    ],
+    "description": "Boost your system's responsiveness and multitasking capabilities with this high-speed Crucial memory kit."
   },
   {
     "id": 1069,
@@ -1116,11 +1185,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
     "brand": "Corsair",
-    "rating": "5.0",
-    "reviews": 437,
+    "rating": "4.7",
+    "reviews": 234,
     "specs": [
       "3600MHz, CL18"
-    ]
+    ],
+    "description": "Boost your system's responsiveness and multitasking capabilities with this high-speed Corsair memory kit."
   },
   {
     "id": 1070,
@@ -1132,11 +1202,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
     "brand": "G.Skill",
-    "rating": "4.8",
-    "reviews": 472,
+    "rating": "4.2",
+    "reviews": 105,
     "specs": [
       "3200MHz, CL16"
-    ]
+    ],
+    "description": "Boost your system's responsiveness and multitasking capabilities with this high-speed G.Skill memory kit."
   },
   {
     "id": 1071,
@@ -1148,11 +1219,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1562976540-1502c2145186?w=600&q=80",
     "brand": "Kingston",
-    "rating": "4.9",
-    "reviews": 292,
+    "rating": "4.8",
+    "reviews": 513,
     "specs": [
       "3200MHz, CL16"
-    ]
+    ],
+    "description": "Boost your system's responsiveness and multitasking capabilities with this high-speed Kingston memory kit."
   },
   {
     "id": 1072,
@@ -1164,11 +1236,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1600326462794-c1888a75e20d?w=600&q=80",
     "brand": "Crucial",
-    "rating": "4.7",
-    "reviews": 343,
+    "rating": "4.5",
+    "reviews": 438,
     "specs": [
       "NVMe M.2 PCIe 5.0, 12400 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1073,
@@ -1180,11 +1253,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1589578228447-e1a4e481c6c8?w=600&q=80",
     "brand": "Crucial",
-    "rating": "4.3",
-    "reviews": 361,
+    "rating": "4.5",
+    "reviews": 298,
     "specs": [
       "NVMe M.2 PCIe 5.0, 12400 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1074,
@@ -1196,11 +1270,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1600326462794-c1888a75e20d?w=600&q=80",
     "brand": "Corsair",
-    "rating": "4.8",
-    "reviews": 363,
+    "rating": "4.9",
+    "reviews": 78,
     "specs": [
       "NVMe M.2 PCIe 5.0, 12400 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1075,
@@ -1212,11 +1287,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1589578228447-e1a4e481c6c8?w=600&q=80",
     "brand": "Samsung",
-    "rating": "4.4",
-    "reviews": 470,
+    "rating": "4.3",
+    "reviews": 301,
     "specs": [
       "NVMe M.2 PCIe 4.0, 7450 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1076,
@@ -1228,11 +1304,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1600326462794-c1888a75e20d?w=600&q=80",
     "brand": "Samsung",
-    "rating": "4.5",
-    "reviews": 513,
+    "rating": "4.4",
+    "reviews": 219,
     "specs": [
       "NVMe M.2 PCIe 4.0, 7450 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1077,
@@ -1244,11 +1321,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1589578228447-e1a4e481c6c8?w=600&q=80",
     "brand": "WD",
-    "rating": "4.6",
-    "reviews": 16,
+    "rating": "4.5",
+    "reviews": 62,
     "specs": [
       "NVMe M.2 PCIe 4.0, 7300 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1078,
@@ -1260,11 +1338,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1600326462794-c1888a75e20d?w=600&q=80",
     "brand": "WD",
-    "rating": "4.5",
-    "reviews": 65,
+    "rating": "4.9",
+    "reviews": 182,
     "specs": [
       "NVMe M.2 PCIe 4.0, 7300 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1079,
@@ -1276,11 +1355,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1589578228447-e1a4e481c6c8?w=600&q=80",
     "brand": "Seagate",
-    "rating": "4.6",
-    "reviews": 352,
+    "rating": "4.4",
+    "reviews": 103,
     "specs": [
       "NVMe M.2 PCIe 4.0, 7300 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1080,
@@ -1292,11 +1372,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1600326462794-c1888a75e20d?w=600&q=80",
     "brand": "Samsung",
-    "rating": "4.2",
-    "reviews": 209,
+    "rating": "4.5",
+    "reviews": 57,
     "specs": [
       "NVMe M.2 PCIe 4.0, 7000 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1081,
@@ -1308,11 +1389,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1589578228447-e1a4e481c6c8?w=600&q=80",
     "brand": "Samsung",
-    "rating": "4.6",
-    "reviews": 174,
+    "rating": "4.2",
+    "reviews": 21,
     "specs": [
       "NVMe M.2 PCIe 4.0, 7000 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1082,
@@ -1324,11 +1406,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1600326462794-c1888a75e20d?w=600&q=80",
     "brand": "WD",
-    "rating": "4.4",
-    "reviews": 248,
+    "rating": "4.7",
+    "reviews": 411,
     "specs": [
       "NVMe M.2 PCIe 4.0, 4150 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1083,
@@ -1341,10 +1424,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1589578228447-e1a4e481c6c8?w=600&q=80",
     "brand": "WD",
     "rating": "4.9",
-    "reviews": 286,
+    "reviews": 311,
     "specs": [
       "NVMe M.2 PCIe 4.0, 4150 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1084,
@@ -1356,11 +1440,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1600326462794-c1888a75e20d?w=600&q=80",
     "brand": "Crucial",
-    "rating": "4.7",
-    "reviews": 188,
+    "rating": "4.5",
+    "reviews": 291,
     "specs": [
       "NVMe M.2 PCIe 4.0, 4800 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1085,
@@ -1372,11 +1457,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1589578228447-e1a4e481c6c8?w=600&q=80",
     "brand": "Crucial",
-    "rating": "4.6",
-    "reviews": 435,
+    "rating": "5.0",
+    "reviews": 107,
     "specs": [
       "NVMe M.2 PCIe 4.0, 5000 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1086,
@@ -1388,11 +1474,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1600326462794-c1888a75e20d?w=600&q=80",
     "brand": "Samsung",
-    "rating": "4.3",
-    "reviews": 334,
+    "rating": "4.6",
+    "reviews": 461,
     "specs": [
       "SATA III 2.5\", 560 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1087,
@@ -1404,11 +1491,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1589578228447-e1a4e481c6c8?w=600&q=80",
     "brand": "Samsung",
-    "rating": "4.6",
-    "reviews": 309,
+    "rating": "5.0",
+    "reviews": 368,
     "specs": [
       "SATA III 2.5\", 560 MB/s Read"
-    ]
+    ],
+    "description": "Dramatically reduce load times and transfer massive files in seconds with this ultra-fast storage drive."
   },
   {
     "id": 1088,
@@ -1421,10 +1509,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Seasonic",
     "rating": "4.7",
-    "reviews": 351,
+    "reviews": 486,
     "specs": [
       "1600W, 80+ Titanium, Fully Modular, ATX 3.0"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium Seasonic power supply."
   },
   {
     "id": 1089,
@@ -1436,11 +1525,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Corsair",
-    "rating": "4.3",
-    "reviews": 135,
+    "rating": "4.9",
+    "reviews": 420,
     "specs": [
       "1600W, 80+ Titanium, Fully Modular, Digital"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium Corsair power supply."
   },
   {
     "id": 1090,
@@ -1453,10 +1543,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Seasonic",
     "rating": "4.7",
-    "reviews": 214,
+    "reviews": 239,
     "specs": [
       "1300W, 80+ Titanium, Fully Modular"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium Seasonic power supply."
   },
   {
     "id": 1091,
@@ -1468,11 +1559,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "MSI",
-    "rating": "4.8",
-    "reviews": 86,
+    "rating": "4.5",
+    "reviews": 354,
     "specs": [
       "1300W, 80+ Platinum, ATX 3.0"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium MSI power supply."
   },
   {
     "id": 1092,
@@ -1484,11 +1576,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Corsair",
-    "rating": "4.8",
-    "reviews": 459,
+    "rating": "4.9",
+    "reviews": 175,
     "specs": [
       "1200W, 80+ Platinum, Fully Modular"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium Corsair power supply."
   },
   {
     "id": 1093,
@@ -1500,11 +1593,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Thermaltake",
-    "rating": "4.6",
-    "reviews": 506,
+    "rating": "4.2",
+    "reviews": 280,
     "specs": [
       "1200W, 80+ Gold, ATX 3.0"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium Thermaltake power supply."
   },
   {
     "id": 1094,
@@ -1517,10 +1611,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Corsair",
     "rating": "4.5",
-    "reviews": 314,
+    "reviews": 308,
     "specs": [
       "1000W, 80+ Gold, Fully Modular, ATX 3.0"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium Corsair power supply."
   },
   {
     "id": 1095,
@@ -1532,11 +1627,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Seasonic",
-    "rating": "4.6",
-    "reviews": 435,
+    "rating": "5.0",
+    "reviews": 412,
     "specs": [
       "1000W, 80+ Gold, ATX 3.0"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium Seasonic power supply."
   },
   {
     "id": 1096,
@@ -1548,11 +1644,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "EVGA",
-    "rating": "4.4",
-    "reviews": 507,
+    "rating": "4.5",
+    "reviews": 188,
     "specs": [
       "1000W, 80+ Gold, Fully Modular"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium EVGA power supply."
   },
   {
     "id": 1097,
@@ -1564,11 +1661,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Corsair",
-    "rating": "4.5",
-    "reviews": 303,
+    "rating": "4.8",
+    "reviews": 321,
     "specs": [
       "850W, 80+ Gold, Fully Modular, ATX 3.0"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium Corsair power supply."
   },
   {
     "id": 1098,
@@ -1580,11 +1678,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "EVGA",
-    "rating": "4.7",
-    "reviews": 488,
+    "rating": "4.9",
+    "reviews": 176,
     "specs": [
       "850W, 80+ Gold, Fully Modular"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium EVGA power supply."
   },
   {
     "id": 1099,
@@ -1596,11 +1695,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Cooler Master",
-    "rating": "4.6",
-    "reviews": 148,
+    "rating": "4.3",
+    "reviews": 149,
     "specs": [
       "850W, 80+ Gold, Fully Modular"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium Cooler Master power supply."
   },
   {
     "id": 1100,
@@ -1612,11 +1712,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Corsair",
-    "rating": "4.6",
-    "reviews": 50,
+    "rating": "4.9",
+    "reviews": 55,
     "specs": [
       "750W, 80+ Gold, Fully Modular, ATX 3.0"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium Corsair power supply."
   },
   {
     "id": 1101,
@@ -1628,11 +1729,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Corsair",
-    "rating": "5.0",
-    "reviews": 101,
+    "rating": "4.2",
+    "reviews": 187,
     "specs": [
       "850W, 80+ Gold, SFX-L, Fully Modular"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium Corsair power supply."
   },
   {
     "id": 1102,
@@ -1644,11 +1746,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Cooler Master",
-    "rating": "4.9",
-    "reviews": 420,
+    "rating": "4.4",
+    "reviews": 451,
     "specs": [
       "850W, 80+ Gold, SFX, Fully Modular"
-    ]
+    ],
+    "description": "Deliver clean, reliable, and efficient power to your high-end components with this premium Cooler Master power supply."
   },
   {
     "id": 1103,
@@ -1660,11 +1763,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "Lian Li",
-    "rating": "4.3",
-    "reviews": 260,
+    "rating": "4.7",
+    "reviews": 400,
     "specs": [
       "Full-Tower, Dual Chamber, E-ATX Support"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1104,
@@ -1676,11 +1780,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?w=600&q=80",
     "brand": "Phanteks",
-    "rating": "4.5",
-    "reviews": 329,
+    "rating": "4.9",
+    "reviews": 352,
     "specs": [
       "Full-Tower, Showcase Chassis, DRGB"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1105,
@@ -1692,11 +1797,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "Hyte",
-    "rating": "4.7",
-    "reviews": 229,
+    "rating": "4.9",
+    "reviews": 51,
     "specs": [
       "Mid-Tower, Panoramic Glass, Vertical GPU Mount"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1106,
@@ -1709,10 +1815,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "NZXT",
     "rating": "4.8",
-    "reviews": 59,
+    "reviews": 315,
     "specs": [
       "Mid-Tower, Dual Chamber, 3x F120 RGB"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1107,
@@ -1724,11 +1831,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?w=600&q=80",
     "brand": "NZXT",
-    "rating": "4.5",
-    "reviews": 86,
+    "rating": "4.7",
+    "reviews": 369,
     "specs": [
       "Mid-Tower, Dual Chamber, High Airflow"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1108,
@@ -1741,10 +1849,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "Lian Li",
     "rating": "4.6",
-    "reviews": 413,
+    "reviews": 208,
     "specs": [
       "Mid-Tower, Dual Chamber, Tempered Glass"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1109,
@@ -1756,11 +1865,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "Fractal Design",
-    "rating": "4.4",
-    "reviews": 86,
+    "rating": "4.8",
+    "reviews": 394,
     "specs": [
       "Mid-Tower, Wood Front Panel, Mesh Side"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1110,
@@ -1772,11 +1882,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?w=600&q=80",
     "brand": "Fractal Design",
-    "rating": "4.6",
-    "reviews": 432,
+    "rating": "5.0",
+    "reviews": 444,
     "specs": [
       "Mid-Tower, 2x 180mm Fans, Max Airflow"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1111,
@@ -1788,11 +1899,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "Corsair",
-    "rating": "4.8",
-    "reviews": 514,
+    "rating": "4.6",
+    "reviews": 338,
     "specs": [
       "Mid-Tower, High Airflow Front Panel, Spacious"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1112,
@@ -1804,11 +1916,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "Corsair",
-    "rating": "4.2",
-    "reviews": 487,
+    "rating": "4.9",
+    "reviews": 35,
     "specs": [
       "Mid-Tower, High Airflow Front Panel"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1113,
@@ -1820,11 +1933,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?w=600&q=80",
     "brand": "NZXT",
-    "rating": "4.5",
-    "reviews": 324,
+    "rating": "4.8",
+    "reviews": 181,
     "specs": [
       "Mid-Tower, Bottom Intake Fan for GPU"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1114,
@@ -1836,11 +1950,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1555680202-c86f0e12f086?w=600&q=80",
     "brand": "Phanteks",
-    "rating": "4.3",
-    "reviews": 141,
+    "rating": "4.7",
+    "reviews": 106,
     "specs": [
       "Mid-Tower, Mesh Front, 3x DRGB Fans"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1115,
@@ -1852,11 +1967,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "Cooler Master",
-    "rating": "4.5",
-    "reviews": 16,
+    "rating": "4.8",
+    "reviews": 18,
     "specs": [
       "Mini-ITX, TG/Vented Panels Included"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1116,
@@ -1868,11 +1984,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1517430816045-df4b7de11d1d?w=600&q=80",
     "brand": "Lian Li",
-    "rating": "4.5",
-    "reviews": 27,
+    "rating": "4.9",
+    "reviews": 46,
     "specs": [
       "Mini-ITX, SFX, 240mm AIO Support"
-    ]
+    ],
+    "description": "Showcase your build in style with excellent airflow, premium aesthetics, and spacious cable management."
   },
   {
     "id": 1117,
@@ -1884,11 +2001,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "NZXT",
-    "rating": "4.2",
-    "reviews": 312,
+    "rating": "4.4",
+    "reviews": 397,
     "specs": [
       "360mm AIO, LCD Display, F120 RGB Core Fans"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1118,
@@ -1900,11 +2018,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "Corsair",
-    "rating": "4.7",
-    "reviews": 168,
+    "rating": "4.8",
+    "reviews": 49,
     "specs": [
       "360mm AIO, IPS LCD Screen, AF120 RGB Elite Fans"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1119,
@@ -1916,11 +2035,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "ASUS",
-    "rating": "4.8",
-    "reviews": 354,
+    "rating": "4.3",
+    "reviews": 403,
     "specs": [
       "360mm AIO, 3.5\" LCD, Noctua Pump Fan"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1120,
@@ -1932,11 +2052,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "Lian Li",
-    "rating": "4.6",
-    "reviews": 150,
+    "rating": "4.8",
+    "reviews": 84,
     "specs": [
       "360mm AIO, 2.88\" IPS Screen, UNI FAN SL-INF"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1121,
@@ -1948,11 +2069,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Lian Li",
-    "rating": "4.6",
-    "reviews": 468,
+    "rating": "4.9",
+    "reviews": 444,
     "specs": [
       "360mm AIO, High Performance Pump"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1122,
@@ -1965,10 +2087,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "DeepCool",
     "rating": "4.7",
-    "reviews": 359,
+    "reviews": 319,
     "specs": [
       "360mm AIO, Infinity Mirror Pump Design"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1123,
@@ -1980,11 +2103,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "DeepCool",
-    "rating": "4.6",
-    "reviews": 240,
+    "rating": "4.8",
+    "reviews": 503,
     "specs": [
       "360mm AIO, Anti-Leak Tech, ARGB"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1124,
@@ -1996,11 +2120,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "Arctic",
-    "rating": "4.8",
-    "reviews": 274,
+    "rating": "4.6",
+    "reviews": 335,
     "specs": [
       "360mm AIO, VRM Fan, Excellent Value"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1125,
@@ -2012,11 +2137,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Arctic",
-    "rating": "4.4",
-    "reviews": 267,
+    "rating": "4.5",
+    "reviews": 460,
     "specs": [
       "280mm AIO, VRM Fan, Quiet"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1126,
@@ -2029,10 +2155,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "Corsair",
     "rating": "4.7",
-    "reviews": 178,
+    "reviews": 468,
     "specs": [
       "240mm AIO, SP120 RGB ELITE Fans"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1127,
@@ -2044,11 +2171,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Noctua",
-    "rating": "4.7",
-    "reviews": 243,
+    "rating": "4.8",
+    "reviews": 222,
     "specs": [
       "Dual-Tower Air Cooler, 2x NF-A15 PWM Fans"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1128,
@@ -2060,11 +2188,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "DeepCool",
-    "rating": "4.2",
-    "reviews": 427,
+    "rating": "4.6",
+    "reviews": 146,
     "specs": [
       "Dual-Tower Air Cooler, Status Display, ARGB"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1129,
@@ -2076,11 +2205,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=600&q=80",
     "brand": "Thermalright",
-    "rating": "4.9",
-    "reviews": 23,
+    "rating": "4.4",
+    "reviews": 409,
     "specs": [
       "Dual-Tower Air Cooler, Incredible Value"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1130,
@@ -2092,11 +2222,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1587202372775-e229f172b9d7?w=600&q=80",
     "brand": "Lian Li",
-    "rating": "4.3",
-    "reviews": 339,
+    "rating": "4.8",
+    "reviews": 153,
     "specs": [
       "120mm RGB Case Fans, Daisy-Chain"
-    ]
+    ],
+    "description": "Keep your high-performance CPU temperatures in check with this advanced and whisper-quiet cooling solution."
   },
   {
     "id": 1131,
@@ -2108,11 +2239,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&q=80",
     "brand": "Logitech",
-    "rating": "4.4",
-    "reviews": 491,
+    "rating": "4.9",
+    "reviews": 116,
     "specs": [
       "Wireless Gaming Mouse, 60g, LIGHTFORCE Switches"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1132,
@@ -2124,11 +2256,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1595225476474-87563907a212?w=600&q=80",
     "brand": "Razer",
-    "rating": "4.6",
-    "reviews": 274,
+    "rating": "4.9",
+    "reviews": 287,
     "specs": [
       "Wireless Gaming Mouse, 63g, Focus Pro 30K"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1133,
@@ -2140,11 +2273,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1612282130134-4b5336d39ab4?w=600&q=80",
     "brand": "Razer",
-    "rating": "4.6",
-    "reviews": 291,
+    "rating": "4.8",
+    "reviews": 192,
     "specs": [
       "Wireless Gaming Mouse, 58g, Focus Pro 30K"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1134,
@@ -2156,11 +2290,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1527814050087-379381547330?w=600&q=80",
     "brand": "Logitech",
-    "rating": "4.5",
-    "reviews": 425,
+    "rating": "4.7",
+    "reviews": 326,
     "specs": [
       "Wireless Gaming Mouse, RGB, LIGHTFORCE"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1135,
@@ -2172,11 +2307,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&q=80",
     "brand": "Wooting",
-    "rating": "4.8",
-    "reviews": 206,
+    "rating": "4.9",
+    "reviews": 506,
     "specs": [
       "60% Analog Keyboard, Lekker Switches"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1136,
@@ -2188,11 +2324,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1595225476474-87563907a212?w=600&q=80",
     "brand": "Keychron",
-    "rating": "4.5",
-    "reviews": 48,
+    "rating": "4.7",
+    "reviews": 116,
     "specs": [
       "75% Custom Mechanical Keyboard, Wireless, Aluminum"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1137,
@@ -2204,11 +2341,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1612282130134-4b5336d39ab4?w=600&q=80",
     "brand": "Corsair",
-    "rating": "4.6",
-    "reviews": 134,
+    "rating": "4.8",
+    "reviews": 437,
     "specs": [
       "Full-Size Mechanical Keyboard, OPX Switches"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1138,
@@ -2220,11 +2358,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1527814050087-379381547330?w=600&q=80",
     "brand": "SteelSeries",
-    "rating": "4.4",
-    "reviews": 326,
+    "rating": "4.7",
+    "reviews": 30,
     "specs": [
       "TKL Keyboard, OmniPoint 2.0 Adjustable Switches"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1139,
@@ -2236,11 +2375,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&q=80",
     "brand": "Razer",
-    "rating": "4.4",
-    "reviews": 328,
+    "rating": "4.5",
+    "reviews": 451,
     "specs": [
       "TKL Analog Keyboard, Gen-2 Analog Optical"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1140,
@@ -2252,11 +2392,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1595225476474-87563907a212?w=600&q=80",
     "brand": "SteelSeries",
-    "rating": "4.2",
-    "reviews": 50,
+    "rating": "5.0",
+    "reviews": 57,
     "specs": [
       "Gaming Headset, ANC, Dual Battery"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1141,
@@ -2268,11 +2409,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1612282130134-4b5336d39ab4?w=600&q=80",
     "brand": "Audeze",
-    "rating": "4.3",
-    "reviews": 63,
+    "rating": "4.9",
+    "reviews": 75,
     "specs": [
       "Wireless Gaming Headset, Planar Magnetic Drivers"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1142,
@@ -2284,11 +2426,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1527814050087-379381547330?w=600&q=80",
     "brand": "Logitech",
-    "rating": "4.6",
-    "reviews": 435,
+    "rating": "4.7",
+    "reviews": 490,
     "specs": [
       "Wireless Gaming Headset, Graphene Drivers"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1143,
@@ -2300,11 +2443,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1615663245857-ac93bb7c39e7?w=600&q=80",
     "brand": "HyperX",
-    "rating": "4.6",
-    "reviews": 456,
+    "rating": "4.8",
+    "reviews": 309,
     "specs": [
       "Gaming Headset, 120h Battery, DTS Headphone:X"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1144,
@@ -2317,10 +2461,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1595225476474-87563907a212?w=600&q=80",
     "brand": "Razer",
     "rating": "5.0",
-    "reviews": 322,
+    "reviews": 428,
     "specs": [
       "Wireless Gaming Headset, Super Wideband Mic"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1145,
@@ -2332,11 +2477,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1612282130134-4b5336d39ab4?w=600&q=80",
     "brand": "Elgato",
-    "rating": "4.9",
-    "reviews": 203,
+    "rating": "4.3",
+    "reviews": 134,
     "specs": [
       "Premium USB Condenser Microphone"
-    ]
+    ],
+    "description": "Gain a competitive edge with ultra-low latency, premium build quality, and extreme precision."
   },
   {
     "id": 1146,
@@ -2348,11 +2494,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?w=600&q=80",
     "brand": "Samsung",
-    "rating": "4.8",
-    "reviews": 283,
+    "rating": "4.7",
+    "reviews": 218,
     "specs": [
       "49\" Dual QHD Mini-LED, 240Hz, 1000R"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   },
   {
     "id": 1147,
@@ -2364,11 +2511,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80",
     "brand": "ASUS",
-    "rating": "4.6",
-    "reviews": 511,
+    "rating": "4.8",
+    "reviews": 231,
     "specs": [
       "27\" 1440p OLED, 240Hz, 0.03ms"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   },
   {
     "id": 1148,
@@ -2380,11 +2528,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?w=600&q=80",
     "brand": "LG",
-    "rating": "4.9",
-    "reviews": 174,
+    "rating": "4.3",
+    "reviews": 289,
     "specs": [
       "27\" 1440p OLED, 240Hz, 0.03ms"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   },
   {
     "id": 1149,
@@ -2396,11 +2545,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80",
     "brand": "Alienware",
-    "rating": "4.4",
-    "reviews": 213,
+    "rating": "4.6",
+    "reviews": 391,
     "specs": [
       "34\" UWQHD QD-OLED, 165Hz, Curved"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   },
   {
     "id": 1150,
@@ -2412,11 +2562,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?w=600&q=80",
     "brand": "Alienware",
-    "rating": "4.7",
-    "reviews": 294,
+    "rating": "5.0",
+    "reviews": 77,
     "specs": [
       "32\" 4K QD-OLED, 240Hz, Dolby Vision"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   },
   {
     "id": 1151,
@@ -2429,10 +2580,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80",
     "brand": "Gigabyte",
     "rating": "4.3",
-    "reviews": 81,
+    "reviews": 251,
     "specs": [
       "32\" 4K QD-OLED, 240Hz, DP 2.1"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   },
   {
     "id": 1152,
@@ -2445,10 +2597,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?w=600&q=80",
     "brand": "Samsung",
     "rating": "4.5",
-    "reviews": 317,
+    "reviews": 485,
     "specs": [
       "34\" UWQHD OLED, 175Hz, Smart TV apps"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   },
   {
     "id": 1153,
@@ -2461,10 +2614,11 @@ export const allItems = [
     "image": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80",
     "brand": "LG",
     "rating": "5.0",
-    "reviews": 376,
+    "reviews": 202,
     "specs": [
       "27\" 1440p Nano IPS, 165Hz (180Hz OC)"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   },
   {
     "id": 1154,
@@ -2476,11 +2630,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?w=600&q=80",
     "brand": "Gigabyte",
-    "rating": "5.0",
-    "reviews": 141,
+    "rating": "4.5",
+    "reviews": 155,
     "specs": [
       "27\" 1440p IPS, 170Hz, KVM Switch"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   },
   {
     "id": 1155,
@@ -2492,11 +2647,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80",
     "brand": "Dell",
-    "rating": "4.6",
-    "reviews": 197,
+    "rating": "4.3",
+    "reviews": 132,
     "specs": [
       "27\" 1440p Fast IPS, 165Hz"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   },
   {
     "id": 1156,
@@ -2508,11 +2664,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?w=600&q=80",
     "brand": "AOC",
-    "rating": "4.2",
-    "reviews": 61,
+    "rating": "4.6",
+    "reviews": 23,
     "specs": [
       "24\" 1080p IPS, 165Hz"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   },
   {
     "id": 1157,
@@ -2524,11 +2681,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80",
     "brand": "BenQ",
-    "rating": "4.4",
-    "reviews": 452,
+    "rating": "4.9",
+    "reviews": 41,
     "specs": [
       "24.5\" 1080p TN, 360Hz, DyAc⁺"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   },
   {
     "id": 1158,
@@ -2540,11 +2698,12 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?w=600&q=80",
     "brand": "ASUS",
-    "rating": "4.9",
-    "reviews": 41,
+    "rating": "4.7",
+    "reviews": 252,
     "specs": [
       "27\" 1440p IPS, 170Hz"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   },
   {
     "id": 1159,
@@ -2556,10 +2715,11 @@ export const allItems = [
     "discount": "15% off",
     "image": "https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&q=80",
     "brand": "Acer",
-    "rating": "5.0",
-    "reviews": 62,
+    "rating": "4.2",
+    "reviews": 284,
     "specs": [
       "27\" 1440p IPS, 170Hz"
-    ]
+    ],
+    "description": "Immerse yourself in stunning colors, ultra-fast refresh rates, and crystal-clear resolutions for the ultimate viewing experience."
   }
 ];
