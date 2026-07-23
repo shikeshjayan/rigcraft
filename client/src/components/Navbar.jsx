@@ -15,11 +15,13 @@ import AcUnitIcon from '@mui/icons-material/AcUnit';
 import MouseIcon from '@mui/icons-material/Mouse';
 import MonitorIcon from '@mui/icons-material/Monitor';
 import BuildIcon from '@mui/icons-material/Build';
+import { useWishlist } from '../context/WishlistContext';
 
 const Navbar = () => {
   const location = useLocation();
   const isHome = location.pathname === '/';
   const isPrebuild = location.pathname === '/prebuild';
+  const { wishlist } = useWishlist();
 
   return (
     <header className="sticky top-0 z-50 flex flex-col w-full animate-fade-in-down">
@@ -109,20 +111,20 @@ const Navbar = () => {
 
                   {/* Footer Buttons */}
                   <div className="flex items-center gap-4 border-t border-[var(--color-border)] pt-6">
-                    <button className="flex items-center gap-2 bg-[var(--color-primary)] text-white font-bold py-2.5 px-6 transition-opacity hover:opacity-90" style={{ borderRadius: 'var(--radius-sm)' }}>
+                    <Link to="/builder" className="flex items-center justify-center text-center gap-2 bg-[var(--color-primary)] text-white font-bold py-2.5 px-6 transition-opacity hover:opacity-90" style={{ borderRadius: 'var(--radius-sm)' }}>
                       <BuildIcon sx={{ fontSize: 18 }} /> Build Custom PC
-                    </button>
-                    <button className="bg-transparent text-[var(--color-primary)] border-2 border-[var(--color-primary)] font-bold py-2 px-6 transition-colors hover:bg-[var(--color-primary)] hover:text-white" style={{ borderRadius: 'var(--radius-sm)' }}>
+                    </Link>
+                    <Link to="/components" className="bg-transparent text-[var(--color-primary)] border-2 border-[var(--color-primary)] font-bold py-2 px-6 transition-colors hover:bg-[var(--color-primary)] hover:text-white flex items-center justify-center text-center" style={{ borderRadius: 'var(--radius-sm)' }}>
                       View All Components
-                    </button>
+                    </Link>
                   </div>
                 </div>
               </div>
             </div>
 
-            <a href="#" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer flex items-center h-full" style={{ color: 'var(--color-text)' }}>PC Builder</a>
-            <a href="#" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer flex items-center h-full" style={{ color: 'var(--color-text)' }}>Deals</a>
-            <a href="#" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer flex items-center h-full" style={{ color: 'var(--color-text)' }}>Blog</a>
+            <Link to="/builder" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer flex items-center h-full" style={{ color: 'var(--color-text)' }}>PC Builder</Link>
+            <Link to="/" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer flex items-center h-full" style={{ color: 'var(--color-text)' }}>Deals</Link>
+            <Link to="/" className="transition-colors hover:text-[var(--color-primary)] cursor-pointer flex items-center h-full" style={{ color: 'var(--color-text)' }}>Blog</Link>
           </nav>
 
           {/* Right: Searchbar & Icons */}
@@ -150,9 +152,14 @@ const Navbar = () => {
 
             {/* Icons */}
             <div className="flex items-center gap-4" style={{ color: 'var(--color-text)' }}>
-              <button aria-label="Wishlist" className="hover:text-[var(--color-primary)] transition-colors p-1 flex items-center justify-center cursor-pointer">
+              <Link to="/wishlist" aria-label="Wishlist" className="hover:text-[var(--color-primary)] transition-colors p-1 flex items-center justify-center cursor-pointer relative">
                 <FavoriteBorderIcon sx={{ fontSize: 24 }} />
-              </button>
+                {wishlist.length > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-[#FF3E6C] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                    {wishlist.length}
+                  </span>
+                )}
+              </Link>
               <button aria-label="Cart" className="hover:text-[var(--color-primary)] transition-colors p-1 relative flex items-center justify-center cursor-pointer">
                 <ShoppingCartOutlinedIcon sx={{ fontSize: 24 }} />
               </button>
