@@ -14,6 +14,8 @@ import brandRoutes from "./routes/brand.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import prebuiltPCRoutes from "./routes/prebuiltPC.routes.js";
 import buildRoutes from "./routes/build.routes.js";
+import cartRoutes from "./routes/cart.routes.js";
+import couponRoutes from "./routes/coupon.routes.js";
 import errorHandler from "./middlewares/error.js";
 
 dotenv.config();
@@ -38,6 +40,8 @@ app.use("/api/v1/brands", brandRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/prebuilt-pcs", prebuiltPCRoutes);
 app.use("/api/v1/builds", buildRoutes);
+app.use("/api/v1/cart", cartRoutes);
+app.use("/api/v1/coupons", couponRoutes);
 
 app.use(errorHandler);
 
