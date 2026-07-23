@@ -1,6 +1,6 @@
 import { z } from "zod";
+import { CUSTOMER_ROLES } from "../constants/constants.js";
 
-// Reusable regex patterns
 const phoneRegex = /^\+?[\d\s-]{7,15}$/;
 const passwordRegex =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{8,}$/;
@@ -61,22 +61,32 @@ export const loginSchema = z
       .trim()
       .regex(phoneRegex, "Invalid phone number")
       .optional(),
-    password: z.string().min(1, "Password is required"),
+    password: z.string().optional(),
+    otp: z.string().length(6, "OTP must be 6 digits").optional(),
     rememberMe: z.boolean().optional(),
   })
   .refine((data) => data.email || data.phone, {
     message: "Email or phone is required",
     path: ["email"],
+  })
+  .refine((data) => !(data.email && data.phone), {
+    message: "Provide either email or phone, not both",
+    path: ["email"],
+  })
+  .refine((data) => {
+    if (data.email) return !!data.password;
+    return true;
+  }, {
+    message: "Password is required with email",
+    path: ["password"],
+  })
+  .refine((data) => {
+    if (data.phone) return !(data.password && data.otp);
+    return true;
+  }, {
+    message: "Use password or OTP, not both",
+    path: ["otp"],
   });
-
-export const sendOtpSchema = z.object({
-  phone: z.string().trim().regex(phoneRegex, "Invalid phone number"),
-});
-
-export const loginWithOtpSchema = z.object({
-  phone: z.string().trim().regex(phoneRegex, "Invalid phone number"),
-  otp: z.string().length(6, "OTP must be 6 digits"),
-});
 
 export const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address").trim().toLowerCase(),
@@ -96,6 +106,12 @@ export const resetPasswordSchema = z
     message: "Passwords do not match",
     path: ["confirmPassword"],
   });
+
+export const updateRoleSchema = z.object({
+  role: z.enum([CUSTOMER_ROLES.ADMIN], {
+    errorMap: () => ({ message: 'Role must be admin' }),
+  }),
+});
 
 export const updatePasswordSchema = z
   .object({

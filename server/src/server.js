@@ -1,6 +1,5 @@
 import dns from "dns";
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
-console.log("DNS set to 8.8.8.8 / 1.1.1.1");
 
 import express from "express";
 import dotenv from "dotenv";
@@ -10,6 +9,9 @@ import helmet from "helmet";
 import morgan from "morgan";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.routes.js";
+import categoryRoutes from "./routes/category.routes.js";
+import brandRoutes from "./routes/brand.routes.js";
+import productRoutes from "./routes/product.routes.js";
 import errorHandler from "./middlewares/error.js";
 
 dotenv.config();
@@ -29,6 +31,9 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/categories", categoryRoutes);
+app.use("/api/v1/brands", brandRoutes);
+app.use("/api/v1/products", productRoutes);
 
 app.use(errorHandler);
 
