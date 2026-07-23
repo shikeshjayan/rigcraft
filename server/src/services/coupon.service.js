@@ -1,4 +1,5 @@
 import couponRepository from "../repositories/coupon.repository.js";
+import orderRepository from "../repositories/order.repository.js";
 import ApiError from "../utils/ApiError.js";
 import { DISCOUNT_TYPES, COUPON_APPLICABLE_TO } from "../constants/constants.js";
 
@@ -83,28 +84,26 @@ export const validateCoupon = async (code, userId, subtotal, cartItems) => {
     throw ApiError.badRequest("Coupon usage limit has been reached");
   }
 
-  // TODO: After Order module
-  // if (coupon.usageLimitPerUser) {
-  //   const userUsage = await Order.countDocuments({
-  //     user: userId,
-  //     coupon: coupon._id,
-  //     paymentStatus: "paid",
-  //   });
-  //   if (userUsage >= coupon.usageLimitPerUser) {
-  //     throw ApiError.badRequest("You have already used this coupon");
-  //   }
-  // }
+  if (coupon.usageLimitPerUser) {
+    const userUsage = await orderRepository.count({
+      user: userId,
+      "coupon.code": coupon.code,
+      paymentStatus: "paid",
+    });
+    if (userUsage >= coupon.usageLimitPerUser) {
+      throw ApiError.badRequest("You have already used this coupon");
+    }
+  }
 
-  // TODO: After Order module
-  // if (coupon.isFirstOrderOnly) {
-  //   const orderCount = await Order.countDocuments({
-  //     user: userId,
-  //     paymentStatus: "paid",
-  //   });
-  //   if (orderCount > 0) {
-  //     throw ApiError.badRequest("This coupon is valid for first order only");
-  //   }
-  // }
+  if (coupon.isFirstOrderOnly) {
+    const orderCount = await orderRepository.count({
+      user: userId,
+      paymentStatus: "paid",
+    });
+    if (orderCount > 0) {
+      throw ApiError.badRequest("This coupon is valid for first order only");
+    }
+  }
 
   if (coupon.applicableTo !== COUPON_APPLICABLE_TO.ALL) {
     validateEligibility(coupon, cartItems);
