@@ -45,3 +45,22 @@ export const COMPONENT_TYPES = {
   OPERATING_SYSTEM: 'operatingSystem',
   ACCESSORY: 'accessory',
 };
+
+export const CART_ITEM_TYPES = {
+  PRODUCT: 'product',
+  PREBUILT: 'prebuilt',
+  SAVED_BUILD: 'savedBuild',
+};
+
+export const DISCOUNT_TYPES = {
+  PERCENTAGE: 'percentage',
+  FIXED: 'fixed',
+  FREE_SHIPPING: 'free_shipping',
+};
+
+export const COUPON_APPLICABLE_TO = {
+  ALL: 'all',
+  PRODUCT: 'product',
+  CATEGORY: 'category',
+  PREBUILT: 'prebuilt',
+};
