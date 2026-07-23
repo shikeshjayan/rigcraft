@@ -18,7 +18,8 @@ export const generateMockData = () => {
       
       data.push({
         id: idCounter++,
-        title: `PCForge ${cat} Edition, ${isIntel ? 'Intel Core i7-14700K' : 'AMD Ryzen 7 7800X3D'}, ${16 * (i%2 ? 1 : 2)}GB RAM, 1TB NVMe SSD, RTX ${4090 - (i * 10)} ${i % 2 === 0 ? '16GB' : '24GB'}, Liquid Cooled, Windows 11`,
+        title: `PCForge ${cat} Edition`,
+        specs: `${isIntel ? 'Intel Core i7-14700K' : 'AMD Ryzen 7 7800X3D'} | ${16 * (i%2 ? 1 : 2)}GB RAM | 1TB NVMe SSD | RTX ${4090 - (i * 10)} ${i % 2 === 0 ? '16GB' : '24GB'} | Liquid Cooled | Win 11`,
         category: cat,
         priceVal: priceVal,
         price: `₹${priceVal.toLocaleString('en-IN')}`,

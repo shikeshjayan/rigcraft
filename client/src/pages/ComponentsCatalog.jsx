@@ -4,6 +4,7 @@ import { allItems } from '../data/items';
 import StarIcon from '@mui/icons-material/Star';
 import StarHalfIcon from '@mui/icons-material/StarHalf';
 import StarOutlineIcon from '@mui/icons-material/StarBorder';
+import Card from '../components/Card';
 
 const ComponentsCatalog = () => {
   const { category } = useParams();
@@ -49,56 +50,25 @@ const ComponentsCatalog = () => {
             <p>We couldn't find any items matching the category "{category}".</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {items.map((item) => (
               <Link 
                 to={`/detail/${item.id}`}
                 key={item.id} 
-                className="flex flex-col bg-white overflow-hidden relative cursor-pointer group shadow-sm hover:shadow-xl transition-shadow border border-[#E7E7E7]"
-                style={{ borderRadius: 'var(--radius-sm, 6px)' }}
+                className="block h-full"
               >
-                {/* Product Image */}
-                <div className="relative w-full aspect-square bg-[#F3F4F6] flex items-center justify-center p-6 overflow-hidden">
-                  <img 
-                    src={item.image} 
-                    alt={item.title} 
-                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 mix-blend-multiply"
-                  />
-                  <div className="absolute top-[10px] right-[10px] bg-black/70 backdrop-blur-sm text-white text-[10px] font-bold uppercase tracking-wider px-3 py-1 rounded-full">
-                    {item.brand}
-                  </div>
-                </div>
-
-                {/* Card Content */}
-                <div className="p-4 flex flex-col flex-grow">
-                  <h3 className="text-[15px] font-bold text-[#007185] group-hover:text-[#C7511F] line-clamp-2 leading-snug mb-1 transition-colors">
-                    {item.title}
-                  </h3>
-                  
-                  <RatingStars rating={item.rating} reviews={item.reviews} />
-                  
-                  <div className="text-[12px] text-[#565959] line-clamp-2 mb-3 flex-grow">
-                    {item.specs[0]}
-                  </div>
-
-                  {/* Price Section */}
-                  <div className="mt-auto">
-                    <div className="flex items-baseline gap-1.5 mb-1">
-                      <span className="text-[22px] font-bold text-[#0F1111] leading-none">{item.price}</span>
-                      <span className="text-[12px] text-[#565959] line-through">{item.mrp}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2 mb-3">
-                      <span className="text-white bg-[#CC0C39] text-[10px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
-                        {item.discount}
-                      </span>
-                    </div>
-
-                    <div className="text-[12px] text-[#565959]">
-                      <span className="text-[#007185] font-bold">FREE Delivery</span>
-                    </div>
-                  </div>
-                </div>
+                <Card 
+                  id={item.id}
+                  image={item.image}
+                  title={item.title}
+                  specs={item.specs}
+                  description={item.description}
+                  price={item.price}
+                  mrp={item.mrp}
+                  discount={item.discount}
+                  tag={item.discount || 'SALE'}
+                  tagColor="#EF4444"
+                />
               </Link>
             ))}
           </div>
