@@ -1,0 +1,27 @@
+import { z } from "zod";
+
+export const createBrandSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100).trim(),
+  description: z.string().max(500).trim().optional(),
+  logo: z
+    .object({
+      url: z.string().url().optional(),
+      publicId: z.string().optional(),
+      alt: z.string().optional(),
+    })
+    .optional(),
+  isActive: z.boolean().optional(),
+});
+
+export const updateBrandSchema = z.object({
+  name: z.string().min(1).max(100).trim().optional(),
+  description: z.string().max(500).trim().optional(),
+  logo: z
+    .object({
+      url: z.string().url().optional(),
+      publicId: z.string().optional(),
+      alt: z.string().optional(),
+    })
+    .optional(),
+  isActive: z.boolean().optional(),
+});

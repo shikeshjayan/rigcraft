@@ -29,6 +29,10 @@ class UserRepository extends BaseRepository {
   async findByIdWithPassword(id) {
     return User.findById(id).select('+password');
   }
+
+  async findByIdWithRefreshToken(id) {
+    return User.findById(id).select('+refreshToken');
+  }
 }
 
 export default new UserRepository();

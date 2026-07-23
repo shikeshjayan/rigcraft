@@ -21,10 +21,11 @@ class BaseRepository {
   }
 
   async create(data) {
-    return this.model.create(data);
+    const doc = new this.model(data);
+    return doc.save();
   }
 
-  async updateById(id, data, opts = { new: true, runValidators: true }) {
+  async updateById(id, data, opts = { returnDocument: 'after', runValidators: true }) {
     const doc = await this.model.findByIdAndUpdate(id, data, opts);
     if (!doc) throw ApiError.notFound(`${this.model.modelName} not found`);
     return doc;
