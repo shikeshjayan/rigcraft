@@ -7,6 +7,7 @@ import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import TableActions from "../../components/tables/TableActions";
 import StatusBadge from "../../components/common/StatusBadge";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { productService } from "../../services/productService";
 import { CATEGORY_TYPES, CATEGORY_TYPE_COLORS } from "../../constants/categoryTypes";
@@ -26,6 +27,7 @@ const ProductList = () => {
   const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState({ categoryType: "", isActive: "", isFeatured: "" });
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const fetchProducts = useCallback(async () => {
     setLoading(true);
@@ -43,12 +45,29 @@ const ProductList = () => {
   useEffect(() => { fetchProducts(); }, [fetchProducts]);
 
   const handleDelete = async (id) => {
+    setDeleteTarget(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await productService.delete(id);
+      await productService.delete(deleteTarget);
       toast("Product deleted successfully");
+      setDeleteTarget(null);
       fetchProducts();
     } catch {
       toast("Failed to delete product", "error");
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    try {
+      await Promise.all(selected.map((id) => productService.delete(id)));
+      toast(`${selected.length} products deleted`);
+      setSelected([]);
+      fetchProducts();
+    } catch {
+      toast("Failed to delete products", "error");
     }
   };
 
@@ -56,7 +75,7 @@ const ProductList = () => {
     {
       key: "categoryType",
       label: "Type",
-      options: CATEGORY_TYPES,
+      options: [{ value: "", label: "All" }, ...CATEGORY_TYPES],
     },
     {
       key: "isActive",
@@ -148,6 +167,13 @@ const ProductList = () => {
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
         onRowClick={(row) => navigate(`/admin/products/${row.id}`)}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Product"
+        message="Are you sure you want to delete this product? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
       />
     </Box>
   );

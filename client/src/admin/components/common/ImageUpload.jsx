@@ -67,7 +67,7 @@ const ImageUpload = ({ images = [], onChange, maxFiles = 5, multiple = true }) =
                 top: 2,
                 right: 2,
                 backgroundColor: "rgba(0,0,0,0.5)",
-                color: "#fff",
+                color: "var(--color-admin-white)",
                 width: 22,
                 height: 22,
                 "&:hover": { backgroundColor: "rgba(0,0,0,0.7)" },

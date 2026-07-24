@@ -30,18 +30,34 @@
   --color-admin-warning: #f59e0b;
   --color-admin-danger: #ef4444;
   --color-admin-info: #0ea5e9;
+  --color-admin-white: #ffffff;
+  --color-admin-danger-hover: #dc2626;
+  --color-admin-success-hover: #059669;
+
+  --color-admin-success-bg: #dcfce7;
+  --color-admin-success-text: #166534;
+  --color-admin-success-border: #bbf7d0;
+  --color-admin-warning-bg: #fef3c7;
+  --color-admin-warning-text: #92400e;
+  --color-admin-warning-border: #fde68a;
+  --color-admin-danger-bg: #fee2e2;
+  --color-admin-danger-text: #991b1b;
+  --color-admin-danger-border: #fecaca;
+  --color-admin-info-bg: #dbeafe;
+  --color-admin-info-text: #1e40af;
+  --color-admin-info-border: #bfdbfe;
 
   --color-admin-table-header: #f8fafc;
   --color-admin-table-hover: #f1f5f9;
   --color-admin-table-striped: #fcfcfd;
 
-  --radius-admin-card: 10px;
-  --radius-admin-modal: 14px;
-  --radius-admin-badge: 6px;
+  --radius-admin-card: 9px;
+  --radius-admin-modal: 12px;
+  --radius-admin-badge: 4px;
   --radius-admin-avatar: 50%;
-  --radius-admin-button: 8px;
-  --radius-admin-input: 8px;
-  --radius-admin-table: 10px;
+  --radius-admin-button: 6px;
+  --radius-admin-input: 5px;
+  --radius-admin-table: 4px;
 
   --shadow-admin-card: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-admin-modal: 0 4px 24px rgba(0, 0, 0, 0.15);

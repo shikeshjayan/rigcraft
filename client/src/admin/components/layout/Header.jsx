@@ -10,9 +10,12 @@ import {
   InputBase,
   Badge,
   Paper,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
+  MenuOpen as MenuOpenIcon,
   Notifications as NotificationsIcon,
   Person as PersonIcon,
   Logout as LogoutIcon,
@@ -62,16 +65,14 @@ const getBreadcrumbs = (pathname) => {
   return crumbs;
 };
 
-const Header = ({ onToggleSidebar }) => {
+const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
   const location = useLocation();
   const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { user, logout } = useAuthStore();
   const [anchorEl, setAnchorEl] = useState(null);
   const [searchOpen, setSearchOpen] = useState(false);
-
-  const currentTitle =
-    ROUTE_TITLES[location.pathname] ||
-    location.pathname.split("/").pop().replace(/-/g, " ") || "Dashboard";
 
   const breadcrumbs = getBreadcrumbs(location.pathname);
 
@@ -97,10 +98,11 @@ const Header = ({ onToggleSidebar }) => {
     <header className="h-16 bg-admin-header border-b border-admin-border flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
       <div className="flex items-center gap-3">
         <IconButton
-          onClick={onToggleSidebar}
-          className="md:hidden text-admin-text"
+          onClick={isMobile ? onToggleSidebar : onToggleCollapse}
+          className="text-admin-text"
+          sx={{ display: { md: "inline-flex" } }}
         >
-          <MenuIcon />
+          {isMobile ? <MenuIcon /> : collapsed ? <MenuIcon /> : <MenuOpenIcon />}
         </IconButton>
 
         <div className="flex items-center gap-1.5 text-sm">

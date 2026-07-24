@@ -1,10 +1,10 @@
 import { Alert as MuiAlert, AlertTitle } from "@mui/material";
 
 const severityStyles = {
-  success: { bg: "#dcfce7", border: "#bbf7d0", color: "#166534" },
-  warning: { bg: "#fef3c7", border: "#fde68a", color: "#92400e" },
-  error: { bg: "#fee2e2", border: "#fecaca", color: "#991b1b" },
-  info: { bg: "#dbeafe", border: "#bfdbfe", color: "#1e40af" },
+  success: { bg: "var(--color-admin-success-bg)", border: "var(--color-admin-success-border)", color: "var(--color-admin-success-text)" },
+  warning: { bg: "var(--color-admin-warning-bg)", border: "var(--color-admin-warning-border)", color: "var(--color-admin-warning-text)" },
+  error: { bg: "var(--color-admin-danger-bg)", border: "var(--color-admin-danger-border)", color: "var(--color-admin-danger-text)" },
+  info: { bg: "var(--color-admin-info-bg)", border: "var(--color-admin-info-border)", color: "var(--color-admin-info-text)" },
 };
 
 const AdminAlert = ({ severity = "info", title, children, onClose, sx }) => {
