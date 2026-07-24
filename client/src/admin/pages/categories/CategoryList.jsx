@@ -7,6 +7,7 @@ import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import TableActions from "../../components/tables/TableActions";
 import StatusBadge from "../../components/common/StatusBadge";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { categoryService } from "../../services/categoryService";
 import { CATEGORY_TYPES, CATEGORY_TYPE_COLORS } from "../../constants/categoryTypes";
@@ -25,6 +26,7 @@ const CategoryList = () => {
   const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState({ categoryType: "", isActive: "" });
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const fetchCategories = useCallback(async () => {
     setLoading(true);
@@ -41,10 +43,14 @@ const CategoryList = () => {
 
   useEffect(() => { fetchCategories(); }, [fetchCategories]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => setDeleteTarget(id);
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await categoryService.delete(id);
+      await categoryService.delete(deleteTarget);
       toast("Category deleted successfully");
+      setDeleteTarget(null);
       fetchCategories();
     } catch {
       toast("Failed to delete category", "error");
@@ -66,7 +72,7 @@ const CategoryList = () => {
     {
       key: "categoryType",
       label: "Type",
-      options: CATEGORY_TYPES,
+      options: [{ value: "", label: "All" }, ...CATEGORY_TYPES],
     },
     {
       key: "isActive",
@@ -87,7 +93,7 @@ const CategoryList = () => {
             width: 32, height: 32, borderRadius: "var(--radius-admin-badge)",
             backgroundColor: CATEGORY_TYPE_COLORS[row.categoryType] || "var(--color-admin-muted)",
             display: "flex", alignItems: "center", justifyContent: "center",
-            color: "#fff", fontSize: "0.625rem", fontWeight: 700, textTransform: "uppercase", flexShrink: 0,
+            color: "var(--color-admin-white)", fontSize: "0.625rem", fontWeight: 700, textTransform: "uppercase", flexShrink: 0,
           }}
         >
           {row.name.charAt(0)}{row.name.charAt(1)}
@@ -113,8 +119,8 @@ const CategoryList = () => {
         />
       ) : val;
     }},
-    { key: "parentId", label: "Parent", render: (val, row, allCats) => {
-      const parent = allCats?.find((c) => c.id === val);
+    { key: "parentId", label: "Parent", render: (val) => {
+      const parent = categories.find((c) => c.id === val);
       return parent ? parent.name : <Box sx={{ color: "var(--color-admin-muted)", fontSize: "0.8125rem" }}>—</Box>;
     }},
     { key: "productCount", label: "Products", align: "center" },
@@ -165,6 +171,13 @@ const CategoryList = () => {
         onSelectAll={() => setSelected(selected.length === categories.length ? [] : categories.map((c) => c.id))}
         onSelectOne={(id) => setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id])}
         selectable
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Category"
+        message="Are you sure you want to delete this category? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
       />
     </Box>
   );

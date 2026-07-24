@@ -7,6 +7,7 @@ import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import TableActions from "../../components/tables/TableActions";
 import StatusBadge from "../../components/common/StatusBadge";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { couponService } from "../../services/couponService";
 import { formatDate } from "../../utils/formatDate";
@@ -22,6 +23,7 @@ const CouponList = () => {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState({ isActive: "" });
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const fetchCoupons = useCallback(async () => {
     setLoading(true);
@@ -38,10 +40,14 @@ const CouponList = () => {
 
   useEffect(() => { fetchCoupons(); }, [fetchCoupons]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => setDeleteTarget(id);
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await couponService.delete(id);
+      await couponService.delete(deleteTarget);
       toast("Coupon deleted");
+      setDeleteTarget(null);
       fetchCoupons();
     } catch {
       toast("Failed to delete", "error");
@@ -75,6 +81,13 @@ const CouponList = () => {
       <TableToolbar title="Coupons" searchValue={search} onSearchChange={setSearch} addPath="/admin/coupons/new" addLabel="New Coupon" onRefresh={fetchCoupons} />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
       <DataTable columns={columns} rows={coupons} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/coupons/${row.id}/edit`)} />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Coupon"
+        message="Are you sure you want to delete this coupon? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </Box>
   );
 };

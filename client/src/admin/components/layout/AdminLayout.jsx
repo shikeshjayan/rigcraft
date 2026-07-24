@@ -23,7 +23,11 @@ const AdminLayout = () => {
       />
 
       <div className="flex flex-col flex-1 min-w-0">
-        <Header onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
+        <Header
+          onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
+          collapsed={sidebarCollapsed}
+        />
         <main className="flex-1 overflow-y-auto">
           <Outlet />
         </main>

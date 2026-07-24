@@ -1,20 +1,22 @@
 import { Chip } from "@mui/material";
 
 const STATUS_COLORS = {
-  success: { bg: "#dcfce7", text: "#166534" },
-  warning: { bg: "#fef3c7", text: "#92400e" },
-  error: { bg: "#fee2e2", text: "#991b1b" },
-  info: { bg: "#dbeafe", text: "#1e40af" },
+  success: { bg: "var(--color-admin-success-bg)", text: "var(--color-admin-success-text)" },
+  warning: { bg: "var(--color-admin-warning-bg)", text: "var(--color-admin-warning-text)" },
+  error: { bg: "var(--color-admin-danger-bg)", text: "var(--color-admin-danger-text)" },
+  info: { bg: "var(--color-admin-info-bg)", text: "var(--color-admin-info-text)" },
   primary: { bg: "#eef2ff", text: "#4338ca" },
-  muted: { bg: "#f1f5f9", text: "#475569" },
+  muted: { bg: "var(--color-admin-bg-tertiary)", text: "var(--color-admin-text-secondary)" },
 };
 
-const StatusBadge = ({ label, color = "muted", size = "small" }) => {
-  const colors = STATUS_COLORS[color] || STATUS_COLORS.muted;
+const StatusBadge = ({ label, color = "muted", size = "small", status, colorMap }) => {
+  const displayLabel = label || status || "";
+  const displayColor = colorMap ? (colorMap[status] || "muted") : color;
+  const colors = STATUS_COLORS[displayColor] || STATUS_COLORS.muted;
 
   return (
     <Chip
-      label={label}
+      label={displayLabel}
       size={size}
       sx={{
         borderRadius: "var(--radius-admin-badge)",

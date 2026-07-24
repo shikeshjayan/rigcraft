@@ -4,7 +4,7 @@ const variants = {
   primary: {
     bg: "var(--color-admin-primary)",
     hover: "var(--color-admin-primary-hover)",
-    color: "#fff",
+    color: "var(--color-admin-white)",
     border: "none",
   },
   secondary: {
@@ -15,14 +15,14 @@ const variants = {
   },
   danger: {
     bg: "var(--color-admin-danger)",
-    hover: "#dc2626",
-    color: "#fff",
+    hover: "var(--color-admin-danger-hover)",
+    color: "var(--color-admin-white)",
     border: "none",
   },
   success: {
     bg: "var(--color-admin-success)",
-    hover: "#059669",
-    color: "#fff",
+    hover: "var(--color-admin-success-hover)",
+    color: "var(--color-admin-white)",
     border: "none",
   },
   ghost: {

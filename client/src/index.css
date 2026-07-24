@@ -1,6 +1,6 @@
-@import "tailwindcss";
-@import "./admin/styles/index.css";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import "./admin/styles/index.css";
+@import "tailwindcss";
 
 @layer base {
   body {
@@ -10,74 +10,89 @@
 
 @theme {
 
-    /* Brand */
-    --color-primary: #2563eb;
-    --color-primary-light: #3b82f6;
-    --color-primary-hover: #1d4ed8;
-    --color-primary-active: #1e40af;
+  /* Brand */
+  --color-primary: #2563eb;
+  --color-primary-light: #3b82f6;
+  --color-primary-hover: #1d4ed8;
+  --color-primary-active: #1e40af;
 
-    /* Background */
-    --color-bg-primary: #ffffff;
-    --color-bg-secondary: #f1f5f9;
-    --color-bg-tertiary: #e2e8f0;
-    --color-surface: #f8fafc;
-    --color-card: #ffffff;
+  /* Background */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f1f5f9;
+  --color-bg-tertiary: #e2e8f0;
+  --color-surface: #f8fafc;
+  --color-card: #ffffff;
 
-    /* Text */
-    --color-text: #0f172a;
-    --color-text-secondary: #64748b;
-    --color-muted: #94a3b8;
+  /* Text */
+  --color-text: #0f172a;
+  --color-text-secondary: #64748b;
+  --color-muted: #94a3b8;
 
-    /* Text size */
-    --font-card-title:17px;
-    --font-card-price:18px;
-    --font-card-paragraph: 16px;
-    
+  /* Text size */
+  --font-card-title: 17px;
+  --font-card-price: 18px;
+  --font-card-paragraph: 16px;
 
-    /* Status */
-    --color-success: #22c55e;
-    --color-warning: #f59e0b;
-    --color-danger: #ef4444;
 
-    /* Border */
-    --color-border: #e2e8f0;
+  /* Status */
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
 
-    /* Radius */
-    --radius-sm: 3px;
-    --radius-card: 3px;
-    --radius-card-inset:14px;
-    --radius-md: 12px;
-    --radius-lg: 16px;
-    --radius-xl: 20px;
+  /* Border */
+  --color-border: #e2e8f0;
 
-    /* Shadows */
-    --shadow-card: 0 4px 16px rgb(0 0 0 / 0.05);
-    --shadow-hover: 0 12px 30px rgb(0 0 0 / 0.08);
+  /* Radius */
+  --radius-sm: 3px;
+  --radius-card: 3px;
+  --radius-card-inset: 14px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+
+  /* Shadows */
+  --shadow-card: 0 4px 16px rgb(0 0 0 / 0.05);
+  --shadow-hover: 0 12px 30px rgb(0 0 0 / 0.08);
 }
 
-@layer utilities {
-}
+@layer utilities {}
 
 @keyframes float {
   0% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-20px);
   }
+
   100% {
     transform: translateY(0px);
   }
 }
 
 @keyframes fadeInDown {
-  0% { opacity: 0; transform: translateY(-20px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeInUp {
-  0% { opacity: 0; transform: translateY(30px); }
-  100% { opacity: 1; transform: translateY(0); }
+  0% {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .animate-float {

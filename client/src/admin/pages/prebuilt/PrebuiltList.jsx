@@ -7,6 +7,7 @@ import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import TableActions from "../../components/tables/TableActions";
 import StatusBadge from "../../components/common/StatusBadge";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { prebuiltService } from "../../services/prebuiltService";
 import { formatCurrency } from "../../utils/formatCurrency";
@@ -24,6 +25,7 @@ const PrebuiltList = () => {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState({ isActive: "" });
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const fetchItems = useCallback(async () => {
     setLoading(true);
@@ -40,10 +42,14 @@ const PrebuiltList = () => {
 
   useEffect(() => { fetchItems(); }, [fetchItems]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => setDeleteTarget(id);
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await prebuiltService.delete(id);
+      await prebuiltService.delete(deleteTarget);
       toast("Prebuilt PC deleted");
+      setDeleteTarget(null);
       fetchItems();
     } catch {
       toast("Failed to delete", "error");
@@ -102,6 +108,13 @@ const PrebuiltList = () => {
       />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
       <DataTable columns={columns} rows={items} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/prebuilt/${row.id}`)} />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Prebuilt PC"
+        message="Are you sure you want to delete this prebuilt PC? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
+      />
     </Box>
   );
 };

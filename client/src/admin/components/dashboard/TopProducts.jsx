@@ -40,27 +40,29 @@ const TopProducts = () => {
           <TableBody>
             {products.map((product, index) => (
               <TableRow key={product.id} hover>
-                <TableCell sx={{ display: "flex", alignItems: "center", gap: 1.5, py: 1.5 }}>
-                  <Box
-                    sx={{
-                      width: 36,
-                      height: 36,
-                      borderRadius: "var(--radius-admin-button)",
-                      backgroundColor: index === 0 ? "var(--color-admin-warning)" : "var(--color-admin-bg-tertiary)",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      fontWeight: 700,
-                      fontSize: "0.75rem",
-                      color: index === 0 ? "#fff" : "var(--color-admin-text-secondary)",
-                      flexShrink: 0,
-                    }}
-                  >
-                    {index + 1}
+                <TableCell sx={{ py: 1.5 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Box
+                      sx={{
+                        width: 36,
+                        height: 36,
+                        borderRadius: "var(--radius-admin-button)",
+                        backgroundColor: index === 0 ? "var(--color-admin-warning)" : "var(--color-admin-bg-tertiary)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        fontWeight: 700,
+                        fontSize: "0.75rem",
+                        color: index === 0 ? "#fff" : "var(--color-admin-text-secondary)",
+                        flexShrink: 0,
+                      }}
+                    >
+                      {index + 1}
+                    </Box>
+                    <Typography sx={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--color-admin-text)" }}>
+                      {product.name}
+                    </Typography>
                   </Box>
-                  <Typography sx={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--color-admin-text)" }}>
-                    {product.name}
-                  </Typography>
                 </TableCell>
                 <TableCell align="center">
                   <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-admin-text)" }}>

@@ -7,6 +7,7 @@ import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import TableActions from "../../components/tables/TableActions";
 import StatusBadge from "../../components/common/StatusBadge";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { brandService } from "../../services/brandService";
 import { formatDate } from "../../utils/formatDate";
@@ -24,6 +25,7 @@ const BrandList = () => {
   const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState({ isActive: "" });
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const fetchBrands = useCallback(async () => {
     setLoading(true);
@@ -40,10 +42,14 @@ const BrandList = () => {
 
   useEffect(() => { fetchBrands(); }, [fetchBrands]);
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => setDeleteTarget(id);
+
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
     try {
-      await brandService.delete(id);
+      await brandService.delete(deleteTarget);
       toast("Brand deleted successfully");
+      setDeleteTarget(null);
       fetchBrands();
     } catch {
       toast("Failed to delete brand", "error");
@@ -120,6 +126,13 @@ const BrandList = () => {
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
         onRowClick={(row) => navigate(`/admin/brands/${row.id}/edit`)}
+      />
+      <ConfirmDialog
+        open={!!deleteTarget}
+        title="Delete Brand"
+        message="Are you sure you want to delete this brand? This action cannot be undone."
+        onConfirm={confirmDelete}
+        onCancel={() => setDeleteTarget(null)}
       />
     </Box>
   );
