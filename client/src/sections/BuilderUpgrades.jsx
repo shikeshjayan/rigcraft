@@ -35,7 +35,7 @@ const BuilderUpgrades = () => {
                 mrp={item.mrp}
                 discount={item.discount}
                 tag="RECOMMENDED"
-                tagColor="#0052FF"
+                tagColor="var(--color-primary)"
                 buttonText="Add to Build"
               />
             </Link>

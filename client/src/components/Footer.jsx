@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import FadeUp from './FadeUp';
 import XIcon from '@mui/icons-material/X';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import FacebookIcon from '@mui/icons-material/Facebook';
@@ -43,6 +44,7 @@ const Footer = () => {
 
   return (
     <footer className="w-full">
+      <FadeUp delay={0.2}>
       {/* Newsletter Banner */}
       <div className="w-full py-12" style={{ backgroundColor: 'var(--color-primary, #2563EB)' }}>
         <div className="max-w-[1400px] mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
@@ -180,6 +182,7 @@ const Footer = () => {
 
         </div>
       </div>
+      </FadeUp>
     </footer>
   );
 };
