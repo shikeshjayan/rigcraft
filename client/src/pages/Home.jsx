@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import FadeUp from '../components/FadeUp';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import StarOutlineOutlinedIcon from '@mui/icons-material/StarOutlineOutlined';
@@ -72,6 +73,7 @@ const Home = () => {
   return (
     <>
       {/* ================= HERO SECTION ================= */}
+      <FadeUp delay={0.1}>
       <section className="relative w-full overflow-hidden min-h-[calc(100vh-72px)] lg:h-[calc(100vh-72px)] flex items-center" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       
       <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-8 py-12 lg:py-0 animate-fade-in-up">
@@ -105,7 +107,8 @@ const Home = () => {
             
             {/* CTA Section */}
             <div className="flex flex-col sm:flex-row items-center gap-4 w-full sm:w-auto mb-16">
-              <button 
+              <Link 
+                to="/builder"
                 className="w-full sm:w-auto flex items-center justify-center font-semibold transition-all duration-300 ease-in-out hover:scale-[1.03] cursor-pointer"
                 style={{
                   backgroundColor: 'var(--color-primary)',
@@ -117,7 +120,7 @@ const Home = () => {
                 }}
               >
                 START YOUR BUILD
-              </button>
+              </Link>
               <Link 
                 to="/prebuild"
                 className="w-full sm:w-auto flex items-center justify-center font-semibold transition-all duration-300 ease-in-out group cursor-pointer"
@@ -173,7 +176,7 @@ const Home = () => {
           </div>
           
           {/* Right Content Column (Image) */}
-          <div className="w-full lg:w-1/2 flex items-center justify-center relative mt-10 lg:mt-0 lg:-translate-y-12">
+          <div className="hidden lg:flex w-full lg:w-1/2 items-center justify-center relative mt-10 lg:mt-0 lg:-translate-y-12">
             {/* Radial Glow */}
             <div 
               className="absolute inset-0 rounded-full blur-[100px] opacity-20 pointer-events-none"
@@ -221,35 +224,35 @@ const Home = () => {
           
         </div>
       </div>
-    </section>
+      </section>
+      </FadeUp>
 
       {/* ================= HERO OFFER SECTION ================= */}
-      <HeroOffer />
-
+      <FadeUp delay={0.2}><HeroOffer /></FadeUp>
 
       {/* ================= HOME CATEGORY SECTION ================= */}
-      <HomeCategory />
+      <FadeUp delay={0.2}><HomeCategory /></FadeUp>
 
       {/* ================= HOME PREBUILT SECTION ================= */}
-      <HomePrebuildSection />
+      <FadeUp delay={0.2}><HomePrebuildSection /></FadeUp>
 
       {/* ================= HOME PARALLAX SECTION ================= */}
-      <HomeParallax />
+      <FadeUp delay={0.2}><HomeParallax /></FadeUp>
       
       {/* ================= HERO DEALS SECTION ================= */}
-      <HeroDeals />
+      <FadeUp delay={0.2}><HeroDeals /></FadeUp>
 
       {/* ================= WHY CHOOSE US SECTION ================= */}
-      <WhyChooseUs />
+      <FadeUp delay={0.2}><WhyChooseUs /></FadeUp>
       
       {/* ================= TODAY'S DEALS SECTION ================= */}
-      <HeroToday />
+      <FadeUp delay={0.2}><HeroToday /></FadeUp>
 
       {/* ================= NEW ARRIVALS SECTION ================= */}
-      <HeroNewArrival />
+      <FadeUp delay={0.2}><HeroNewArrival /></FadeUp>
 
       {/* ================= REVIEW SECTION ================= */}
-      <HeroReview />
+      <FadeUp delay={0.2}><HeroReview /></FadeUp>
     </>
   );
 };

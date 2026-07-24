@@ -31,7 +31,7 @@ const BuilderAccessories = () => {
                 mrp={item.mrp}
                 discount={item.discount}
                 tag="ACCESSORY"
-                tagColor="#0052FF"
+                tagColor="var(--color-primary)"
                 buttonText="Add to Cart"
               />
             </Link>
