@@ -2,9 +2,11 @@ import React from 'react';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
 
 const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp, discount, compact = false, buttonText = 'Add to cart' }) => {
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
   
   const isWishlisted = wishlist.some(item => item.id === id);
 
@@ -135,6 +137,11 @@ const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp,
           </div>
 
           <button 
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              addToCart({ id, image, title, specs, price, mrp, discount, description });
+            }}
             className={`font-bold ${compact ? 'py-1.5 px-3 text-[12px]' : 'py-2.5 px-6'} transition-colors hover:opacity-90 shadow-sm text-white cursor-pointer`}
             style={{ 
               backgroundColor: 'var(--color-primary)', 

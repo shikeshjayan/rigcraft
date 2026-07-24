@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { allPCs } from '../data/mockData';
 import { allItems } from '../data/items';
+import FadeUp from '../components/FadeUp';
 
 // Icons
 import StarIcon from '@mui/icons-material/Star';
@@ -48,6 +49,7 @@ const Detail = () => {
   const storage = isComponent ? pc.title : '1TB NVMe Gen4';
 
   return (
+    <FadeUp delay={0.1}>
     <div className="w-full bg-[#FAF9F6] text-[#0F1111] pb-20">
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8 pt-4">
         
@@ -112,15 +114,15 @@ const Detail = () => {
                 </div>
               </div>
               <div className="flex flex-wrap p-4 bg-[#1F2937] gap-y-4">
-                <div className="w-1/3">
+                <div className="w-1/2 sm:w-1/3">
                   <div className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-wider mb-1">Min Power Supply</div>
                   <div className="text-white text-[13px]">850W (80+ Gold)</div>
                 </div>
-                <div className="w-1/3">
+                <div className="w-1/2 sm:w-1/3">
                   <div className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-wider mb-1">Case Clearance</div>
                   <div className="text-white text-[13px]">Mid-Tower ATX</div>
                 </div>
-                <div className="w-1/3">
+                <div className="w-full sm:w-1/3 mt-2 sm:mt-0">
                   <div className="text-[10px] text-[#94A3B8] font-bold uppercase tracking-wider mb-1">Motherboard</div>
                   <div className="text-white text-[13px]">{isIntel ? 'Z790' : 'X670E'} Chipset</div>
                 </div>
@@ -336,6 +338,7 @@ const Detail = () => {
         </div>
       </div>
     </div>
+    </FadeUp>
   );
 };
 
