@@ -1,15 +1,19 @@
 import React, { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
+import FadeUp from '../components/FadeUp';
 
 const Wishlist = () => {
   const { wishlist, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   return (
+    <FadeUp delay={0.1}>
     <div className="w-full min-h-screen bg-white py-12 px-6 lg:px-8">
       <div className="max-w-[1400px] mx-auto">
         
@@ -73,7 +77,13 @@ const Wishlist = () => {
 
                 {/* Move to Bag Button */}
                 <div className="w-full border-t border-[#EAEAEC] mt-auto">
-                  <button className="w-full py-3.5 text-[14px] font-[700] text-white bg-[var(--color-primary)] tracking-wide hover:opacity-90 transition-opacity cursor-pointer">
+                  <button 
+                    onClick={() => {
+                      addToCart(item);
+                      alert('Added to cart!');
+                    }}
+                    className="w-full py-3.5 text-[14px] font-[700] text-white bg-[var(--color-primary)] tracking-wide hover:opacity-90 transition-opacity cursor-pointer"
+                  >
                     ADD TO CART
                   </button>
                 </div>
@@ -83,6 +93,7 @@ const Wishlist = () => {
         )}
       </div>
     </div>
+    </FadeUp>
   );
 };
 
