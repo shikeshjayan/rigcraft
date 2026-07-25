@@ -14,6 +14,7 @@ const router = Router();
 router.get("/", prebuiltPCController.list);
 router.get("/featured", prebuiltPCController.getFeatured);
 router.get("/category/:category", prebuiltPCController.getByCategory);
+router.get("/:id", prebuiltPCController.getById);
 router.get("/:slug/similar", prebuiltPCController.getSimilar);
 router.get("/:slug/components", prebuiltPCController.getComponentProducts);
 router.get("/:slug", prebuiltPCController.getBySlug);

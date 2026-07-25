@@ -46,11 +46,18 @@ adminReviewRoutes.get(
   reviewController.adminGetAllReviews
 );
 
-adminReviewRoutes.patch(
-  "/:id/visibility",
+adminReviewRoutes.get(
+  "/:id",
   protect,
   authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
-  reviewController.adminToggleVisibility
+  reviewController.adminGetReview
+);
+
+adminReviewRoutes.patch(
+  "/:id/status",
+  protect,
+  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  reviewController.adminUpdateStatus
 );
 
 adminReviewRoutes.delete(
