@@ -9,6 +9,10 @@ import Pcbuilder from './pages/Pcbuilder';
 import Components from './pages/Components';
 import Detail from './pages/Detail';
 import Wishlist from './pages/Wishlist';
+import Cart from './pages/Cart';
+import Dels from './pages/Dels';
+import AllActiveDeals from './pages/AllActiveDeals';
+import AllBundleDeals from './pages/AllBundleDeals';
 import { WishlistProvider } from './context/WishlistContext';
 import AdminRoutes from './admin/routes/AdminRoutes';
 
