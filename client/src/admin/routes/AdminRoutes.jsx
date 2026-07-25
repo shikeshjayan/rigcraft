@@ -1,0 +1,91 @@
+import { Routes, Route, Navigate } from "react-router-dom";
+import AdminLayout from "../components/layout/AdminLayout";
+import ProtectedRoute from "./ProtectedRoute";
+import { ToastProvider } from "../components/common/Toast";
+import Login from "../pages/auth/Login";
+import Dashboard from "../pages/dashboard/Dashboard";
+import CategoryList from "../pages/categories/CategoryList";
+import CategoryCreate from "../pages/categories/CategoryCreate";
+import CategoryEdit from "../pages/categories/CategoryEdit";
+import BrandList from "../pages/brands/BrandList";
+import BrandCreate from "../pages/brands/BrandCreate";
+import BrandEdit from "../pages/brands/BrandEdit";
+import ProductList from "../pages/products/ProductList";
+import ProductCreate from "../pages/products/ProductCreate";
+import ProductEdit from "../pages/products/ProductEdit";
+import ProductDetails from "../pages/products/ProductDetails";
+import PrebuiltList from "../pages/prebuilt/PrebuiltList";
+import PrebuiltCreate from "../pages/prebuilt/PrebuiltCreate";
+import PrebuiltEdit from "../pages/prebuilt/PrebuiltEdit";
+import PrebuiltDetails from "../pages/prebuilt/PrebuiltDetails";
+import OrderList from "../pages/orders/OrderList";
+import OrderDetails from "../pages/orders/OrderDetails";
+import CouponList from "../pages/coupons/CouponList";
+import CouponCreate from "../pages/coupons/CouponCreate";
+import CouponEdit from "../pages/coupons/CouponEdit";
+import ReviewList from "../pages/reviews/ReviewList";
+import ReviewDetails from "../pages/reviews/ReviewDetails";
+import UserList from "../pages/users/UserList";
+import UserDetails from "../pages/users/UserDetails";
+import Settings from "../pages/settings/Settings";
+import Profile from "../pages/profile/Profile";
+import { ROLES } from "../constants/status";
+
+const AdminRoutes = () => {
+  return (
+    <Routes>
+      <Route path="login" element={<Login />} />
+
+      <Route
+        element={
+          <ProtectedRoute allowedRoles={["super_admin", "admin", "manager"]}>
+            <ToastProvider>
+              <AdminLayout />
+            </ToastProvider>
+          </ProtectedRoute>
+        }
+      >
+        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route path="dashboard" element={<Dashboard />} />
+
+        <Route path="categories" element={<CategoryList />} />
+        <Route path="categories/new" element={<CategoryCreate />} />
+        <Route path="categories/:id/edit" element={<CategoryEdit />} />
+
+        <Route path="brands" element={<BrandList />} />
+        <Route path="brands/new" element={<BrandCreate />} />
+        <Route path="brands/:id/edit" element={<BrandEdit />} />
+
+        <Route path="products" element={<ProductList />} />
+        <Route path="products/new" element={<ProductCreate />} />
+        <Route path="products/:id" element={<ProductDetails />} />
+        <Route path="products/:id/edit" element={<ProductEdit />} />
+
+        <Route path="prebuilt" element={<PrebuiltList />} />
+        <Route path="prebuilt/new" element={<PrebuiltCreate />} />
+        <Route path="prebuilt/:id" element={<PrebuiltDetails />} />
+        <Route path="prebuilt/:id/edit" element={<PrebuiltEdit />} />
+
+        <Route path="orders" element={<OrderList />} />
+        <Route path="orders/:id" element={<OrderDetails />} />
+
+        <Route path="coupons" element={<CouponList />} />
+        <Route path="coupons/new" element={<CouponCreate />} />
+        <Route path="coupons/:id/edit" element={<CouponEdit />} />
+
+        <Route path="reviews" element={<ReviewList />} />
+        <Route path="reviews/:id" element={<ReviewDetails />} />
+
+        <Route path="users" element={<UserList />} />
+        <Route path="users/:id" element={<UserDetails />} />
+
+        <Route path="settings" element={<Settings />} />
+        <Route path="profile" element={<Profile />} />
+      </Route>
+
+      <Route path="*" element={<Navigate to="dashboard" replace />} />
+    </Routes>
+  );
+};
+
+export default AdminRoutes;

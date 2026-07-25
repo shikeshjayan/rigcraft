@@ -3,6 +3,7 @@ import productRepository from "../repositories/product.repository.js";
 import ApiError from "../utils/ApiError.js";
 import { COMPONENT_TYPES } from "../constants/constants.js";
 import { validate as compatibilityValidate } from "./compatibility.service.js";
+import * as cartService from "./cart.service.js";
 import BuildSetting from "../models/build-setting.model.js";
 
 const validateComponentsExist = async (components) => {
@@ -148,7 +149,11 @@ export const addToCart = async (buildId, userId) => {
   const build = await buildRepository.findBuildById(buildId, userId);
   if (!build) throw ApiError.notFound("Build not found");
 
-  return build;
+  return cartService.addItem(userId, {
+    itemType: "savedBuild",
+    itemId: buildId,
+    quantity: 1,
+  });
 };
 
 export const adminGetAllBuilds = async (query) => {
