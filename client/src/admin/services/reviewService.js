@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "../../shared/api/axios";
 
 const useMock = true;
 
@@ -28,7 +28,7 @@ export const reviewService = {
       if (rating) filtered = filtered.filter((r) => r.rating === Number(rating));
       return paginate(filtered, page, pageSize);
     }
-    const { data } = await api.get("/reviews", { params: { page, pageSize, search, status, rating } });
+    const { data } = await api.get("/admin/reviews", { params: { page, pageSize, search, status, rating } });
     return data;
   },
 
@@ -39,7 +39,7 @@ export const reviewService = {
       if (!review) throw new Error("Review not found");
       return review;
     }
-    const { data } = await api.get(`/reviews/${id}`);
+    const { data } = await api.get(`/admin/reviews/${id}`);
     return data;
   },
 
@@ -51,7 +51,7 @@ export const reviewService = {
       MOCK_REVIEWS[idx].status = status;
       return MOCK_REVIEWS[idx];
     }
-    const { data } = await api.patch(`/reviews/${id}/status`, { status });
+    const { data } = await api.patch(`/admin/reviews/${id}/status`, { status });
     return data;
   },
 
@@ -63,7 +63,7 @@ export const reviewService = {
       MOCK_REVIEWS.splice(idx, 1);
       return { success: true };
     }
-    const { data } = await api.delete(`/reviews/${id}`);
+    const { data } = await api.delete(`/admin/reviews/${id}`);
     return data;
   },
 };
