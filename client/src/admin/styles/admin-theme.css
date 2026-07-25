@@ -51,13 +51,13 @@
   --color-admin-table-hover: #f1f5f9;
   --color-admin-table-striped: #fcfcfd;
 
-  --radius-admin-card: 9px;
-  --radius-admin-modal: 12px;
-  --radius-admin-badge: 4px;
+  --radius-admin-card: 3px;
+  --radius-admin-modal: 3px;
+  --radius-admin-badge: 2px;
   --radius-admin-avatar: 50%;
-  --radius-admin-button: 6px;
-  --radius-admin-input: 5px;
-  --radius-admin-table: 4px;
+  --radius-admin-button: 3px;
+  --radius-admin-input: 3px;
+  --radius-admin-table: 3px;
 
   --shadow-admin-card: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-admin-modal: 0 4px 24px rgba(0, 0, 0, 0.15);
@@ -67,4 +67,51 @@
 
   --font-admin-sans: "Inter", sans-serif;
   --font-admin-mono: "Roboto Mono", monospace;
+}
+
+@keyframes admin-fade-in-up {
+  0% { opacity: 0; transform: translateY(24px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes admin-fade-in-down {
+  0% { opacity: 0; transform: translateY(-16px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes admin-float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes admin-pulse-glow {
+  0% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(37, 99, 235, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(37, 99, 235, 0); }
+}
+
+@keyframes admin-scale-in {
+  0% { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.animate-admin-fade-in-up {
+  animation: admin-fade-in-up 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-admin-fade-in-down {
+  animation: admin-fade-in-down 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.animate-admin-float {
+  animation: admin-float 4s ease-in-out infinite;
+}
+
+.animate-admin-pulse-glow {
+  animation: admin-pulse-glow 2s infinite;
+}
+
+.animate-admin-scale-in {
+  animation: admin-scale-in 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }

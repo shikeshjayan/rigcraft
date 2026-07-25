@@ -42,9 +42,10 @@ const ProductDetails = () => {
       <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/products")} />
+          <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", ml: 1 }} />
           <Box>
-            <Typography variant="h5" sx={{ fontWeight: 700, color: "var(--color-admin-text)" }}>{product.name}</Typography>
-            <Typography variant="body2" sx={{ color: "var(--color-admin-muted)" }}>SKU: {product.sku}</Typography>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>{product.name}</Typography>
+            <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>SKU: {product.sku}</Typography>
           </Box>
         </Box>
         <AdminButton variant="primary" size="small" icon={<EditIcon />} onClick={() => navigate(`/admin/products/${id}/edit`)}>

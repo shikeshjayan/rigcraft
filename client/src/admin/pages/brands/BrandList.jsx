@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, IconButton, Tooltip } from "@mui/material";
+import { Box } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import DataTable from "../../components/tables/DataTable";
 import TableToolbar from "../../components/tables/TableToolbar";
@@ -13,12 +13,16 @@ import { brandService } from "../../services/brandService";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
+import { useViewportRows } from "../../hooks/useViewportRows";
 
 const BrandList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { page, pageSize, setPage, setPageSize } = usePagination();
+  const { maxRows, containerRef } = useViewportRows();
+  const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
+
+  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
 
   const [brands, setBrands] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -56,6 +60,17 @@ const BrandList = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    try {
+      await Promise.all(selected.map((id) => brandService.delete(id)));
+      toast(`${selected.length} brands deleted`);
+      setSelected([]);
+      fetchBrands();
+    } catch {
+      toast("Failed to delete brands", "error");
+    }
+  };
+
   const filterOptions = [
     {
       key: "isActive",
@@ -81,7 +96,7 @@ const BrandList = () => {
         }}>
           {val.charAt(0)}{val.charAt(1)}
         </Box>
-        <Box>
+    <Box>
           <Box sx={{ fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val}</Box>
           <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)" }}>{row.slug}</Box>
         </Box>
@@ -106,7 +121,7 @@ const BrandList = () => {
   ];
 
   return (
-    <Box>
+    <Box ref={containerRef}>
       <TableToolbar
         title="Brands"
         searchValue={search}
@@ -126,6 +141,31 @@ const BrandList = () => {
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
         onRowClick={(row) => navigate(`/admin/brands/${row.id}/edit`)}
+        selected={selected}
+        onSelectAll={() => setSelected(selected.length === brands.length ? [] : brands.map((r) => r.id))}
+        onSelectOne={(id) => setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id])}
+        selectable
+        headerSlots={{
+          actions: (
+            <Box
+              onClick={selected.length > 0 ? handleBulkDelete : undefined}
+              sx={{
+                cursor: selected.length > 0 ? "pointer" : "default",
+                visibility: selected.length > 0 ? "visible" : "hidden",
+                fontWeight: 600,
+                fontSize: "0.75rem",
+                color: "var(--color-admin-danger)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                whiteSpace: "nowrap",
+                userSelect: "none",
+              }}
+            >
+              Delete All
+            </Box>
+          ),
+        }}
+        rowsPerPageOptions={[maxRows, 10, 25, 50, 100]}
       />
       <ConfirmDialog
         open={!!deleteTarget}

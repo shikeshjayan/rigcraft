@@ -52,8 +52,10 @@ const ReviewDetails = () => {
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
         <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/reviews")} />
+        <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)" }} />
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: "var(--color-admin-text)" }}>Review Details</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>Review Details</Typography>
+          <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>Product: {review.product.name}</Typography>
         </Box>
         <StatusBadge status={review.status} colorMap={REVIEW_STATUS_COLOR} />
       </Box>

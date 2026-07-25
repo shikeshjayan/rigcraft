@@ -3,10 +3,6 @@ import { useLocation, useNavigate } from "react-router-dom";
 import {
   IconButton,
   Avatar,
-  Menu,
-  MenuItem,
-  Divider,
-  ListItemIcon,
   InputBase,
   Badge,
   Paper,
@@ -17,8 +13,6 @@ import {
   Menu as MenuIcon,
   MenuOpen as MenuOpenIcon,
   Notifications as NotificationsIcon,
-  Person as PersonIcon,
-  Logout as LogoutIcon,
   Search as SearchIcon,
   NavigateNext as NavigateNextIcon,
 } from "@mui/icons-material";
@@ -70,20 +64,10 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const { user, logout } = useAuthStore();
-  const [anchorEl, setAnchorEl] = useState(null);
+  const { user } = useAuthStore();
   const [searchOpen, setSearchOpen] = useState(false);
 
   const breadcrumbs = getBreadcrumbs(location.pathname);
-
-  const handleMenuOpen = (e) => setAnchorEl(e.currentTarget);
-  const handleMenuClose = () => setAnchorEl(null);
-
-  const handleLogout = () => {
-    handleMenuClose();
-    logout();
-    navigate("/admin/login");
-  };
 
   const initials = user?.name
     ? user.name
@@ -95,12 +79,18 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
     : "U";
 
   return (
-    <header className="h-16 bg-admin-header border-b border-admin-border flex items-center justify-between px-4 md:px-6 sticky top-0 z-10">
+    <header
+      className="h-16 flex items-center justify-between px-4 md:px-6 sticky top-0 z-10"
+      style={{
+        backgroundColor: "var(--color-admin-header)",
+        borderBottom: "1px solid var(--color-admin-border)",
+        boxShadow: "var(--shadow-admin-header)",
+      }}
+    >
       <div className="flex items-center gap-3">
         <IconButton
           onClick={isMobile ? onToggleSidebar : onToggleCollapse}
-          className="text-admin-text"
-          sx={{ display: { md: "inline-flex" } }}
+          sx={{ color: "var(--color-admin-text)", display: { md: "inline-flex" } }}
         >
           {isMobile ? <MenuIcon /> : collapsed ? <MenuIcon /> : <MenuOpenIcon />}
         </IconButton>
@@ -114,11 +104,10 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
                 />
               )}
               <span
-                className={
-                  idx === breadcrumbs.length - 1
-                    ? "font-medium text-admin-text"
-                    : "text-admin-text-secondary hover:text-admin-text cursor-pointer"
-                }
+                className={idx === breadcrumbs.length - 1 ? "font-bold" : "cursor-pointer"}
+                style={{
+                  color: idx === breadcrumbs.length - 1 ? "var(--color-admin-text)" : "var(--color-admin-text-secondary)",
+                }}
                 onClick={() => idx < breadcrumbs.length - 1 && navigate(crumb.path)}
               >
                 {crumb.label}
@@ -139,11 +128,12 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
             borderRadius: "var(--radius-admin-input)",
             border: "1px solid var(--color-admin-border)",
             backgroundColor: "var(--color-admin-bg-tertiary)",
-            width: searchOpen ? 200 : { md: 200 },
+            width: searchOpen ? 200 : { md: 220 },
             transition: "all 0.2s",
             "&:focus-within": {
               borderColor: "var(--color-admin-primary)",
               backgroundColor: "var(--color-admin-card)",
+              boxShadow: "0 0 0 3px rgba(37, 99, 235, 0.1)",
             },
           }}
         >
@@ -151,7 +141,7 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
             sx={{ fontSize: 18, color: "var(--color-admin-muted)", mr: 1 }}
           />
           <InputBase
-            placeholder="Search..."
+            placeholder="Search products..."
             sx={{
               fontSize: "0.8125rem",
               color: "var(--color-admin-text)",
@@ -159,6 +149,7 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
               "& input::placeholder": {
                 color: "var(--color-admin-muted)",
                 opacity: 1,
+                fontWeight: 500,
               },
             }}
           />
@@ -172,70 +163,51 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
         </IconButton>
 
         <IconButton sx={{ color: "var(--color-admin-text-secondary)" }}>
-          <Badge badgeContent={3} color="error" variant="dot">
+          <Badge
+            badgeContent={3}
+            sx={{
+              "& .MuiBadge-badge": {
+                backgroundColor: "#FF3E6C",
+                color: "#fff",
+                fontSize: 10,
+                minWidth: 8,
+                height: 8,
+              },
+            }}
+            variant="dot"
+          >
             <NotificationsIcon />
           </Badge>
         </IconButton>
 
         <button
-          onClick={handleMenuOpen}
-          className="flex items-center gap-2 ml-2 p-1 rounded-admin-button hover:bg-admin-bg-tertiary transition-colors"
+          onClick={() => navigate("/admin/profile")}
+          className="flex items-center gap-2 ml-2 p-1 transition-colors cursor-pointer"
+          style={{ borderRadius: "var(--radius-admin-button)" }}
+          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--color-admin-bg-tertiary)"}
+          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
         >
           <Avatar
             sx={{
               width: 34,
               height: 34,
-              bgcolor: "var(--color-admin-primary)",
               fontSize: 14,
-              fontWeight: 600,
+              fontWeight: 700,
+              background: "linear-gradient(135deg, var(--color-admin-primary) 0%, var(--color-admin-primary-light) 100%)",
             }}
           >
             {initials}
           </Avatar>
           <div className="hidden sm:block text-left">
-            <p className="text-sm font-medium text-admin-text leading-tight">
+            <p className="text-sm font-bold leading-tight" style={{ color: "var(--color-admin-text)" }}>
               {user?.name}
             </p>
-            <p className="text-xs text-admin-text-secondary">
+            <p className="text-xs font-medium" style={{ color: "var(--color-admin-text-secondary)" }}>
               {ROLE_LABELS[user?.role] || user?.role}
             </p>
           </div>
         </button>
 
-        <Menu
-          anchorEl={anchorEl}
-          open={Boolean(anchorEl)}
-          onClose={handleMenuClose}
-          transformOrigin={{ horizontal: "right", vertical: "top" }}
-          anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-          PaperProps={{
-            sx: {
-              mt: 1,
-              minWidth: 200,
-              borderRadius: "var(--radius-admin-modal)",
-              boxShadow: "var(--shadow-admin-dropdown)",
-            },
-          }}
-        >
-          <MenuItem
-            onClick={() => {
-              handleMenuClose();
-              navigate("/admin/profile");
-            }}
-          >
-            <ListItemIcon>
-              <PersonIcon fontSize="small" />
-            </ListItemIcon>
-            Profile
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={handleLogout}>
-            <ListItemIcon>
-              <LogoutIcon fontSize="small" />
-            </ListItemIcon>
-            Logout
-          </MenuItem>
-        </Menu>
       </div>
     </header>
   );

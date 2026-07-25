@@ -44,7 +44,7 @@ const NavItem = ({ item, collapsed, isActive, onNavigate, onClose, isMobile }) =
         onNavigate(item.path);
         if (isMobile) onClose();
       }}
-      className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-admin-button text-sm font-medium transition-colors mb-0.5 whitespace-nowrap
+      className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors mb-0.5 whitespace-nowrap
         ${
           isActive
             ? "bg-admin-sidebar-active text-admin-sidebar-text-active"
@@ -52,6 +52,7 @@ const NavItem = ({ item, collapsed, isActive, onNavigate, onClose, isMobile }) =
         }
         ${collapsed ? "justify-center px-0" : ""}
       `}
+      style={{ borderRadius: "var(--radius-admin-button)" }}
     >
       {Icon && <Icon fontSize="small" />}
       {!collapsed && <span>{item.label}</span>}
@@ -87,19 +88,28 @@ const Sidebar = ({ open, onClose, collapsed, onToggleCollapse }) => {
   })).filter((section) => section.items.length > 0);
 
   const sidebarContent = (
-    <div className="flex flex-col h-full bg-admin-sidebar transition-all duration-300">
-      <div className={`flex items-center gap-3 px-6 py-5 border-b border-admin-divider ${collapsed ? "justify-center px-0" : ""}`}>
-        <div className="w-8 h-8 rounded-lg bg-admin-primary flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+    <div className="flex flex-col h-full transition-all duration-300" style={{ backgroundColor: "var(--color-admin-sidebar)" }}>
+      <div className={`flex items-center gap-3 px-6 py-5 ${collapsed ? "justify-center px-0" : ""}`} style={{ borderBottom: "1px solid var(--color-admin-divider)" }}>
+        <div
+          className="w-8 h-8 flex items-center justify-center text-white font-extrabold text-sm flex-shrink-0 animate-admin-pulse-glow"
+          style={{ borderRadius: "var(--radius-admin-button)" }}
+          style={{ background: "linear-gradient(135deg, var(--color-admin-primary) 0%, var(--color-admin-primary-light) 100%)" }}
+        >
           RC
         </div>
-        {!collapsed && <span className="text-white font-semibold text-lg">RigCraft</span>}
+        {!collapsed && (
+          <span className="font-extrabold text-lg">
+            <span style={{ color: "var(--color-admin-primary)" }}>Rig</span>
+            <span style={{ color: "var(--color-admin-white)" }}>Craft</span>
+          </span>
+        )}
       </div>
 
       <nav className="flex-1 overflow-y-auto py-4 px-3 scrollbar-thin">
         {filteredSections.map((section, idx) => (
           <div key={idx}>
             {section.section && !collapsed && (
-              <p className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-admin-sidebar-text">
+              <p className="px-3 py-2 text-xs font-bold uppercase tracking-wider" style={{ color: "var(--color-admin-sidebar-text)" }}>
                 {section.section}
               </p>
             )}
@@ -115,13 +125,13 @@ const Sidebar = ({ open, onClose, collapsed, onToggleCollapse }) => {
               />
             ))}
             {idx < filteredSections.length - 1 && !collapsed && (
-              <div className="my-3 mx-3 border-t border-admin-divider" />
+              <div className="my-3 mx-3" style={{ borderTop: "1px solid var(--color-admin-divider)" }} />
             )}
           </div>
         ))}
       </nav>
 
-      <div className={`border-t border-admin-divider px-3 py-3 space-y-1 ${collapsed ? "flex flex-col items-center" : ""}`}>
+      <div className={`px-3 py-3 space-y-1 ${collapsed ? "flex flex-col items-center" : ""}`} style={{ borderTop: "1px solid var(--color-admin-divider)" }}>
         <NavItem
           item={{ label: "Profile", path: "/admin/profile", icon: "Person" }}
           collapsed={collapsed}
@@ -136,9 +146,14 @@ const Sidebar = ({ open, onClose, collapsed, onToggleCollapse }) => {
               logout();
               navigate("/admin/login");
             }}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-admin-button text-sm font-medium text-admin-sidebar-text hover:bg-admin-sidebar-hover hover:text-white transition-colors
-              ${collapsed ? "justify-center px-0" : ""}
-            `}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors
+              ${collapsed ? "justify-center px-0" : ""}`}
+            style={{
+              borderRadius: "var(--radius-admin-button)",
+              color: "var(--color-admin-sidebar-text)",
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--color-admin-sidebar-hover)"}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
           >
             <LogoutIcon fontSize="small" />
             {!collapsed && <span>Logout</span>}

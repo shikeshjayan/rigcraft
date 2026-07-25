@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 
 export const usePagination = (data = [], pageSize = 10) => {
   const [page, setPage] = useState(0);
@@ -14,20 +14,28 @@ export const usePagination = (data = [], pageSize = 10) => {
   const handleChangePage = (_, newPage) => setPage(newPage);
 
   const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
+    setRowsPerPage(typeof event === "number" ? event : parseInt(event.target.value, 10));
     setPage(0);
   };
+
+  const setPageSize = useCallback((size) => {
+    setRowsPerPage(size);
+    setPage(0);
+  }, []);
 
   const resetPage = () => setPage(0);
 
   return {
     page,
     rowsPerPage,
-    totalPages,
-    totalItems: data.length,
-    paginatedData,
+    pageSize: rowsPerPage,
+    setPage: handleChangePage,
+    setPageSize,
     handleChangePage,
     handleChangeRowsPerPage,
     resetPage,
+    totalPages,
+    totalItems: data.length,
+    paginatedData,
   };
 };
