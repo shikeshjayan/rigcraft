@@ -1,5 +1,5 @@
-@import "tailwindcss";
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
 
 @layer base {
   body {
@@ -10,8 +10,8 @@
 @theme {
 
     /* Brand */
-    /* --color-primary: #2563eb; */
-    --color-primary: #FF2C00;
+    --color-primary: #2563eb;
+    /* --color-primary: #FF2C00; */
     --color-primary-light: #3b82f6;
     --color-primary-hover: #1d4ed8;
     --color-primary-active: #1e40af;

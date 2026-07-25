@@ -11,7 +11,7 @@ const HeroOffer = () => {
       }}
     >
       <p className="text-sm md:text-lg font-semibold tracking-wide">
-        🔥 Special Offer: Get 20% off on all prebuilt PCs! Limited time only. 🔥
+        Special Offer: Get 20% off on all prebuilt PCs! Limited time only. 
       </p>
     </section>
   );
