@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "../../shared/api/axios";
 
 const useMock = true;
 
@@ -30,7 +30,7 @@ export const orderService = {
       if (status) filtered = filtered.filter((o) => o.status === status);
       return paginate(filtered, page, pageSize);
     }
-    const { data } = await api.get("/orders", { params: { page, pageSize, search, status } });
+    const { data } = await api.get("/admin/orders", { params: { page, pageSize, search, status } });
     return data;
   },
 
@@ -41,7 +41,7 @@ export const orderService = {
       if (!order) throw new Error("Order not found");
       return order;
     }
-    const { data } = await api.get(`/orders/${id}`);
+    const { data } = await api.get(`/admin/orders/${id}`);
     return data;
   },
 
@@ -54,7 +54,7 @@ export const orderService = {
       MOCK_ORDERS[idx].updatedAt = new Date().toISOString();
       return MOCK_ORDERS[idx];
     }
-    const { data } = await api.patch(`/orders/${id}/status`, { status });
+    const { data } = await api.patch(`/admin/orders/${id}/status`, { status });
     return data;
   },
 };

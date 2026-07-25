@@ -1,4 +1,4 @@
-import api from "./api";
+import api from "../../shared/api/axios";
 
 const useMock = true;
 
@@ -42,7 +42,7 @@ export const prebuiltService = {
       if (isActive !== "") filtered = filtered.filter((p) => p.isActive === (isActive === "true"));
       return paginate(filtered, page, pageSize);
     }
-    const { data } = await api.get("/prebuilt", { params: { page, pageSize, search, isActive } });
+    const { data } = await api.get("/prebuilt-pcs", { params: { page, pageSize, search, isActive } });
     return data;
   },
 
@@ -53,7 +53,7 @@ export const prebuiltService = {
       if (!item) throw new Error("Prebuilt PC not found");
       return item;
     }
-    const { data } = await api.get(`/prebuilt/${id}`);
+    const { data } = await api.get(`/prebuilt-pcs/${id}`);
     return data;
   },
 
@@ -64,7 +64,7 @@ export const prebuiltService = {
       MOCK_PREBUILT.push(newItem);
       return newItem;
     }
-    const { data: res } = await api.post("/prebuilt", data);
+    const { data: res } = await api.post("/prebuilt-pcs", data);
     return res;
   },
 
@@ -76,7 +76,7 @@ export const prebuiltService = {
       MOCK_PREBUILT[idx] = { ...MOCK_PREBUILT[idx], ...data, updatedAt: new Date().toISOString() };
       return MOCK_PREBUILT[idx];
     }
-    const { data: res } = await api.put(`/prebuilt/${id}`, data);
+    const { data: res } = await api.put(`/prebuilt-pcs/${id}`, data);
     return res;
   },
 
@@ -88,7 +88,7 @@ export const prebuiltService = {
       MOCK_PREBUILT.splice(idx, 1);
       return { success: true };
     }
-    const { data } = await api.delete(`/prebuilt/${id}`);
+    const { data } = await api.delete(`/prebuilt-pcs/${id}`);
     return data;
   },
 };
