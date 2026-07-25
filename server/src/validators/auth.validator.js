@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { CUSTOMER_ROLES } from "../constants/constants.js";
+import { USER_ROLES } from "../constants/constants.js";
 
 const phoneRegex = /^\+?[\d\s-]{7,15}$/;
 const passwordRegex =
@@ -108,8 +108,8 @@ export const resetPasswordSchema = z
   });
 
 export const updateRoleSchema = z.object({
-  role: z.enum([CUSTOMER_ROLES.ADMIN], {
-    errorMap: () => ({ message: 'Role must be admin' }),
+  role: z.enum([USER_ROLES.ADMIN, USER_ROLES.MANAGER], {
+    errorMap: () => ({ message: 'Role must be admin or manager' }),
   }),
 });
 

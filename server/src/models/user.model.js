@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { CUSTOMER_ROLES } from '../constants/constants.js';
+import { USER_ROLES } from '../constants/constants.js';
 
 const avatarSchema = new mongoose.Schema(
   {
@@ -44,8 +44,8 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: Object.values(CUSTOMER_ROLES),
-      default: CUSTOMER_ROLES.CUSTOMER,
+      enum: Object.values(USER_ROLES),
+      default: USER_ROLES.CUSTOMER,
     },
     avatar: avatarSchema,
     isEmailVerified: {
