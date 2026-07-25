@@ -17,6 +17,8 @@ const DataTable = ({
   onSelectOne,
   getRowId = (row) => row.id,
   selectable,
+  rowsPerPageOptions,
+  headerSlots,
   sx,
 }) => {
   if (loading) return <Loading />;
@@ -64,7 +66,7 @@ const DataTable = ({
                     ...col.sx,
                   }}
                 >
-                  {col.label}
+                  {headerSlots?.[col.key] ?? col.label}
                 </TableCell>
               ))}
             </TableRow>
@@ -119,7 +121,7 @@ const DataTable = ({
           onPageChange={(_, p) => onPageChange(p)}
           rowsPerPage={pageSize}
           onRowsPerPageChange={(e) => onPageSizeChange(parseInt(e.target.value, 10))}
-          rowsPerPageOptions={[10, 25, 50, 100]}
+          rowsPerPageOptions={rowsPerPageOptions || [10, 25, 50, 100]}
           sx={{
             borderTop: "1px solid var(--color-admin-border)",
             color: "var(--color-admin-text-secondary)",

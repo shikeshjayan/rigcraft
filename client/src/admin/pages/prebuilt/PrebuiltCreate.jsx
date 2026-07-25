@@ -29,9 +29,10 @@ const PrebuiltCreate = () => {
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
         <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/prebuilt")} />
+        <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", ml: 1 }} />
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: "var(--color-admin-text)" }}>New Prebuilt PC</Typography>
-          <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>Create a new prebuilt configuration</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>New Prebuilt PC</Typography>
+          <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", fontWeight: 500, mt: 0.25 }}>Create a new prebuilt configuration</Typography>
         </Box>
       </Box>
       <PrebuiltForm onSubmit={handleSubmit} loading={loading} submitLabel="Create Prebuilt PC" />

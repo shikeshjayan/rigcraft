@@ -54,8 +54,10 @@ const OrderDetails = () => {
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
         <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/orders")} />
+        <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)" }} />
         <Box sx={{ flex: 1 }}>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: "var(--color-admin-text)" }}>{order.orderNumber}</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>{order.orderNumber}</Typography>
+          <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>{order.customer?.email || "—"}</Typography>
         </Box>
         <StatusBadge status={order.status} colorMap={ORDER_STATUS_COLOR} />
       </Box>

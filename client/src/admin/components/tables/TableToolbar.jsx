@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 
 const TableToolbar = ({
   title,
+  subtitle,
   searchValue,
   onSearchChange,
   searchPlaceholder = "Search...",
@@ -18,9 +19,20 @@ const TableToolbar = ({
   const navigate = useNavigate();
 
   return (
-    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 border-b border-admin-border">
+    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4" style={{ borderBottom: "1px solid var(--color-admin-border)" }}>
       <div className="flex items-center gap-3 w-full sm:w-auto">
-        <h3 className="text-lg font-semibold text-admin-text whitespace-nowrap">{title}</h3>
+        <div className="flex items-center gap-2">
+          <div
+            className="w-1 h-6 rounded-full"
+            style={{ backgroundColor: "var(--color-admin-primary)" }}
+          />
+          <div>
+            <h3 className="text-lg font-extrabold" style={{ color: "var(--color-admin-text)" }}>{title}</h3>
+            {subtitle && (
+              <p className="text-xs font-medium mt-0.5" style={{ color: "var(--color-admin-text-secondary)" }}>{subtitle}</p>
+            )}
+          </div>
+        </div>
         {onRefresh && (
           <Tooltip title="Refresh">
             <IconButton size="small" onClick={onRefresh} sx={{ color: "var(--color-admin-muted)" }}>
@@ -38,13 +50,17 @@ const TableToolbar = ({
             alignItems: "center",
             px: 1.5,
             py: 0.5,
+            height: 36,
+            boxSizing: "border-box",
             borderRadius: "var(--radius-admin-input)",
             border: "1px solid var(--color-admin-border)",
             backgroundColor: "var(--color-admin-bg-tertiary)",
-            width: { xs: "100%", sm: 220 },
+            width: { xs: "100%", sm: 320 },
+            transition: "all 0.2s",
             "&:focus-within": {
               borderColor: "var(--color-admin-primary)",
               backgroundColor: "var(--color-admin-card)",
+              boxShadow: "0 0 0 3px rgba(37, 99, 235, 0.1)",
             },
           }}
         >
@@ -57,7 +73,7 @@ const TableToolbar = ({
               fontSize: "0.8125rem",
               color: "var(--color-admin-text)",
               width: "100%",
-              "& input::placeholder": { color: "var(--color-admin-muted)", opacity: 1 },
+              "& input::placeholder": { color: "var(--color-admin-muted)", opacity: 1, fontWeight: 500 },
             }}
           />
         </Paper>
@@ -75,6 +91,7 @@ const TableToolbar = ({
             variant="primary"
             size="small"
             icon={<AddIcon />}
+            sx={{ height: 36, minWidth: 140 }}
             onClick={() => (onAdd ? onAdd() : navigate(addPath))}
           >
             {addLabel}

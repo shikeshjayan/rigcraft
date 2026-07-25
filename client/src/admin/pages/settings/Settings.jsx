@@ -24,8 +24,13 @@ const Settings = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h5" sx={{ fontWeight: 700, color: "var(--color-admin-text)", mb: 1 }}>Settings</Typography>
-      <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", mb: 3 }}>Manage your store configuration</Typography>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+        <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)" }} />
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>Settings</Typography>
+          <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", fontWeight: 500, mt: 0.25 }}>Manage your store configuration</Typography>
+        </Box>
+      </Box>
 
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ borderBottom: "1px solid var(--color-admin-border)", "& .MuiTab-root": { textTransform: "none", fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text-secondary)", "&.Mui-selected": { color: "var(--color-admin-primary)" } }, "& .MuiTabs-indicator": { backgroundColor: "var(--color-admin-primary)" } }}>
         <Tab label="General" />

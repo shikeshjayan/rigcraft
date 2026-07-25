@@ -21,13 +21,18 @@ const Profile = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h5" sx={{ fontWeight: 700, color: "var(--color-admin-text)", mb: 1 }}>Profile</Typography>
-      <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", mb: 3 }}>Manage your account settings</Typography>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
+        <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)" }} />
+        <Box>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>Profile</Typography>
+          <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", fontWeight: 500, mt: 0.25 }}>Manage your account settings</Typography>
+        </Box>
+      </Box>
 
       <Grid container spacing={4}>
         <Grid size={{ xs: 12, md: 4 }}>
           <Box sx={{ textAlign: "center", p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
-            <Avatar src={user?.avatar || ""} sx={{ width: 100, height: 100, mx: "auto", mb: 2, bgcolor: "var(--color-admin-primary)", fontSize: 36, fontWeight: 700 }}>
+            <Avatar src={user?.avatar || ""} sx={{ width: 100, height: 100, mx: "auto", mb: 2, fontSize: 36, fontWeight: 800, background: "linear-gradient(135deg, var(--color-admin-primary) 0%, var(--color-admin-primary-light) 100%)" }}>
               {user?.name?.charAt(0)}
             </Avatar>
             <Typography variant="h6" sx={{ fontWeight: 600, color: "var(--color-admin-text)" }}>{user?.name}</Typography>

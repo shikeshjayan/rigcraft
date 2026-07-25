@@ -51,9 +51,10 @@ const ProductEdit = () => {
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
         <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/products")} />
+        <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", ml: 1 }} />
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: "var(--color-admin-text)" }}>Edit Product</Typography>
-          <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>{product.name}</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>Edit Product</Typography>
+          <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", fontWeight: 500, mt: 0.25 }}>{product.name}</Typography>
         </Box>
       </Box>
       <ProductForm defaultValues={product} onSubmit={handleSubmit} loading={saving} categories={categories} brands={brands} submitLabel="Update Product" />

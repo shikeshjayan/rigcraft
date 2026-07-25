@@ -12,12 +12,16 @@ import { formatCurrency } from "../../utils/formatCurrency";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
+import { useViewportRows } from "../../hooks/useViewportRows";
 
 const UserList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { page, pageSize, setPage, setPageSize } = usePagination();
+  const { maxRows, containerRef } = useViewportRows();
+  const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
+
+  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
@@ -79,10 +83,10 @@ const UserList = () => {
   ];
 
   return (
-    <Box>
+    <Box ref={containerRef}>
       <TableToolbar title="Users" searchValue={search} onSearchChange={setSearch} onRefresh={fetchUsers} />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
-      <DataTable columns={columns} rows={users} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/users/${row.id}`)} />
+      <DataTable columns={columns} rows={users} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/users/${row.id}`)} rowsPerPageOptions={[maxRows, 10, 25, 50, 100]} />
     </Box>
   );
 };

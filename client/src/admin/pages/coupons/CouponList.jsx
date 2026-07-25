@@ -13,17 +13,22 @@ import { couponService } from "../../services/couponService";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
+import { useViewportRows } from "../../hooks/useViewportRows";
 
 const CouponList = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { page, pageSize, setPage, setPageSize } = usePagination();
+  const { maxRows, containerRef } = useViewportRows();
+  const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
+
+  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
   const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState({ isActive: "" });
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [selected, setSelected] = useState([]);
 
   const fetchCoupons = useCallback(async () => {
     setLoading(true);
@@ -54,6 +59,17 @@ const CouponList = () => {
     }
   };
 
+  const handleBulkDelete = async () => {
+    try {
+      await Promise.all(selected.map((id) => couponService.delete(id)));
+      toast(`${selected.length} coupons deleted`);
+      setSelected([]);
+      fetchCoupons();
+    } catch {
+      toast("Failed to delete coupons", "error");
+    }
+  };
+
   const filterOptions = [
     { key: "isActive", label: "Status", options: [{ value: "", label: "All" }, { value: "true", label: "Active" }, { value: "false", label: "Inactive" }] },
   ];
@@ -77,10 +93,52 @@ const CouponList = () => {
   ];
 
   return (
-    <Box>
-      <TableToolbar title="Coupons" searchValue={search} onSearchChange={setSearch} addPath="/admin/coupons/new" addLabel="New Coupon" onRefresh={fetchCoupons} />
+    <Box ref={containerRef}>
+      <TableToolbar
+        title="Coupons"
+        searchValue={search}
+        onSearchChange={setSearch}
+        addPath="/admin/coupons/new"
+        addLabel="New Coupon"
+        onRefresh={fetchCoupons}
+      />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
-      <DataTable columns={columns} rows={coupons} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/coupons/${row.id}/edit`)} />
+      <DataTable
+        columns={columns}
+        rows={coupons}
+        loading={loading}
+        total={total}
+        page={page}
+        pageSize={pageSize}
+        onPageChange={setPage}
+        onPageSizeChange={setPageSize}
+        onRowClick={(row) => navigate(`/admin/coupons/${row.id}/edit`)}
+        selected={selected}
+        onSelectAll={() => setSelected(selected.length === coupons.length ? [] : coupons.map((r) => r.id))}
+        onSelectOne={(id) => setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id])}
+        selectable
+        headerSlots={{
+          actions: (
+            <Box
+              onClick={selected.length > 0 ? handleBulkDelete : undefined}
+              sx={{
+                cursor: selected.length > 0 ? "pointer" : "default",
+                visibility: selected.length > 0 ? "visible" : "hidden",
+                fontWeight: 600,
+                fontSize: "0.75rem",
+                color: "var(--color-admin-danger)",
+                textTransform: "uppercase",
+                letterSpacing: "0.05em",
+                whiteSpace: "nowrap",
+                userSelect: "none",
+              }}
+            >
+              Delete All
+            </Box>
+          ),
+        }}
+        rowsPerPageOptions={[maxRows, 10, 25, 50, 100]}
+      />
       <ConfirmDialog
         open={!!deleteTarget}
         title="Delete Coupon"

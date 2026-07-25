@@ -44,9 +44,10 @@ const ProductCreate = () => {
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
         <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/products")} />
+        <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", ml: 1 }} />
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 700, color: "var(--color-admin-text)" }}>New Product</Typography>
-          <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>Add a new product to your catalog</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>New Product</Typography>
+          <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", fontWeight: 500, mt: 0.25 }}>Add a new product to your catalog</Typography>
         </Box>
       </Box>
       <ProductForm onSubmit={handleSubmit} loading={loading} categories={categories} brands={brands} submitLabel="Create Product" />
