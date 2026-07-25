@@ -46,6 +46,31 @@ const settingsSchema = new mongoose.Schema(
         trim: true,
       },
     },
+
+    storeName: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    storeEmail: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    storePhone: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    address: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+    maintenanceMode: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,

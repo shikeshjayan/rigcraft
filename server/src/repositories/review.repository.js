@@ -65,15 +65,18 @@ class ReviewRepository extends BaseRepository {
   }
 
   async adminFindAll(options = {}) {
-    const { page = 1, limit = 20, sort = { createdAt: -1 } } = options;
+    const { page = 1, limit = 20, sort = { createdAt: -1 }, filter = {} } = options;
 
     return this.model.paginate(
-      {},
+      filter,
       {
         page,
         limit,
         sort,
-        populate: { path: "user", select: "firstName lastName email avatar" },
+        populate: [
+          { path: "user", select: "firstName lastName email avatar" },
+          { path: "item", select: "name slug sku" },
+        ],
       }
     );
   }

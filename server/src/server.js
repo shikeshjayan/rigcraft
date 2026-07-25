@@ -21,6 +21,9 @@ import orderRoutes, { adminOrderRoutes } from "./routes/order.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import reviewRoutes, { adminReviewRoutes } from "./routes/review.routes.js";
 import wishlistRoutes from "./routes/wishlist.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
 import errorHandler from "./middlewares/error.js";
 
 dotenv.config();
@@ -59,6 +62,10 @@ app.use("/api/v1/reviews", reviewRoutes);
 app.use("/api/v1/admin/reviews", adminReviewRoutes);
 
 app.use("/api/v1/wishlist", wishlistRoutes);
+
+app.use("/api/v1/dashboard", dashboardRoutes);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/settings", settingsRoutes);
 
 app.use(errorHandler);
 

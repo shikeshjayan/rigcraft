@@ -54,8 +54,13 @@ export const adminGetAllReviews = asyncHandler(async (req, res) => {
   ApiResponse.ok(result, "All reviews fetched successfully").send(res);
 });
 
-export const adminToggleVisibility = asyncHandler(async (req, res) => {
-  const review = await reviewService.toggleVisibility(req.params.id);
+export const adminGetReview = asyncHandler(async (req, res) => {
+  const review = await reviewService.adminGetReview(req.params.id);
+  ApiResponse.ok(review, "Review fetched successfully").send(res);
+});
+
+export const adminUpdateStatus = asyncHandler(async (req, res) => {
+  const review = await reviewService.adminUpdateStatus(req.params.id, req.body.status);
   const msg = review.isVisible
     ? "Review is now visible"
     : "Review has been hidden";
