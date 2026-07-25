@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import FadeUp from './FadeUp';
 import XIcon from '@mui/icons-material/X';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
@@ -117,12 +118,12 @@ const Footer = () => {
             <div className="flex flex-col">
               <h4 className="text-[14px] font-bold tracking-widest text-white mb-6 uppercase">Products</h4>
               <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Custom PC Builder</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Prebuilt Gaming PCs</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">PC Components</li>
+                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/builder" className="block w-full">Custom PC Builder</Link></li>
+                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/prebuild" className="block w-full">Prebuilt PCs</Link></li>
+                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/components" className="block w-full">PC Components</Link></li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Gaming Accessories</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Monitors</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Peripherals</li>
+                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/components/peripherals" className="block w-full">Peripherals</Link></li>
               </ul>
             </div>
 
@@ -130,27 +131,15 @@ const Footer = () => {
             <div className="flex flex-col">
               <h4 className="text-[14px] font-bold tracking-widest text-white mb-6 uppercase">Support</h4>
               <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
+                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">About RigCraft</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Track Order</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Warranty Claims</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Returns & Refunds</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Contact Support</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Live Chat</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">FAQs</li>
               </ul>
             </div>
 
-            {/* Company */}
-            <div className="flex flex-col">
-              <h4 className="text-[14px] font-bold tracking-widest text-white mb-6 uppercase">Company</h4>
-              <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">About PCForge</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Careers</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Press Kit</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Blog</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Community</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Affiliate Program</li>
-              </ul>
-            </div>
 
             {/* Explore */}
             <div className="flex flex-col">

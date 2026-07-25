@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { useAuth } from './AuthContext';
 
 const WishlistContext = createContext();
 
@@ -7,26 +8,33 @@ export const useWishlist = () => {
 };
 
 export const WishlistProvider = ({ children }) => {
-  const [wishlist, setWishlist] = useState(() => {
-    // Load initial state from local storage if available
-    const saved = localStorage.getItem('rigcraft_wishlist');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        return [];
-      }
+  const { user } = useAuth();
+  
+  const storageKey = user && user.email ? `rigcraft_wishlist_${user.email}` : 'rigcraft_wishlist_guest';
+
+  const [wishlist, setWishlist] = useState([]);
+
+  const loadedKey = useRef(storageKey);
+
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem(storageKey);
+      setWishlist(stored ? JSON.parse(stored) : []);
+    } catch {
+      setWishlist([]);
     }
-    return [];
-  });
+    loadedKey.current = storageKey;
+  }, [storageKey]);
 
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
   // Sync to local storage when wishlist changes
   useEffect(() => {
-    localStorage.setItem('rigcraft_wishlist', JSON.stringify(wishlist));
-  }, [wishlist]);
+    if (loadedKey.current === storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(wishlist));
+    }
+  }, [wishlist, storageKey]);
 
   const showToastNotification = (msg) => {
     setToastMessage(msg);

@@ -10,6 +10,11 @@ export const login = asyncHandler(async (req, res) => {
   await authService.login(req.body, res);
 });
 
+export const checkAccount = asyncHandler(async (req, res) => {
+  await authService.checkAccount(req.body.identifier);
+  ApiResponse.ok(null, 'Account exists').send(res);
+});
+
 export const getProfile = asyncHandler(async (req, res) => {
   const user = await authService.getProfile(req.user.id);
   ApiResponse.ok(user).send(res);

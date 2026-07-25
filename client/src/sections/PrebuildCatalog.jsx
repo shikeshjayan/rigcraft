@@ -209,7 +209,7 @@ const PrebuildCatalog = () => {
                   exit={{ opacity: 0 }}
                   className="w-full"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[800px] items-start content-start">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-h-[800px] items-start content-start">
                     {isFiltering ? (
                       // Render Skeletons
                       Array.from({ length: Math.min(itemsPerPage, filteredPCs.length || 10) }).map((_, idx) => (
