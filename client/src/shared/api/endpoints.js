@@ -6,7 +6,7 @@ export const ENDPOINTS = {
     LOGOUT: "/auth/logout",
     REFRESH: "/auth/refresh-token",
     PROFILE: "/auth/profile",
-    CHANGE_PASSWORD: "/auth/change-password",
+    CHANGE_PASSWORD: "/auth/password",
     FORGOT_PASSWORD: "/auth/forgot-password",
     RESET_PASSWORD: "/auth/reset-password",
   },
@@ -72,16 +72,16 @@ export const ENDPOINTS = {
     ADD_ITEM: "/cart/items",
     UPDATE_ITEM: (id) => `/cart/items/${id}`,
     REMOVE_ITEM: (id) => `/cart/items/${id}`,
-    APPLY_COUPON: "/cart/coupon",
-    REMOVE_COUPON: "/cart/coupon",
+    APPLY_COUPON: "/cart/apply-coupon",
+    REMOVE_COUPON: "/cart/remove-coupon",
     CLEAR: "/cart",
   },
 
   // Wishlist
   WISHLIST: {
     GET: "/wishlist",
-    ADD_ITEM: "/wishlist/items",
-    REMOVE_ITEM: (id) => `/wishlist/items/${id}`,
+    ADD_ITEM: "/wishlist",
+    REMOVE_ITEM: (id) => `/wishlist/${id}`,
     CLEAR: "/wishlist",
   },
 
