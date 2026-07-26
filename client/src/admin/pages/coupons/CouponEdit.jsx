@@ -17,7 +17,7 @@ const CouponEdit = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    couponService.getById(Number(id))
+    couponService.getById(id)
       .then(setCoupon)
       .catch(() => { toast("Coupon not found", "error"); navigate("/admin/coupons"); })
       .finally(() => setLoading(false));
@@ -26,7 +26,7 @@ const CouponEdit = () => {
   const handleSubmit = async (data) => {
     setSaving(true);
     try {
-      await couponService.update(Number(id), data);
+      await couponService.update(id, data);
       toast("Coupon updated");
       navigate("/admin/coupons");
     } catch {

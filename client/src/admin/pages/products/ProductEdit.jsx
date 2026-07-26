@@ -22,7 +22,7 @@ const ProductEdit = () => {
 
   useEffect(() => {
     Promise.all([
-      productService.getById(Number(id)),
+      productService.getById(id),
       categoryService.getAll(),
       brandService.getAll(),
     ])
@@ -35,7 +35,7 @@ const ProductEdit = () => {
     setSaving(true);
     try {
       const payload = { ...data, comparePrice: data.comparePrice || null, costPrice: data.costPrice || null };
-      await productService.update(Number(id), payload);
+      await productService.update(id, payload);
       toast("Product updated successfully");
       navigate("/admin/products");
     } catch {

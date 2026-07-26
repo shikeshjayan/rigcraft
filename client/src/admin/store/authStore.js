@@ -1,24 +1,34 @@
 import { create } from "zustand";
-
-const MOCK_USER = {
-  id: 1,
-  name: "John Admin",
-  email: "admin@rigcraft.com",
-  role: "super_admin",
-  avatar: null,
-};
+import api from "../../shared/api/axios";
+import { ENDPOINTS } from "../../shared/api/endpoints";
 
 const useAuthStore = create((set) => ({
-  user: MOCK_USER,
-  isAuthenticated: true,
+  user: null,
+  isAuthenticated: false,
 
   login: async (credentials) => {
-    const user = MOCK_USER;
-    set({ user, isAuthenticated: true });
-    return user;
+    const { data } = await api.post(ENDPOINTS.AUTH.LOGIN, credentials);
+    const { user, accessToken } = data.data;
+    localStorage.setItem("accessToken", accessToken);
+    set({
+      user: {
+        id: user._id,
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        role: user.role,
+        avatar: user.avatar?.url || null,
+      },
+      isAuthenticated: true,
+    });
   },
 
-  logout: () => {
+  logout: async () => {
+    try {
+      await api.post(ENDPOINTS.AUTH.LOGOUT);
+    } catch {
+      // ignore
+    }
+    localStorage.removeItem("accessToken");
     set({ user: null, isAuthenticated: false });
   },
 

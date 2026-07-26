@@ -25,7 +25,7 @@ const UserDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    userService.getById(Number(id))
+    userService.getById(id)
       .then(setUser)
       .catch(() => { toast("User not found", "error"); navigate("/admin/users"); })
       .finally(() => setLoading(false));

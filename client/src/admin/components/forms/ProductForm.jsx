@@ -139,8 +139,13 @@ const ProductForm = ({ defaultValues, onSubmit, loading, categories = [], brands
             )} />
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
+            <Controller name="categoryId" control={control} render={({ field }) => (
+              <AdminSelect label="Category" options={categoryOptions} {...field} value={field.value ?? ""} />
+            )} />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
             <Controller name="categoryType" control={control} render={({ field }) => (
-              <AdminSelect label="Category Type" options={CATEGORY_TYPES} {...field} />
+              <AdminSelect label="Component Type" options={CATEGORY_TYPES} {...field} />
             )} />
           </Grid>
           <Grid size={{ xs: 12 }}>

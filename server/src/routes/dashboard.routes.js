@@ -26,4 +26,25 @@ router.get(
   dashboardController.getRecentOrders
 );
 
+router.get(
+  "/low-stock-products",
+  protect,
+  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  dashboardController.getLowStockProducts
+);
+
+router.get(
+  "/top-products",
+  protect,
+  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  dashboardController.getTopProducts
+);
+
+router.get(
+  "/order-breakdown",
+  protect,
+  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  dashboardController.getOrderBreakdown
+);
+
 export default router;

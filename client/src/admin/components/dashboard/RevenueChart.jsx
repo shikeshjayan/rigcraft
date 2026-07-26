@@ -9,21 +9,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
-  { month: "Jan", revenue: 18500 },
-  { month: "Feb", revenue: 22300 },
-  { month: "Mar", revenue: 19800 },
-  { month: "Apr", revenue: 27600 },
-  { month: "May", revenue: 31200 },
-  { month: "Jun", revenue: 28900 },
-  { month: "Jul", revenue: 33400 },
-  { month: "Aug", revenue: 35200 },
-  { month: "Sep", revenue: 31800 },
-  { month: "Oct", revenue: 37500 },
-  { month: "Nov", revenue: 41200 },
-  { month: "Dec", revenue: 45800 },
-];
-
 const CustomTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
     return (
@@ -48,7 +33,7 @@ const CustomTooltip = ({ active, payload, label }) => {
   return null;
 };
 
-const RevenueChart = () => {
+const RevenueChart = ({ data = [] }) => {
   return (
     <Paper
       elevation={0}

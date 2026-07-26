@@ -26,7 +26,7 @@ const ReviewDetails = () => {
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    reviewService.getById(Number(id))
+    reviewService.getById(id)
       .then(setReview)
       .catch(() => { toast("Review not found", "error"); navigate("/admin/reviews"); })
       .finally(() => setLoading(false));
@@ -35,7 +35,7 @@ const ReviewDetails = () => {
   const handleStatus = async (status) => {
     setUpdating(true);
     try {
-      const updated = await reviewService.updateStatus(Number(id), status);
+      const updated = await reviewService.updateStatus(id, status);
       setReview(updated);
       toast(`Review ${status}`);
     } catch {

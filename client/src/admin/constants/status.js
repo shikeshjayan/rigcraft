@@ -5,7 +5,6 @@ export const ORDER_STATUS = {
   SHIPPED: "shipped",
   DELIVERED: "delivered",
   CANCELLED: "cancelled",
-  REFUNDED: "refunded",
 };
 
 export const ORDER_STATUS_COLOR = {
@@ -15,7 +14,6 @@ export const ORDER_STATUS_COLOR = {
   shipped: "primary",
   delivered: "success",
   cancelled: "error",
-  refunded: "error",
 };
 
 export const PRODUCT_STATUS = {

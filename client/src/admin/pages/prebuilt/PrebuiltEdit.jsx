@@ -17,7 +17,7 @@ const PrebuiltEdit = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    prebuiltService.getById(Number(id))
+    prebuiltService.getById(id)
       .then(setItem)
       .catch(() => { toast("Not found", "error"); navigate("/admin/prebuilt"); })
       .finally(() => setLoading(false));
@@ -26,7 +26,7 @@ const PrebuiltEdit = () => {
   const handleSubmit = async (data) => {
     setSaving(true);
     try {
-      await prebuiltService.update(Number(id), { ...data, comparePrice: data.comparePrice || null });
+      await prebuiltService.update(id, { ...data, comparePrice: data.comparePrice || null });
       toast("Prebuilt PC updated");
       navigate("/admin/prebuilt");
     } catch {
