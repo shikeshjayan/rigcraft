@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import userRepository from '../repositories/user.repository.js';
 import ApiError from '../utils/ApiError.js';
+import * as uploadService from './upload.service.js';
 import { sendResetPasswordEmail } from './email.service.js';
 import { sendOtpSms } from './sms.service.js';
 
@@ -157,7 +158,11 @@ export const getProfile = async (userId) => {
   return userRepository.findById(userId);
 };
 
-export const updateProfile = async (userId, data) => {
+export const updateProfile = async (userId, data, file) => {
+  if (file) {
+    const avatar = await uploadService.uploadImage(file, 'avatars');
+    data.avatar = avatar;
+  }
   return userRepository.updateById(userId, data);
 };
 

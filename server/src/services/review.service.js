@@ -154,7 +154,7 @@ export const getUserReviews = async (userId, query) => {
 };
 
 export const adminGetAllReviews = async (query) => {
-  const { page = 1, limit = 20, sort } = query;
+  const { page = 1, limit = 20, sort, search, status, rating } = query;
 
   const sortOptions = {};
   if (sort === "newest") sortOptions.createdAt = -1;
@@ -163,17 +163,36 @@ export const adminGetAllReviews = async (query) => {
   else if (sort === "lowest") sortOptions.rating = 1;
   else sortOptions.createdAt = -1;
 
+  const extraFilter = {};
+  if (status === "visible") extraFilter.isVisible = true;
+  else if (status === "hidden") extraFilter.isVisible = false;
+  if (rating) extraFilter.rating = Number(rating);
+  if (search) {
+    extraFilter.$or = [
+      { title: { $regex: search, $options: "i" } },
+      { comment: { $regex: search, $options: "i" } },
+    ];
+  }
+
   return reviewRepository.adminFindAll({
     page: Number(page),
     limit: Number(limit),
     sort: sortOptions,
+    filter: extraFilter,
   });
 };
 
-export const toggleVisibility = async (reviewId) => {
+export const adminGetReview = async (reviewId) => {
+  const review = await reviewRepository.findWithUser(reviewId);
+  if (!review) throw ApiError.notFound("Review not found");
+  return review;
+};
+
+export const adminUpdateStatus = async (reviewId, status) => {
   const review = await reviewRepository.findById(reviewId);
+  const isVisible = status === "visible";
   const updated = await reviewRepository.updateById(reviewId, {
-    isVisible: !review.isVisible,
+    isVisible,
   });
   await recalculateRating(review.item, review.itemType);
   return updated;
