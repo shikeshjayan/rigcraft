@@ -17,7 +17,7 @@ const BrandEdit = () => {
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
-    brandService.getById(Number(id))
+    brandService.getById(id)
       .then(setBrand)
       .catch(() => {
         toast("Brand not found", "error");
@@ -31,7 +31,7 @@ const BrandEdit = () => {
     try {
       const payload = { ...data, website: data.website || undefined };
       if (payload.logo?.file) payload.logo = payload.logo.file;
-      await brandService.update(Number(id), payload);
+      await brandService.update(id, payload);
       toast("Brand updated successfully");
       navigate("/admin/brands");
     } catch {

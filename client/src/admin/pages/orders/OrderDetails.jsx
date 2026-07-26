@@ -28,7 +28,7 @@ const OrderDetails = () => {
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    orderService.getById(Number(id))
+    orderService.getById(id)
       .then(setOrder)
       .catch(() => { toast("Order not found", "error"); navigate("/admin/orders"); })
       .finally(() => setLoading(false));
@@ -37,7 +37,7 @@ const OrderDetails = () => {
   const handleStatusChange = async (newStatus) => {
     setUpdating(true);
     try {
-      const updated = await orderService.updateStatus(Number(id), newStatus);
+      const updated = await orderService.updateStatus(id, newStatus);
       setOrder(updated);
       toast("Order status updated");
     } catch {

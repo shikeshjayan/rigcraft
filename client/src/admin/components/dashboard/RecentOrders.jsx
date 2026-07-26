@@ -4,15 +4,7 @@ import { formatCurrency } from "../../utils/formatCurrency";
 import { formatDate } from "../../utils/formatDate";
 import { ORDER_STATUS_COLOR } from "../../constants/status";
 
-const orders = [
-  { id: "#ORD-007", customer: "Alice Johnson", date: "2026-07-24", status: "delivered", total: 2499.99 },
-  { id: "#ORD-006", customer: "Bob Smith", date: "2026-07-23", status: "shipped", total: 1599.99 },
-  { id: "#ORD-005", customer: "Carol White", date: "2026-07-22", status: "processing", total: 3299.99 },
-  { id: "#ORD-004", customer: "David Brown", date: "2026-07-21", status: "pending", total: 899.99 },
-  { id: "#ORD-003", customer: "Eve Davis", date: "2026-07-20", status: "delivered", total: 4199.99 },
-];
-
-const RecentOrders = () => {
+const RecentOrders = ({ orders = [] }) => {
   return (
     <Paper
       elevation={0}
@@ -28,7 +20,7 @@ const RecentOrders = () => {
           Recent Orders
         </Typography>
         <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", mt: 0.5 }}>
-          Latest 5 orders
+          Latest {orders.length} orders
         </Typography>
       </div>
       <TableContainer>
@@ -44,14 +36,14 @@ const RecentOrders = () => {
           </TableHead>
           <TableBody>
             {orders.map((order) => (
-              <TableRow key={order.id} hover>
+              <TableRow key={order.id || order.orderNumber} hover>
                 <TableCell>
                   <Link href="#" underline="hover" sx={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--color-admin-primary)", cursor: "pointer" }}>
-                    {order.id}
+                    {order.orderNumber}
                   </Link>
                 </TableCell>
-                <TableCell sx={{ fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{order.customer}</TableCell>
-                <TableCell sx={{ fontSize: "0.875rem", color: "var(--color-admin-text-secondary)" }}>{formatDate(order.date)}</TableCell>
+                <TableCell sx={{ fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{order.customer?.name || "N/A"}</TableCell>
+                <TableCell sx={{ fontSize: "0.875rem", color: "var(--color-admin-text-secondary)" }}>{formatDate(order.createdAt)}</TableCell>
                 <TableCell>
                   <StatusBadge label={order.status} color={ORDER_STATUS_COLOR[order.status]} />
                 </TableCell>
@@ -60,6 +52,13 @@ const RecentOrders = () => {
                 </TableCell>
               </TableRow>
             ))}
+            {orders.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={5} align="center" sx={{ py: 4, color: "var(--color-admin-muted)" }}>
+                  No recent orders
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
