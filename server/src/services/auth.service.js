@@ -172,6 +172,14 @@ export const updateProfile = async (userId, data) => {
   return userRepository.updateById(userId, data);
 };
 
+export const updateCart = async (userId, cart) => {
+  return userRepository.updateById(userId, { cart });
+};
+
+export const updateWishlist = async (userId, wishlist) => {
+  return userRepository.updateById(userId, { wishlist });
+};
+
 export const updatePassword = async (userId, currentPassword, newPassword) => {
   const user = await userRepository.findByIdWithPassword(userId);
   if (!user) throw ApiError.notFound('User not found');

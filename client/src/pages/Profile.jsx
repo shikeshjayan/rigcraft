@@ -70,7 +70,10 @@ const Profile = () => {
               <div className="bg-white shadow-sm flex flex-col overflow-hidden border border-gray-100" style={{ borderRadius: 'var(--radius-sm)' }}>
                 
                 {/* Orders */}
-                <div className="p-4 border-b border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors group">
+                <div 
+                  className="p-4 border-b border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors group"
+                  onClick={() => navigate('/orders')}
+                >
                   <div className="flex items-center gap-4">
                     <Inventory2OutlinedIcon sx={{ color: '#2563EB' }} />
                     <span className="font-bold text-gray-600 group-hover:text-[#2563EB]">MY ORDERS</span>

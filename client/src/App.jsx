@@ -16,6 +16,10 @@ import AllBundleDeals from './pages/AllBundleDeals';
 import Customerlogin from './pages/Customerlogin';
 import CustomerRegister from './pages/CustomerRegister';
 import Profile from './pages/Profile';
+import Orders from './pages/Orders';
+import Warranty from './pages/Warranty';
+import ReturnsAndRefunds from './pages/ReturnsAndRefunds';
+import PcBuilderGuide from './pages/PcBuilderGuide';
 import { WishlistProvider } from './context/WishlistContext';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
@@ -47,6 +51,10 @@ const App = () => {
                   <Route path="/login" element={<Customerlogin />} />
                   <Route path="/register" element={<CustomerRegister />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route path="/orders" element={<Orders />} />
+                  <Route path="/warranty" element={<Warranty />} />
+                  <Route path="/returns" element={<ReturnsAndRefunds />} />
+                  <Route path="/builder-guide" element={<PcBuilderGuide />} />
                 </Routes>
               </div>
               <Footer />
