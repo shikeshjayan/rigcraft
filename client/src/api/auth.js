@@ -24,3 +24,13 @@ export const getProfile = async () => {
   const response = await apiClient.get('/auth/profile');
   return response.data;
 };
+
+export const updateCart = async (cart) => {
+  const response = await apiClient.put('/auth/cart', { cart });
+  return response.data;
+};
+
+export const updateWishlist = async (wishlist) => {
+  const response = await apiClient.put('/auth/wishlist', { wishlist });
+  return response.data;
+};

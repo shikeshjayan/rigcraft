@@ -64,6 +64,8 @@ const userSchema = new mongoose.Schema(
     resetPasswordExpire: Date,
     otp: { type: String, select: false },
     otpExpire: { type: Date, select: false },
+    cart: { type: [mongoose.Schema.Types.Mixed], default: [] },
+    wishlist: { type: [mongoose.Schema.Types.Mixed], default: [] },
   },
   { timestamps: true }
 );

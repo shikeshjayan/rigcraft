@@ -133,8 +133,8 @@ const Footer = () => {
               <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">About RigCraft</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Track Order</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Warranty Claims</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Returns & Refunds</li>
+                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/warranty" className="block w-full">Warranty Claims</Link></li>
+                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/returns" className="block w-full">Returns & Refunds</Link></li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Contact Support</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">FAQs</li>
               </ul>
@@ -145,7 +145,7 @@ const Footer = () => {
             <div className="flex flex-col">
               <h4 className="text-[14px] font-bold tracking-widest text-white mb-6 uppercase">Explore</h4>
               <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">PC Builder Guide</li>
+                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/builder-guide" className="block w-full">PC Builder Guide</Link></li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Compatibility Checker</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Compare Builds</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Best Sellers</li>
