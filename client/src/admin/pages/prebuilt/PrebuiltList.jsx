@@ -157,7 +157,7 @@ const PrebuiltList = () => {
             </Box>
           ),
         }}
-        rowsPerPageOptions={[maxRows, 10, 25, 50, 100]}
+        rowsPerPageOptions={[10, 25, 50, 100]}
       />
       <ConfirmDialog
         open={!!deleteTarget}

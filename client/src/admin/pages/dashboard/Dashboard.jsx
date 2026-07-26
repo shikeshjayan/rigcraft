@@ -46,21 +46,22 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 mb-6">
-        <div className="xl:col-span-2 animate-admin-fade-in-up opacity-0" style={{ animationDelay: "0.6s" }}>
-          <RecentOrders />
+      <div className="grid grid-rows-2 gap-4 mb-6" style={{ minHeight: 520 }}>
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 min-h-0">
+          <div className="xl:col-span-2 animate-admin-fade-in-up opacity-0" style={{ animationDelay: "0.6s" }}>
+            <RecentOrders />
+          </div>
+          <div className="animate-admin-fade-in-up opacity-0" style={{ animationDelay: "0.7s" }}>
+            <OrderChart />
+          </div>
         </div>
-        <div className="animate-admin-fade-in-up opacity-0" style={{ animationDelay: "0.7s" }}>
-          <OrderChart />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div className="animate-admin-fade-in-up opacity-0" style={{ animationDelay: "0.8s" }}>
-          <LowStockProducts />
-        </div>
-        <div className="animate-admin-fade-in-up opacity-0" style={{ animationDelay: "0.9s" }}>
-          <TopProducts />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 min-h-0">
+          <div className="animate-admin-fade-in-up opacity-0" style={{ animationDelay: "0.8s" }}>
+            <LowStockProducts />
+          </div>
+          <div className="animate-admin-fade-in-up opacity-0" style={{ animationDelay: "0.9s" }}>
+            <TopProducts />
+          </div>
         </div>
       </div>
     </div>

@@ -67,6 +67,9 @@ const OrderChart = () => {
         borderRadius: "var(--radius-admin-card)",
         border: "1px solid var(--color-admin-border)",
         backgroundColor: "var(--color-admin-card)",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <Typography
@@ -81,8 +84,9 @@ const OrderChart = () => {
       >
         Total orders: {total}
       </Typography>
-      <ResponsiveContainer width="100%" height={280}>
-        <PieChart>
+      <Box sx={{ flex: 1, minHeight: 0 }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
           <Pie
             data={data}
             cx="50%"
@@ -98,8 +102,9 @@ const OrderChart = () => {
           </Pie>
           <Tooltip content={<CustomTooltip />} />
           <Legend content={renderLegend} />
-        </PieChart>
-      </ResponsiveContainer>
+          </PieChart>
+        </ResponsiveContainer>
+      </Box>
     </Paper>
   );
 };
