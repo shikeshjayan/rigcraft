@@ -25,7 +25,7 @@ const PrebuiltDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    prebuiltService.getById(Number(id))
+    prebuiltService.getById(id)
       .then(setItem)
       .catch(() => { toast("Not found", "error"); navigate("/admin/prebuilt"); })
       .finally(() => setLoading(false));

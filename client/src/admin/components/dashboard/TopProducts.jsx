@@ -1,15 +1,7 @@
 import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box } from "@mui/material";
 import { formatCurrency } from "../../utils/formatCurrency";
 
-const products = [
-  { id: 1, name: "RTX 4080 Super Gaming PC", sold: 86, revenue: 344000, image: null },
-  { id: 2, name: "AMD Ryzen 7 Pro Workstation", sold: 64, revenue: 204800, image: null },
-  { id: 3, name: "NVIDIA RTX 4070 Build", sold: 52, revenue: 129900, image: null },
-  { id: 4, name: "Intel Core i7-14700K Bundle", sold: 47, revenue: 98700, image: null },
-  { id: 5, name: "AMD Ryzen 5 Budget Build", sold: 38, revenue: 56900, image: null },
-];
-
-const TopProducts = () => {
+const TopProducts = ({ products = [] }) => {
   return (
     <Paper
       elevation={0}
@@ -25,7 +17,7 @@ const TopProducts = () => {
           Top Products
         </Typography>
         <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", mt: 0.5 }}>
-          Best selling products this month
+          Best selling products
         </Typography>
       </div>
       <TableContainer>
@@ -34,7 +26,7 @@ const TopProducts = () => {
             <TableRow>
               <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }}>PRODUCT</TableCell>
               <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }} align="center">SOLD</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }} align="right">REVENUE</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }} align="right">PRICE</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -66,16 +58,23 @@ const TopProducts = () => {
                 </TableCell>
                 <TableCell align="center">
                   <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-admin-text)" }}>
-                    {product.sold}
+                    {product.soldCount || 0}
                   </Typography>
                 </TableCell>
                 <TableCell align="right">
                   <Typography sx={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-admin-text)" }}>
-                    {formatCurrency(product.revenue)}
+                    {formatCurrency(product.price)}
                   </Typography>
                 </TableCell>
               </TableRow>
             ))}
+            {products.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={3} align="center" sx={{ py: 4, color: "var(--color-admin-muted)" }}>
+                  No product data
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

@@ -5,18 +5,37 @@ import AdminButton from "../../components/common/Button";
 import ImageUpload from "../../components/common/ImageUpload";
 import { useToast } from "../../components/common/Toast";
 import useAuthStore from "../../store/authStore";
+import { userService } from "../../services/userService";
 
 const Profile = () => {
   const { user, setUser } = useAuthStore();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
   const [avatar, setAvatar] = useState([]);
+  const [name, setName] = useState(user?.name || "");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
 
   const handleSave = async () => {
+    if (password && password !== confirmPassword) {
+      toast("Passwords do not match", "error");
+      return;
+    }
     setSaving(true);
-    await new Promise((r) => setTimeout(r, 500));
-    toast("Profile updated");
-    setSaving(false);
+    try {
+      const payload = { name };
+      if (password) payload.password = password;
+      if (avatar.length > 0) payload.avatar = avatar[0];
+      const updated = await userService.update(user.id, payload);
+      setUser({ ...user, ...updated });
+      setPassword("");
+      setConfirmPassword("");
+      toast("Profile updated");
+    } catch {
+      toast("Failed to update profile", "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -46,16 +65,16 @@ const Profile = () => {
             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 3, color: "var(--color-admin-text)" }}>Account Information</Typography>
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <AdminInput label="Full Name" defaultValue={user?.name} />
+                <AdminInput label="Full Name" value={name} onChange={(e) => setName(e.target.value)} />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <AdminInput label="Email" defaultValue={user?.email} disabled />
+                <AdminInput label="Email" value={user?.email} disabled />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <AdminInput label="Password" type="password" placeholder="Leave blank to keep current" />
+                <AdminInput label="Password" type="password" placeholder="Leave blank to keep current" value={password} onChange={(e) => setPassword(e.target.value)} />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <AdminInput label="Confirm Password" type="password" placeholder="Confirm new password" />
+                <AdminInput label="Confirm Password" type="password" placeholder="Confirm new password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               </Grid>
               <Grid size={{ xs: 12 }}>
                 <Box sx={{ pt: 2 }}>

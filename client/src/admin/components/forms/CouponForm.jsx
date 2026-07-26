@@ -7,14 +7,15 @@ import AdminSelect from "../common/Select";
 import AdminButton from "../common/Button";
 
 const couponSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
   code: z.string().min(1, "Code is required").max(30).regex(/^[A-Z0-9_]+$/, "Uppercase letters, numbers, and underscores only"),
   type: z.string().min(1, "Type is required"),
   value: z.coerce.number().min(0, "Value must be positive"),
   minOrder: z.coerce.number().min(0).optional(),
   maxUses: z.coerce.number().int().min(0).optional(),
   isActive: z.boolean().optional(),
-  startsAt: z.string().optional(),
-  expiresAt: z.string().optional(),
+  startsAt: z.string().min(1, "Start date is required"),
+  expiresAt: z.string().min(1, "Expiry date is required"),
   description: z.string().max(300).optional(),
 });
 
@@ -30,7 +31,7 @@ const CouponForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Co
   const { control, handleSubmit, formState: { errors }, watch } = useForm({
     resolver: zodResolver(couponSchema),
     defaultValues: {
-      code: "", type: "percentage", value: 0, minOrder: 0, maxUses: 100,
+      name: "", code: "", type: "percentage", value: 0, minOrder: 0, maxUses: 100,
       isActive: true, startsAt: "", expiresAt: "", description: "",
       ...defaultValues,
     },
@@ -44,11 +45,19 @@ const CouponForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Co
         <Grid size={{ xs: 12, md: 8 }}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 4 }}>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <Controller name="name" control={control} render={({ field }) => (
+                  <AdminInput label="Coupon Name" error={!!errors.name} helperText={errors.name?.message} {...field} />
+                )} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Controller name="code" control={control} render={({ field }) => (
                   <AdminInput label="Coupon Code" placeholder="SUMMER2025" error={!!errors.code} helperText={errors.code?.message} {...field} onChange={(e) => field.onChange(e.target.value.toUpperCase())} />
                 )} />
               </Grid>
+            </Grid>
+
+            <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 4 }}>
                 <Controller name="type" control={control} render={({ field }) => (
                   <AdminSelect label="Discount Type" options={COUPON_TYPES} {...field} />

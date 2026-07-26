@@ -8,16 +8,18 @@ import {
   Legend,
 } from "recharts";
 
-const data = [
-  { name: "Pending", value: 24, color: "var(--color-admin-warning)" },
-  { name: "Processing", value: 18, color: "var(--color-admin-info)" },
-  { name: "Shipped", value: 32, color: "var(--color-admin-primary)" },
-  { name: "Delivered", value: 156, color: "var(--color-admin-success)" },
-  { name: "Cancelled", value: 12, color: "var(--color-admin-danger)" },
-];
+const STATUS_COLORS = {
+  pending: "var(--color-admin-warning)",
+  confirmed: "var(--color-admin-info)",
+  processing: "var(--color-admin-info)",
+  shipped: "var(--color-admin-primary)",
+  delivered: "var(--color-admin-success)",
+  cancelled: "var(--color-admin-danger)",
+};
 
 const CustomTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
+    const total = payload[0].payload.total || 1;
     return (
       <Box
         sx={{
@@ -28,11 +30,11 @@ const CustomTooltip = ({ active, payload }) => {
           boxShadow: "var(--shadow-admin-dropdown)",
         }}
       >
-        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+        <Typography variant="body2" sx={{ fontWeight: 600, textTransform: "capitalize" }}>
           {payload[0].name}: {payload[0].value}
         </Typography>
         <Typography variant="caption" sx={{ color: "var(--color-admin-muted)" }}>
-          {((payload[0].value / data.reduce((a, b) => a + b.value, 0)) * 100).toFixed(1)}%
+          {((payload[0].value / total) * 100).toFixed(1)}%
         </Typography>
       </Box>
     );
@@ -47,7 +49,7 @@ const renderLegend = (props) => {
       {payload.map((entry, index) => (
         <Box key={index} sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
           <Box sx={{ width: 10, height: 10, borderRadius: "50%", backgroundColor: entry.color }} />
-          <Typography variant="caption" sx={{ color: "var(--color-admin-text-secondary)" }}>
+          <Typography variant="caption" sx={{ color: "var(--color-admin-text-secondary)", textTransform: "capitalize" }}>
             {entry.value}
           </Typography>
         </Box>
@@ -56,8 +58,15 @@ const renderLegend = (props) => {
   );
 };
 
-const OrderChart = () => {
-  const total = data.reduce((a, b) => a + b.value, 0);
+const OrderChart = ({ data = [] }) => {
+  const chartData = data.map((d) => ({
+    name: d.status,
+    value: d.count,
+    color: STATUS_COLORS[d.status] || "var(--color-admin-muted)",
+    total: data.reduce((s, item) => s + item.count, 0),
+  }));
+
+  const total = chartData.reduce((a, b) => a + b.value, 0);
 
   return (
     <Paper
@@ -84,7 +93,7 @@ const OrderChart = () => {
       <ResponsiveContainer width="100%" height={280}>
         <PieChart>
           <Pie
-            data={data}
+            data={chartData}
             cx="50%"
             cy="50%"
             innerRadius={60}
@@ -92,7 +101,7 @@ const OrderChart = () => {
             paddingAngle={3}
             dataKey="value"
           >
-            {data.map((entry, index) => (
+            {chartData.map((entry, index) => (
               <Cell key={`cell-${index}`} fill={entry.color} />
             ))}
           </Pie>

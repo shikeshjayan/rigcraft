@@ -26,7 +26,7 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    productService.getById(Number(id))
+    productService.getById(id)
       .then(setProduct)
       .catch(() => { toast("Product not found", "error"); navigate("/admin/products"); })
       .finally(() => setLoading(false));
