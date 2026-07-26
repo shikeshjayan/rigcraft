@@ -128,6 +128,11 @@ const DataTable = ({
             fontSize: "0.8125rem",
             "& .MuiTablePagination-toolbar": { minHeight: 52 },
             "& .MuiTablePagination-selectIcon": { color: "var(--color-admin-muted)" },
+            "& .MuiTablePagination-actions .MuiIconButton-root": {
+              borderRadius: "var(--radius-admin-button)",
+              "&:hover": { backgroundColor: "var(--color-admin-primary-hover)" },
+              "&:hover .MuiSvgIcon-root": { color: "#ffffff" },
+            },
           }}
         />
       )}

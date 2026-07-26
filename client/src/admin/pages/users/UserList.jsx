@@ -86,7 +86,7 @@ const UserList = () => {
     <Box ref={containerRef}>
       <TableToolbar title="Users" searchValue={search} onSearchChange={setSearch} onRefresh={fetchUsers} />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
-      <DataTable columns={columns} rows={users} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/users/${row.id}`)} rowsPerPageOptions={[maxRows, 10, 25, 50, 100]} />
+      <DataTable columns={columns} rows={users} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/users/${row.id}`)} rowsPerPageOptions={[10, 25, 50, 100]} />
     </Box>
   );
 };
