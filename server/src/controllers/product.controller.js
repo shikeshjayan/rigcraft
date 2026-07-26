@@ -7,6 +7,11 @@ export const list = asyncHandler(async (req, res) => {
   ApiResponse.ok(result).send(res);
 });
 
+export const getById = asyncHandler(async (req, res) => {
+  const product = await productService.getById(req.params.id);
+  ApiResponse.ok(product).send(res);
+});
+
 export const getBySlug = asyncHandler(async (req, res) => {
   const product = await productService.getBySlug(req.params.slug);
   ApiResponse.ok(product).send(res);

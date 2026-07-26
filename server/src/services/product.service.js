@@ -62,6 +62,11 @@ export const list = async (query) => {
   });
 };
 
+export const getById = async (id) => {
+  const product = await productRepository.findById(id);
+  return product;
+};
+
 export const getBySlug = async (slug) => {
   const product = await productRepository.findPublishedBySlug(slug);
   if (!product) throw ApiError.notFound("Product not found");

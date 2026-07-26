@@ -1,6 +1,5 @@
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { BrowserRouter, Routes, Route, Outlet } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
 import Prebuild from './pages/Prebuild';
@@ -17,46 +16,47 @@ import Customerlogin from './pages/Customerlogin';
 import CustomerRegister from './pages/CustomerRegister';
 import Profile from './pages/Profile';
 import { WishlistProvider } from './context/WishlistContext';
-import { CartProvider } from './context/CartContext';
-import { AuthProvider } from './context/AuthContext';
+import AdminRoutes from './admin/routes/AdminRoutes';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000,
+      retry: 1,
+    },
+  },
+});
+
+const PublicLayout = () => (
+  <div className="min-h-screen bg-black text-white flex flex-col">
+    <Navbar />
+    <div className="flex-grow bg-white">
+      <Outlet />
+    </div>
+    <Footer />
+  </div>
+);
 
 const App = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
-        <AuthProvider>
-        <CartProvider>
-          <WishlistProvider>
-            <div className="min-h-screen bg-black text-white flex flex-col">
-              <Navbar />
-              <div className="flex-grow bg-white">
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/prebuild" element={<Prebuild />} />
-                  <Route path="/builder" element={<Pcbuilder />} />
-                  <Route path="/components" element={<Components />} />
-                  <Route path="/components/:category" element={<Components />} />
-                  <Route path="/detail/:id" element={<Detail />} />
-                  <Route path="/wishlist" element={<Wishlist />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/deals" element={<Dels />} />
-                  <Route path="/deals/active" element={<AllActiveDeals />} />
-                  <Route path="/deals/bundles" element={<AllBundleDeals />} />
-                  <Route path="/login" element={<Customerlogin />} />
-                  <Route path="/register" element={<CustomerRegister />} />
-                  <Route path="/profile" element={<Profile />} />
-                </Routes>
-              </div>
-              <Footer />
-            </div>
-          </WishlistProvider>
-        </CartProvider>
-      </AuthProvider>
-    </BrowserRouter>
-    <ReactQueryDevtools initialIsOpen={false} />
-  </QueryClientProvider>
+        <WishlistProvider>
+          <Routes>
+            <Route path="/admin/*" element={<AdminRoutes />} />
+            <Route element={<PublicLayout />}>
+              <Route path="/" element={<Home />} />
+              <Route path="/prebuild" element={<Prebuild />} />
+              <Route path="/builder" element={<Pcbuilder />} />
+              <Route path="/components" element={<Components />} />
+              <Route path="/components/:category" element={<Components />} />
+              <Route path="/detail/:id" element={<Detail />} />
+              <Route path="/wishlist" element={<Wishlist />} />
+            </Route>
+          </Routes>
+        </WishlistProvider>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 };
 

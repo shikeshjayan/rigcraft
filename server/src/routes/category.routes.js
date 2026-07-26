@@ -12,6 +12,7 @@ const router = Router();
 
 // Public
 router.get("/", categoryController.getAll);
+router.get("/all", categoryController.getAll);
 router.get("/:id", categoryController.getById);
 
 // Admin
