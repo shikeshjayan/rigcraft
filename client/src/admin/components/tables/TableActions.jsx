@@ -10,7 +10,10 @@ const TableActions = ({ actions = [] }) => {
     setAnchorEl(e.currentTarget);
   };
 
-  const handleClose = () => setAnchorEl(null);
+  const handleClose = (e) => {
+    e?.stopPropagation();
+    setAnchorEl(null);
+  };
 
   return (
     <>
