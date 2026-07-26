@@ -21,7 +21,7 @@ const CategoryEdit = () => {
     const fetch = async () => {
       try {
         const [cat, all] = await Promise.all([
-          categoryService.getById(Number(id)),
+          categoryService.getById(id),
           categoryService.getAll(),
         ]);
         setCategory(cat);
@@ -41,7 +41,7 @@ const CategoryEdit = () => {
     try {
       const payload = { ...data, parentId: data.parentId || null };
       if (payload.image?.file) payload.image = payload.image.file;
-      await categoryService.update(Number(id), payload);
+      await categoryService.update(id, payload);
       toast("Category updated successfully");
       navigate("/admin/categories");
     } catch {

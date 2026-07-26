@@ -16,3 +16,18 @@ export const getRecentOrders = asyncHandler(async (req, res) => {
   const orders = await dashboardService.getRecentOrders(req.query.limit);
   ApiResponse.ok(orders).send(res);
 });
+
+export const getLowStockProducts = asyncHandler(async (req, res) => {
+  const products = await dashboardService.getLowStockProducts(req.query.limit);
+  ApiResponse.ok(products).send(res);
+});
+
+export const getTopProducts = asyncHandler(async (req, res) => {
+  const products = await dashboardService.getTopProducts(req.query.limit);
+  ApiResponse.ok(products).send(res);
+});
+
+export const getOrderBreakdown = asyncHandler(async (req, res) => {
+  const breakdown = await dashboardService.getOrderBreakdown();
+  ApiResponse.ok(breakdown).send(res);
+});

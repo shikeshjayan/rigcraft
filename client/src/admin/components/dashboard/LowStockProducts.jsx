@@ -2,21 +2,13 @@ import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHe
 import StatusBadge from "../common/StatusBadge";
 import { formatCurrency } from "../../utils/formatCurrency";
 
-const products = [
-  { id: 1, name: "AMD Ryzen 7 7800X3D", sku: "CPU-7800X3D", stock: 3, price: 449.99 },
-  { id: 2, name: "NVIDIA RTX 4080 Super", sku: "GPU-4080S", stock: 2, price: 999.99 },
-  { id: 3, name: "Corsair Vengeance 32GB DDR5", sku: "RAM-VEN32", stock: 5, price: 189.99 },
-  { id: 4, name: "Samsung 990 Pro 2TB NVMe", sku: "SSD-990P2", stock: 4, price: 249.99 },
-  { id: 5, name: "ASUS ROG Strix X670E-E", sku: "MB-X670E", stock: 1, price: 499.99 },
-];
-
 const getStockColor = (stock) => {
   if (stock <= 2) return "error";
   if (stock <= 5) return "warning";
   return "success";
 };
 
-const LowStockProducts = () => {
+const LowStockProducts = ({ products = [] }) => {
   return (
     <Paper
       elevation={0}
@@ -40,8 +32,8 @@ const LowStockProducts = () => {
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }}>PRODUCT</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }}>SKU</TableCell>
               <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }}>STOCK</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }}>THRESHOLD</TableCell>
               <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }} align="right">PRICE</TableCell>
             </TableRow>
           </TableHead>
@@ -51,17 +43,24 @@ const LowStockProducts = () => {
                 <TableCell sx={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--color-admin-text)" }}>
                   {product.name}
                 </TableCell>
-                <TableCell sx={{ fontSize: "0.875rem", color: "var(--color-admin-muted)", fontFamily: "var(--font-admin-mono)" }}>
-                  {product.sku}
-                </TableCell>
                 <TableCell>
                   <StatusBadge label={product.stock} color={getStockColor(product.stock)} />
+                </TableCell>
+                <TableCell sx={{ fontSize: "0.875rem", color: "var(--color-admin-muted)" }}>
+                  {product.threshold}
                 </TableCell>
                 <TableCell align="right" sx={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-admin-text)" }}>
                   {formatCurrency(product.price)}
                 </TableCell>
               </TableRow>
             ))}
+            {products.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={4} align="center" sx={{ py: 4, color: "var(--color-admin-muted)" }}>
+                  No low stock products
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>

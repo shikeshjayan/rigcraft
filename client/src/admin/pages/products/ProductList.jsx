@@ -9,8 +9,8 @@ import TableActions from "../../components/tables/TableActions";
 import StatusBadge from "../../components/common/StatusBadge";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
-import { productService } from "../../services/productService";
-import { CATEGORY_TYPES, CATEGORY_TYPE_COLORS } from "../../constants/categoryTypes";
+import { productService, PRODUCT_TYPE_DISPLAY } from "../../services/productService";
+import { CATEGORY_TYPES } from "../../constants/categoryTypes";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
@@ -106,10 +106,10 @@ const ProductList = () => {
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
         <Box sx={{
           width: 40, height: 40, borderRadius: "var(--radius-admin-badge)",
-          backgroundColor: `${CATEGORY_TYPE_COLORS[row.categoryType] || "var(--color-admin-muted)"}20`,
+          backgroundColor: `${PRODUCT_TYPE_DISPLAY[row.categoryType]?.color || "var(--color-admin-muted)"}20`,
           border: "1px solid var(--color-admin-border)",
           display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: "0.625rem", fontWeight: 700, color: CATEGORY_TYPE_COLORS[row.categoryType],
+          fontSize: "0.625rem", fontWeight: 700, color: PRODUCT_TYPE_DISPLAY[row.categoryType]?.color || "var(--color-admin-muted)",
           flexShrink: 0,
         }}>
           {val.charAt(0)}{val.charAt(1)}
@@ -121,9 +121,9 @@ const ProductList = () => {
       </Box>
     )},
     { key: "categoryType", label: "Type", render: (val) => {
-      const type = CATEGORY_TYPES.find((t) => t.value === val);
-      return type ? (
-        <Chip label={type.label} size="small" sx={{ backgroundColor: `${CATEGORY_TYPE_COLORS[val]}15`, color: CATEGORY_TYPE_COLORS[val], fontWeight: 500, fontSize: "0.7rem" }} />
+      const info = PRODUCT_TYPE_DISPLAY[val];
+      return info ? (
+        <Chip label={info.label} size="small" sx={{ backgroundColor: `${info.color}15`, color: info.color, fontWeight: 500, fontSize: "0.7rem" }} />
       ) : val;
     }},
     { key: "price", label: "Price", render: (val, row) => (

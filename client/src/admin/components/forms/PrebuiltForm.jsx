@@ -10,6 +10,8 @@ import AdminButton from "../common/Button";
 import ComponentSelector from "./ComponentSelector";
 import { COMPONENT_SLOTS } from "../../services/prebuiltService";
 
+const requiredSlotKeys = COMPONENT_SLOTS.filter((s) => s.required).map((s) => s.key);
+
 const prebuiltSchema = z.object({
   name: z.string().min(1, "Name is required").max(200),
   sku: z.string().min(1, "SKU is required").max(50),
@@ -23,6 +25,18 @@ const prebuiltSchema = z.object({
   components: z.record(z.string(), z.union([z.number(), z.null()])).optional(),
   tags: z.array(z.string()).optional(),
   image: z.any().optional(),
+}).superRefine((data, ctx) => {
+  const comps = data.components || {};
+  for (const key of requiredSlotKeys) {
+    if (!comps[key]) {
+      const slot = COMPONENT_SLOTS.find((s) => s.key === key);
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `${slot?.label || key} is required`,
+        path: ["components", key],
+      });
+    }
+  }
 });
 
 export { prebuiltSchema };
