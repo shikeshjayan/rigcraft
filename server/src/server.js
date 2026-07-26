@@ -14,6 +14,16 @@ import brandRoutes from "./routes/brand.routes.js";
 import productRoutes from "./routes/product.routes.js";
 import prebuiltPCRoutes from "./routes/prebuiltPC.routes.js";
 import buildRoutes from "./routes/build.routes.js";
+import cartRoutes from "./routes/cart.routes.js";
+import couponRoutes from "./routes/coupon.routes.js";
+import addressRoutes from "./routes/address.routes.js";
+import orderRoutes, { adminOrderRoutes } from "./routes/order.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
+import reviewRoutes, { adminReviewRoutes } from "./routes/review.routes.js";
+import wishlistRoutes from "./routes/wishlist.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
 import errorHandler from "./middlewares/error.js";
 
 dotenv.config();
@@ -24,7 +34,9 @@ const PORT = process.env.PORT || 5000;
 app.use(helmet());
 app.use(cors({ origin: process.env.CORS_ORIGIN, credentials: true }));
 app.use(morgan("dev"));
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => { req.rawBody = buf.toString(); }
+}));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
@@ -38,6 +50,22 @@ app.use("/api/v1/brands", brandRoutes);
 app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/prebuilt-pcs", prebuiltPCRoutes);
 app.use("/api/v1/builds", buildRoutes);
+app.use("/api/v1/cart", cartRoutes);
+app.use("/api/v1/coupons", couponRoutes);
+app.use("/api/v1/addresses", addressRoutes);
+
+app.use("/api/v1/orders", orderRoutes);
+app.use("/api/v1/admin/orders", adminOrderRoutes);
+app.use("/api/v1/payments", paymentRoutes);
+
+app.use("/api/v1/reviews", reviewRoutes);
+app.use("/api/v1/admin/reviews", adminReviewRoutes);
+
+app.use("/api/v1/wishlist", wishlistRoutes);
+
+app.use("/api/v1/dashboard", dashboardRoutes);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/settings", settingsRoutes);
 
 app.use(errorHandler);
 

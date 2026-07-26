@@ -196,8 +196,6 @@ const prebuiltPcSchema = new mongoose.Schema(
 
 prebuiltPcSchema.plugin(mongoosePaginate);
 
-prebuiltPcSchema.index({ slug: 1 });
-prebuiltPcSchema.index({ sku: 1 });
 prebuiltPcSchema.index({ "pricing.price": 1 });
 prebuiltPcSchema.index({ status: 1 });
 prebuiltPcSchema.index({ status: 1, isFeatured: 1 });
