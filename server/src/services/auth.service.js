@@ -60,6 +60,17 @@ export const refreshToken = async (token, res) => {
   return createTokenResponse(user, 200, res, true);
 };
 
+export const checkAccount = async (identifier) => {
+  let user;
+  if (identifier.includes('@')) {
+    user = await userRepository.findByEmail(identifier);
+  } else {
+    user = await userRepository.findByPhone(identifier);
+  }
+  if (!user) throw ApiError.notFound('No account found with this identifier');
+  return true;
+};
+
 export const updateUserRole = async (userId, role) => {
   const user = await userRepository.findById(userId);
   if (user.role === role) throw ApiError.conflict('User already has this role');
@@ -164,6 +175,14 @@ export const updateProfile = async (userId, data, file) => {
     data.avatar = avatar;
   }
   return userRepository.updateById(userId, data);
+};
+
+export const updateCart = async (userId, cart) => {
+  return userRepository.updateById(userId, { cart });
+};
+
+export const updateWishlist = async (userId, wishlist) => {
+  return userRepository.updateById(userId, { wishlist });
 };
 
 export const updatePassword = async (userId, currentPassword, newPassword) => {

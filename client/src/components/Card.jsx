@@ -1,12 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp, discount, compact = false, buttonText = 'Add to cart' }) => {
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   
   const isWishlisted = wishlist.some(item => item.id === id);
 
@@ -36,17 +42,16 @@ const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp,
     specParts = specs.split('|').map(s => s.trim());
   }
   
-  // Use first 2 specs as badges, rest as description if description prop is not provided
-  const badges = specParts.slice(0, 2);
+  // Use first 2 specs as badges (split by comma), rest as description if description prop is not provided
+  const badges = specParts.slice(0, 2).flatMap(part => part.split(',').map(b => b.trim()).filter(Boolean));
   const derivedDescription = specParts.slice(2).join(' • ');
   const finalDescription = description || derivedDescription;
 
   return (
     <div 
-      className="relative flex flex-col h-full overflow-hidden group transition-all duration-300 hover:scale-[1.02] cursor-pointer shadow-xl"
+      className="relative flex flex-col h-full overflow-hidden group transition-all duration-300 cursor-pointer shadow-xl shadow-black/20 bg-white"
       style={{ 
-        borderRadius: 'var(--radius-card)', 
-        background: 'linear-gradient(135deg, #a78bfa 0%, #818cf8 100%)',
+        borderRadius: 'var(--radius-sm)', 
         minHeight: compact ? '300px' : '400px'
       }}
     >
@@ -60,24 +65,8 @@ const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp,
         </div>
       )}
 
-      {/* Wishlist Icon */}
-      <div 
-        onClick={handleWishlistClick}
-        className={`absolute top-4 right-4 ${compact ? 'w-7 h-7' : 'w-9 h-9'} rounded-full backdrop-blur-md border flex items-center justify-center cursor-pointer z-20 transition-colors shadow-sm ${
-          isWishlisted 
-            ? 'bg-red-50 border-red-200 text-[#FF3E6C] hover:bg-red-100' 
-            : 'bg-white/30 border-white/40 text-white hover:bg-white/50'
-        }`}
-      >
-        {isWishlisted ? (
-          <FavoriteIcon sx={{ fontSize: compact ? 16 : 20 }} />
-        ) : (
-          <FavoriteBorderIcon sx={{ fontSize: compact ? 16 : 20 }} />
-        )}
-      </div>
-
       {/* Image Container */}
-      <div className={`w-full ${compact ? 'h-[150px]' : 'h-[220px]'} flex items-center justify-center overflow-hidden relative`}>
+      <div className={`w-full ${compact ? 'h-[150px]' : 'h-[220px]'} flex items-center justify-center relative bg-white`}>
         <img 
           src={image || 'https://placehold.co/400x400/transparent/white?text=PC'} 
           alt={title} 
@@ -85,26 +74,17 @@ const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp,
         />
       </div>
 
-      {/* White Inset Section */}
+      {/* Details Section */}
       <div 
-        className={`-mt-4 ${compact ? 'p-3' : 'p-5'} bg-white flex flex-col flex-grow relative z-10`}
-        style={{ borderRadius: 'var(--radius-card-inset) var(--radius-card-inset) var(--radius-sm) var(--radius-sm)' }}
+        className={`p-5 flex flex-col flex-grow relative z-10 bg-white`}
       >
-        {/* Title */}
-        <h3 
-          className="font-extrabold text-[#111111] leading-tight mb-3"
-          style={{ fontSize: compact ? '14px' : 'var(--font-card-title)' }}
-        >
-          {title}
-        </h3>
-        
-        {/* Badges */}
+        {/* Badges / Category */}
         {badges.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3">
+          <div className="flex flex-wrap gap-2 mb-2">
             {badges.map((badge, idx) => (
               <span 
                 key={idx} 
-                className={`${compact ? 'text-[9px] px-1.5 py-0.5' : 'text-[11px] px-2 py-1'} font-bold border border-gray-300 text-gray-600 uppercase tracking-wider rounded-sm`}
+                className={`${compact ? 'text-[9px]' : 'text-[11px]'} font-bold text-gray-600 bg-gray-100 px-2 py-0.5 rounded-full uppercase tracking-wider`}
               >
                 {badge}
               </span>
@@ -112,46 +92,114 @@ const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp,
           </div>
         )}
 
-        {/* Description */}
+        {/* Title and Price */}
+        <div className="flex flex-col items-center gap-1.5 mb-3 text-center">
+          <h3 
+            className="font-bold text-black leading-tight"
+            style={{ fontSize: compact ? '14px' : '16px' }}
+          >
+            {title}
+          </h3>
+          <span 
+            className="font-black text-black leading-tight"
+            style={{ fontSize: compact ? '14px' : '16px' }}
+          >
+            {price}
+          </span>
+        </div>
+
+        {/* Description (Hidden on compact if too long, or stylized) */}
         {finalDescription && (
           <p 
-            className="text-[#6B7280] leading-relaxed line-clamp-3 mb-6 flex-grow"
-            style={{ fontSize: compact ? '12px' : 'var(--font-card-paragraph)' }}
+            className="text-gray-600 leading-relaxed line-clamp-2 mb-6 flex-grow"
+            style={{ fontSize: compact ? '11px' : '12px' }}
           >
             {finalDescription}
           </p>
         )}
+        {!finalDescription && <div className="flex-grow"></div>}
 
-        {/* Footer: Price & Button */}
-        <div className="flex justify-between items-end mt-auto pt-2">
-          <div className="flex flex-col">
-            <span className={`${compact ? 'text-[9px]' : 'text-[11px]'} font-bold text-gray-500 uppercase tracking-widest mb-1`}>
-              Price
-            </span>
-            <span 
-              className="font-extrabold text-[#111111] leading-none"
-              style={{ fontSize: compact ? '18px' : 'var(--font-card-price)' }}
-            >
-              {price}
-            </span>
-          </div>
-
+        {/* Footer: Add to Cart & Wishlist */}
+        <div className="flex items-center gap-3 mt-auto">
           <button 
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
-              addToCart({ id, image, title, specs, price, mrp, discount, description });
+              if (!isLoggedIn) {
+                setShowLoginPrompt(true);
+              } else {
+                addToCart({ id, image, title, specs, price, mrp, discount, description });
+              }
             }}
-            className={`font-bold ${compact ? 'py-1.5 px-3 text-[12px]' : 'py-2.5 px-6'} transition-colors hover:opacity-90 shadow-sm text-white cursor-pointer`}
-            style={{ 
-              backgroundColor: 'var(--color-primary)', 
-              borderRadius: 'var(--radius-sm)'
-            }}
+            className={`flex-grow flex items-center justify-center font-extrabold uppercase tracking-wide ${compact ? 'py-2 text-[11px]' : 'py-3 text-[13px]'} transition-colors hover:opacity-90 shadow-sm text-white cursor-pointer`}
+            style={{ borderRadius: 'var(--radius-sm)', backgroundColor: 'var(--color-primary)' }}
+            title={buttonText}
           >
             {buttonText}
           </button>
+          
+          <button 
+            onClick={handleWishlistClick}
+            className={`flex items-center justify-center transition-colors hover:opacity-80 ${compact ? 'w-9 h-9' : 'w-[45px] h-[45px]'} cursor-pointer shrink-0`}
+            style={{ 
+              borderRadius: 'var(--radius-sm)',
+              backgroundColor: isWishlisted ? 'var(--color-primary)' : 'rgba(37, 99, 235, 0.1)',
+              color: isWishlisted ? 'white' : 'var(--color-primary)'
+            }}
+          >
+            {isWishlisted ? (
+              <FavoriteIcon sx={{ fontSize: compact ? 18 : 22, color: 'inherit' }} />
+            ) : (
+              <FavoriteBorderIcon sx={{ fontSize: compact ? 18 : 22, color: 'inherit' }} />
+            )}
+          </button>
         </div>
       </div>
+
+      {/* Login Prompt Popup */}
+      {showLoginPrompt && (
+        <div 
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setShowLoginPrompt(false);
+          }}
+        >
+          <div 
+            className="bg-white p-6 shadow-2xl max-w-sm w-full relative animate-in fade-in zoom-in duration-200"
+            style={{ borderRadius: 'var(--radius-sm)' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 className="text-xl font-extrabold text-gray-900 mb-2">Login Required</h3>
+            <p className="text-gray-600 mb-6 text-sm font-medium">You need to log in to your account to add items to the cart.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowLoginPrompt(false);
+                }}
+                className="flex-1 py-2 font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
+                style={{ borderRadius: 'var(--radius-sm)' }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  navigate('/login');
+                }}
+                className="flex-1 py-2 font-bold text-white bg-[var(--color-primary)] hover:opacity-90 transition-colors shadow-md cursor-pointer"
+                style={{ borderRadius: 'var(--radius-sm)' }}
+              >
+                Sign In
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

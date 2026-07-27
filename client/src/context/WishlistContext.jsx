@@ -1,4 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { useAuth } from './AuthContext';
+import { updateWishlist as apiUpdateWishlist, getProfile } from '../api/auth';
 
 const WishlistContext = createContext();
 
@@ -7,26 +9,59 @@ export const useWishlist = () => {
 };
 
 export const WishlistProvider = ({ children }) => {
-  const [wishlist, setWishlist] = useState(() => {
-    // Load initial state from local storage if available
-    const saved = localStorage.getItem('rigcraft_wishlist');
-    if (saved) {
+  const { user } = useAuth();
+  
+  const storageKey = user && user.email ? `rigcraft_wishlist_${user.email}` : 'rigcraft_wishlist_guest';
+
+  const [wishlist, setWishlist] = useState([]);
+
+  const loadedKey = useRef(storageKey);
+  const isInitialized = useRef(false);
+
+  useEffect(() => {
+    isInitialized.current = false;
+    if (user) {
       try {
-        return JSON.parse(saved);
-      } catch (e) {
-        return [];
+        const stored = localStorage.getItem(storageKey);
+        setWishlist(stored ? JSON.parse(stored) : (user.wishlist || []));
+      } catch {
+        setWishlist(user.wishlist || []);
+      }
+      // Fetch latest wishlist from backend to sync across devices
+      getProfile().then(res => {
+        if (res && res.success && res.data) {
+          setWishlist(res.data.wishlist || []);
+        }
+        // Wait a tiny bit to ensure state updates before allowing backend pushes
+        setTimeout(() => { isInitialized.current = true; }, 100);
+      }).catch(err => {
+        console.error("Error fetching wishlist:", err);
+        isInitialized.current = true;
+      });
+    } else {
+      try {
+        const stored = localStorage.getItem('rigcraft_wishlist_guest');
+        setWishlist(stored ? JSON.parse(stored) : []);
+      } catch {
+        setWishlist([]);
       }
     }
-    return [];
-  });
+    loadedKey.current = storageKey;
+  }, [storageKey, user]);
 
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
-  // Sync to local storage when wishlist changes
+  // Sync to local storage and backend when wishlist changes
   useEffect(() => {
-    localStorage.setItem('rigcraft_wishlist', JSON.stringify(wishlist));
-  }, [wishlist]);
+    if (loadedKey.current === storageKey) {
+      localStorage.setItem(storageKey, JSON.stringify(wishlist));
+      
+      if (user && isInitialized.current) {
+        apiUpdateWishlist(wishlist).catch(console.error);
+      }
+    }
+  }, [wishlist, storageKey, user]);
 
   const showToastNotification = (msg) => {
     setToastMessage(msg);

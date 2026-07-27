@@ -10,6 +10,11 @@ export const login = asyncHandler(async (req, res) => {
   await authService.login(req.body, res);
 });
 
+export const checkAccount = asyncHandler(async (req, res) => {
+  await authService.checkAccount(req.body.identifier);
+  ApiResponse.ok(null, 'Account exists').send(res);
+});
+
 export const getProfile = asyncHandler(async (req, res) => {
   const user = await authService.getProfile(req.user.id);
   ApiResponse.ok(user).send(res);
@@ -18,6 +23,16 @@ export const getProfile = asyncHandler(async (req, res) => {
 export const updateProfile = asyncHandler(async (req, res) => {
   const user = await authService.updateProfile(req.user.id, req.body, req.file);
   ApiResponse.ok(user, 'Profile updated').send(res);
+});
+
+export const updateCart = asyncHandler(async (req, res) => {
+  const user = await authService.updateCart(req.user.id, req.body.cart);
+  ApiResponse.ok(user, 'Cart updated').send(res);
+});
+
+export const updateWishlist = asyncHandler(async (req, res) => {
+  const user = await authService.updateWishlist(req.user.id, req.body.wishlist);
+  ApiResponse.ok(user, 'Wishlist updated').send(res);
 });
 
 export const updatePassword = asyncHandler(async (req, res) => {
