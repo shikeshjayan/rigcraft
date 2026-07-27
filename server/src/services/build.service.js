@@ -41,9 +41,6 @@ const resolveProducts = async (components) => {
 };
 
 export const createBuild = async (userId, data) => {
-  if (data.components) {
-    await validateComponentsExist(data.components);
-  }
 
   const build = await buildRepository.create({
     user: userId,
@@ -79,7 +76,6 @@ export const updateBuild = async (buildId, userId, data) => {
   }
 
   if (data.components) {
-    await validateComponentsExist(data.components);
     updateData.components = data.components;
   }
 
@@ -116,13 +112,10 @@ export const duplicateBuild = async (buildId, userId, name) => {
   );
   if (!duplicated) throw ApiError.notFound("Build not found");
 
-  await duplicated.populate("components.product");
   return duplicated;
 };
 
 const recalculateBuild = async (build) => {
-  await build.populate("components.product");
-
   const result = compatibilityValidate(build);
 
   build.totalPrice = result.totalPrice;

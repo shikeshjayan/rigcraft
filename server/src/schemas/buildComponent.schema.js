@@ -9,8 +9,7 @@ const buildComponentSchema = new mongoose.Schema(
       required: true,
     },
     product: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
+      type: mongoose.Schema.Types.Mixed,
       required: true,
     },
     quantity: {
