@@ -4,57 +4,96 @@ const addressSchema = new mongoose.Schema(
   {
     user: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      ref: "User",
       required: true,
+      index: true,
     },
-    fullName: {
-      type: String,
-      required: [true, 'Full name is required'],
-    },
-    phone: {
-      type: String,
-      required: [true, 'Phone is required'],
-    },
-    alternatePhone: {
-      type: String,
-    },
-    addressLine1: {
-      type: String,
-      required: [true, 'Address Line 1 is required'],
-    },
-    addressLine2: {
-      type: String,
-    },
-    landmark: {
-      type: String,
-    },
-    city: {
-      type: String,
-      required: [true, 'City is required'],
-    },
-    state: {
-      type: String,
-      required: [true, 'State is required'],
-    },
-    country: {
-      type: String,
-      default: 'India',
-    },
-    postalCode: {
-      type: String,
-      required: [true, 'Postal code is required'],
-    },
+
     label: {
       type: String,
-      required: [true, 'Label is required'],
+      default: "home",
+      trim: true,
+      maxlength: 100,
     },
+
+    fullName: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+
+    phone: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
+    alternatePhone: {
+      type: String,
+      trim: true,
+    },
+
+    addressLine1: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 255,
+    },
+
+    addressLine2: {
+      type: String,
+      trim: true,
+      maxlength: 255,
+    },
+
+    landmark: {
+      type: String,
+      trim: true,
+      maxlength: 255,
+    },
+
+    city: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+
+    state: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100,
+    },
+
+    country: {
+      type: String,
+      default: "India",
+      trim: true,
+      maxlength: 100,
+    },
+
+    postalCode: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+
     isDefault: {
       type: Boolean,
       default: false,
     },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    toJSON: { versionKey: false },
+  }
 );
 
-const Address = mongoose.model('Address', addressSchema);
+addressSchema.index({ user: 1 });
+addressSchema.index({ user: 1, isDefault: 1 });
+
+const Address = mongoose.model("Address", addressSchema);
+
 export default Address;
