@@ -33,6 +33,22 @@ const orderItemSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const statusHistorySchema = new mongoose.Schema(
+  {
+    status: { type: String, required: true },
+    paymentStatus: String,
+    changedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    changedByRole: {
+      type: String,
+      enum: ["user", "admin", "manager", "system"],
+      default: "system",
+    },
+    changedAt: { type: Date, default: Date.now },
+    note: String,
+  },
+  { _id: false }
+);
+
 const orderSchema = new mongoose.Schema(
   {
     orderNumber: {
@@ -115,6 +131,11 @@ const orderSchema = new mongoose.Schema(
 
     checkoutExpiresAt: {
       type: Date,
+    },
+
+    statusHistory: {
+      type: [statusHistorySchema],
+      default: [],
     },
   },
   {
