@@ -3,10 +3,22 @@ import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-  Box, Grid, Typography, Switch as MuiSwitch, Accordion, AccordionSummary, AccordionDetails,
-  Chip, IconButton, Autocomplete,
+  Box,
+  Grid,
+  Typography,
+  Switch as MuiSwitch,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Chip,
+  IconButton,
+  Autocomplete,
 } from "@mui/material";
-import { ExpandMore, Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import {
+  ExpandMore,
+  Add as AddIcon,
+  Delete as DeleteIcon,
+} from "@mui/icons-material";
 import AdminInput from "../common/Input";
 import AdminSelect from "../common/Select";
 import ImageUpload from "../common/ImageUpload";
@@ -15,19 +27,16 @@ import { CATEGORY_TYPES } from "../../constants/categoryTypes";
 import { SPEC_TEMPLATES } from "../../constants/compatibilityFields";
 
 const productSchema = z.object({
-  name: z.string().min(1, "Name is required").max(200),
+  name: z.string().min(1, "Name is required").max(150),
   sku: z.string().min(1, "SKU is required").max(50),
-  brandId: z.union([z.string(), z.number()]).optional(),
-  categoryId: z.union([z.string(), z.number()]).optional(),
+  brandId: z.string().min(1, "Brand is required"),
+  categoryId: z.string().min(1, "Category is required"),
   categoryType: z.string().optional(),
   description: z.string().optional(),
   shortDescription: z.string().max(300).optional(),
   price: z.coerce.number().min(0, "Price must be positive"),
   comparePrice: z.coerce.number().min(0).optional().nullable(),
-  costPrice: z.coerce.number().min(0).optional().nullable(),
-  taxRate: z.coerce.number().min(0).max(100).optional(),
   stock: z.coerce.number().int().min(0).optional(),
-  trackInventory: z.boolean().optional(),
   lowStockThreshold: z.coerce.number().int().min(0).optional(),
   weight: z.coerce.number().min(0).optional(),
   length: z.coerce.number().min(0).optional(),
@@ -38,7 +47,9 @@ const productSchema = z.object({
   metaTitle: z.string().max(60).optional(),
   metaDescription: z.string().max(160).optional(),
   tags: z.array(z.string()).optional(),
-  specifications: z.array(z.object({ key: z.string(), value: z.string(), label: z.string() })).optional(),
+  specifications: z
+    .array(z.object({ key: z.string(), value: z.string(), label: z.string() }))
+    .optional(),
   compatibility: z.record(z.string(), z.any()).optional(),
   images: z.array(z.any()).optional(),
 });
@@ -56,30 +67,62 @@ const SectionAccordion = ({ title, defaultExpanded = false, children }) => (
       "&:before": { display: "none" },
       mb: 2,
       "&.Mui-expanded": { margin: "0 0 16px 0" },
-    }}
-  >
-    <AccordionSummary expandIcon={<ExpandMore />} sx={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>
+    }}>
+    <AccordionSummary
+      expandIcon={<ExpandMore />}
+      sx={{
+        fontWeight: 600,
+        fontSize: "0.875rem",
+        color: "var(--color-admin-text)",
+      }}>
       {title}
     </AccordionSummary>
-    <AccordionDetails sx={{ borderTop: "1px solid var(--color-admin-border)", pt: 3 }}>
+    <AccordionDetails
+      sx={{ borderTop: "1px solid var(--color-admin-border)", pt: 3 }}>
       {children}
     </AccordionDetails>
   </Accordion>
 );
 
-const ProductForm = ({ defaultValues, onSubmit, loading, categories = [], brands = [], submitLabel = "Create Product" }) => {
+const ProductForm = ({
+  defaultValues,
+  onSubmit,
+  loading,
+  categories = [],
+  brands = [],
+  submitLabel = "Create Product",
+}) => {
   const categoryType = defaultValues?.categoryType || "";
 
-  const { control, handleSubmit, formState: { errors }, setValue, watch, register } = useForm({
+  const {
+    control,
+    handleSubmit,
+    formState: { errors },
+    setValue,
+    watch,
+    register,
+  } = useForm({
     resolver: zodResolver(productSchema),
     defaultValues: {
-      name: "", sku: "", brandId: "", categoryId: "", categoryType: "",
-      description: "", shortDescription: "",
-      price: 0, comparePrice: null, costPrice: null, taxRate: 0,
-      stock: 0, trackInventory: true, lowStockThreshold: 5,
-      weight: 0, length: 0, width: 0, height: 0,
-      isActive: true, isFeatured: false,
-      metaTitle: "", metaDescription: "",
+      name: "",
+      sku: "",
+      brandId: "",
+      categoryId: "",
+      categoryType: "",
+      description: "",
+      shortDescription: "",
+      price: 0,
+      comparePrice: null,
+      stock: 0,
+      lowStockThreshold: 5,
+      weight: 0,
+      length: 0,
+      width: 0,
+      height: 0,
+      isActive: true,
+      isFeatured: false,
+      metaTitle: "",
+      metaDescription: "",
       tags: [],
       specifications: [],
       compatibility: {},
@@ -88,8 +131,10 @@ const ProductForm = ({ defaultValues, onSubmit, loading, categories = [], brands
     },
   });
 
-  const { fields, append, remove } = useFieldArray({ control, name: "specifications" });
-  const images = watch("images") || [];
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "specifications",
+  });
   const tags = watch("tags") || [];
   const selectedType = watch("categoryType") || categoryType;
   const specTemplate = SPEC_TEMPLATES[selectedType] || [];
@@ -104,10 +149,16 @@ const ProductForm = ({ defaultValues, onSubmit, loading, categories = [], brands
   };
 
   const removeTag = (tag) => {
-    setValue("tags", tags.filter((t) => t !== tag));
+    setValue(
+      "tags",
+      tags.filter((t) => t !== tag),
+    );
   };
 
-  const categoryOptions = categories.map((c) => ({ value: c.id, label: c.name }));
+  const categoryOptions = categories.map((c) => ({
+    value: c.id,
+    label: c.name,
+  }));
   const brandOptions = brands.map((b) => ({ value: b.id, label: b.name }));
 
   const addSpecsFromTemplate = () => {
@@ -124,45 +175,142 @@ const ProductForm = ({ defaultValues, onSubmit, loading, categories = [], brands
       <SectionAccordion title="General Information" defaultExpanded>
         <Grid container spacing={2}>
           <Grid size={{ xs: 12 }}>
-            <Controller name="name" control={control} render={({ field }) => (
-              <AdminInput label="Product Name" error={!!errors.name} helperText={errors.name?.message} {...field} />
-            )} />
+            <Controller
+              name="name"
+              control={control}
+              render={({ field }) => (
+                <AdminInput
+                  label="Product Name"
+                  error={!!errors.name}
+                  helperText={errors.name?.message}
+                  {...field}
+                />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
-            <Controller name="sku" control={control} render={({ field }) => (
-              <AdminInput label="SKU" error={!!errors.sku} helperText={errors.sku?.message} {...field} />
-            )} />
+            <Controller
+              name="sku"
+              control={control}
+              render={({ field }) => (
+                <AdminInput
+                  label="SKU"
+                  error={!!errors.sku}
+                  helperText={errors.sku?.message}
+                  {...field}
+                />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
-            <Controller name="brandId" control={control} render={({ field }) => (
-              <AdminSelect label="Brand" options={brandOptions} {...field} value={field.value ?? ""} />
-            )} />
+            <Controller
+              name="brandId"
+              control={control}
+              render={({ field }) => (
+                <AdminSelect
+                  label="Brand"
+                  options={brandOptions}
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 4 }}>
-            <Controller name="categoryType" control={control} render={({ field }) => (
-              <AdminSelect label="Category Type" options={CATEGORY_TYPES} {...field} />
-            )} />
+            <Controller
+              name="categoryId"
+              control={control}
+              render={({ field }) => (
+                <AdminSelect
+                  label="Category"
+                  options={categoryOptions}
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              )}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <Controller
+              name="categoryType"
+              control={control}
+              render={({ field }) => (
+                <AdminSelect
+                  label="Component Type"
+                  options={CATEGORY_TYPES}
+                  {...field}
+                />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12 }}>
-            <Controller name="shortDescription" control={control} render={({ field }) => (
-              <AdminInput label="Short Description" multiline rows={2} error={!!errors.shortDescription} helperText={errors.shortDescription?.message} {...field} />
-            )} />
+            <Controller
+              name="shortDescription"
+              control={control}
+              render={({ field }) => (
+                <AdminInput
+                  label="Short Description"
+                  multiline
+                  rows={2}
+                  error={!!errors.shortDescription}
+                  helperText={errors.shortDescription?.message}
+                  {...field}
+                />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12 }}>
-            <Controller name="description" control={control} render={({ field }) => (
-              <AdminInput label="Full Description" multiline rows={4} {...field} />
-            )} />
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <AdminInput
+                  label="Full Description"
+                  multiline
+                  rows={4}
+                  {...field}
+                />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12 }}>
-            <Typography variant="subtitle2" sx={{ mb: 1, color: "var(--color-admin-text)", fontWeight: 500, fontSize: "0.8125rem" }}>Tags</Typography>
+            <Typography
+              variant="subtitle2"
+              sx={{
+                mb: 1,
+                color: "var(--color-admin-text)",
+                fontWeight: 500,
+                fontSize: "0.8125rem",
+              }}>
+              Tags
+            </Typography>
             <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap", mb: 1 }}>
               {tags.map((tag) => (
-                <Chip key={tag} label={tag} onDelete={() => removeTag(tag)} size="small" sx={{ borderRadius: "var(--radius-admin-badge)" }} />
+                <Chip
+                  key={tag}
+                  label={tag}
+                  onDelete={() => removeTag(tag)}
+                  size="small"
+                  sx={{ borderRadius: "var(--radius-admin-badge)" }}
+                />
               ))}
             </Box>
             <Box sx={{ display: "flex", gap: 1 }}>
-              <AdminInput placeholder="Type and add tag" value={tagInput} onChange={(e) => setTagInput(e.target.value)} onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addTag())} />
-              <AdminButton variant="secondary" size="small" type="button" onClick={addTag}>Add</AdminButton>
+              <AdminInput
+                placeholder="Type and add tag"
+                value={tagInput}
+                onChange={(e) => setTagInput(e.target.value)}
+                onKeyDown={(e) =>
+                  e.key === "Enter" && (e.preventDefault(), addTag())
+                }
+              />
+              <AdminButton
+                variant="secondary"
+                size="small"
+                type="button"
+                onClick={addTag}>
+                Add
+              </AdminButton>
             </Box>
           </Grid>
         </Grid>
@@ -170,25 +318,34 @@ const ProductForm = ({ defaultValues, onSubmit, loading, categories = [], brands
 
       <SectionAccordion title="Pricing">
         <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Controller name="price" control={control} render={({ field }) => (
-              <AdminInput label="Price ($)" type="number" error={!!errors.price} helperText={errors.price?.message} {...field} />
-            )} />
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Controller
+              name="price"
+              control={control}
+              render={({ field }) => (
+                <AdminInput
+                  label="Price ($)"
+                  type="number"
+                  error={!!errors.price}
+                  helperText={errors.price?.message}
+                  {...field}
+                />
+              )}
+            />
           </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Controller name="comparePrice" control={control} render={({ field }) => (
-              <AdminInput label="Compare Price ($)" type="number" {...field} value={field.value ?? ""} />
-            )} />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Controller name="costPrice" control={control} render={({ field }) => (
-              <AdminInput label="Cost Price ($)" type="number" {...field} value={field.value ?? ""} />
-            )} />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Controller name="taxRate" control={control} render={({ field }) => (
-              <AdminInput label="Tax Rate (%)" type="number" {...field} />
-            )} />
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Controller
+              name="comparePrice"
+              control={control}
+              render={({ field }) => (
+                <AdminInput
+                  label="Compare Price ($)"
+                  type="number"
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              )}
+            />
           </Grid>
         </Grid>
       </SectionAccordion>
@@ -196,10 +353,27 @@ const ProductForm = ({ defaultValues, onSubmit, loading, categories = [], brands
       <SectionAccordion title="Media">
         <Grid container spacing={2}>
           <Grid size={{ xs: 12 }}>
-            <Typography variant="subtitle2" sx={{ mb: 1, color: "var(--color-admin-text)", fontWeight: 500, fontSize: "0.8125rem" }}>Product Images</Typography>
-            <Controller name="images" control={control} render={({ field }) => (
-              <ImageUpload images={images} onChange={(files) => setValue("images", files)} maxFiles={10} />
-            )} />
+            <Typography
+              variant="subtitle2"
+              sx={{
+                mb: 1,
+                color: "var(--color-admin-text)",
+                fontWeight: 500,
+                fontSize: "0.8125rem",
+              }}>
+              Product Images
+            </Typography>
+            <Controller
+              name="images"
+              control={control}
+              render={({ field }) => (
+                <ImageUpload
+                  images={field.value ?? []}
+                  onChange={(files) => field.onChange(files)}
+                  maxFiles={10}
+                />
+              )}
+            />
           </Grid>
         </Grid>
       </SectionAccordion>
@@ -207,62 +381,108 @@ const ProductForm = ({ defaultValues, onSubmit, loading, categories = [], brands
       <SectionAccordion title="SEO">
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Controller name="metaTitle" control={control} render={({ field }) => (
-              <AdminInput label="Meta Title" error={!!errors.metaTitle} helperText={errors.metaTitle?.message || `${(field.value || "").length}/60 characters`} {...field} />
-            )} />
+            <Controller
+              name="metaTitle"
+              control={control}
+              render={({ field }) => (
+                <AdminInput
+                  label="Meta Title"
+                  error={!!errors.metaTitle}
+                  helperText={
+                    errors.metaTitle?.message ||
+                    `${(field.value || "").length}/60 characters`
+                  }
+                  {...field}
+                />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
-            <Controller name="metaDescription" control={control} render={({ field }) => (
-              <AdminInput label="Meta Description" multiline rows={2} error={!!errors.metaDescription} helperText={errors.metaDescription?.message || `${(field.value || "").length}/160 characters`} {...field} />
-            )} />
+            <Controller
+              name="metaDescription"
+              control={control}
+              render={({ field }) => (
+                <AdminInput
+                  label="Meta Description"
+                  multiline
+                  rows={2}
+                  error={!!errors.metaDescription}
+                  helperText={
+                    errors.metaDescription?.message ||
+                    `${(field.value || "").length}/160 characters`
+                  }
+                  {...field}
+                />
+              )}
+            />
           </Grid>
         </Grid>
       </SectionAccordion>
 
       <SectionAccordion title="Inventory">
         <Grid container spacing={2}>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Controller name="stock" control={control} render={({ field }) => (
-              <AdminInput label="Stock Quantity" type="number" {...field} />
-            )} />
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Controller
+              name="stock"
+              control={control}
+              render={({ field }) => (
+                <AdminInput label="Stock Quantity" type="number" {...field} />
+              )}
+            />
           </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Controller name="lowStockThreshold" control={control} render={({ field }) => (
-              <AdminInput label="Low Stock Threshold" type="number" {...field} />
-            )} />
-          </Grid>
-          <Grid size={{ xs: 12, sm: 4 }}>
-            <Controller name="trackInventory" control={control} render={({ field }) => (
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, pt: 2 }}>
-                <MuiSwitch checked={field.value ?? true} onChange={(e) => field.onChange(e.target.checked)} />
-                <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>Track Inventory</Typography>
-              </Box>
-            )} />
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Controller
+              name="lowStockThreshold"
+              control={control}
+              render={({ field }) => (
+                <AdminInput
+                  label="Low Stock Threshold"
+                  type="number"
+                  {...field}
+                />
+              )}
+            />
           </Grid>
         </Grid>
       </SectionAccordion>
 
-      <SectionAccordion title="Shipping">
+      <SectionAccordion title="Measurements">
         <Grid container spacing={2}>
           <Grid size={{ xs: 12, sm: 3 }}>
-            <Controller name="weight" control={control} render={({ field }) => (
-              <AdminInput label="Weight (kg)" type="number" {...field} />
-            )} />
+            <Controller
+              name="weight"
+              control={control}
+              render={({ field }) => (
+                <AdminInput label="Weight (kg)" type="number" {...field} />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 3 }}>
-            <Controller name="length" control={control} render={({ field }) => (
-              <AdminInput label="Length (cm)" type="number" {...field} />
-            )} />
+            <Controller
+              name="length"
+              control={control}
+              render={({ field }) => (
+                <AdminInput label="Length (cm)" type="number" {...field} />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 3 }}>
-            <Controller name="width" control={control} render={({ field }) => (
-              <AdminInput label="Width (cm)" type="number" {...field} />
-            )} />
+            <Controller
+              name="width"
+              control={control}
+              render={({ field }) => (
+                <AdminInput label="Width (cm)" type="number" {...field} />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 3 }}>
-            <Controller name="height" control={control} render={({ field }) => (
-              <AdminInput label="Height (cm)" type="number" {...field} />
-            )} />
+            <Controller
+              name="height"
+              control={control}
+              render={({ field }) => (
+                <AdminInput label="Height (cm)" type="number" {...field} />
+              )}
+            />
           </Grid>
         </Grid>
       </SectionAccordion>
@@ -270,7 +490,11 @@ const ProductForm = ({ defaultValues, onSubmit, loading, categories = [], brands
       {selectedType && (
         <SectionAccordion title="Specifications">
           <Box sx={{ mb: 2 }}>
-            <AdminButton variant="secondary" size="small" type="button" onClick={addSpecsFromTemplate}>
+            <AdminButton
+              variant="secondary"
+              size="small"
+              type="button"
+              onClick={addSpecsFromTemplate}>
               Add specs from template
             </AdminButton>
           </Box>
@@ -279,7 +503,11 @@ const ProductForm = ({ defaultValues, onSubmit, loading, categories = [], brands
             return (
               <Grid container spacing={1} key={field.id} sx={{ mb: 1 }}>
                 <Grid size={{ xs: 4 }}>
-                  <AdminInput label="Label" {...register(`specifications.${idx}.label`)} size="small" />
+                  <AdminInput
+                    label="Label"
+                    {...register(`specifications.${idx}.label`)}
+                    size="small"
+                  />
                 </Grid>
                 <Grid size={{ xs: 7 }}>
                   {tpl?.type === "select" ? (
@@ -287,15 +515,31 @@ const ProductForm = ({ defaultValues, onSubmit, loading, categories = [], brands
                       name={`specifications.${idx}.value`}
                       control={control}
                       render={({ field: f }) => (
-                        <AdminSelect label="Value" options={(tpl.options || []).map((o) => ({ value: o, label: o }))} {...f} />
+                        <AdminSelect
+                          label="Value"
+                          options={(tpl.options || []).map((o) => ({
+                            value: o,
+                            label: o,
+                          }))}
+                          {...f}
+                        />
                       )}
                     />
                   ) : (
-                    <AdminInput label="Value" {...register(`specifications.${idx}.value`)} size="small" />
+                    <AdminInput
+                      label="Value"
+                      {...register(`specifications.${idx}.value`)}
+                      size="small"
+                    />
                   )}
                 </Grid>
-                <Grid size={{ xs: 1 }} sx={{ display: "flex", alignItems: "center" }}>
-                  <IconButton onClick={() => remove(idx)} size="small" sx={{ color: "var(--color-admin-danger)" }}>
+                <Grid
+                  size={{ xs: 1 }}
+                  sx={{ display: "flex", alignItems: "center" }}>
+                  <IconButton
+                    onClick={() => remove(idx)}
+                    size="small"
+                    sx={{ color: "var(--color-admin-danger)" }}>
                     <DeleteIcon fontSize="small" />
                   </IconButton>
                 </Grid>
@@ -307,8 +551,7 @@ const ProductForm = ({ defaultValues, onSubmit, loading, categories = [], brands
             size="small"
             type="button"
             icon={<AddIcon />}
-            onClick={() => append({ key: "", value: "", label: "" })}
-          >
+            onClick={() => append({ key: "", value: "", label: "" })}>
             Add Custom Spec
           </AdminButton>
         </SectionAccordion>
@@ -317,23 +560,60 @@ const ProductForm = ({ defaultValues, onSubmit, loading, categories = [], brands
       <SectionAccordion title="Status">
         <Box sx={{ display: "flex", gap: 4 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Controller name="isActive" control={control} render={({ field }) => (
-              <MuiSwitch checked={field.value ?? true} onChange={(e) => field.onChange(e.target.checked)} />
-            )} />
-            <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>Active</Typography>
+            <Controller
+              name="isActive"
+              control={control}
+              render={({ field }) => (
+                <MuiSwitch
+                  checked={field.value ?? true}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                />
+              )}
+            />
+            <Typography
+              variant="body2"
+              sx={{ color: "var(--color-admin-text-secondary)" }}>
+              Active
+            </Typography>
           </Box>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Controller name="isFeatured" control={control} render={({ field }) => (
-              <MuiSwitch checked={field.value ?? false} onChange={(e) => field.onChange(e.target.checked)} />
-            )} />
-            <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>Featured</Typography>
+            <Controller
+              name="isFeatured"
+              control={control}
+              render={({ field }) => (
+                <MuiSwitch
+                  checked={field.value ?? false}
+                  onChange={(e) => field.onChange(e.target.checked)}
+                />
+              )}
+            />
+            <Typography
+              variant="body2"
+              sx={{ color: "var(--color-admin-text-secondary)" }}>
+              Featured
+            </Typography>
           </Box>
         </Box>
       </SectionAccordion>
 
-      <Box sx={{ mt: 3, pt: 3, borderTop: "1px solid var(--color-admin-border)", display: "flex", justifyContent: "flex-end", gap: 2 }}>
-        <AdminButton variant="secondary" type="button" onClick={() => window.history.back()}>Cancel</AdminButton>
-        <AdminButton variant="primary" type="submit" loading={loading}>{submitLabel}</AdminButton>
+      <Box
+        sx={{
+          mt: 3,
+          pt: 3,
+          borderTop: "1px solid var(--color-admin-border)",
+          display: "flex",
+          justifyContent: "flex-end",
+          gap: 2,
+        }}>
+        <AdminButton
+          variant="secondary"
+          type="button"
+          onClick={() => window.history.back()}>
+          Cancel
+        </AdminButton>
+        <AdminButton variant="primary" type="submit" loading={loading}>
+          {submitLabel}
+        </AdminButton>
       </Box>
     </form>
   );

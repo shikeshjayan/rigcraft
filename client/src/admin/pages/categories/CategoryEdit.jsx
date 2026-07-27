@@ -6,6 +6,7 @@ import CategoryForm from "../../components/forms/CategoryForm";
 import { categoryService } from "../../services/categoryService";
 import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
+import { extractError } from "../../utils/extractError";
 import Loading from "../../components/common/Loading";
 
 const CategoryEdit = () => {
@@ -21,13 +22,13 @@ const CategoryEdit = () => {
     const fetch = async () => {
       try {
         const [cat, all] = await Promise.all([
-          categoryService.getById(Number(id)),
+          categoryService.getById(id),
           categoryService.getAll(),
         ]);
         setCategory(cat);
         setCategories(all);
-      } catch {
-        toast("Category not found", "error");
+      } catch (err) {
+        toast(extractError(err, "Category not found"), "error");
         navigate("/admin/categories");
       } finally {
         setLoading(false);
@@ -41,11 +42,11 @@ const CategoryEdit = () => {
     try {
       const payload = { ...data, parentId: data.parentId || null };
       if (payload.image?.file) payload.image = payload.image.file;
-      await categoryService.update(Number(id), payload);
+      await categoryService.update(id, payload);
       toast("Category updated successfully");
       navigate("/admin/categories");
-    } catch {
-      toast("Failed to update category", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to update category"), "error");
     } finally {
       setSaving(false);
     }

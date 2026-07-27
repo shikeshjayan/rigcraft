@@ -7,10 +7,11 @@ import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import TableActions from "../../components/tables/TableActions";
 import StatusBadge from "../../components/common/StatusBadge";
+import AdminThumbnail from "../../components/common/AdminThumbnail";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { categoryService } from "../../services/categoryService";
-import { CATEGORY_TYPES, CATEGORY_TYPE_COLORS } from "../../constants/categoryTypes";
+import { extractError } from "../../utils/extractError";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
@@ -29,7 +30,7 @@ const CategoryList = () => {
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState([]);
-  const [filters, setFilters] = useState({ categoryType: "", isActive: "" });
+  const [filters, setFilters] = useState({ isActive: "" });
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const fetchCategories = useCallback(async () => {
@@ -38,8 +39,8 @@ const CategoryList = () => {
       const result = await categoryService.list({ page, pageSize, search, ...filters });
       setCategories(result.data);
       setTotal(result.total);
-    } catch {
-      toast("Failed to load categories", "error");
+      } catch (err) {
+        toast(extractError(err, "Failed to load categories"), "error");
     } finally {
       setLoading(false);
     }
@@ -56,8 +57,8 @@ const CategoryList = () => {
       toast("Category deleted successfully");
       setDeleteTarget(null);
       fetchCategories();
-    } catch {
-      toast("Failed to delete category", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to delete category"), "error");
     }
   };
 
@@ -67,17 +68,12 @@ const CategoryList = () => {
       toast(`${selected.length} categories deleted`);
       setSelected([]);
       fetchCategories();
-    } catch {
-      toast("Failed to delete categories", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to delete categories"), "error");
     }
   };
 
   const filterOptions = [
-    {
-      key: "categoryType",
-      label: "Type",
-      options: [{ value: "", label: "All" }, ...CATEGORY_TYPES],
-    },
     {
       key: "isActive",
       label: "Status",
@@ -92,37 +88,27 @@ const CategoryList = () => {
   const columns = [
     { key: "name", label: "Name", render: (val, row) => (
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <Box
-          sx={{
-            width: 32, height: 32, borderRadius: "var(--radius-admin-badge)",
-            backgroundColor: CATEGORY_TYPE_COLORS[row.categoryType] || "var(--color-admin-muted)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "var(--color-admin-white)", fontSize: "0.625rem", fontWeight: 700, textTransform: "uppercase", flexShrink: 0,
-          }}
-        >
-          {row.name.charAt(0)}{row.name.charAt(1)}
-        </Box>
+        <AdminThumbnail
+          src={row.image?.url}
+          alt={val}
+          size={32}
+          fallback={
+            <Box sx={{
+              width: 32, height: 32, borderRadius: "var(--radius-admin-badge)",
+              backgroundColor: "var(--color-admin-bg-tertiary)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "var(--color-admin-white)", fontSize: "0.625rem", fontWeight: 700, textTransform: "uppercase", flexShrink: 0,
+            }}>
+              {row.name.charAt(0)}{row.name.charAt(1)}
+            </Box>
+          }
+        />
         <Box>
           <Box sx={{ fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val}</Box>
           <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)" }}>{row.slug}</Box>
         </Box>
       </Box>
     )},
-    { key: "categoryType", label: "Type", render: (val) => {
-      const type = CATEGORY_TYPES.find((t) => t.value === val);
-      return type ? (
-        <Chip
-          label={type.label}
-          size="small"
-          sx={{
-            backgroundColor: `${CATEGORY_TYPE_COLORS[val]}15`,
-            color: CATEGORY_TYPE_COLORS[val],
-            fontWeight: 500,
-            fontSize: "0.75rem",
-          }}
-        />
-      ) : val;
-    }},
     { key: "parentId", label: "Parent", render: (val) => {
       const parent = categories.find((c) => c.id === val);
       return parent ? parent.name : <Box sx={{ color: "var(--color-admin-muted)", fontSize: "0.8125rem" }}>—</Box>;
@@ -186,7 +172,7 @@ const CategoryList = () => {
             </Box>
           ),
         }}
-        rowsPerPageOptions={[maxRows, 10, 25, 50, 100]}
+        rowsPerPageOptions={[10, 25, 50, 100]}
       />
       <ConfirmDialog
         open={!!deleteTarget}

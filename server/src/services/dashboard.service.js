@@ -121,6 +121,58 @@ export const getSalesData = async (period = "yearly") => {
   });
 };
 
+export const getLowStockProducts = async (limit = 10) => {
+  const products = await Product.find(
+    { isDeleted: false, $expr: { $lte: ["$stock", "$lowStockThreshold"] } },
+    { name: 1, stock: 1, lowStockThreshold: 1, price: 1, "images.url": 1, "images.isPrimary": 1 }
+  )
+    .sort({ stock: 1 })
+    .limit(Number(limit))
+    .lean();
+
+  return products.map((p) => ({
+    id: p._id,
+    name: p.name,
+    stock: p.stock,
+    threshold: p.lowStockThreshold,
+    price: p.price,
+    image: p.images?.find((i) => i.isPrimary)?.url || p.images?.[0]?.url || null,
+  }));
+};
+
+export const getTopProducts = async (limit = 5) => {
+  const products = await Product.find(
+    { isDeleted: false, status: "active" },
+    { name: 1, soldCount: 1, stock: 1, price: 1, "images.url": 1, "images.isPrimary": 1 }
+  )
+    .sort({ soldCount: -1 })
+    .limit(Number(limit))
+    .lean();
+
+  return products.map((p) => ({
+    id: p._id,
+    name: p.name,
+    soldCount: p.soldCount,
+    stock: p.stock,
+    price: p.price,
+    image: p.images?.find((i) => i.isPrimary)?.url || p.images?.[0]?.url || null,
+  }));
+};
+
+export const getOrderBreakdown = async () => {
+  const breakdown = await Order.aggregate([
+    { $group: { _id: "$orderStatus", count: { $sum: 1 } } },
+  ]);
+
+  const allStatuses = ["pending", "confirmed", "processing", "shipped", "delivered", "cancelled"];
+  const map = Object.fromEntries(breakdown.map((b) => [b._id, b.count]));
+
+  return allStatuses.map((status) => ({
+    status,
+    count: map[status] || 0,
+  }));
+};
+
 export const getRecentOrders = async (limit = 5) => {
   const orders = await Order.find()
     .sort({ createdAt: -1 })

@@ -7,15 +7,17 @@ import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import TableActions from "../../components/tables/TableActions";
 import StatusBadge from "../../components/common/StatusBadge";
+import AdminThumbnail from "../../components/common/AdminThumbnail";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
-import { productService } from "../../services/productService";
-import { CATEGORY_TYPES, CATEGORY_TYPE_COLORS } from "../../constants/categoryTypes";
+import { productService, PRODUCT_TYPE_DISPLAY } from "../../services/productService";
+import { CATEGORY_TYPES } from "../../constants/categoryTypes";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
+import { extractError } from "../../utils/extractError";
 
 const ProductList = () => {
   const navigate = useNavigate();
@@ -39,8 +41,8 @@ const ProductList = () => {
       const result = await productService.list({ page, pageSize, search, ...filters });
       setProducts(result.data);
       setTotal(result.total);
-    } catch {
-      toast("Failed to load products", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to load products"), "error");
     } finally {
       setLoading(false);
     }
@@ -59,8 +61,8 @@ const ProductList = () => {
       toast("Product deleted successfully");
       setDeleteTarget(null);
       fetchProducts();
-    } catch {
-      toast("Failed to delete product", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to delete product"), "error");
     }
   };
 
@@ -70,8 +72,8 @@ const ProductList = () => {
       toast(`${selected.length} products deleted`);
       setSelected([]);
       fetchProducts();
-    } catch {
-      toast("Failed to delete products", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to delete products"), "error");
     }
   };
 
@@ -104,16 +106,23 @@ const ProductList = () => {
   const columns = [
     { key: "name", label: "Product", render: (val, row) => (
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-        <Box sx={{
-          width: 40, height: 40, borderRadius: "var(--radius-admin-badge)",
-          backgroundColor: `${CATEGORY_TYPE_COLORS[row.categoryType] || "var(--color-admin-muted)"}20`,
-          border: "1px solid var(--color-admin-border)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: "0.625rem", fontWeight: 700, color: CATEGORY_TYPE_COLORS[row.categoryType],
-          flexShrink: 0,
-        }}>
-          {val.charAt(0)}{val.charAt(1)}
-        </Box>
+        <AdminThumbnail
+          src={row.images?.[0]?.url || row.image}
+          alt={val}
+          size={40}
+          fallback={
+            <Box sx={{
+              width: 40, height: 40, borderRadius: "var(--radius-admin-badge)",
+              backgroundColor: `${PRODUCT_TYPE_DISPLAY[row.categoryType]?.color || "var(--color-admin-muted)"}20`,
+              border: "1px solid var(--color-admin-border)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "0.625rem", fontWeight: 700, color: PRODUCT_TYPE_DISPLAY[row.categoryType]?.color || "var(--color-admin-muted)",
+              flexShrink: 0,
+            }}>
+              {val.charAt(0)}{val.charAt(1)}
+            </Box>
+          }
+        />
         <Box>
           <Box sx={{ fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val}</Box>
           <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)" }}>{row.sku}</Box>
@@ -121,9 +130,9 @@ const ProductList = () => {
       </Box>
     )},
     { key: "categoryType", label: "Type", render: (val) => {
-      const type = CATEGORY_TYPES.find((t) => t.value === val);
-      return type ? (
-        <Chip label={type.label} size="small" sx={{ backgroundColor: `${CATEGORY_TYPE_COLORS[val]}15`, color: CATEGORY_TYPE_COLORS[val], fontWeight: 500, fontSize: "0.7rem" }} />
+      const info = PRODUCT_TYPE_DISPLAY[val];
+      return info ? (
+        <Chip label={info.label} size="small" sx={{ backgroundColor: `${info.color}15`, color: info.color, fontWeight: 500, fontSize: "0.7rem" }} />
       ) : val;
     }},
     { key: "price", label: "Price", render: (val, row) => (
@@ -195,7 +204,7 @@ const ProductList = () => {
             </Box>
           ),
         }}
-        rowsPerPageOptions={[maxRows, 10, 25, 50, 100]}
+        rowsPerPageOptions={[10, 25, 50, 100]}
       />
       <ConfirmDialog
         open={!!deleteTarget}

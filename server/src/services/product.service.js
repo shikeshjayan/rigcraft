@@ -135,6 +135,8 @@ export const update = async (id, data, files) => {
       alt: data.name || product.name,
       isPrimary: i === 0,
     }));
+  } else {
+    delete data.images;
   }
 
   return productRepository.updateById(id, data);
