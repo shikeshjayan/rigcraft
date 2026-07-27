@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
+import { updateCart as apiUpdateCart, getProfile } from '../api/auth';
 
 const CartContext = createContext();
 
@@ -15,22 +16,48 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
 
   const loadedKey = useRef(storageKey);
+  const isInitialized = useRef(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(storageKey);
-      setCartItems(stored ? JSON.parse(stored) : []);
-    } catch {
-      setCartItems([]);
+    isInitialized.current = false;
+    if (user) {
+      try {
+        const stored = localStorage.getItem(storageKey);
+        setCartItems(stored ? JSON.parse(stored) : (user.cart || []));
+      } catch {
+        setCartItems(user.cart || []);
+      }
+      // Fetch latest cart from backend to sync across devices
+      getProfile().then(res => {
+        if (res && res.success && res.data) {
+          setCartItems(res.data.cart || []);
+        }
+        // Wait a tiny bit to ensure state updates before allowing backend pushes
+        setTimeout(() => { isInitialized.current = true; }, 100);
+      }).catch(err => {
+        console.error("Error fetching cart:", err);
+        isInitialized.current = true;
+      });
+    } else {
+      try {
+        const stored = localStorage.getItem('rigcraft_cart_guest');
+        setCartItems(stored ? JSON.parse(stored) : []);
+      } catch {
+        setCartItems([]);
+      }
     }
     loadedKey.current = storageKey;
-  }, [storageKey]);
+  }, [storageKey, user]);
 
   useEffect(() => {
     if (loadedKey.current === storageKey) {
       localStorage.setItem(storageKey, JSON.stringify(cartItems));
+      
+      if (user && isInitialized.current) {
+        apiUpdateCart(cartItems).catch(console.error);
+      }
     }
-  }, [cartItems, storageKey]);
+  }, [cartItems, storageKey, user]);
 
   const addToCart = (item) => {
     if (!isLoggedIn) {

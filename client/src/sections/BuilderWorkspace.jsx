@@ -5,6 +5,7 @@ import { allItems } from '../data/items';
 import SearchIcon from '@mui/icons-material/Search';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import CloseIcon from '@mui/icons-material/Close';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 const STEPS = [
   { id: 1, label: 'CPU', category: 'cpu' },
@@ -121,7 +122,7 @@ const BuilderWorkspace = () => {
     <section className="w-full pb-20" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
       
       {/* 1. Progress Stepper Bar */}
-      <div className="w-full bg-white border-b border-[#E2E8F0] py-4 md:py-9 sticky top-[60px] md:top-[75px] z-30 shadow-sm">
+      <div className="w-full bg-white border-b border-[#E2E8F0] py-4 md:py-9 sticky top-[96px] md:top-[108px] z-30 shadow-sm">
         <div className="max-w-[1500px] mx-auto px-2 md:px-4 lg:px-8">
           <div className="grid grid-cols-5 gap-y-4 gap-x-1 lg:flex lg:items-center lg:justify-between lg:overflow-x-auto hide-scrollbar lg:gap-4">
             {STEPS.map((step, index) => {
@@ -199,6 +200,17 @@ const BuilderWorkspace = () => {
                       style={{ borderRadius: 'var(--radius-sm)' }}
                     />
                   </div>
+                  
+                  {/* AI Button */}
+                  <button className="relative flex flex-col cursor-pointer items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-1 h-10 hover:brightness-110 transition-all flex-shrink-0 group overflow-visible" style={{ borderRadius: 'var(--radius-sm)' }}>
+                    <span className="text-[13px] uppercase tracking-wider">Build with Rig AI</span>
+                    <span className="text-[9px] text-purple-200 uppercase tracking-widest -mt-0.5">Beta</span>
+                    
+                    {/* Shining Star */}
+                    <div className="absolute -top-2 -right-1 text-yellow-300 drop-shadow-[0_0_5px_rgba(253,224,71,0.8)] animate-[spin_4s_linear_infinite] z-10">
+                      <AutoAwesomeIcon sx={{ fontSize: 24 }} />
+                    </div>
+                  </button>
                 </div>
 
                 {/* Component Card Container */}

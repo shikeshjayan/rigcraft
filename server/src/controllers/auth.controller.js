@@ -25,6 +25,16 @@ export const updateProfile = asyncHandler(async (req, res) => {
   ApiResponse.ok(user, 'Profile updated').send(res);
 });
 
+export const updateCart = asyncHandler(async (req, res) => {
+  const user = await authService.updateCart(req.user.id, req.body.cart);
+  ApiResponse.ok(user, 'Cart updated').send(res);
+});
+
+export const updateWishlist = asyncHandler(async (req, res) => {
+  const user = await authService.updateWishlist(req.user.id, req.body.wishlist);
+  ApiResponse.ok(user, 'Wishlist updated').send(res);
+});
+
 export const updatePassword = asyncHandler(async (req, res) => {
   await authService.updatePassword(
     req.user.id,
