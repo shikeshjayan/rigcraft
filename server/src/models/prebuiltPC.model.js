@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import slugify from "slugify";
 import mongoosePaginate from "mongoose-paginate-v2";
 import { PREBUILT_PC_STATUS } from "../constants/constants.js";
 import buildComponentSchema from "../schemas/buildComponent.schema.js";
@@ -193,6 +194,12 @@ const prebuiltPcSchema = new mongoose.Schema(
     },
   }
 );
+
+prebuiltPcSchema.pre("save", function () {
+  if (this.isNew || this.isModified("name")) {
+    this.slug = slugify(this.name, { lower: true, strict: true });
+  }
+});
 
 prebuiltPcSchema.plugin(mongoosePaginate);
 

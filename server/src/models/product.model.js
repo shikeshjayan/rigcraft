@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import slugify from "slugify";
 import mongoosePaginate from "mongoose-paginate-v2";
 import {
   PRODUCT_STATUS,
@@ -250,6 +251,12 @@ const productSchema = new mongoose.Schema(
     },
   }
 );
+
+productSchema.pre("save", function () {
+  if (this.isNew || this.isModified("name")) {
+    this.slug = slugify(this.name, { lower: true, strict: true });
+  }
+});
 
 productSchema.pre("validate", function () {
   if (this.saleStart && this.saleEnd && this.saleStart >= this.saleEnd) {

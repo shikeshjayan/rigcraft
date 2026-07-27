@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box, Typography, Grid, Chip, Divider } from "@mui/material";
+import { Box, Typography, Grid, Chip } from "@mui/material";
 import { ArrowBack as ArrowBackIcon, Edit as EditIcon } from "@mui/icons-material";
 import { productService } from "../../services/productService";
 import { CATEGORY_TYPES, CATEGORY_TYPE_COLORS } from "../../constants/categoryTypes";
@@ -10,6 +10,7 @@ import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
 import StatusBadge from "../../components/common/StatusBadge";
+import AdminThumbnail from "../../components/common/AdminThumbnail";
 
 const DetailRow = ({ label, value }) => (
   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -26,7 +27,7 @@ const ProductDetails = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    productService.getById(Number(id))
+    productService.getById(id)
       .then(setProduct)
       .catch(() => { toast("Product not found", "error"); navigate("/admin/products"); })
       .finally(() => setLoading(false));
@@ -62,6 +63,16 @@ const ProductDetails = () => {
       </Box>
 
       <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+        {product.images?.length > 0 && (
+          <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Images</Typography>
+            <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+              {product.images.map((img, idx) => (
+                <AdminThumbnail key={idx} src={img.url} alt={img.alt || product.name} size={100} sx={{ borderRadius: "var(--radius-admin-badge)" }} />
+              ))}
+            </Box>
+          </Box>
+        )}
         <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Pricing & Inventory</Typography>
           <Grid container spacing={2}>

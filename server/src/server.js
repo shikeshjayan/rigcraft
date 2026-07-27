@@ -28,6 +28,9 @@ import errorHandler from "./middlewares/error.js";
 
 dotenv.config();
 
+const { configureCloudinary } = await import("./config/cloudinary.js");
+configureCloudinary();
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 

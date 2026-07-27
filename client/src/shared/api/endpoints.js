@@ -6,7 +6,7 @@ export const ENDPOINTS = {
     LOGOUT: "/auth/logout",
     REFRESH: "/auth/refresh-token",
     PROFILE: "/auth/profile",
-    CHANGE_PASSWORD: "/auth/change-password",
+    CHANGE_PASSWORD: "/auth/password",
     FORGOT_PASSWORD: "/auth/forgot-password",
     RESET_PASSWORD: "/auth/reset-password",
   },
@@ -16,12 +16,16 @@ export const ENDPOINTS = {
     STATS: "/dashboard/stats",
     SALES: "/dashboard/sales",
     RECENT_ORDERS: "/dashboard/recent-orders",
+    LOW_STOCK_PRODUCTS: "/dashboard/low-stock-products",
+    TOP_PRODUCTS: "/dashboard/top-products",
+    ORDER_BREAKDOWN: "/dashboard/order-breakdown",
   },
 
   // Categories
   CATEGORY: {
     LIST: "/categories",
     CREATE: "/categories",
+    ALL: "/categories/all",
     DETAILS: (id) => `/categories/${id}`,
     UPDATE: (id) => `/categories/${id}`,
     DELETE: (id) => `/categories/${id}`,
@@ -31,6 +35,7 @@ export const ENDPOINTS = {
   BRAND: {
     LIST: "/brands",
     CREATE: "/brands",
+    ALL: "/brands/all",
     DETAILS: (id) => `/brands/${id}`,
     UPDATE: (id) => `/brands/${id}`,
     DELETE: (id) => `/brands/${id}`,
@@ -94,20 +99,19 @@ export const ENDPOINTS = {
     DELETE: (id) => `/coupons/${id}`,
   },
 
-  // Orders
-  ORDER: {
-    LIST: "/orders",
-    CHECKOUT: "/orders/checkout",
-    DETAILS: (id) => `/orders/${id}`,
-    UPDATE: (id) => `/orders/${id}`,
+  // Admin Orders
+  ADMIN_ORDER: {
+    LIST: "/admin/orders",
+    DETAILS: (id) => `/admin/orders/${id}`,
+    UPDATE_STATUS: (id) => `/admin/orders/${id}/status`,
   },
 
-  // Reviews
-  REVIEW: {
-    LIST: "/reviews",
-    CREATE: "/reviews",
-    UPDATE: (id) => `/reviews/${id}`,
-    DELETE: (id) => `/reviews/${id}`,
+  // Admin Reviews
+  ADMIN_REVIEW: {
+    LIST: "/admin/reviews",
+    DETAILS: (id) => `/admin/reviews/${id}`,
+    UPDATE_STATUS: (id) => `/admin/reviews/${id}/status`,
+    DELETE: (id) => `/admin/reviews/${id}`,
   },
 
   // Users
@@ -121,6 +125,12 @@ export const ENDPOINTS = {
   // Uploads
   UPLOAD: {
     IMAGE: "/uploads/image",
+  },
+
+  // Settings
+  SETTINGS: {
+    GET: "/settings",
+    UPDATE: "/settings",
   },
 
   // Addresses

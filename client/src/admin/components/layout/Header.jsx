@@ -164,7 +164,6 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
 
         <IconButton sx={{ color: "var(--color-admin-text-secondary)" }}>
           <Badge
-            badgeContent={3}
             sx={{
               "& .MuiBadge-badge": {
                 backgroundColor: "#FF3E6C",

@@ -1,14 +1,8 @@
+import { useState } from "react";
 import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import StatusBadge from "../common/StatusBadge";
+import CompactPagination from "../common/CompactPagination";
 import { formatCurrency } from "../../utils/formatCurrency";
-
-const products = [
-  { id: 1, name: "AMD Ryzen 7 7800X3D", sku: "CPU-7800X3D", stock: 3, price: 449.99 },
-  { id: 2, name: "NVIDIA RTX 4080 Super", sku: "GPU-4080S", stock: 2, price: 999.99 },
-  { id: 3, name: "Corsair Vengeance 32GB DDR5", sku: "RAM-VEN32", stock: 5, price: 189.99 },
-  { id: 4, name: "Samsung 990 Pro 2TB NVMe", sku: "SSD-990P2", stock: 4, price: 249.99 },
-  { id: 5, name: "ASUS ROG Strix X670E-E", sku: "MB-X670E", stock: 1, price: 499.99 },
-];
 
 const getStockColor = (stock) => {
   if (stock <= 2) return "error";
@@ -16,7 +10,12 @@ const getStockColor = (stock) => {
   return "success";
 };
 
-const LowStockProducts = () => {
+const LowStockProducts = ({ products = [] }) => {
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 5;
+  const totalPages = Math.ceil(products.length / rowsPerPage);
+  const paginatedProducts = products.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
   return (
     <Paper
       elevation={0}
@@ -25,6 +24,9 @@ const LowStockProducts = () => {
         border: "1px solid var(--color-admin-border)",
         backgroundColor: "var(--color-admin-card)",
         overflow: "hidden",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <div className="p-4 border-b border-admin-border">
@@ -35,36 +37,44 @@ const LowStockProducts = () => {
           Products running low on inventory
         </Typography>
       </div>
-      <TableContainer>
+      <TableContainer sx={{ flex: 1 }}>
         <Table>
           <TableHead>
             <TableRow>
               <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }}>PRODUCT</TableCell>
-              <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }}>SKU</TableCell>
               <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }}>STOCK</TableCell>
+              <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }}>THRESHOLD</TableCell>
               <TableCell sx={{ fontWeight: 600, color: "var(--color-admin-text-secondary)", fontSize: "0.75rem" }} align="right">PRICE</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
-            {products.map((product) => (
+            {paginatedProducts.map((product) => (
               <TableRow key={product.id} hover>
                 <TableCell sx={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--color-admin-text)" }}>
                   {product.name}
                 </TableCell>
-                <TableCell sx={{ fontSize: "0.875rem", color: "var(--color-admin-muted)", fontFamily: "var(--font-admin-mono)" }}>
-                  {product.sku}
-                </TableCell>
                 <TableCell>
                   <StatusBadge label={product.stock} color={getStockColor(product.stock)} />
+                </TableCell>
+                <TableCell sx={{ fontSize: "0.875rem", color: "var(--color-admin-muted)" }}>
+                  {product.threshold}
                 </TableCell>
                 <TableCell align="right" sx={{ fontSize: "0.875rem", fontWeight: 600, color: "var(--color-admin-text)" }}>
                   {formatCurrency(product.price)}
                 </TableCell>
               </TableRow>
             ))}
+            {products.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={4} align="center" sx={{ py: 4, color: "var(--color-admin-muted)" }}>
+                  No low stock products
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </TableContainer>
+      <CompactPagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </Paper>
   );
 };

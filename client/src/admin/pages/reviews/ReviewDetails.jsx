@@ -9,6 +9,7 @@ import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
 import StatusBadge from "../../components/common/StatusBadge";
+import { extractError } from "../../utils/extractError";
 
 const DetailRow = ({ label, value }) => (
   <Grid size={{ xs: 12, sm: 6 }}>
@@ -26,20 +27,20 @@ const ReviewDetails = () => {
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    reviewService.getById(Number(id))
+    reviewService.getById(id)
       .then(setReview)
-      .catch(() => { toast("Review not found", "error"); navigate("/admin/reviews"); })
+      .catch((err) => { toast(extractError(err, "Review not found"), "error"); navigate("/admin/reviews"); })
       .finally(() => setLoading(false));
   }, [id, navigate, toast]);
 
   const handleStatus = async (status) => {
     setUpdating(true);
     try {
-      const updated = await reviewService.updateStatus(Number(id), status);
+      const updated = await reviewService.updateStatus(id, status);
       setReview(updated);
       toast(`Review ${status}`);
-    } catch {
-      toast("Failed to update review", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to update review"), "error");
     } finally {
       setUpdating(false);
     }

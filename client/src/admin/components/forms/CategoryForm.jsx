@@ -6,12 +6,10 @@ import AdminInput from "../common/Input";
 import AdminSelect from "../common/Select";
 import ImageUpload from "../common/ImageUpload";
 import AdminButton from "../common/Button";
-import { CATEGORY_TYPES } from "../../constants/categoryTypes";
 
 const categorySchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   description: z.string().max(500, "Description must be under 500 characters").optional(),
-  categoryType: z.string().min(1, "Category type is required"),
   parentId: z.union([z.number(), z.string()]).optional(),
   isActive: z.boolean().optional(),
   order: z.coerce.number().int().min(0).optional(),
@@ -26,7 +24,6 @@ const CategoryForm = ({ defaultValues, onSubmit, loading, categories = [], submi
     defaultValues: {
       name: "",
       description: "",
-      categoryType: "",
       parentId: "",
       isActive: true,
       order: 0,
@@ -35,7 +32,7 @@ const CategoryForm = ({ defaultValues, onSubmit, loading, categories = [], submi
     },
   });
 
-  const images = watch("image") ? (Array.isArray(watch("image")) ? watch("image") : watch("image") ? [watch("image")] : []) : [];
+
 
   const parentOptions = categories
     .filter((c) => c.id !== defaultValues?.id)
@@ -62,38 +59,19 @@ const CategoryForm = ({ defaultValues, onSubmit, loading, categories = [], submi
               )}
             />
 
-            <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Controller
-                  name="categoryType"
-                  control={control}
-                  render={({ field }) => (
-                    <AdminSelect
-                      label="Category Type"
-                      options={CATEGORY_TYPES}
-                      error={!!errors.categoryType}
-                      helperText={errors.categoryType?.message}
-                      {...field}
-                    />
-                  )}
+            <Controller
+              name="parentId"
+              control={control}
+              render={({ field }) => (
+                <AdminSelect
+                  label="Parent Category"
+                  options={parentOptions}
+                  placeholder="None (Top Level)"
+                  {...field}
+                  value={field.value ?? ""}
                 />
-              </Grid>
-              <Grid size={{ xs: 12, sm: 6 }}>
-                <Controller
-                  name="parentId"
-                  control={control}
-                  render={({ field }) => (
-                    <AdminSelect
-                      label="Parent Category"
-                      options={parentOptions}
-                      placeholder="None (Top Level)"
-                      {...field}
-                      value={field.value ?? ""}
-                    />
-                  )}
-                />
-              </Grid>
-            </Grid>
+              )}
+            />
 
             <Controller
               name="order"
@@ -116,8 +94,8 @@ const CategoryForm = ({ defaultValues, onSubmit, loading, categories = [], submi
                 control={control}
                 render={({ field }) => (
                   <ImageUpload
-                    images={images}
-                    onChange={(files) => setValue("image", files[0] || null)}
+                    images={field.value ? [field.value] : []}
+                    onChange={(files) => field.onChange(files[0] || null)}
                     maxFiles={1}
                     multiple={false}
                   />

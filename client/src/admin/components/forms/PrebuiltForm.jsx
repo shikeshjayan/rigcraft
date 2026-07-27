@@ -9,9 +9,12 @@ import ImageUpload from "../common/ImageUpload";
 import AdminButton from "../common/Button";
 import ComponentSelector from "./ComponentSelector";
 import { COMPONENT_SLOTS } from "../../services/prebuiltService";
+import { useToast } from "../common/Toast";
+
+const requiredSlotKeys = COMPONENT_SLOTS.filter((s) => s.required).map((s) => s.key);
 
 const prebuiltSchema = z.object({
-  name: z.string().min(1, "Name is required").max(200),
+  name: z.string().min(1, "Name is required").max(150),
   sku: z.string().min(1, "SKU is required").max(50),
   description: z.string().optional(),
   shortDescription: z.string().max(300).optional(),
@@ -20,14 +23,27 @@ const prebuiltSchema = z.object({
   stock: z.coerce.number().int().min(0).optional(),
   isActive: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
-  components: z.record(z.string(), z.union([z.number(), z.null()])).optional(),
+  components: z.record(z.string(), z.union([z.string(), z.null()])).optional(),
   tags: z.array(z.string()).optional(),
   image: z.any().optional(),
+}).superRefine((data, ctx) => {
+  const comps = data.components || {};
+  for (const key of requiredSlotKeys) {
+    if (!comps[key]) {
+      const slot = COMPONENT_SLOTS.find((s) => s.key === key);
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `${slot?.label || key} is required`,
+        path: ["components", key],
+      });
+    }
+  }
 });
 
 export { prebuiltSchema };
 
 const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Prebuilt PC" }) => {
+  const { toast } = useToast();
   const { control, handleSubmit, formState: { errors }, setValue, watch } = useForm({
     resolver: zodResolver(prebuiltSchema),
     defaultValues: {
@@ -45,8 +61,7 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
 
   const components = watch("components") || {};
   const tags = watch("tags") || [];
-  const image = watch("image");
-  const images = image ? (Array.isArray(image) ? image : [image]) : [];
+
 
   const addTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
@@ -69,7 +84,7 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)}>
+    <form onSubmit={handleSubmit(onSubmit, () => toast("Please fix the validation errors before submitting", "error"))}>
       <Grid container spacing={3}>
         <Grid size={{ xs: 12, md: 8 }}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
@@ -119,13 +134,13 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
                 {COMPONENT_SLOTS.map((slot) => {
                   const selectedId = components[slot.key];
                   return (
-                    <Box key={slot.key} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 1.5, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-badge)", backgroundColor: "var(--color-admin-bg-tertiary)" }}>
+                    <Box key={slot.key} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 1.5, border: "1px solid", borderColor: errors.components?.[slot.key] ? "var(--color-admin-danger)" : "var(--color-admin-border)", borderRadius: "var(--radius-admin-badge)", backgroundColor: "var(--color-admin-bg-tertiary)" }}>
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)" }}>
                           {slot.label} {slot.required && <span style={{ color: "var(--color-admin-danger)" }}>*</span>}
                         </Typography>
-                        <Typography variant="caption" sx={{ color: selectedId ? "var(--color-admin-success)" : "var(--color-admin-muted)" }}>
-                          {selectedId ? `Product ID: ${selectedId}` : "Not assigned"}
+                        <Typography variant="caption" sx={{ color: errors.components?.[slot.key] ? "var(--color-admin-danger)" : selectedId ? "var(--color-admin-success)" : "var(--color-admin-muted)" }}>
+                          {errors.components?.[slot.key] ? errors.components[slot.key].message : selectedId ? `Product ID: ${selectedId}` : "Not assigned"}
                         </Typography>
                       </Box>
                       <Box sx={{ display: "flex", gap: 0.5 }}>
@@ -164,7 +179,7 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
             <Box sx={{ p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
               <Typography variant="subtitle2" sx={{ mb: 2, color: "var(--color-admin-text)", fontWeight: 600 }}>Image</Typography>
               <Controller name="image" control={control} render={({ field }) => (
-                <ImageUpload images={images} onChange={(files) => setValue("image", files[0] || null)} maxFiles={1} multiple={false} />
+                <ImageUpload images={field.value ? [field.value] : []} onChange={(files) => field.onChange(files[0] || null)} maxFiles={1} multiple={false} />
               )} />
             </Box>
 

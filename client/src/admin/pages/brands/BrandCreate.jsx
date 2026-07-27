@@ -6,6 +6,7 @@ import BrandForm from "../../components/forms/BrandForm";
 import { brandService } from "../../services/brandService";
 import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
+import { extractError } from "../../utils/extractError";
 
 const BrandCreate = () => {
   const navigate = useNavigate();
@@ -20,8 +21,8 @@ const BrandCreate = () => {
       await brandService.create(payload);
       toast("Brand created successfully");
       navigate("/admin/brands");
-    } catch {
-      toast("Failed to create brand", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to create brand"), "error");
     } finally {
       setLoading(false);
     }
