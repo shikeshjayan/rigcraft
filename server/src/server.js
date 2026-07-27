@@ -25,6 +25,7 @@ import dashboardRoutes from "./routes/dashboard.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
 import dealRoutes, { adminDealRoutes } from "./routes/deal.routes.js";
+import newsletterRoutes from "./routes/newsletter.routes.js";
 import errorHandler from "./middlewares/error.js";
 
 dotenv.config();
@@ -73,6 +74,8 @@ app.use("/api/v1/settings", settingsRoutes);
 
 app.use("/api/v1/deals", dealRoutes);
 app.use("/api/v1/admin/deals", adminDealRoutes);
+
+app.use("/api/v1/newsletter", newsletterRoutes);
 
 app.use(errorHandler);
 

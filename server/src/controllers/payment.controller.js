@@ -28,7 +28,8 @@ export const verifyPayment = asyncHandler(async (req, res) => {
 
   const confirmed = await orderService.confirmPayment(
     order._id,
-    razorpay_payment_id
+    razorpay_payment_id,
+    req.user
   );
   ApiResponse.ok(confirmed, "Payment verified successfully").send(res);
 });
