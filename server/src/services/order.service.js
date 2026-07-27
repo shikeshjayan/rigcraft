@@ -113,6 +113,17 @@ const reduceStock = async (orderItems) => {
   }
 };
 
+const pushHistory = (order, status, user, note) => {
+  order.statusHistory.push({
+    status,
+    paymentStatus: order.paymentStatus,
+    changedBy: user?._id || user?.id,
+    changedByRole: user?.role || "system",
+    changedAt: new Date(),
+    note: note || "",
+  });
+};
+
 const clearCartAfterOrder = async (userId) => {
   const cart = await Cart.findOne({ user: userId });
   if (!cart) return;
@@ -130,7 +141,7 @@ const clearCartAfterOrder = async (userId) => {
   await cart.save({ validateBeforeSave: false });
 };
 
-export const checkout = async (userId, { addressId, paymentMethod }) => {
+export const checkout = async (userId, { addressId, paymentMethod }, user) => {
   const cart = await Cart.findOne({ user: userId })
     .populate("items.item")
     .populate("coupon");
@@ -208,6 +219,9 @@ export const checkout = async (userId, { addressId, paymentMethod }) => {
 
     const order = await orderRepository.create(orderData);
 
+    pushHistory(order, "pending", user, "Order created, awaiting payment");
+    await order.save({ validateBeforeSave: false });
+
     return { order };
   }
 
@@ -216,6 +230,9 @@ export const checkout = async (userId, { addressId, paymentMethod }) => {
     orderData.paymentStatus = "pending";
 
     const order = await orderRepository.create(orderData);
+
+    pushHistory(order, "confirmed", user, "Order placed via COD");
+    await order.save({ validateBeforeSave: false });
 
     await reduceStock(order.items);
 
@@ -231,7 +248,7 @@ export const checkout = async (userId, { addressId, paymentMethod }) => {
   throw ApiError.badRequest("Invalid payment method");
 };
 
-export const confirmPayment = async (orderId, razorpayPaymentId) => {
+export const confirmPayment = async (orderId, razorpayPaymentId, user) => {
   const order = await orderRepository.findById(orderId);
 
   if (order.paymentStatus === "paid") {
@@ -246,6 +263,8 @@ export const confirmPayment = async (orderId, razorpayPaymentId) => {
   order.orderStatus = "confirmed";
   order.razorpay.paymentId = razorpayPaymentId;
   order.checkoutExpiresAt = undefined;
+
+  pushHistory(order, "confirmed", user, "Payment confirmed via Razorpay");
   await order.save({ validateBeforeSave: false });
 
   await reduceStock(order.items);
@@ -294,7 +313,7 @@ export const getOrder = async (orderId, userId) => {
   return order;
 };
 
-export const cancelOrder = async (orderId, userId) => {
+export const cancelOrder = async (orderId, userId, user, reason) => {
   const order = await orderRepository.findById(orderId);
 
   if (order.user.toString() !== userId.toString()) {
@@ -313,6 +332,8 @@ export const cancelOrder = async (orderId, userId) => {
   }
 
   order.orderStatus = "cancelled";
+
+  pushHistory(order, "cancelled", user, reason || "Cancelled by user");
   await order.save({ validateBeforeSave: false });
 
   return order;
@@ -373,7 +394,7 @@ export const adminGetOrder = async (orderId) => {
   return order;
 };
 
-export const updateOrderStatus = async (orderId, orderStatus) => {
+export const updateOrderStatus = async (orderId, orderStatus, user) => {
   const order = await orderRepository.findById(orderId);
 
   const validTransitions = {
@@ -398,15 +419,18 @@ export const updateOrderStatus = async (orderId, orderStatus) => {
     order.paymentStatus = "refunded";
   }
 
+  pushHistory(order, orderStatus, user);
   await order.save({ validateBeforeSave: false });
 
   return order;
 };
 
-export const updatePaymentStatus = async (orderId, paymentStatus) => {
+export const updatePaymentStatus = async (orderId, paymentStatus, user) => {
   const order = await orderRepository.findById(orderId);
 
   order.paymentStatus = paymentStatus;
+
+  pushHistory(order, order.orderStatus, user, `Payment status changed to "${paymentStatus}"`);
   await order.save({ validateBeforeSave: false });
 
   return order;
