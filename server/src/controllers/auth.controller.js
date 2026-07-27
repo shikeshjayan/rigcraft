@@ -21,7 +21,7 @@ export const getProfile = asyncHandler(async (req, res) => {
 });
 
 export const updateProfile = asyncHandler(async (req, res) => {
-  const user = await authService.updateProfile(req.user.id, req.body);
+  const user = await authService.updateProfile(req.user.id, req.body, req.file);
   ApiResponse.ok(user, 'Profile updated').send(res);
 });
 

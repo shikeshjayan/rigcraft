@@ -175,6 +175,8 @@ export const update = async (id, data, files) => {
       alt: data.name || prebuilt.name,
       isPrimary: i === 0,
     }));
+  } else {
+    delete data.images;
   }
 
   const updated = await prebuiltPCRepository.updateById(id, data);
