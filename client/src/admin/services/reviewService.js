@@ -8,8 +8,8 @@ const normalizeReview = (r) => ({
   __v: undefined,
   status: r.isVisible ? "approved" : r.status === "hidden" ? "hidden" : "pending",
   product: r.item
-    ? { id: r.item._id || r.item, name: r.item?.name || "" }
-    : r.product || { id: "", name: "" },
+    ? { id: r.item._id || r.item, name: r.item?.name || r.item?.title || "Unknown Product" }
+    : r.product || { id: "", name: "Unknown Product" },
   customer: r.user
     ? {
         id: r.user._id || r.user,

@@ -8,6 +8,7 @@ import FilterBar from "../../components/tables/FilterBar";
 import StatusBadge from "../../components/common/StatusBadge";
 import { useToast } from "../../components/common/Toast";
 import { orderService } from "../../services/orderService";
+import { extractError } from "../../utils/extractError";
 import { ORDER_STATUS, ORDER_STATUS_COLOR } from "../../constants/status";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { formatDate } from "../../utils/formatDate";
@@ -34,8 +35,8 @@ const OrderList = () => {
       const result = await orderService.list({ page, pageSize, search, ...filters });
       setOrders(result.data);
       setTotal(result.total);
-    } catch {
-      toast("Failed to load orders", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to load orders"), "error");
     } finally {
       setLoading(false);
     }
@@ -67,7 +68,9 @@ const OrderList = () => {
         <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)" }}>{val.email}</Box>
       </Box>
     )},
-    { key: "items", label: "Items", align: "center" },
+    { key: "items", label: "Items", align: "center", render: (items) => (
+      <Chip label={Array.isArray(items) ? items.length : "1"} size="small" />
+    )},
     { key: "total", label: "Total", render: (val) => <Box sx={{ fontWeight: 500 }}>{formatCurrency(val)}</Box> },
     { key: "paymentMethod", label: "Payment", render: (val) => <Box sx={{ fontSize: "0.8125rem" }}>{val}</Box> },
     { key: "status", label: "Status", render: (val) => <StatusBadge status={val} colorMap={ORDER_STATUS_COLOR} /> },

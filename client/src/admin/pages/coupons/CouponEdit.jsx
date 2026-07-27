@@ -4,8 +4,12 @@ import { Box, Typography } from "@mui/material";
 import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 import CouponForm from "../../components/forms/CouponForm";
 import { couponService } from "../../services/couponService";
+import { categoryService } from "../../services/categoryService";
+import { productService } from "../../services/productService";
+import { prebuiltService } from "../../services/prebuiltService";
 import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
+import { extractError } from "../../utils/extractError";
 import Loading from "../../components/common/Loading";
 
 const CouponEdit = () => {
@@ -15,11 +19,22 @@ const CouponEdit = () => {
   const [coupon, setCoupon] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
+  const [prebuiltPcs, setPrebuiltPcs] = useState([]);
 
   useEffect(() => {
-    couponService.getById(id)
-      .then(setCoupon)
-      .catch(() => { toast("Coupon not found", "error"); navigate("/admin/coupons"); })
+    Promise.all([
+      couponService.getById(id),
+      categoryService.getAll(),
+      productService.list({ pageSize: 1000 }),
+      prebuiltService.list({ pageSize: 1000 }),
+    ]).then(([couponData, cats, prods, prebuilt]) => {
+      setCoupon(couponData);
+      setCategories(cats);
+      setProducts(prods.data || []);
+      setPrebuiltPcs(prebuilt.data || []);
+    }).catch(() => { toast("Coupon not found", "error"); navigate("/admin/coupons"); })
       .finally(() => setLoading(false));
   }, [id, navigate, toast]);
 
@@ -29,8 +44,8 @@ const CouponEdit = () => {
       await couponService.update(id, data);
       toast("Coupon updated");
       navigate("/admin/coupons");
-    } catch {
-      toast("Failed to update", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to update coupon"), "error");
     } finally {
       setSaving(false);
     }
@@ -48,7 +63,7 @@ const CouponEdit = () => {
           <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", fontWeight: 500, mt: 0.25 }}>{coupon.code}</Typography>
         </Box>
       </Box>
-      <CouponForm defaultValues={coupon} onSubmit={handleSubmit} loading={saving} submitLabel="Update Coupon" />
+      <CouponForm defaultValues={coupon} onSubmit={handleSubmit} loading={saving} submitLabel="Update Coupon" products={products} categories={categories} prebuiltPcs={prebuiltPcs} />
     </Box>
   );
 };

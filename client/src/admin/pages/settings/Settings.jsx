@@ -4,6 +4,7 @@ import AdminInput from "../../components/common/Input";
 import AdminButton from "../../components/common/Button";
 import { useToast } from "../../components/common/Toast";
 import { settingsService } from "../../services/settingsService";
+import { extractError } from "../../utils/extractError";
 
 const TabPanel = ({ children, value, index }) => (
   <Box role="tabpanel" hidden={value !== index} sx={{ pt: 3 }}>
@@ -35,8 +36,8 @@ const Settings = () => {
           address: data.address || "",
           maintenanceMode: data.maintenanceMode || false,
         });
-      } catch {
-        toast("Failed to load settings", "error");
+      } catch (err) {
+        toast(extractError(err, "Failed to load settings"), "error");
       } finally {
         setLoading(false);
       }
@@ -49,8 +50,8 @@ const Settings = () => {
     try {
       await settingsService.update(settings);
       toast("Settings saved");
-    } catch {
-      toast("Failed to save settings", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to save settings"), "error");
     } finally {
       setSaving(false);
     }

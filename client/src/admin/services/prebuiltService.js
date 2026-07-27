@@ -5,7 +5,7 @@ const COMPONENT_SLOTS = [
   { key: "processor", label: "Processor (CPU)", categoryType: "processor", required: true },
   { key: "graphics_card", label: "Graphics Card (GPU)", categoryType: "graphics_card", required: true },
   { key: "memory", label: "Memory (RAM)", categoryType: "memory", required: true },
-  { key: "storage", label: "Storage", categoryType: "storage", required: true },
+  { key: "storage", label: "Storage", categoryType: "storage", required: false },
   { key: "motherboard", label: "Motherboard", categoryType: "motherboard", required: true },
   { key: "power_supply", label: "Power Supply (PSU)", categoryType: "power_supply", required: true },
   { key: "cooling", label: "Cooling", categoryType: "cooling", required: false },
@@ -34,12 +34,12 @@ const normalizePrebuilt = (p) => ({
   isActive: p.status === "active",
   isFeatured: p.isFeatured ?? false,
   image: p.images?.[0]?.url || null,
+  images: p.images || [],
   components: Array.isArray(p.components)
-    ? Object.fromEntries(p.components.map((c) => [COMPONENT_TYPE_TO_SLOT[c.slot || c.type] || c.slot || c.type, c.component?.toString ? c.component.toString() : c.component]))
+    ? Object.fromEntries(p.components.map((c) => [COMPONENT_TYPE_TO_SLOT[c.slot || c.type] || c.slot || c.type, c.product?.toString ? c.product.toString() : c.product]))
     : p.components || {},
   pricing: undefined,
   status: undefined,
-  images: undefined,
 });
 
 const normalizeList = (res) => {
@@ -53,6 +53,9 @@ const normalizeList = (res) => {
 
 const adaptParams = (params) => {
   const p = { ...params };
+  p.page = (p.page || 0) + 1;
+  p.limit = p.pageSize;
+  delete p.pageSize;
   if (p.isActive === "true") { p.status = "active"; delete p.isActive; }
   else if (p.isActive === "false") { p.status = "draft"; delete p.isActive; }
   else delete p.isActive;
@@ -63,7 +66,8 @@ const adaptPayload = (data) => {
   const p = { ...data };
   if (p.isActive !== undefined) { p.status = p.isActive ? "active" : "draft"; delete p.isActive; }
   if (p.comparePrice !== undefined) {
-    p.pricing = { price: p.price, salePrice: p.comparePrice || null };
+    p.pricing = { price: p.price };
+    if (p.comparePrice) p.pricing.salePrice = p.comparePrice;
     delete p.price;
     delete p.comparePrice;
   }
@@ -86,7 +90,7 @@ const sendWithImage = async (endpoint, payload, imageFile, method = "post") => {
   fd.append("images", imageFile);
   const body = { ...payload };
   delete body.images;
-  fd.append("body", new Blob([JSON.stringify(body)], { type: "application/json" }));
+  fd.append("body", JSON.stringify(body));
   const fn = method === "put" ? api.put : api.post;
   const { data } = await fn(endpoint, fd);
   return data;

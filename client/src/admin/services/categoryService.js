@@ -41,7 +41,7 @@ export const categoryService = {
 
   create: async (categoryData) => {
     const payload = { ...categoryData };
-    if (payload.parentId) { payload.parent = payload.parentId; delete payload.parentId; }
+    if ("parentId" in payload) { payload.parent = payload.parentId || null; delete payload.parentId; }
     delete payload.categoryType;
     delete payload.id;
     delete payload._id;
@@ -55,7 +55,7 @@ export const categoryService = {
 
   update: async (id, categoryData) => {
     const payload = { ...categoryData };
-    if (payload.parentId) { payload.parent = payload.parentId; delete payload.parentId; }
+    if ("parentId" in payload) { payload.parent = payload.parentId || null; delete payload.parentId; }
     delete payload.categoryType;
     delete payload.id;
     delete payload._id;

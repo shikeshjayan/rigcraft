@@ -41,9 +41,9 @@ const ImageUpload = ({ images = [], onChange, maxFiles = 5, multiple = true }) =
       />
 
       <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-        {images.map((img) => (
+        {images.map((img, idx) => (
           <Box
-            key={img.id}
+            key={img.id || img.url || img.publicId || idx}
             sx={{
               width: 100,
               height: 100,
@@ -55,13 +55,13 @@ const ImageUpload = ({ images = [], onChange, maxFiles = 5, multiple = true }) =
             }}
           >
             <img
-              src={img.preview}
-              alt=""
+              src={img.preview || img.url || (typeof img === "string" ? img : "") || ""}
+              alt={img.alt || ""}
               style={{ width: "100%", height: "100%", objectFit: "cover" }}
             />
             <IconButton
               size="small"
-              onClick={() => handleRemove(img.id)}
+              onClick={() => handleRemove(img.id || img.url || img.publicId || idx)}
               sx={{
                 position: "absolute",
                 top: 2,
