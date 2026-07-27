@@ -3,9 +3,18 @@ import cloudinary from "../config/cloudinary.js";
 export const uploadImage = async (file, folder) => {
   if (!file || !file.buffer) return null;
 
-  const result = await cloudinary.uploader.upload(file.buffer, {
-    folder: `rigcraft/${folder}`,
-    transformation: [{ quality: "auto", fetch_format: "auto" }],
+  const result = await new Promise((resolve, reject) => {
+    const stream = cloudinary.uploader.upload_stream(
+      {
+        folder: `rigcraft/${folder}`,
+        transformation: { quality: "auto", fetch_format: "auto" },
+      },
+      (error, result) => {
+        if (error) reject(error);
+        else resolve(result);
+      }
+    );
+    stream.end(file.buffer);
   });
 
   return {

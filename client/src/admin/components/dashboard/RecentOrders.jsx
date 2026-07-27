@@ -1,10 +1,17 @@
+import { useState } from "react";
 import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Link } from "@mui/material";
 import StatusBadge from "../common/StatusBadge";
+import CompactPagination from "../common/CompactPagination";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { formatDate } from "../../utils/formatDate";
 import { ORDER_STATUS_COLOR } from "../../constants/status";
 
 const RecentOrders = ({ orders = [] }) => {
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 5;
+  const totalPages = Math.ceil(orders.length / rowsPerPage);
+  const paginatedOrders = orders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
   return (
     <Paper
       elevation={0}
@@ -13,6 +20,9 @@ const RecentOrders = ({ orders = [] }) => {
         border: "1px solid var(--color-admin-border)",
         backgroundColor: "var(--color-admin-card)",
         overflow: "hidden",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <div className="p-4 border-b border-admin-border">
@@ -23,7 +33,7 @@ const RecentOrders = ({ orders = [] }) => {
           Latest {orders.length} orders
         </Typography>
       </div>
-      <TableContainer>
+      <TableContainer sx={{ flex: 1 }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -35,7 +45,7 @@ const RecentOrders = ({ orders = [] }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {orders.map((order) => (
+            {paginatedOrders.map((order) => (
               <TableRow key={order.id || order.orderNumber} hover>
                 <TableCell>
                   <Link href="#" underline="hover" sx={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--color-admin-primary)", cursor: "pointer" }}>
@@ -62,6 +72,7 @@ const RecentOrders = ({ orders = [] }) => {
           </TableBody>
         </Table>
       </TableContainer>
+      <CompactPagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </Paper>
   );
 };

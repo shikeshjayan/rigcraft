@@ -22,6 +22,11 @@ const brandSchema = new mongoose.Schema(
       maxlength: 500,
     },
 
+    website: {
+      type: String,
+      trim: true,
+    },
+
     logo: {
       url: {
         type: String,

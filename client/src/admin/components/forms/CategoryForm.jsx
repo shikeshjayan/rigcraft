@@ -32,7 +32,7 @@ const CategoryForm = ({ defaultValues, onSubmit, loading, categories = [], submi
     },
   });
 
-  const images = watch("image") ? (Array.isArray(watch("image")) ? watch("image") : watch("image") ? [watch("image")] : []) : [];
+
 
   const parentOptions = categories
     .filter((c) => c.id !== defaultValues?.id)
@@ -94,8 +94,8 @@ const CategoryForm = ({ defaultValues, onSubmit, loading, categories = [], submi
                 control={control}
                 render={({ field }) => (
                   <ImageUpload
-                    images={images}
-                    onChange={(files) => setValue("image", files[0] || null)}
+                    images={field.value ? [field.value] : []}
+                    onChange={(files) => field.onChange(files[0] || null)}
                     maxFiles={1}
                     multiple={false}
                   />

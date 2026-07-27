@@ -9,6 +9,8 @@ import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
 import StatusBadge from "../../components/common/StatusBadge";
+import AdminThumbnail from "../../components/common/AdminThumbnail";
+import { extractError } from "../../utils/extractError";
 
 const DetailRow = ({ label, value }) => (
   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -27,7 +29,7 @@ const UserDetails = () => {
   useEffect(() => {
     userService.getById(id)
       .then(setUser)
-      .catch(() => { toast("User not found", "error"); navigate("/admin/users"); })
+      .catch((err) => { toast(extractError(err, "User not found"), "error"); navigate("/admin/users"); })
       .finally(() => setLoading(false));
   }, [id, navigate, toast]);
 
@@ -38,7 +40,16 @@ const UserDetails = () => {
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
         <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/users")} />
-        <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", ml: 1 }} />
+        <AdminThumbnail
+          src={user.avatar}
+          alt={user.name}
+          size={48}
+          sx={{ borderRadius: "var(--radius-admin-avatar)", border: "none" }}
+          fallback={
+            <Box sx={{ width: 48, height: 48, borderRadius: "var(--radius-admin-avatar)", backgroundColor: "var(--color-admin-primary)", color: "var(--color-admin-white)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem", fontWeight: 700, flexShrink: 0 }}>{user.name?.charAt(0)}</Box>
+          }
+        />
+        <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)" }} />
         <Box>
           <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>{user.name}</Typography>
           <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>{user.email}</Typography>

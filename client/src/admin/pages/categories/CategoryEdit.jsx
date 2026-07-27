@@ -6,6 +6,7 @@ import CategoryForm from "../../components/forms/CategoryForm";
 import { categoryService } from "../../services/categoryService";
 import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
+import { extractError } from "../../utils/extractError";
 import Loading from "../../components/common/Loading";
 
 const CategoryEdit = () => {
@@ -26,8 +27,8 @@ const CategoryEdit = () => {
         ]);
         setCategory(cat);
         setCategories(all);
-      } catch {
-        toast("Category not found", "error");
+      } catch (err) {
+        toast(extractError(err, "Category not found"), "error");
         navigate("/admin/categories");
       } finally {
         setLoading(false);
@@ -44,8 +45,8 @@ const CategoryEdit = () => {
       await categoryService.update(id, payload);
       toast("Category updated successfully");
       navigate("/admin/categories");
-    } catch {
-      toast("Failed to update category", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to update category"), "error");
     } finally {
       setSaving(false);
     }

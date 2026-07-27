@@ -37,6 +37,9 @@ const normalizeList = (res) => {
 
 const adaptParams = (params) => {
   const p = { ...params };
+  p.page = (p.page || 0) + 1;
+  p.limit = p.pageSize;
+  delete p.pageSize;
   if (p.categoryType) { p.productType = CATEGORY_TO_PRODUCT_TYPE[p.categoryType] || "component"; delete p.categoryType; }
   if (p.brandId) { p.brand = p.brandId; delete p.brandId; }
   if (p.isActive === "true") { p.status = "active"; delete p.isActive; }
@@ -59,7 +62,7 @@ const adaptPayload = (data) => {
   if (p.categoryType) { p.productType = CATEGORY_TO_PRODUCT_TYPE[p.categoryType] || "component"; delete p.categoryType; }
   if (p.brandId) { p.brand = p.brandId; delete p.brandId; }
   if (p.categoryId) { p.category = p.categoryId; delete p.categoryId; }
-  if (p.comparePrice !== undefined) { p.salePrice = p.comparePrice || null; delete p.comparePrice; }
+  if (p.comparePrice !== undefined) { if (p.comparePrice) p.salePrice = p.comparePrice; delete p.comparePrice; }
   if (p.length !== undefined || p.width !== undefined || p.height !== undefined) {
     p.dimensions = { length: p.length, width: p.width, height: p.height };
     delete p.length; delete p.width; delete p.height;
@@ -69,9 +72,6 @@ const adaptPayload = (data) => {
       p.specifications.filter((s) => s.key).map((s) => [s.key, s.value])
     );
   }
-  delete p.costPrice;
-  delete p.taxRate;
-  delete p.trackInventory;
   delete p.id;
   delete p._id;
   return p;

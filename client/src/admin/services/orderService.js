@@ -7,7 +7,8 @@ const normalizeOrder = (o) => ({
   _id: undefined,
   __v: undefined,
   status: o.orderStatus || o.status,
-  items: o.items?.length ?? o.items ?? 0,
+  items: o.items || [],
+  itemCount: o.items?.length ?? 0,
   customer: o.user
     ? {
         name: o.user.name || `${o.user.firstName || ""} ${o.user.lastName || ""}`.trim() || "Unknown",

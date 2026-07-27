@@ -9,6 +9,7 @@ import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
 import StatusBadge from "../../components/common/StatusBadge";
+import AdminThumbnail from "../../components/common/AdminThumbnail";
 
 const DetailRow = ({ label, value }) => (
   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -36,17 +37,18 @@ const PrebuiltDetails = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/prebuilt")} />
-          <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", ml: 1 }} />
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>{item.name}</Typography>
-            <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>SKU: {item.sku}</Typography>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/prebuilt")} />
+            <AdminThumbnail src={item.image} alt={item.name} size={48} sx={{ borderRadius: "var(--radius-admin-badge)" }} />
+            <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)" }} />
+            <Box>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>{item.name}</Typography>
+              <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>SKU: {item.sku}</Typography>
+            </Box>
           </Box>
+          <AdminButton variant="primary" size="small" icon={<EditIcon />} onClick={() => navigate(`/admin/prebuilt/${id}/edit`)}>Edit</AdminButton>
         </Box>
-        <AdminButton variant="primary" size="small" icon={<EditIcon />} onClick={() => navigate(`/admin/prebuilt/${id}/edit`)}>Edit</AdminButton>
-      </Box>
 
       <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap", alignItems: "center" }}>
         <StatusBadge status={item.isActive ? "active" : "inactive"} />
