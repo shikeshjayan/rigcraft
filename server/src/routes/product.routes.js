@@ -13,6 +13,7 @@ const router = Router();
 // Public
 router.get("/", productController.list);
 router.get("/featured", productController.getFeatured);
+router.get("/:id", productController.getById);
 router.get("/:slug/related", productController.getRelated);
 router.get("/:slug", productController.getBySlug);
 
@@ -20,7 +21,7 @@ router.get("/:slug", productController.getBySlug);
 router.post(
   "/",
   protect,
-  authorize("admin"),
+  authorize("admin", "manager"),
   uploadMultipleImages("images", 10),
   validate(createProductSchema),
   productController.create
@@ -29,12 +30,12 @@ router.post(
 router.put(
   "/:id",
   protect,
-  authorize("admin"),
+  authorize("admin", "manager"),
   uploadMultipleImages("images", 10),
   validate(updateProductSchema),
   productController.update
 );
 
-router.delete("/:id", protect, authorize("admin"), productController.remove);
+router.delete("/:id", protect, authorize("admin", "manager"), productController.remove);
 
 export default router;

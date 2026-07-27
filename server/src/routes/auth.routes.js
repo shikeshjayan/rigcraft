@@ -2,6 +2,8 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import * as authController from '../controllers/auth.controller.js';
 import { protect, authorize } from '../middlewares/auth.js';
+import { uploadSingleImage } from '../middlewares/upload.middleware.js';
+import { USER_ROLES } from '../constants/constants.js';
 import validate from '../middlewares/validate.js';
 import {
   registerSchema,
@@ -35,6 +37,6 @@ router.put('/wishlist', protect, authController.updateWishlist);
 router.put('/password', protect, validate(updatePasswordSchema), authController.updatePassword);
 router.post('/logout', protect, authController.logout);
 
-router.patch('/users/:id/role', protect, authorize('admin'), validate(updateRoleSchema), authController.updateUserRole);
+router.patch('/users/:id/role', protect, authorize(USER_ROLES.ADMIN), validate(updateRoleSchema), authController.updateUserRole);
 
 export default router;
