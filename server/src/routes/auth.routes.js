@@ -25,12 +25,15 @@ const authLimiter = rateLimit({
 
 router.post('/register', authLimiter, validate(registerSchema), authController.register);
 router.post('/login', authLimiter, validate(loginSchema), authController.login);
+router.post('/check', authLimiter, authController.checkAccount);
 router.post('/forgot-password', authLimiter, validate(forgotPasswordSchema), authController.forgotPassword);
 router.post('/reset-password', authLimiter, validate(resetPasswordSchema), authController.resetPassword);
 router.post('/refresh-token', authLimiter, authController.refresh);
 
 router.get('/profile', protect, authController.getProfile);
-router.put('/profile', protect, uploadSingleImage('avatar'), validate(updateProfileSchema), authController.updateProfile);
+router.put('/profile', protect, validate(updateProfileSchema), authController.updateProfile);
+router.put('/cart', protect, authController.updateCart);
+router.put('/wishlist', protect, authController.updateWishlist);
 router.put('/password', protect, validate(updatePasswordSchema), authController.updatePassword);
 router.post('/logout', protect, authController.logout);
 

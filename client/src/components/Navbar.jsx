@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import FadeUp from './FadeUp';
 import SearchIcon from '@mui/icons-material/Search';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -20,16 +20,46 @@ import MonitorIcon from '@mui/icons-material/Monitor';
 import BuildIcon from '@mui/icons-material/Build';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import { useQuery } from '@tanstack/react-query';
+import { getProfile } from '../api/auth';
+import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
+import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
+import AccountBalanceWalletOutlinedIcon from '@mui/icons-material/AccountBalanceWalletOutlined';
+import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
+import HeadsetMicOutlinedIcon from '@mui/icons-material/HeadsetMicOutlined';
 
 const Navbar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { isLoggedIn, user, logout } = useAuth();
+  
+  const { data: profileData } = useQuery({
+    queryKey: ['profile'],
+    queryFn: getProfile,
+    enabled: isLoggedIn,
+    retry: false
+  });
+
+  const firstName = profileData?.data?.firstName || user?.firstName || 'Customer';
+  const profileText = profileData?.data?.firstName || user?.firstName || 'Profile';
+
   const isHome = location.pathname === '/';
   const isPrebuild = location.pathname === '/prebuild';
   const isDeals = location.pathname === '/deals';
   const isBuilder = location.pathname === '/builder';
   const { wishlist } = useWishlist();
   const { cartItems } = useCart();
+
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  
+  const handleLogoutClick = () => {
+    setShowLogoutConfirm(true);
+    setMobileMenuOpen(false); // Close mobile menu if open
+  };
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
 
   return (
@@ -184,27 +214,77 @@ const Navbar = () => {
               {/* Profile (Desktop Only) */}
               <div className="relative group hidden lg:flex flex-col items-center justify-center cursor-pointer hover:text-[var(--color-primary)] transition-colors h-full pb-1 pt-1">
                 <PersonOutlineOutlinedIcon sx={{ fontSize: 24 }} />
-                <span className="text-[12px] font-bold mt-0.5">Profile</span>
+                <span className="text-[12px] font-bold mt-0.5">{isLoggedIn ? profileText : 'Profile'}</span>
                 
                 {/* Profile Hover Dropdown */}
                 <div className="absolute top-full right-[-50px] mt-0 w-[300px] opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50 pt-2 cursor-default shadow-2xl">
-                  <div className="bg-white border border-[#E2E8F0] p-6 text-left" style={{ borderRadius: 'var(--radius-sm)' }}>
-                    <h4 className="text-[15px] font-extrabold text-[#0F172A] mb-1">Welcome</h4>
-                    <p className="text-[13px] text-[#64748B] mb-5">To access account and manage orders</p>
-                    <button className="text-[var(--color-primary)] text-[13px] font-bold border border-[var(--color-primary)] py-2.5 px-6 rounded-sm transition-colors cursor-pointer mb-3 hover:bg-[#FDF2F2]">
-                      LOGIN / SIGNUP
-                    </button>
-                    <div className="border-t border-[#E2E8F0] my-3 -mx-6"></div>
-                    <ul className="flex flex-col text-[14px] text-[#334155] space-y-3 py-1 font-medium">
-                      <li className="hover:text-[var(--color-primary)] hover:font-bold transition-all cursor-pointer">Orders</li>
-                      <li className="hover:text-[var(--color-primary)] hover:font-bold transition-all cursor-pointer">Wishlist</li>
-                      <li className="hover:text-[var(--color-primary)] hover:font-bold transition-all cursor-pointer">Contact Us</li>
-                    </ul>
-                    <div className="border-t border-[#E2E8F0] my-3 -mx-6"></div>
-                    <ul className="flex flex-col text-[14px] text-[#334155] space-y-3 py-1 font-medium">
-                      <li className="hover:text-[var(--color-primary)] hover:font-bold transition-all cursor-pointer">Coupons</li>
-                      <li className="hover:text-[var(--color-primary)] hover:font-bold transition-all cursor-pointer">Saved Cards</li>
-                      <li className="hover:text-[var(--color-primary)] hover:font-bold transition-all cursor-pointer">Saved Addresses</li>
+                  <div className="bg-white border border-[#E2E8F0] shadow-2xl py-2 text-left" style={{ borderRadius: 'var(--radius-sm)' }}>
+                    {!isLoggedIn && (
+                      <div className="px-5 py-3 border-b border-[#E2E8F0] flex justify-between items-center">
+                        <span className="text-[14px] font-semibold text-[#0F172A]">New Customer?</span>
+                        <button 
+                          onClick={() => navigate('/login')}
+                          className="text-[var(--color-primary)] text-[14px] font-bold cursor-pointer hover:underline"
+                        >
+                          Sign Up / Sign In
+                        </button>
+                      </div>
+                    )}
+                    {isLoggedIn && (
+                      <div className="px-5 py-3 text-[14px] font-bold text-[#64748B]">
+                        Your Account
+                      </div>
+                    )}
+                    
+                    <ul className="flex flex-col text-[14px] text-[#334155] font-medium pb-2">
+                      {isLoggedIn && (
+                        <li 
+                          onClick={() => navigate('/profile')}
+                          className="mx-2 my-0.5 px-3 py-2.5 rounded-sm hover:bg-gradient-to-r hover:from-[#E8F4FF] hover:to-transparent hover:text-[var(--color-primary)] transition-all cursor-pointer flex items-center gap-3 group/item"
+                        >
+                          <PersonOutlineOutlinedIcon fontSize="small" className="text-[var(--color-primary)] opacity-80 group-hover/item:opacity-100" />
+                          My Profile
+                        </li>
+                      )}
+                      <li 
+                        onClick={() => navigate('/orders')}
+                        className="mx-2 my-0.5 px-3 py-2.5 rounded-sm hover:bg-gradient-to-r hover:from-[#E8F4FF] hover:to-transparent hover:text-[var(--color-primary)] transition-all cursor-pointer flex items-center gap-3 group/item"
+                      >
+                        <Inventory2OutlinedIcon fontSize="small" className="text-[var(--color-primary)] opacity-80 group-hover/item:opacity-100" />
+                        Orders
+                      </li>
+                      <li className="mx-2 my-0.5 px-3 py-2.5 rounded-sm hover:bg-gradient-to-r hover:from-[#E8F4FF] hover:to-transparent hover:text-[var(--color-primary)] transition-all cursor-pointer flex items-center gap-3 group/item">
+                        <ConfirmationNumberOutlinedIcon fontSize="small" className="text-[var(--color-primary)] opacity-80 group-hover/item:opacity-100" />
+                        Coupons
+                      </li>
+                      <li className="mx-2 my-0.5 px-3 py-2.5 rounded-sm hover:bg-gradient-to-r hover:from-[#E8F4FF] hover:to-transparent hover:text-[var(--color-primary)] transition-all cursor-pointer flex items-center gap-3 group/item">
+                        <AccountBalanceWalletOutlinedIcon fontSize="small" className="text-[var(--color-primary)] opacity-80 group-hover/item:opacity-100" />
+                        Saved Cards
+                      </li>
+                      <li className="mx-2 my-0.5 px-3 py-2.5 rounded-sm hover:bg-gradient-to-r hover:from-[#E8F4FF] hover:to-transparent hover:text-[var(--color-primary)] transition-all cursor-pointer flex items-center gap-3 group/item">
+                        <LocationOnOutlinedIcon fontSize="small" className="text-[var(--color-primary)] opacity-80 group-hover/item:opacity-100" />
+                        Saved Addresses
+                      </li>
+                      <li className="mx-2 my-0.5 px-3 py-2.5 rounded-sm hover:bg-gradient-to-r hover:from-[#E8F4FF] hover:to-transparent hover:text-[var(--color-primary)] transition-all cursor-pointer flex items-center gap-3 group/item">
+                        <FavoriteBorderIcon fontSize="small" className="text-[var(--color-primary)] opacity-80 group-hover/item:opacity-100" />
+                        Wishlist
+                      </li>
+                      <li className="mx-2 my-0.5 px-3 py-2.5 rounded-sm hover:bg-gradient-to-r hover:from-[#E8F4FF] hover:to-transparent hover:text-[var(--color-primary)] transition-all cursor-pointer flex items-center gap-3 group/item">
+                        <HeadsetMicOutlinedIcon fontSize="small" className="text-[var(--color-primary)] opacity-80 group-hover/item:opacity-100" />
+                        Contact Us
+                      </li>
+                      {isLoggedIn && (
+                        <>
+                          <div className="border-t border-[#E2E8F0] my-1 mx-2"></div>
+                          <li 
+                            onClick={handleLogoutClick}
+                            className="mx-2 my-0.5 px-3 py-2.5 rounded-sm hover:bg-gradient-to-r hover:from-red-50 hover:to-transparent hover:text-red-600 transition-all cursor-pointer flex items-center gap-3 group/item text-[#334155]"
+                          >
+                            <LogoutOutlinedIcon fontSize="small" className="text-[#64748B] opacity-80 group-hover/item:text-red-600 group-hover/item:opacity-100" />
+                            Logout
+                          </li>
+                        </>
+                      )}
                     </ul>
                   </div>
                 </div>
@@ -295,7 +375,7 @@ const Navbar = () => {
               <div className="text-[12px] font-bold text-[var(--color-muted)] uppercase tracking-wider mb-2">My Account</div>
               <Link to="/profile" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-3 text-[16px] font-bold p-3 rounded-md hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer text-[var(--color-text)]">
                 <PersonOutlineOutlinedIcon />
-                Profile
+                {isLoggedIn ? profileText : 'Profile'}
               </Link>
               <Link to="/wishlist" onClick={() => setMobileMenuOpen(false)} className="flex items-center justify-between text-[16px] font-bold p-3 rounded-md hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer text-[var(--color-text)]">
                 <div className="flex items-center gap-3">
@@ -322,11 +402,62 @@ const Navbar = () => {
             </div>
             
             <div className="mt-auto p-4 border-t border-[var(--color-border)]">
-              <button className="w-full bg-[var(--color-primary)] text-white font-bold py-3 rounded-sm cursor-pointer hover:opacity-90">
-                LOGIN / SIGNUP
-              </button>
+              {isLoggedIn ? (
+                <div className="flex flex-col gap-3">
+                  <div className="text-[16px] font-bold text-center text-[var(--color-text)]">
+                    Hi ! welcome back {firstName}
+                  </div>
+                  <button 
+                    onClick={handleLogoutClick}
+                    className="w-full flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 rounded-sm cursor-pointer hover:bg-red-700 transition-colors shadow-md"
+                  >
+                    <LogoutOutlinedIcon fontSize="small" />
+                    LOGOUT
+                  </button>
+                </div>
+              ) : (
+                <button 
+                  onClick={() => {
+                    navigate('/login');
+                    setMobileMenuOpen(false);
+                  }}
+                  className="w-full bg-[var(--color-primary)] text-white font-bold py-3 rounded-sm cursor-pointer hover:opacity-90 transition-opacity"
+                >
+                  LOGIN / SIGNUP
+                </button>
+              )}
             </div>
           </div>
+        </div>
+      )}
+      {/* Logout Confirmation Modal */}
+      {showLogoutConfirm && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <FadeUp>
+            <div className="bg-white rounded-md p-6 max-w-sm w-full shadow-2xl">
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Confirm Logout</h3>
+              <p className="text-gray-600 mb-6 text-sm">Are you sure you want to log out of your account?</p>
+              
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => setShowLogoutConfirm(false)}
+                  className="flex-1 py-2.5 font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-sm transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={() => {
+                    logout();
+                    setShowLogoutConfirm(false);
+                  }}
+                  className="flex-1 py-2.5 font-bold text-white bg-red-600 hover:bg-red-700 rounded-sm transition-colors cursor-pointer flex items-center justify-center gap-2"
+                >
+                  <LogoutOutlinedIcon fontSize="small" />
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </FadeUp>
         </div>
       )}
     </>
