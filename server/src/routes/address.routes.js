@@ -1,19 +1,22 @@
-import { Router } from "express";
-import * as addressController from "../controllers/address.controller.js";
-import { protect } from "../middlewares/auth.js";
-import validate from "../middlewares/validate.js";
+import express from 'express';
 import {
-  createAddressSchema,
-  updateAddressSchema,
-} from "../validators/address.validation.js";
+  getAddresses,
+  addAddress,
+  updateAddress,
+  deleteAddress
+} from '../controllers/address.controller.js';
+import { protect } from '../middlewares/auth.js';
 
-const router = Router();
+const router = express.Router();
 
-router.post("/", protect, validate(createAddressSchema), addressController.createAddress);
-router.get("/", protect, addressController.getAddresses);
-router.get("/:id", protect, addressController.getAddress);
-router.put("/:id", protect, validate(updateAddressSchema), addressController.updateAddress);
-router.delete("/:id", protect, addressController.deleteAddress);
-router.patch("/:id/default", protect, addressController.setDefaultAddress);
+router.use(protect);
+
+router.route('/')
+  .get(getAddresses)
+  .post(addAddress);
+
+router.route('/:id')
+  .put(updateAddress)
+  .delete(deleteAddress);
 
 export default router;

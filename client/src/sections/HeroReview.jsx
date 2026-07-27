@@ -118,7 +118,7 @@ const HeroReview = () => {
         
         {/* Header Section (Centered format) */}
         <div className="flex flex-col justify-center items-center text-center mb-16">
-          <p className="text-[13px] font-[800] uppercase tracking-[0.2em] mb-3 text-[#2563EB]">
+          <p className="text-[13px] font-[800] uppercase tracking-[0.2em] mb-3 text-[var(--color-primary)]">
             REVIEWS
           </p>
           <h2 className="text-[32px] md:text-[44px] font-extrabold text-[#0F172A] tracking-tight">
