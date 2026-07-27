@@ -7,9 +7,11 @@ import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import TableActions from "../../components/tables/TableActions";
 import StatusBadge from "../../components/common/StatusBadge";
+import AdminThumbnail from "../../components/common/AdminThumbnail";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { categoryService } from "../../services/categoryService";
+import { extractError } from "../../utils/extractError";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
@@ -37,8 +39,8 @@ const CategoryList = () => {
       const result = await categoryService.list({ page, pageSize, search, ...filters });
       setCategories(result.data);
       setTotal(result.total);
-    } catch {
-      toast("Failed to load categories", "error");
+      } catch (err) {
+        toast(extractError(err, "Failed to load categories"), "error");
     } finally {
       setLoading(false);
     }
@@ -55,8 +57,8 @@ const CategoryList = () => {
       toast("Category deleted successfully");
       setDeleteTarget(null);
       fetchCategories();
-    } catch {
-      toast("Failed to delete category", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to delete category"), "error");
     }
   };
 
@@ -66,8 +68,8 @@ const CategoryList = () => {
       toast(`${selected.length} categories deleted`);
       setSelected([]);
       fetchCategories();
-    } catch {
-      toast("Failed to delete categories", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to delete categories"), "error");
     }
   };
 
@@ -86,16 +88,21 @@ const CategoryList = () => {
   const columns = [
     { key: "name", label: "Name", render: (val, row) => (
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <Box
-          sx={{
-            width: 32, height: 32, borderRadius: "var(--radius-admin-badge)",
-            backgroundColor: "var(--color-admin-bg-tertiary)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            color: "var(--color-admin-white)", fontSize: "0.625rem", fontWeight: 700, textTransform: "uppercase", flexShrink: 0,
-          }}
-        >
-          {row.name.charAt(0)}{row.name.charAt(1)}
-        </Box>
+        <AdminThumbnail
+          src={row.image?.url}
+          alt={val}
+          size={32}
+          fallback={
+            <Box sx={{
+              width: 32, height: 32, borderRadius: "var(--radius-admin-badge)",
+              backgroundColor: "var(--color-admin-bg-tertiary)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              color: "var(--color-admin-white)", fontSize: "0.625rem", fontWeight: 700, textTransform: "uppercase", flexShrink: 0,
+            }}>
+              {row.name.charAt(0)}{row.name.charAt(1)}
+            </Box>
+          }
+        />
         <Box>
           <Box sx={{ fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val}</Box>
           <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)" }}>{row.slug}</Box>

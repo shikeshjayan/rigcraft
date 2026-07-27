@@ -7,6 +7,7 @@ import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import TableActions from "../../components/tables/TableActions";
 import StatusBadge from "../../components/common/StatusBadge";
+import AdminThumbnail from "../../components/common/AdminThumbnail";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { prebuiltService } from "../../services/prebuiltService";
@@ -15,6 +16,7 @@ import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
+import { extractError } from "../../utils/extractError";
 
 const PrebuiltList = () => {
   const navigate = useNavigate();
@@ -38,8 +40,8 @@ const PrebuiltList = () => {
       const result = await prebuiltService.list({ page, pageSize, search, ...filters });
       setItems(result.data);
       setTotal(result.total);
-    } catch {
-      toast("Failed to load prebuilt PCs", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to load prebuilt PCs"), "error");
     } finally {
       setLoading(false);
     }
@@ -56,8 +58,8 @@ const PrebuiltList = () => {
       toast("Prebuilt PC deleted");
       setDeleteTarget(null);
       fetchItems();
-    } catch {
-      toast("Failed to delete", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to delete prebuilt PC"), "error");
     }
   };
 
@@ -67,8 +69,8 @@ const PrebuiltList = () => {
       toast(`${selected.length} prebuilt PCs deleted`);
       setSelected([]);
       fetchItems();
-    } catch {
-      toast("Failed to delete prebuilt PCs", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to delete prebuilt PCs"), "error");
     }
   };
 
@@ -86,9 +88,18 @@ const PrebuiltList = () => {
 
   const columns = [
     { key: "name", label: "Name", render: (val, row) => (
-      <Box>
-        <Box sx={{ fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val}</Box>
-        <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)" }}>{row.sku}</Box>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+        <AdminThumbnail src={row.image} alt={val} size={36}
+          fallback={
+            <Box sx={{ width: 36, height: 36, borderRadius: "var(--radius-admin-badge)", backgroundColor: "var(--color-admin-bg-tertiary)", border: "1px solid var(--color-admin-border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.625rem", fontWeight: 700, color: "var(--color-admin-muted)", textTransform: "uppercase", flexShrink: 0 }}>
+              {val.charAt(0)}{val.charAt(1)}
+            </Box>
+          }
+        />
+        <Box>
+          <Box sx={{ fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val}</Box>
+          <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)" }}>{row.sku}</Box>
+        </Box>
       </Box>
     )},
     { key: "price", label: "Price", render: (val, row) => (

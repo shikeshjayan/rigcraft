@@ -6,6 +6,7 @@ import CategoryForm from "../../components/forms/CategoryForm";
 import { categoryService } from "../../services/categoryService";
 import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
+import { extractError } from "../../utils/extractError";
 
 const CategoryCreate = () => {
   const navigate = useNavigate();
@@ -25,8 +26,8 @@ const CategoryCreate = () => {
       await categoryService.create(payload);
       toast("Category created successfully");
       navigate("/admin/categories");
-    } catch {
-      toast("Failed to create category", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to create category"), "error");
     } finally {
       setLoading(false);
     }

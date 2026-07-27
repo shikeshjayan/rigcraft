@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box, Typography, Grid, Chip } from "@mui/material";
+import { Box, Typography, Grid, Chip, Table, TableHead, TableBody, TableRow, TableCell } from "@mui/material";
 import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 import { orderService } from "../../services/orderService";
+import { extractError } from "../../utils/extractError";
 import { ORDER_STATUS, ORDER_STATUS_COLOR } from "../../constants/status";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { formatDateTime } from "../../utils/formatDate";
@@ -30,7 +31,7 @@ const OrderDetails = () => {
   useEffect(() => {
     orderService.getById(id)
       .then(setOrder)
-      .catch(() => { toast("Order not found", "error"); navigate("/admin/orders"); })
+      .catch((err) => { toast(extractError(err, "Order not found"), "error"); navigate("/admin/orders"); })
       .finally(() => setLoading(false));
   }, [id, navigate, toast]);
 
@@ -40,8 +41,8 @@ const OrderDetails = () => {
       const updated = await orderService.updateStatus(id, newStatus);
       setOrder(updated);
       toast("Order status updated");
-    } catch {
-      toast("Failed to update status", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to update status"), "error");
     } finally {
       setUpdating(false);
     }
@@ -70,9 +71,37 @@ const OrderDetails = () => {
             <DetailRow label="Date" value={formatDateTime(order.createdAt)} />
             <DetailRow label="Last Updated" value={formatDateTime(order.updatedAt)} />
             <DetailRow label="Payment Method" value={order.paymentMethod} />
-            <DetailRow label="Items" value={order.items} />
+            <DetailRow label="Item Count" value={order.itemCount} />
             <DetailRow label="Total" value={formatCurrency(order.total)} />
           </Grid>
+
+          {order.items?.length > 0 && (
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="subtitle2" sx={{ mb: 1.5, color: "var(--color-admin-text)", fontWeight: 600 }}>Order Items</Typography>
+              <Table size="small" sx={{ "& th, & td": { fontSize: "0.8125rem", color: "var(--color-admin-text)", borderColor: "var(--color-admin-border)" } }}>
+                <TableHead>
+                  <TableRow>
+                    <TableCell sx={{ fontWeight: 600 }}>Item</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>SKU</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Qty</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Price</TableCell>
+                    <TableCell sx={{ fontWeight: 600 }}>Total</TableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {order.items.map((item, idx) => (
+                    <TableRow key={idx}>
+                      <TableCell>{item.name || "—"}</TableCell>
+                      <TableCell>{item.sku || "—"}</TableCell>
+                      <TableCell>{item.quantity || 1}</TableCell>
+                      <TableCell>{formatCurrency(item.unitPrice || 0)}</TableCell>
+                      <TableCell>{formatCurrency(item.totalPrice || 0)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </Box>
+          )}
         </Box>
 
         <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>

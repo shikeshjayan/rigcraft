@@ -39,6 +39,9 @@ const normalizeList = (res) => {
 
 const adaptParams = (params) => {
   const p = { ...params };
+  p.page = (p.page || 0) + 1;
+  p.limit = p.pageSize;
+  delete p.pageSize;
   p.discountType = p.type;
   delete p.type;
   Object.keys(p).forEach((k) => { if (p[k] === "" || p[k] === undefined) delete p[k]; });
@@ -51,8 +54,8 @@ const adaptPayload = (data) => {
   if (p.value !== undefined) { p.discountValue = p.value; delete p.value; }
   if (p.minOrder !== undefined) { p.minimumPurchase = p.minOrder; delete p.minOrder; }
   if (p.maxUses !== undefined) { p.usageLimit = p.maxUses; delete p.maxUses; }
-  if (p.startsAt) { p.validFrom = p.startsAt; delete p.startsAt; }
-  if (p.expiresAt) { p.validUntil = p.expiresAt; delete p.expiresAt; }
+  if (p.startsAt) { p.validFrom = new Date(p.startsAt).toISOString(); delete p.startsAt; }
+  if (p.expiresAt) { p.validUntil = new Date(p.expiresAt).toISOString(); delete p.expiresAt; }
   delete p.id;
   delete p._id;
   delete p.usedCount;

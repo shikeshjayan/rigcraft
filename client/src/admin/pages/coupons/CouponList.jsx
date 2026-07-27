@@ -10,6 +10,7 @@ import StatusBadge from "../../components/common/StatusBadge";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { couponService } from "../../services/couponService";
+import { extractError } from "../../utils/extractError";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
@@ -36,8 +37,8 @@ const CouponList = () => {
       const result = await couponService.list({ page, pageSize, search, ...filters });
       setCoupons(result.data);
       setTotal(result.total);
-    } catch {
-      toast("Failed to load coupons", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to load coupons"), "error");
     } finally {
       setLoading(false);
     }
@@ -54,8 +55,8 @@ const CouponList = () => {
       toast("Coupon deleted");
       setDeleteTarget(null);
       fetchCoupons();
-    } catch {
-      toast("Failed to delete", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to delete coupon"), "error");
     }
   };
 
@@ -65,8 +66,8 @@ const CouponList = () => {
       toast(`${selected.length} coupons deleted`);
       setSelected([]);
       fetchCoupons();
-    } catch {
-      toast("Failed to delete coupons", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to delete coupons"), "error");
     }
   };
 

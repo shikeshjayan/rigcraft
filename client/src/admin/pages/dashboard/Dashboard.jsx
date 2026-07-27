@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ShoppingCart, AttachMoney, Inventory, People } from "@mui/icons-material";
 import StatCard from "../../components/dashboard/StatCard";
+import { useToast } from "../../components/common/Toast";
 import RevenueChart from "../../components/dashboard/RevenueChart";
 import SalesChart from "../../components/dashboard/SalesChart";
 import OrderChart from "../../components/dashboard/OrderChart";
@@ -8,9 +9,11 @@ import RecentOrders from "../../components/dashboard/RecentOrders";
 import LowStockProducts from "../../components/dashboard/LowStockProducts";
 import TopProducts from "../../components/dashboard/TopProducts";
 import { dashboardService } from "../../services/dashboardService";
+import { extractError } from "../../utils/extractError";
 import { formatCurrency } from "../../utils/formatCurrency";
 
 const Dashboard = () => {
+  const { toast } = useToast();
   const [stats, setStats] = useState(null);
   const [salesData, setSalesData] = useState([]);
   const [recentOrders, setRecentOrders] = useState([]);
@@ -37,7 +40,7 @@ const Dashboard = () => {
         setTopProducts(top);
         setOrderBreakdown(breakdown);
       } catch (err) {
-        console.error("Dashboard fetch error:", err);
+        toast(extractError(err, "Failed to load dashboard data"), "error");
       } finally {
         setLoading(false);
       }

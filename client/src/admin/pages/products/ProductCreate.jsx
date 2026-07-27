@@ -8,6 +8,7 @@ import { categoryService } from "../../services/categoryService";
 import { brandService } from "../../services/brandService";
 import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
+import { extractError } from "../../utils/extractError";
 
 const ProductCreate = () => {
   const navigate = useNavigate();
@@ -28,11 +29,12 @@ const ProductCreate = () => {
     setLoading(true);
     try {
       const payload = { ...data, comparePrice: data.comparePrice || null, costPrice: data.costPrice || null };
+      payload.images = payload.images?.map((img) => img.file).filter(Boolean) || [];
       await productService.create(payload);
       toast("Product created successfully");
       navigate("/admin/products");
-    } catch {
-      toast("Failed to create product", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to create product"), "error");
     } finally {
       setLoading(false);
     }

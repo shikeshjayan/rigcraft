@@ -6,6 +6,7 @@ import DataTable from "../../components/tables/DataTable";
 import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import StatusBadge from "../../components/common/StatusBadge";
+import AdminThumbnail from "../../components/common/AdminThumbnail";
 import { useToast } from "../../components/common/Toast";
 import { userService } from "../../services/userService";
 import { formatCurrency } from "../../utils/formatCurrency";
@@ -13,6 +14,7 @@ import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
+import { extractError } from "../../utils/extractError";
 
 const UserList = () => {
   const navigate = useNavigate();
@@ -33,8 +35,8 @@ const UserList = () => {
       const result = await userService.list({ page, pageSize, search, ...filters });
       setUsers(result.data);
       setTotal(result.total);
-    } catch {
-      toast("Failed to load users", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to load users"), "error");
     } finally {
       setLoading(false);
     }
@@ -67,7 +69,15 @@ const UserList = () => {
   const columns = [
     { key: "name", label: "User", render: (val, row) => (
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-        <Box sx={{ width: 36, height: 36, borderRadius: "var(--radius-admin-avatar)", backgroundColor: "var(--color-admin-primary)", color: "var(--color-admin-white)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700, flexShrink: 0 }}>{val.charAt(0)}</Box>
+        <AdminThumbnail
+          src={row.avatar}
+          alt={val}
+          size={36}
+          sx={{ borderRadius: "var(--radius-admin-avatar)", border: "none" }}
+          fallback={
+            <Box sx={{ width: 36, height: 36, borderRadius: "var(--radius-admin-avatar)", backgroundColor: "var(--color-admin-primary)", color: "var(--color-admin-white)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700, flexShrink: 0 }}>{val.charAt(0)}</Box>
+          }
+        />
         <Box>
           <Box sx={{ fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val}</Box>
           <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)" }}>{row.email}</Box>
@@ -86,7 +96,7 @@ const UserList = () => {
     <Box ref={containerRef}>
       <TableToolbar title="Users" searchValue={search} onSearchChange={setSearch} onRefresh={fetchUsers} />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
-      <DataTable columns={columns} rows={users} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/users/${row.id}`)} rowsPerPageOptions={[10, 25, 50, 100]} />
+      <DataTable columns={columns} rows={users} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/users/${row._id}`)} rowsPerPageOptions={[10, 25, 50, 100]} />
     </Box>
   );
 };

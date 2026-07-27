@@ -42,7 +42,6 @@ export const brandService = {
     delete payload.id;
     delete payload._id;
     delete payload.productCount;
-    delete payload.website;
     const fd = toFormData(payload, { logo: "logo" });
     const { data } = fd
       ? await api.post(ENDPOINTS.BRAND.CREATE, fd)
@@ -55,7 +54,6 @@ export const brandService = {
     delete payload.id;
     delete payload._id;
     delete payload.productCount;
-    delete payload.website;
     const fd = toFormData(payload, { logo: "logo" });
     const { data } = fd
       ? await api.put(ENDPOINTS.BRAND.UPDATE(id), fd)

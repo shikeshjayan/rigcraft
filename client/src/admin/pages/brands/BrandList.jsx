@@ -7,9 +7,11 @@ import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import TableActions from "../../components/tables/TableActions";
 import StatusBadge from "../../components/common/StatusBadge";
+import AdminThumbnail from "../../components/common/AdminThumbnail";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { brandService } from "../../services/brandService";
+import { extractError } from "../../utils/extractError";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
@@ -37,8 +39,8 @@ const BrandList = () => {
       const result = await brandService.list({ page, pageSize, search, ...filters });
       setBrands(result.data);
       setTotal(result.total);
-    } catch {
-      toast("Failed to load brands", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to load brands"), "error");
     } finally {
       setLoading(false);
     }
@@ -55,8 +57,8 @@ const BrandList = () => {
       toast("Brand deleted successfully");
       setDeleteTarget(null);
       fetchBrands();
-    } catch {
-      toast("Failed to delete brand", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to delete brand"), "error");
     }
   };
 
@@ -66,8 +68,8 @@ const BrandList = () => {
       toast(`${selected.length} brands deleted`);
       setSelected([]);
       fetchBrands();
-    } catch {
-      toast("Failed to delete brands", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to delete brands"), "error");
     }
   };
 
@@ -86,16 +88,23 @@ const BrandList = () => {
   const columns = [
     { key: "name", label: "Brand", render: (val, row) => (
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-        <Box sx={{
-          width: 36, height: 36, borderRadius: "var(--radius-admin-badge)",
-          backgroundColor: "var(--color-admin-bg-tertiary)",
-          border: "1px solid var(--color-admin-border)",
-          display: "flex", alignItems: "center", justifyContent: "center",
-          fontSize: "0.75rem", fontWeight: 700, color: "var(--color-admin-muted)",
-          textTransform: "uppercase", flexShrink: 0,
-        }}>
-          {val.charAt(0)}{val.charAt(1)}
-        </Box>
+        <AdminThumbnail
+          src={row.logo?.url}
+          alt={val}
+          size={36}
+          fallback={
+            <Box sx={{
+              width: 36, height: 36, borderRadius: "var(--radius-admin-badge)",
+              backgroundColor: "var(--color-admin-bg-tertiary)",
+              border: "1px solid var(--color-admin-border)",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: "0.75rem", fontWeight: 700, color: "var(--color-admin-muted)",
+              textTransform: "uppercase", flexShrink: 0,
+            }}>
+              {val.charAt(0)}{val.charAt(1)}
+            </Box>
+          }
+        />
     <Box>
           <Box sx={{ fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val}</Box>
           <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)" }}>{row.slug}</Box>

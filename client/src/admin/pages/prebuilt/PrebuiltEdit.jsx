@@ -7,6 +7,7 @@ import { prebuiltService } from "../../services/prebuiltService";
 import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
+import { extractError } from "../../utils/extractError";
 
 const PrebuiltEdit = () => {
   const { id } = useParams();
@@ -26,11 +27,13 @@ const PrebuiltEdit = () => {
   const handleSubmit = async (data) => {
     setSaving(true);
     try {
-      await prebuiltService.update(id, { ...data, comparePrice: data.comparePrice || null });
+      const payload = { ...data, comparePrice: data.comparePrice || null };
+      if (payload.image?.file) payload.image = payload.image.file;
+      await prebuiltService.update(id, payload);
       toast("Prebuilt PC updated");
       navigate("/admin/prebuilt");
-    } catch {
-      toast("Failed to update", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to update prebuilt PC"), "error");
     } finally {
       setSaving(false);
     }

@@ -15,6 +15,18 @@ const fileFilter = (req, file, cb) => {
 
 const upload = multer({ storage, fileFilter, limits: { fileSize: MAX_SIZE } });
 
+const parseBodyField = (req) => {
+  if (typeof req.body?.body === "string") {
+    try {
+      const parsed = JSON.parse(req.body.body);
+      delete req.body.body;
+      Object.assign(req.body, parsed);
+    } catch {
+      // invalid JSON — validation will catch missing fields
+    }
+  }
+};
+
 export const uploadSingleImage = (fieldName = "image") => {
   return (req, res, next) => {
     const single = upload.single(fieldName);
@@ -31,6 +43,7 @@ export const uploadSingleImage = (fieldName = "image") => {
       if (err) {
         return res.status(400).json({ success: false, message: err.message });
       }
+      parseBodyField(req);
       next();
     });
   };
@@ -52,6 +65,7 @@ export const uploadMultipleImages = (fieldName = "images", maxCount = 10) => {
       if (err) {
         return res.status(400).json({ success: false, message: err.message });
       }
+      parseBodyField(req);
       next();
     });
   };
