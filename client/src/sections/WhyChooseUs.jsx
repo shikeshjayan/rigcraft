@@ -42,7 +42,7 @@ const WhyChooseUs = () => {
             Our Promise
           </p>
           <h2 className="text-[32px] md:text-[40px] font-extrabold text-[#111111] uppercase tracking-wide">
-            Why Choose <span style={{ color: 'var(--color-primary, #06B6D4)' }}>PCForge</span>
+            Why Choose <span style={{ color: 'var(--color-primary, #06B6D4)' }}>RigCraft</span>
           </h2>
         </div>
         

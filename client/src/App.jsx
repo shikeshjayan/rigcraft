@@ -23,6 +23,7 @@ import PcBuilderGuide from './pages/PcBuilderGuide';
 import { WishlistProvider } from './context/WishlistContext';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
+import Chatbot from './components/Chatbot';
 
 const queryClient = new QueryClient();
 
@@ -57,13 +58,14 @@ const App = () => {
                   <Route path="/builder-guide" element={<PcBuilderGuide />} />
                 </Routes>
               </div>
+              <Chatbot />
               <Footer />
             </div>
           </WishlistProvider>
         </CartProvider>
       </AuthProvider>
     </BrowserRouter>
-    <ReactQueryDevtools initialIsOpen={false} />
+    {/* <ReactQueryDevtools initialIsOpen={false} /> */}
   </QueryClientProvider>
   );
 };

@@ -100,7 +100,7 @@ const Footer = () => {
             <div className="lg:col-span-2 flex flex-col">
               <div className="flex items-center gap-2 mb-6 cursor-pointer">
                 <PrecisionManufacturingIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
-                <span className="text-[24px] font-black tracking-widest uppercase">PCForge</span>
+                <span className="text-[24px] font-black tracking-widest uppercase"><span style={{ color: 'var(--color-primary)',fontSize:"24px" }}>Rig</span>Craft</span>
               </div>
               <p className="text-[15px] text-gray-400 leading-relaxed mb-8 font-medium">
                 India's premier PC building platform. Custom gaming PCs, premium components, and expert support — all in one place.
