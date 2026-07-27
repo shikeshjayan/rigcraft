@@ -18,6 +18,7 @@ import AcUnitIcon from '@mui/icons-material/AcUnit';
 import MouseIcon from '@mui/icons-material/Mouse';
 import MonitorIcon from '@mui/icons-material/Monitor';
 import BuildIcon from '@mui/icons-material/Build';
+import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
@@ -106,7 +107,8 @@ const Navbar = () => {
             >
               <MenuIcon sx={{ fontSize: 28 }} />
             </button>
-            <Link to="/" className="flex items-center cursor-pointer text-2xl font-black tracking-tight hover:opacity-80 transition-opacity" style={{ color: 'var(--color-text)' }}>
+            <Link to="/" className="flex items-center cursor-pointer gap-2 text-2xl font-black tracking-tight hover:opacity-80 transition-opacity" style={{ color: 'var(--color-text)' }}>
+                <PrecisionManufacturingIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
               <span style={{ color: 'var(--color-primary)' }}>Rig</span>Craft
             </Link>
           </div>
