@@ -5,36 +5,65 @@ import AdminButton from "../../components/common/Button";
 import ImageUpload from "../../components/common/ImageUpload";
 import { useToast } from "../../components/common/Toast";
 import useAuthStore from "../../store/authStore";
-import { userService } from "../../services/userService";
+import { authService } from "../../../services/auth.service";
+import { extractError } from "../../utils/extractError";
 
 const Profile = () => {
   const { user, setUser } = useAuthStore();
   const { toast } = useToast();
   const [saving, setSaving] = useState(false);
+  const [changingPassword, setChangingPassword] = useState(false);
   const [avatar, setAvatar] = useState([]);
+
   const [name, setName] = useState(user?.name || "");
-  const [password, setPassword] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSave = async () => {
-    if (password && password !== confirmPassword) {
+  const splitName = (fullName) => {
+    const parts = (fullName || "").split(" ");
+    return { firstName: parts[0] || "", lastName: parts.slice(1).join(" ") || "" };
+  };
+
+  const handleSaveProfile = async () => {
+    setSaving(true);
+    try {
+      const { firstName, lastName } = splitName(name);
+      const payload = { firstName, lastName };
+      if (avatar.length > 0) {
+        const fd = new FormData();
+        fd.append("avatar", avatar[0]);
+        fd.append("body", JSON.stringify(payload));
+        const res = await authService.updateProfile(fd);
+        setUser({ ...user, ...res.data });
+      } else {
+        const res = await authService.updateProfile(payload);
+        setUser({ ...user, ...res.data });
+      }
+      toast("Profile updated");
+    } catch (err) {
+      toast(extractError(err, "Failed to update profile"), "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
       toast("Passwords do not match", "error");
       return;
     }
-    setSaving(true);
+    setChangingPassword(true);
     try {
-      const payload = { name };
-      if (password) payload.password = password;
-      if (avatar.length > 0) payload.avatar = avatar[0];
-      const updated = await userService.update(user.id, payload);
-      setUser({ ...user, ...updated });
-      setPassword("");
+      await authService.changePassword({ currentPassword, newPassword, confirmPassword });
+      setCurrentPassword("");
+      setNewPassword("");
       setConfirmPassword("");
-      toast("Profile updated");
-    } catch {
-      toast("Failed to update profile", "error");
+      toast("Password changed");
+    } catch (err) {
+      toast(extractError(err, "Failed to change password"), "error");
     } finally {
-      setSaving(false);
+      setChangingPassword(false);
     }
   };
 
@@ -61,7 +90,7 @@ const Profile = () => {
         </Grid>
 
         <Grid size={{ xs: 12, md: 8 }}>
-          <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+          <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)", mb: 3 }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 3, color: "var(--color-admin-text)" }}>Account Information</Typography>
             <Grid container spacing={3}>
               <Grid size={{ xs: 12, sm: 6 }}>
@@ -70,16 +99,27 @@ const Profile = () => {
               <Grid size={{ xs: 12, sm: 6 }}>
                 <AdminInput label="Email" value={user?.email} disabled />
               </Grid>
+              <Grid size={{ xs: 12 }}>
+                <AdminButton variant="primary" onClick={handleSaveProfile} loading={saving}>Save Profile</AdminButton>
+              </Grid>
+            </Grid>
+          </Box>
+
+          <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 3, color: "var(--color-admin-text)" }}>Change Password</Typography>
+            <Grid container spacing={3}>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <AdminInput label="Password" type="password" placeholder="Leave blank to keep current" value={password} onChange={(e) => setPassword(e.target.value)} />
+                <AdminInput label="Current Password" type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }} />
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <AdminInput label="New Password" type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
               </Grid>
               <Grid size={{ xs: 12, sm: 6 }}>
-                <AdminInput label="Confirm Password" type="password" placeholder="Confirm new password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                <AdminInput label="Confirm New Password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               </Grid>
               <Grid size={{ xs: 12 }}>
-                <Box sx={{ pt: 2 }}>
-                  <AdminButton variant="primary" onClick={handleSave} loading={saving}>Save Changes</AdminButton>
-                </Box>
+                <AdminButton variant="primary" onClick={handleChangePassword} loading={changingPassword}>Change Password</AdminButton>
               </Grid>
             </Grid>
           </Box>

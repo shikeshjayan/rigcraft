@@ -56,6 +56,7 @@ export const list = async (query = {}) => {
   }
 
   const data = users.map((u) => ({
+    _id: u._id,
     id: u._id,
     name: `${u.firstName} ${u.lastName}`,
     email: u.email,

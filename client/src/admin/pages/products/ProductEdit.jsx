@@ -9,6 +9,7 @@ import { brandService } from "../../services/brandService";
 import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
+import { extractError } from "../../utils/extractError";
 
 const ProductEdit = () => {
   const { id } = useParams();
@@ -35,11 +36,12 @@ const ProductEdit = () => {
     setSaving(true);
     try {
       const payload = { ...data, comparePrice: data.comparePrice || null, costPrice: data.costPrice || null };
+      payload.images = payload.images?.map((img) => img.file).filter(Boolean) || [];
       await productService.update(id, payload);
       toast("Product updated successfully");
       navigate("/admin/products");
-    } catch {
-      toast("Failed to update product", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to update product"), "error");
     } finally {
       setSaving(false);
     }

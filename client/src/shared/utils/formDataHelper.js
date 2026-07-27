@@ -23,6 +23,6 @@ export const toFormData = (data, fieldMap = {}) => {
     }
   });
 
-  fd.append("body", new Blob([JSON.stringify(body)], { type: "application/json" }));
+  fd.append("body", JSON.stringify(body));
   return fd;
 };

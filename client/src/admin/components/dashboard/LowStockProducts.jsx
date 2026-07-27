@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
 import StatusBadge from "../common/StatusBadge";
+import CompactPagination from "../common/CompactPagination";
 import { formatCurrency } from "../../utils/formatCurrency";
 
 const getStockColor = (stock) => {
@@ -9,6 +11,11 @@ const getStockColor = (stock) => {
 };
 
 const LowStockProducts = ({ products = [] }) => {
+  const [page, setPage] = useState(0);
+  const rowsPerPage = 5;
+  const totalPages = Math.ceil(products.length / rowsPerPage);
+  const paginatedProducts = products.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
   return (
     <Paper
       elevation={0}
@@ -17,6 +24,9 @@ const LowStockProducts = ({ products = [] }) => {
         border: "1px solid var(--color-admin-border)",
         backgroundColor: "var(--color-admin-card)",
         overflow: "hidden",
+        height: "100%",
+        display: "flex",
+        flexDirection: "column",
       }}
     >
       <div className="p-4 border-b border-admin-border">
@@ -27,7 +37,7 @@ const LowStockProducts = ({ products = [] }) => {
           Products running low on inventory
         </Typography>
       </div>
-      <TableContainer>
+      <TableContainer sx={{ flex: 1 }}>
         <Table>
           <TableHead>
             <TableRow>
@@ -38,7 +48,7 @@ const LowStockProducts = ({ products = [] }) => {
             </TableRow>
           </TableHead>
           <TableBody>
-            {products.map((product) => (
+            {paginatedProducts.map((product) => (
               <TableRow key={product.id} hover>
                 <TableCell sx={{ fontSize: "0.875rem", fontWeight: 500, color: "var(--color-admin-text)" }}>
                   {product.name}
@@ -64,6 +74,7 @@ const LowStockProducts = ({ products = [] }) => {
           </TableBody>
         </Table>
       </TableContainer>
+      <CompactPagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </Paper>
   );
 };

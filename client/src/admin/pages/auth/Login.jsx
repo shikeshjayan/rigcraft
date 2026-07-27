@@ -8,6 +8,7 @@ import {
   LockOutlined,
 } from "@mui/icons-material";
 import useAuthStore from "../../store/authStore";
+import { extractError } from "../../utils/extractError";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -24,8 +25,8 @@ const Login = () => {
     try {
       await login(form);
       navigate("/admin/dashboard");
-    } catch {
-      setError("Invalid credentials");
+    } catch (err) {
+      setError(extractError(err, "Invalid credentials"));
     } finally {
       setLoading(false);
     }

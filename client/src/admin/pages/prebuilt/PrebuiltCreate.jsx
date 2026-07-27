@@ -6,6 +6,7 @@ import PrebuiltForm from "../../components/forms/PrebuiltForm";
 import { prebuiltService } from "../../services/prebuiltService";
 import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
+import { extractError } from "../../utils/extractError";
 
 const PrebuiltCreate = () => {
   const navigate = useNavigate();
@@ -15,11 +16,13 @@ const PrebuiltCreate = () => {
   const handleSubmit = async (data) => {
     setLoading(true);
     try {
-      await prebuiltService.create({ ...data, comparePrice: data.comparePrice || null });
+      const payload = { ...data, comparePrice: data.comparePrice || null };
+      if (payload.image?.file) payload.image = payload.image.file;
+      await prebuiltService.create(payload);
       toast("Prebuilt PC created");
       navigate("/admin/prebuilt");
-    } catch {
-      toast("Failed to create", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to create prebuilt PC"), "error");
     } finally {
       setLoading(false);
     }

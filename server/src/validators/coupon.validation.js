@@ -89,4 +89,12 @@ export const createCouponSchema = z.object(couponBase).superRefine((data, ctx) =
   }
 });
 
-export const updateCouponSchema = z.object(couponBase).partial();
+export const updateCouponSchema = z.object(couponBase).partial().superRefine((data, ctx) => {
+  if (data.discountType === DISCOUNT_TYPES.PERCENTAGE && data.maximumDiscount !== undefined && !data.maximumDiscount) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["maximumDiscount"],
+      message: "Maximum discount is required for percentage coupons",
+    });
+  }
+});

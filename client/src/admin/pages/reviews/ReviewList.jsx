@@ -6,6 +6,7 @@ import DataTable from "../../components/tables/DataTable";
 import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import StatusBadge from "../../components/common/StatusBadge";
+import AdminThumbnail from "../../components/common/AdminThumbnail";
 import { useToast } from "../../components/common/Toast";
 import { reviewService } from "../../services/reviewService";
 import { REVIEW_STATUS, REVIEW_STATUS_COLOR } from "../../constants/status";
@@ -13,6 +14,7 @@ import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
+import { extractError } from "../../utils/extractError";
 
 const ReviewList = () => {
   const navigate = useNavigate();
@@ -33,8 +35,8 @@ const ReviewList = () => {
       const result = await reviewService.list({ page, pageSize, search, ...filters });
       setReviews(result.data);
       setTotal(result.total);
-    } catch {
-      toast("Failed to load reviews", "error");
+    } catch (err) {
+      toast(extractError(err, "Failed to load reviews"), "error");
     } finally {
       setLoading(false);
     }
@@ -68,7 +70,12 @@ const ReviewList = () => {
   ];
 
   const columns = [
-    { key: "product", label: "Product", render: (val) => <Box sx={{ fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val.name}</Box> },
+    { key: "product", label: "Product", render: (val, row) => (
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <AdminThumbnail src={row.productImage || val.image || val.images?.[0]?.url} alt={val.name} size={32} />
+        <Box sx={{ fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val.name}</Box>
+      </Box>
+    )},
     { key: "customer", label: "Customer", render: (val) => <Box sx={{ fontSize: "0.875rem" }}>{val.name}</Box> },
     { key: "rating", label: "Rating", render: (val) => <Rating value={val} readOnly size="small" /> },
     { key: "title", label: "Title", render: (val) => <Box sx={{ fontSize: "0.8125rem", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{val}</Box> },
@@ -80,7 +87,7 @@ const ReviewList = () => {
     <Box ref={containerRef}>
       <TableToolbar title="Reviews" searchValue={search} onSearchChange={setSearch} onRefresh={fetchReviews} />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
-      <DataTable columns={columns} rows={reviews} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/reviews/${row.id}`)} rowsPerPageOptions={[maxRows, 10, 25, 50, 100]} />
+      <DataTable columns={columns} rows={reviews} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/reviews/${row.id}`)} rowsPerPageOptions={[10, 25, 50, 100]} />
     </Box>
   );
 };
