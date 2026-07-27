@@ -1,6 +1,7 @@
 import { Router } from "express";
 import * as buildController from "../controllers/build.controller.js";
 import { protect, authorize } from "../middlewares/auth.js";
+import { USER_ROLES } from "../constants/constants.js";
 import validate from "../middlewares/validate.js";
 import {
   createBuildSchema,
@@ -13,13 +14,13 @@ const router = Router();
 
 router.post("/", protect, validate(createBuildSchema), buildController.createBuild);
 
-router.get("/admin", protect, authorize("admin"), buildController.adminGetAllBuilds);
+router.get("/admin", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER), buildController.adminGetAllBuilds);
 
-router.get("/admin/analytics", protect, authorize("admin"), buildController.getBuildAnalytics);
+router.get("/admin/analytics", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER), buildController.getBuildAnalytics);
 
-router.get("/admin/issues", protect, authorize("admin"), buildController.getCompatibilityIssues);
+router.get("/admin/issues", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER), buildController.getCompatibilityIssues);
 
-router.post("/admin/settings", protect, authorize("admin"), validate(updateBuildSettingsSchema), buildController.updateBuildSettings);
+router.post("/admin/settings", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER), validate(updateBuildSettingsSchema), buildController.updateBuildSettings);
 
 router.get("/", protect, buildController.getUserBuilds);
 

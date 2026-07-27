@@ -14,6 +14,7 @@ const router = Router();
 router.get("/", prebuiltPCController.list);
 router.get("/featured", prebuiltPCController.getFeatured);
 router.get("/category/:category", prebuiltPCController.getByCategory);
+router.get("/:id", prebuiltPCController.getById);
 router.get("/:slug/similar", prebuiltPCController.getSimilar);
 router.get("/:slug/components", prebuiltPCController.getComponentProducts);
 router.get("/:slug", prebuiltPCController.getBySlug);
@@ -22,7 +23,7 @@ router.get("/:slug", prebuiltPCController.getBySlug);
 router.post(
   "/",
   protect,
-  authorize("admin"),
+  authorize("admin", "manager"),
   uploadMultipleImages("images", 10),
   validate(createPrebuiltPCSchema),
   prebuiltPCController.create
@@ -31,12 +32,12 @@ router.post(
 router.put(
   "/:id",
   protect,
-  authorize("admin"),
+  authorize("admin", "manager"),
   uploadMultipleImages("images", 10),
   validate(updatePrebuiltPCSchema),
   prebuiltPCController.update
 );
 
-router.delete("/:id", protect, authorize("admin"), prebuiltPCController.remove);
+router.delete("/:id", protect, authorize("admin", "manager"), prebuiltPCController.remove);
 
 export default router;
