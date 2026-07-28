@@ -44,7 +44,6 @@ const newsletterSchema = new mongoose.Schema(
   }
 );
 
-newsletterSchema.index({ email: 1 });
 newsletterSchema.index({ status: 1 });
 
 const Newsletter = mongoose.model("Newsletter", newsletterSchema);

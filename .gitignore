@@ -7,3 +7,12 @@ build/
 .DS_Store
 Thumbs.db
 DESIGN.md
+graphify-out
+
+.agents/
+
+# Test infrastructure
+client/src/tests/
+server/src/tests/
+client/vitest.config.js
+server/vitest.config.js
