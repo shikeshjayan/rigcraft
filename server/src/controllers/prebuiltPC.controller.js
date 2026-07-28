@@ -7,13 +7,16 @@ export const list = asyncHandler(async (req, res) => {
   ApiResponse.ok(result).send(res);
 });
 
-export const getBySlug = asyncHandler(async (req, res) => {
-  const prebuilt = await prebuiltPCService.getBySlug(req.params.slug);
-  ApiResponse.ok(prebuilt).send(res);
-});
-
-export const getById = asyncHandler(async (req, res) => {
-  const prebuilt = await prebuiltPCService.getById(req.params.id);
+export const getBySlugOrId = asyncHandler(async (req, res) => {
+  const { slugOrId } = req.params;
+  const isObjectId = /^[a-fA-F0-9]{24}$/.test(slugOrId);
+  let prebuilt;
+  if (isObjectId) {
+    prebuilt = await prebuiltPCService.getById(slugOrId);
+  }
+  if (!prebuilt) {
+    prebuilt = await prebuiltPCService.getBySlug(slugOrId);
+  }
   ApiResponse.ok(prebuilt).send(res);
 });
 
@@ -50,12 +53,12 @@ export const remove = asyncHandler(async (req, res) => {
 });
 
 export const getSimilar = asyncHandler(async (req, res) => {
-  const prebuilts = await prebuiltPCService.getSimilar(req.params.slug, req.query.limit);
+  const prebuilts = await prebuiltPCService.getSimilar(req.params.slugOrId, req.query.limit);
   ApiResponse.ok(prebuilts).send(res);
 });
 
 export const getComponentProducts = asyncHandler(async (req, res) => {
-  const components = await prebuiltPCService.getComponentProducts(req.params.slug);
+  const components = await prebuiltPCService.getComponentProducts(req.params.slugOrId);
   ApiResponse.ok(components).send(res);
 });
 

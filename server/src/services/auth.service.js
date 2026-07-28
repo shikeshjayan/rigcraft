@@ -3,8 +3,7 @@ import jwt from 'jsonwebtoken';
 import userRepository from '../repositories/user.repository.js';
 import ApiError from '../utils/ApiError.js';
 import * as uploadService from './upload.service.js';
-import { sendResetPasswordEmail } from './email.service.js';
-import { sendOtpSms } from './sms.service.js';
+import { sendResetPasswordEmail, sendEmail } from './email.service.js';
 
 const createTokenResponse = async (user, statusCode, res, rememberMe = false) => {
   const accessTokenExpiry = rememberMe ? '30d' : process.env.JWT_EXPIRES_IN || '1d';
@@ -47,6 +46,11 @@ const createTokenResponse = async (user, statusCode, res, rememberMe = false) =>
     success: true,
     data: { user, rememberMe, accessToken },
   });
+};
+
+const maskEmail = (email) => {
+  const [name, domain] = email.split('@');
+  return `${name[0]}***@${domain}`;
 };
 
 export const refreshToken = async (token, res) => {
@@ -138,11 +142,16 @@ export const login = async (body, res) => {
     user.otpExpire = Date.now() + 10 * 60 * 1000;
     await user.save({ validateBeforeSave: false });
 
-    await sendOtpSms(phone, otpCode);
+    await sendEmail({
+      to: user.email,
+      subject: 'Your RigCraft Login OTP',
+      html: `<p>Your OTP for login is: <strong>${otpCode}</strong></p><p>This OTP expires in 10 minutes.</p>`,
+    });
 
     return res.status(200).json({
       success: true,
-      message: 'OTP sent to your phone',
+      message: 'OTP sent to your registered email',
+      data: { email: maskEmail(user.email) },
     });
   }
 
