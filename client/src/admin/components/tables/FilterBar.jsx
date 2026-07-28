@@ -26,13 +26,14 @@ const FilterBar = ({ filters = {}, onChange, options = [] }) => {
         }}>
         {options.map((opt) => (
           <FormControl key={opt.key} size="small" sx={{ minWidth: 160 }}>
-            <InputLabel sx={{ fontSize: "0.8125rem" }}>{opt.label}</InputLabel>
+            <InputLabel shrink sx={{ fontSize: "0.8125rem" }}>{opt.label}</InputLabel>
             <Select
               value={filters[opt.key] || ""}
               onChange={(e) =>
                 onChange({ ...filters, [opt.key]: e.target.value })
               }
               label={opt.label}
+              displayEmpty
               sx={{
                 borderRadius: "var(--radius-admin-input)",
                 fontSize: "0.8125rem",
