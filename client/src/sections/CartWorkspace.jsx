@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import apiClient from '../api/client';
 import CloseIcon from '@mui/icons-material/Close';
 import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
@@ -15,6 +17,7 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
 const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   const { cartItems, removeFromCart } = useCart();
+  const { isLoggedIn } = useAuth();
   
   // Track selected items by cartItemId (or id for legacy items)
   const [selectedItemIds, setSelectedItemIds] = useState(cartItems.map(item => item.cartItemId || item.id));
@@ -27,17 +30,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   const [showStateDropdown, setShowStateDropdown] = useState(false);
   
   // Address States
-  const [savedAddresses, setSavedAddresses] = useState(() => {
-    const saved = localStorage.getItem('rigcraft_addresses');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        return [];
-      }
-    }
-    return [];
-  });
+  const [savedAddresses, setSavedAddresses] = useState([]);
   const [isAddingAddress, setIsAddingAddress] = useState(true);
   const [editingAddressId, setEditingAddressId] = useState(null);
   const [selectedAddressId, setSelectedAddressId] = useState(null);
@@ -45,7 +38,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   const [addressToRemove, setAddressToRemove] = useState(null);
 
   const [addressForm, setAddressForm] = useState({
-    name: '', mobile: '', pinCode: '', houseNo: '', street: '', city: '', state: '', type: 'HOME', isDefault: false
+    fullName: '', phone: '', alternatePhone: '', addressLine1: '', addressLine2: '', landmark: '', city: '', state: '', country: 'India', postalCode: '', label: '', isDefault: false
   });
 
   const statesList = [
@@ -58,6 +51,23 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
     "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", 
     "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
   ];
+
+  const fetchAddresses = async () => {
+    try {
+      const { data } = await apiClient.get('/addresses');
+      if (data.success) {
+        setSavedAddresses(data.data);
+      }
+    } catch (error) {
+      console.error('Failed to fetch addresses', error);
+    }
+  };
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      fetchAddresses();
+    }
+  }, [isLoggedIn]);
 
   // If we open Address step and we have saved addresses, show list by default
   useEffect(() => {
@@ -72,11 +82,6 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       setIsAddingAddress(true);
     }
   }, [checkoutStep, savedAddresses.length, editingAddressId, selectedAddressId]);
-
-  // Sync addresses to localStorage
-  useEffect(() => {
-    localStorage.setItem('rigcraft_addresses', JSON.stringify(savedAddresses));
-  }, [savedAddresses]);
 
   const handleApplyCoupon = () => {
     if (couponInput.trim().toUpperCase() === 'RIGCRAFT500') {
@@ -107,31 +112,23 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
     }
   };
 
-  const handleSaveAddress = () => {
-    let newAddresses = [...savedAddresses];
-    let addressToSave = { ...addressForm };
-    
-    // If set as default, remove default flag from others
-    if (addressToSave.isDefault) {
-      newAddresses = newAddresses.map(addr => ({ ...addr, isDefault: false }));
-    } else if (newAddresses.length === 0 || (editingAddressId !== null && newAddresses.length === 1)) {
-      // First address is always default
-      addressToSave.isDefault = true;
-    }
-
-    if (editingAddressId !== null) {
-      newAddresses[editingAddressId] = addressToSave;
-      setEditingAddressId(null);
-    } else {
-      newAddresses.push(addressToSave);
-      if (addressToSave.isDefault) {
-        setSelectedAddressId(newAddresses.length - 1);
+  const handleSaveAddress = async () => {
+    try {
+      if (editingAddressId !== null) {
+        const addrId = savedAddresses[editingAddressId]._id || savedAddresses[editingAddressId].id;
+        if (addrId) {
+          await apiClient.put(`/addresses/${addrId}`, addressForm);
+          setEditingAddressId(null);
+        }
+      } else {
+        await apiClient.post('/addresses', addressForm);
       }
+      await fetchAddresses();
+      setIsAddingAddress(false);
+      setAddressForm({ fullName: '', phone: '', alternatePhone: '', addressLine1: '', addressLine2: '', landmark: '', city: '', state: '', country: 'India', postalCode: '', label: '', isDefault: false });
+    } catch (error) {
+      console.error('Failed to save address', error);
     }
-    
-    setSavedAddresses(newAddresses);
-    setIsAddingAddress(false);
-    setAddressForm({ name: '', mobile: '', pinCode: '', houseNo: '', street: '', city: '', state: '', type: 'HOME', isDefault: false });
   };
 
   const handleEditAddress = (index) => {
@@ -140,13 +137,21 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
     setIsAddingAddress(true);
   };
 
-  const confirmRemove = () => {
-    const updated = savedAddresses.filter((_, i) => i !== addressToRemove);
-    setSavedAddresses(updated);
-    if (selectedAddressId === addressToRemove) setSelectedAddressId(null);
-    setShowRemoveConfirm(false);
-    setAddressToRemove(null);
-    if (updated.length === 0) setIsAddingAddress(true);
+  const confirmRemove = async () => {
+    try {
+      const addrId = savedAddresses[addressToRemove]._id || savedAddresses[addressToRemove].id;
+      await apiClient.delete(`/addresses/${addrId}`);
+      await fetchAddresses();
+      setShowRemoveConfirm(false);
+      setAddressToRemove(null);
+      if (selectedAddressId === addressToRemove) {
+        setSelectedAddressId(null);
+      } else if (selectedAddressId > addressToRemove) {
+        setSelectedAddressId(selectedAddressId - 1);
+      }
+    } catch (error) {
+      console.error('Failed to remove address', error);
+    }
   };
 
   // Price parsing helper
@@ -238,6 +243,52 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                 <div className="flex flex-col gap-4 mt-2">
                   {cartItems.map((item, index) => {
                     const uniqueId = item.cartItemId || item.id;
+
+                    if (item.type === 'custom-build') {
+                      return (
+                        <div key={uniqueId || index} className="bg-white border-2 border-[#E2E8F0] p-4 rounded-sm relative flex flex-col gap-4 shadow-sm hover:border-[#2563EB] transition-colors">
+                          <div className="flex justify-between items-start">
+                            <div className="flex gap-4 items-start">
+                              <input 
+                                type="checkbox" 
+                                checked={selectedItemIds.includes(uniqueId)}
+                                onChange={() => toggleItemSelection(uniqueId)}
+                                className="w-4 h-4 accent-[#0052FF] cursor-pointer mt-1" 
+                              />
+                              <div>
+                                <h3 className="text-[16px] font-black text-[#0F172A] mb-1 uppercase tracking-tight">{item.title}</h3>
+                                <p className="text-[13px] text-[#64748B] mb-2 font-medium">{item.components?.length || 0} Custom Components Included</p>
+                                <div className="text-[12px] text-[#0F172A] flex items-center gap-1">
+                                  <span className="font-bold">14 days</span> return available
+                                </div>
+                              </div>
+                            </div>
+                            <div className="flex flex-col items-end gap-2">
+                              <button onClick={() => removeFromCart(item.id)} className="text-[#94A3B8] hover:text-[#0F172A] cursor-pointer">
+                                <CloseIcon sx={{ fontSize: 20 }} />
+                              </button>
+                              <div className="text-[18px] font-black text-[#2563EB]">{item.price}</div>
+                            </div>
+                          </div>
+                          
+                          <div className="flex gap-2 overflow-x-auto items-center py-3 border-t border-gray-100 mt-2">
+                            {item.components?.map((comp, idx) => (
+                              <div key={idx} className="w-14 h-14 bg-gray-50 flex flex-col items-center justify-center rounded-sm shrink-0 border border-gray-100 p-1 relative group" title={comp.product?.title}>
+                                {comp.product?.image ? (
+                                  <img src={comp.product.image} alt={comp.type} className="w-full h-full object-contain mix-blend-multiply" />
+                                ) : (
+                                  <span className="text-[8px] text-gray-400 font-bold uppercase">{comp.type.substring(0,3)}</span>
+                                )}
+                                <div className="absolute -bottom-2 opacity-0 group-hover:opacity-100 bg-black text-white text-[9px] px-1 rounded whitespace-nowrap transition-opacity z-10 font-bold">
+                                  {comp.type}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      );
+                    }
+
                     return (
                     <div key={uniqueId || index} className="bg-white border border-[#E2E8F0] p-4 rounded-sm relative flex gap-4 hover:shadow-sm transition-shadow">
                       <button onClick={() => removeFromCart(item.id)} className="absolute top-4 right-4 text-[#94A3B8] hover:text-[#0F172A] cursor-pointer">
@@ -296,11 +347,22 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Full Name*</label>
-                    <input type="text" placeholder="Enter your name" value={addressForm.name} onChange={e => setAddressForm({...addressForm, name: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors" />
+                    <input type="text" placeholder="Full Name (e.g. Ravi Sharma)" value={addressForm.fullName} onChange={e => setAddressForm({...addressForm, fullName: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Mobile No*</label>
-                    <input type="text" placeholder="+91 00000 00000" value={addressForm.mobile} onChange={e => setAddressForm({...addressForm, mobile: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors" />
+                    <input type="text" placeholder="Phone (e.g. 9876543210)" value={addressForm.phone} onChange={e => setAddressForm({...addressForm, phone: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                  <div className="flex-1">
+                    <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Alternate Phone</label>
+                    <input type="text" placeholder="Alternate Phone (e.g. 9988776655)" value={addressForm.alternatePhone} onChange={e => setAddressForm({...addressForm, alternatePhone: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Pin Code*</label>
+                    <input type="text" placeholder="Postal Code (e.g. 400004)" value={addressForm.postalCode} onChange={e => setAddressForm({...addressForm, postalCode: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                 </div>
 
@@ -310,63 +372,46 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                   <div className="bg-[#EFF6FF] text-[#0052FF] p-1 rounded-sm"><LocationOnOutlinedIcon fontSize="small"/></div>
                   <span className="font-bold text-[14px] text-[#0F172A]">SHIPPING ADDRESS</span>
                 </div>
+                
                 <div className="flex flex-col sm:flex-row gap-4 mb-4">
                   <div className="flex-1">
-                    <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Pin Code*</label>
-                    <input type="text" placeholder="6-digit PIN" value={addressForm.pinCode} onChange={e => setAddressForm({...addressForm, pinCode: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors" />
+                    <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Address Line 1*</label>
+                    <input type="text" placeholder="Address Line 1 (e.g. 42, Girgaon Road)" value={addressForm.addressLine1} onChange={e => setAddressForm({...addressForm, addressLine1: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                   <div className="flex-1">
-                    <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">House No. / Tower*</label>
-                    <input type="text" placeholder="Flat, Floor, Building" value={addressForm.houseNo} onChange={e => setAddressForm({...addressForm, houseNo: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors" />
+                    <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Address Line 2</label>
+                    <input type="text" placeholder="Address Line 2 (e.g. Near Chandan Cinema)" value={addressForm.addressLine2} onChange={e => setAddressForm({...addressForm, addressLine2: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                 </div>
-                <div className="mb-4">
-                  <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Street Address*</label>
-                  <input type="text" placeholder="Locality, Area, Street Name" value={addressForm.street} onChange={e => setAddressForm({...addressForm, street: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors" />
-                  <span className="text-[10px] font-bold text-[#64748B] mt-1 block uppercase tracking-wide">Note: Precise address ensures laboratory-grade delivery handling.</span>
-                </div>
-                <div className="flex flex-col sm:flex-row gap-4 mb-6">
+                
+                <div className="flex flex-col sm:flex-row gap-4 mb-4">
+                  <div className="flex-1">
+                    <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Landmark</label>
+                    <input type="text" placeholder="Landmark (e.g. Opposite City Mall)" value={addressForm.landmark} onChange={e => setAddressForm({...addressForm, landmark: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                  </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">City / District*</label>
-                    <input type="text" placeholder="Select City" value={addressForm.city} onChange={e => setAddressForm({...addressForm, city: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors" />
+                    <input type="text" placeholder="City (e.g. Mumbai)" value={addressForm.city} onChange={e => setAddressForm({...addressForm, city: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
+                </div>
+                
+                <div className="flex flex-col sm:flex-row gap-4 mb-4">
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">State*</label>
-                    <div className="relative">
-                      <div 
-                        onClick={() => setShowStateDropdown(!showStateDropdown)}
-                        className={`w-full border ${showStateDropdown ? 'border-[#0052FF]' : 'border-[#CBD5E1]'} bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none transition-colors cursor-pointer flex justify-between items-center`}
-                      >
-                        {addressForm.state || "Select State"}
-                        <KeyboardArrowDownIcon className={`text-[#94A3B8] transition-transform ${showStateDropdown ? 'rotate-180' : ''}`} />
-                      </div>
-                      
-                      <AnimatePresence>
-                        {showStateDropdown && (
-                          <>
-                            <div className="fixed inset-0 z-40" onClick={() => setShowStateDropdown(false)}></div>
-                            <motion.div 
-                              initial={{ opacity: 0, y: -10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              exit={{ opacity: 0, y: -10 }}
-                              transition={{ duration: 0.15 }}
-                              className="absolute left-0 right-0 top-[100%] mt-1 bg-white border border-[#CBD5E1] rounded-sm shadow-xl z-50 overflow-y-auto"
-                              style={{ maxHeight: '220px' }}
-                            >
-                              {statesList.map(state => (
-                                <div 
-                                  key={state}
-                                  onClick={() => { setAddressForm({...addressForm, state: state}); setShowStateDropdown(false); }}
-                                  className={`p-3 text-[14px] cursor-pointer transition-colors hover:bg-[#EFF6FF] hover:text-[#0052FF] ${addressForm.state === state ? 'bg-[#EFF6FF] text-[#0052FF] font-bold' : 'text-[#0F172A]'}`}
-                                >
-                                  {state}
-                                </div>
-                              ))}
-                            </motion.div>
-                          </>
-                        )}
-                      </AnimatePresence>
-                    </div>
+                    <select 
+                      value={addressForm.state} 
+                      onChange={e => setAddressForm({...addressForm, state: e.target.value})} 
+                      className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors cursor-pointer"
+                    >
+                      <option value="" disabled>Select State</option>
+                      {statesList.map(st => (
+                        <option key={st} value={st}>{st}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Country*</label>
+                    <input type="text" value="India" readOnly className="w-full border border-[#CBD5E1] bg-gray-100 rounded-sm p-3 text-[14px] text-gray-500 focus:outline-none cursor-not-allowed select-none" />
                   </div>
                 </div>
 
@@ -374,25 +419,28 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
                   <div>
-                    <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-3">Address Type</label>
-                    <div className="flex gap-2">
+                    <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-3">Address Type / Label*</label>
+                    <div className="flex gap-2 mb-2">
                       <button 
-                        onClick={() => setAddressForm({...addressForm, type: 'HOME'})}
-                        className={`flex items-center gap-2 px-5 py-2 rounded-sm text-[13px] font-bold cursor-pointer transition-colors ${addressForm.type === 'HOME' ? 'bg-[#0052FF] text-white border border-[#0052FF]' : 'bg-white border border-[#CBD5E1] text-[#0F172A] hover:border-[#0052FF]'}`}
+                        type="button"
+                        onClick={() => setAddressForm({...addressForm, label: 'Home'})}
+                        className={`flex items-center gap-2 px-5 py-2 rounded-sm text-[13px] font-bold cursor-pointer transition-colors ${addressForm.label === 'Home' ? 'bg-[#0052FF] text-white border border-[#0052FF]' : 'bg-white border border-[#CBD5E1] text-[#0F172A] hover:border-[#0052FF]'}`}
                       >
-                        <HomeIcon fontSize="small" /> Home
+                        Home
                       </button>
                       <button 
-                        onClick={() => setAddressForm({...addressForm, type: 'OFFICE'})}
-                        className={`flex items-center gap-2 px-5 py-2 rounded-sm text-[13px] font-bold cursor-pointer transition-colors ${addressForm.type === 'OFFICE' ? 'bg-[#0052FF] text-white border border-[#0052FF]' : 'bg-white border border-[#CBD5E1] text-[#0F172A] hover:border-[#0052FF]'}`}
+                        type="button"
+                        onClick={() => setAddressForm({...addressForm, label: 'Office'})}
+                        className={`flex items-center gap-2 px-5 py-2 rounded-sm text-[13px] font-bold cursor-pointer transition-colors ${addressForm.label === 'Office' ? 'bg-[#0052FF] text-white border border-[#0052FF]' : 'bg-white border border-[#CBD5E1] text-[#0F172A] hover:border-[#0052FF]'}`}
                       >
-                        <BusinessIcon fontSize="small" /> Office
+                        Office
                       </button>
                     </div>
+                    <input type="text" placeholder="Or type custom label (e.g. parent's home)" value={addressForm.label} onChange={e => setAddressForm({...addressForm, label: e.target.value})} className="w-full sm:w-[250px] border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
-                  <label className="flex items-center gap-2 cursor-pointer">
+                  <label className="flex-1 flex items-center gap-2 cursor-pointer pb-3 sm:pb-3 sm:justify-end">
                     <input type="checkbox" checked={addressForm.isDefault} onChange={e => setAddressForm({...addressForm, isDefault: e.target.checked})} className="w-4 h-4 accent-[#0052FF] cursor-pointer" />
-                    <span className="text-[13px] text-[#0F172A] flex flex-col">
+                    <span className="text-[13px] text-[#0F172A] font-bold flex flex-col">
                       <span>Set as default</span>
                     </span>
                   </label>
@@ -403,7 +451,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                     if (savedAddresses.length > 0) setIsAddingAddress(false);
                     else setCheckoutStep('bag');
                     setEditingAddressId(null);
-                    setAddressForm({ name: '', mobile: '', pinCode: '', houseNo: '', street: '', city: '', state: '', type: 'HOME', isDefault: false });
+                    setAddressForm({ fullName: '', phone: '', alternatePhone: '', addressLine1: '', addressLine2: '', landmark: '', city: '', state: '', country: 'India', postalCode: '', label: '', isDefault: false });
                   }} className="flex-1 border border-[#0052FF] text-[#0052FF] font-bold py-3.5 rounded-sm hover:bg-[#EFF6FF] transition-colors text-[14px] cursor-pointer tracking-wide">
                     CANCEL
                   </button>
@@ -420,7 +468,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                     <h2 className="text-[18px] font-bold text-[#0F172A]">Select Delivery Address</h2>
                     <div className="text-[10px] font-bold text-[#64748B] tracking-[1px] uppercase mt-1">DEFAULT ADDRESS</div>
                   </div>
-                  <button onClick={() => { setIsAddingAddress(true); setEditingAddressId(null); setAddressForm({ name: '', mobile: '', pinCode: '', houseNo: '', street: '', city: '', state: '', type: 'HOME', isDefault: false }); }} className="text-[12px] font-bold text-[#0052FF] border border-[#0052FF] py-2 px-4 rounded-sm hover:bg-[#EFF6FF] transition-colors cursor-pointer">
+                  <button onClick={() => { setIsAddingAddress(true); setEditingAddressId(null); setAddressForm({ fullName: '', phone: '', alternatePhone: '', addressLine1: '', addressLine2: '', landmark: '', city: '', state: '', country: 'India', postalCode: '', label: '', isDefault: false }); }} className="text-[12px] font-bold text-[#0052FF] border border-[#0052FF] py-2 px-4 rounded-sm hover:bg-[#EFF6FF] transition-colors cursor-pointer">
                     ADD NEW ADDRESS
                   </button>
                 </div>
@@ -437,15 +485,17 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                       />
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <span className="font-bold text-[15px] text-[#0F172A]">{addr.name}</span>
-                          <span className="bg-[#DCFCE7] text-[#166534] text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase">{addr.type}</span>
+                          <span className="font-bold text-[15px] text-[#0F172A]">{addr.fullName}</span>
+                          <span className="bg-[#DCFCE7] text-[#166534] text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase">{addr.label}</span>
+                          {addr.isDefault && <span className="bg-[#DBEAFE] text-[#1D4ED8] text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase">DEFAULT</span>}
                         </div>
                         <div className="text-[13px] text-[#64748B] mb-2 leading-relaxed">
-                          {addr.houseNo}, {addr.street},<br/>
-                          {addr.city}, {addr.state} - {addr.pinCode}
+                          {addr.addressLine1}{addr.addressLine2 ? `, ${addr.addressLine2}` : ''},<br/>
+                          {addr.landmark ? `Landmark: ${addr.landmark}, ` : ''}{addr.city}, {addr.state} - {addr.postalCode}
                         </div>
-                        <div className="text-[13px] text-[#0F172A] mb-4">
-                          Mobile: <span className="font-bold">{addr.mobile}</span>
+                        <div className="text-[13px] text-[#0F172A] mb-4 flex flex-col gap-1">
+                          <span>Mobile: <span className="font-bold">{addr.phone}</span></span>
+                          {addr.alternatePhone && <span>Alt Mobile: <span className="font-bold">{addr.alternatePhone}</span></span>}
                         </div>
                         <ul className="text-[12px] text-[#64748B] list-disc ml-4 mb-6">
                           <li>Cash on Delivery available</li>
@@ -460,7 +510,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                 ))}
                 
                 <div 
-                  onClick={() => { setIsAddingAddress(true); setEditingAddressId(null); setAddressForm({ name: '', mobile: '', pinCode: '', houseNo: '', street: '', city: '', state: '', type: 'HOME', isDefault: false }); }}
+                  onClick={() => { setIsAddingAddress(true); setEditingAddressId(null); setAddressForm({ fullName: '', phone: '', alternatePhone: '', addressLine1: '', addressLine2: '', landmark: '', city: '', state: '', country: 'India', postalCode: '', label: '', isDefault: false }); }}
                   className="border border-dashed border-[#94A3B8] bg-white py-4 rounded-sm flex items-center justify-center gap-2 cursor-pointer hover:border-[#0052FF] hover:text-[#0052FF] transition-colors text-[14px] font-bold text-[#0F172A]"
                 >
                   <span className="text-[#0052FF] text-[18px]">+</span> Add New Address

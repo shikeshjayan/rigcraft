@@ -9,7 +9,7 @@ const objectId = z.string().refine(
 
 const componentSchema = z.object({
   type: z.nativeEnum(COMPONENT_TYPES),
-  product: objectId,
+  product: z.any(),
   quantity: z.number().int().min(1).default(1),
 });
 

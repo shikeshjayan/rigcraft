@@ -100,7 +100,7 @@ const Footer = () => {
             <div className="lg:col-span-2 flex flex-col">
               <div className="flex items-center gap-2 mb-6 cursor-pointer">
                 <PrecisionManufacturingIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
-                <span className="text-[24px] font-black tracking-widest uppercase">PCForge</span>
+                <span className="text-[24px] font-black tracking-widest uppercase"><span style={{ color: 'var(--color-primary)',fontSize:"24px" }}>Rig</span>Craft</span>
               </div>
               <p className="text-[15px] text-gray-400 leading-relaxed mb-8 font-medium">
                 India's premier PC building platform. Custom gaming PCs, premium components, and expert support — all in one place.
@@ -136,7 +136,7 @@ const Footer = () => {
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/warranty" className="block w-full">Warranty Claims</Link></li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/returns" className="block w-full">Returns & Refunds</Link></li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Contact Support</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">FAQs</li>
+                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/faq" className="block w-full">FAQs</Link></li>
               </ul>
             </div>
 
@@ -145,7 +145,7 @@ const Footer = () => {
             <div className="flex flex-col">
               <h4 className="text-[14px] font-bold tracking-widest text-white mb-6 uppercase">Explore</h4>
               <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/builder-guide" className="block w-full">PC Builder Guide</Link></li>
+                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/pc-builder-guide" className="block w-full">PC Builder Guide</Link></li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Compatibility Checker</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Compare Builds</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Best Sellers</li>
@@ -162,8 +162,8 @@ const Footer = () => {
               &copy; 2025 PCForge Technologies Pvt Ltd. All rights reserved.
             </div>
             <div className="flex flex-wrap justify-center gap-6">
-              <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Privacy Policy</a>
-              <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Terms of Service</a>
+              <Link to="/privacy-policy" className="hover:text-[var(--color-primary)] transition-colors">Privacy Policy</Link>
+              <Link to="/terms-of-service" className="hover:text-[var(--color-primary)] transition-colors">Terms of Service</Link>
               <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Cookie Policy</a>
               <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Sitemap</a>
             </div>

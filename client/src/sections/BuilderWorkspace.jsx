@@ -1,6 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
+import { useNavigate } from 'react-router-dom';
+import apiClient from '../api/client';
 import { allItems } from '../data/items';
 import SearchIcon from '@mui/icons-material/Search';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
@@ -37,6 +39,60 @@ const BuilderWorkspace = () => {
   const [activePopupItem, setActivePopupItem] = useState(null);
   const [assemblyMode, setAssemblyMode] = useState('parts');
   const { addToCart } = useCart();
+  const navigate = useNavigate();
+
+  const handleSaveBuild = async () => {
+    const typeMapping = {
+      cpu: 'cpu',
+      motherboard: 'motherboard',
+      ram: 'ram',
+      ssd: 'storage',
+      gpu: 'gpu',
+      cabinet: 'cabinet',
+      psu: 'psu',
+      cooling: 'cooler'
+    };
+
+    const components = Object.entries(selectedParts)
+      .filter(([_, part]) => part !== null)
+      .map(([type, product]) => ({
+        type: typeMapping[type] || type,
+        product,
+        quantity: 1
+      }));
+
+    if (components.length === 0) {
+      alert('Please select at least one component to save a build.');
+      return;
+    }
+
+    try {
+      const payload = {
+        name: `Custom PC - ${new Date().toLocaleDateString()}`,
+        components
+      };
+      const { data } = await apiClient.post('/builds', payload);
+      if (data.success) {
+        alert('Custom build successfully saved to your Profile!');
+        
+        // Reset builder state
+        setSelectedParts({
+          cpu: null,
+          motherboard: null,
+          ram: null,
+          ssd: null,
+          gpu: null,
+          cabinet: null,
+          psu: null,
+          cooling: null
+        });
+        setCurrentStep(1);
+      }
+    } catch (error) {
+      console.error('Failed to save build', error);
+      alert('Failed to save build. Make sure you are logged in.');
+    }
+  };
 
   // Reset filters when step changes
   useEffect(() => {
@@ -202,7 +258,11 @@ const BuilderWorkspace = () => {
                   </div>
                   
                   {/* AI Button */}
-                  <button className="relative flex flex-col cursor-pointer items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-1 h-10 hover:brightness-110 transition-all flex-shrink-0 group overflow-visible" style={{ borderRadius: 'var(--radius-sm)' }}>
+                  <button 
+                    onClick={() => window.dispatchEvent(new CustomEvent('open-rig-ai'))}
+                    className="relative flex flex-col cursor-pointer items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-1 h-10 hover:brightness-110 transition-all flex-shrink-0 group overflow-visible" 
+                    style={{ borderRadius: 'var(--radius-sm)' }}
+                  >
                     <span className="text-[13px] uppercase tracking-wider">Build with Rig AI</span>
                     <span className="text-[9px] text-purple-200 uppercase tracking-widest -mt-0.5">Beta</span>
                     
@@ -418,27 +478,11 @@ const BuilderWorkspace = () => {
                   </button>
                 ) : (
                   <button 
-                    onClick={() => {
-                      Object.values(selectedParts).forEach(part => {
-                        if (part) addToCart(part);
-                      });
-                      if (assemblyFee > 0) {
-                        addToCart({
-                          id: 'assembly-fee',
-                          title: 'Assembly & Testing Service',
-                          brand: 'Rigcraft',
-                          image: 'https://images.unsplash.com/photo-1597872200969-2b65d56bd16b?auto=format&fit=crop&q=80&w=200',
-                          priceVal: assemblyFee,
-                          price: formatPrice(assemblyFee),
-                          description: 'Professional assembly and stress testing of your custom PC.'
-                        });
-                      }
-                      alert('Custom build added to cart!');
-                    }}
+                    onClick={handleSaveBuild}
                     className="w-full bg-[var(--color-primary)] text-white font-bold py-3 px-4 flex items-center justify-center hover:opacity-90 transition-opacity cursor-pointer"
                     style={{ borderRadius: 'var(--radius-sm)' }}
                   >
-                    Add Build to Cart
+                    Add Build
                   </button>
                 )}
               </div>
