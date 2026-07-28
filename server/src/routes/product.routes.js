@@ -13,8 +13,9 @@ const router = Router();
 // Public
 router.get("/", productController.list);
 router.get("/featured", productController.getFeatured);
-router.get("/:slugOrId/related", productController.getRelated);
-router.get("/:slugOrId", productController.getBySlugOrId);
+router.get("/:id", productController.getById);
+router.get("/:slug/related", productController.getRelated);
+router.get("/slug/:slug", productController.getBySlug);
 
 // Admin
 router.post(
