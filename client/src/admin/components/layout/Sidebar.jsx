@@ -15,6 +15,7 @@ import {
   Logout as LogoutIcon,
   ChevronLeft as ChevronLeftIcon,
   ChevronRight as ChevronRightIcon,
+  Campaign as CampaignIcon,
 } from "@mui/icons-material";
 import useAuthStore from "../../store/authStore";
 import { SIDEBAR_SECTIONS } from "../../constants/sidebar";
@@ -30,6 +31,7 @@ const iconMap = {
   People: PeopleIcon,
   RateReview: RateReviewIcon,
   Settings: SettingsIcon,
+  Campaign: CampaignIcon,
 };
 
 const SIDEBAR_EXPANDED = 260;

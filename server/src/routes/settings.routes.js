@@ -5,6 +5,8 @@ import { USER_ROLES } from '../constants/constants.js';
 
 const router = Router();
 
+router.get('/public', settingsController.getPublic);
+
 router.get(
   '/',
   protect,
