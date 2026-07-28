@@ -116,6 +116,31 @@ const Chatbot = () => {
     }
   }, [isOpen, hasGreeted, customerName]);
 
+  // Handle external 'open-rig-ai' trigger from PC Builder Page
+  useEffect(() => {
+    const handleRigAiEvent = () => {
+      setIsOpen(true);
+      setHasGreeted(true); // Skip default greeting
+      
+      // Show 3 second typing animation before sending professional AI message
+      setIsTyping(true);
+      if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
+      
+      setTimeout(() => {
+        setIsTyping(false);
+        setMessages(prev => [...prev, { 
+          role: 'ai', 
+          text: `**Rig AI Assistant Initiated.**\n\nI am ready to guide you through building your custom PC.\nTo get started, please tell me your **primary use case** (e.g., 4K Gaming, Video Editing, Software Development) and your **target budget**.` 
+        }]);
+        startIdleTimer();
+      }, 3000);
+    };
+
+    window.addEventListener('open-rig-ai', handleRigAiEvent);
+    return () => window.removeEventListener('open-rig-ai', handleRigAiEvent);
+  }, []);
+
+
   const startIdleTimer = () => {
     if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
     idleTimeoutRef.current = setTimeout(() => {
@@ -137,7 +162,7 @@ const Chatbot = () => {
     try {
       const startTime = Date.now();
       
-      const model = genAI.getGenerativeModel({ model: "gemini-3.5-flash" });
+      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
       
       let promptText = `You are RigCraft, an AI assistant for a custom PC building website. Be helpful, concise, and friendly.
       

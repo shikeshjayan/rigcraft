@@ -55,7 +55,15 @@
   --shadow-hover: 0 12px 30px rgb(0 0 0 / 0.08);
 }
 
-@layer utilities {}
+@layer utilities {
+  .hide-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
+  }
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari and Opera */
+  }
+}
 
 @keyframes float {
   0% {

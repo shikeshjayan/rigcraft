@@ -69,11 +69,8 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
 
   const breadcrumbs = getBreadcrumbs(location.pathname);
 
-  const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
+  const initials = user?.firstName
+    ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ''}`
         .toUpperCase()
         .slice(0, 2)
     : "U";
@@ -199,7 +196,7 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
           </Avatar>
           <div className="hidden sm:block text-left">
             <p className="text-sm font-bold leading-tight" style={{ color: "var(--color-admin-text)" }}>
-              {user?.name}
+              {user?.firstName} {user?.lastName}
             </p>
             <p className="text-xs font-medium" style={{ color: "var(--color-admin-text-secondary)" }}>
               {ROLE_LABELS[user?.role] || user?.role}

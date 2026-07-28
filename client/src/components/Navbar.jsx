@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion } from 'framer-motion';
 import FadeUp from './FadeUp';
 import SearchIcon from '@mui/icons-material/Search';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -38,14 +39,14 @@ const Navbar = () => {
   const { isLoggedIn, user, logout } = useAuth();
   
   const { data: profileData } = useQuery({
-    queryKey: ['profile'],
+    queryKey: ['profile', user?._id || user?.id],
     queryFn: getProfile,
     enabled: isLoggedIn,
     retry: false
   });
 
-  const firstName = profileData?.data?.firstName || user?.firstName || 'Customer';
-  const profileText = profileData?.data?.firstName || user?.firstName || 'Profile';
+  const firstName = isLoggedIn ? (profileData?.data?.firstName || user?.firstName || 'Customer') : 'Customer';
+  const profileText = isLoggedIn ? (profileData?.data?.firstName || user?.firstName || 'Profile') : 'Profile';
 
   const isHome = location.pathname === '/';
   const isPrebuild = location.pathname === '/prebuild';
@@ -65,8 +66,12 @@ const Navbar = () => {
 
   return (
     <>
-    <header className="sticky top-0 z-50 flex flex-col w-full">
-      <FadeUp delay={0.1}>
+    <motion.header 
+      initial={{ y: -100, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.8, ease: [0.21, 0.47, 0.32, 0.98] }}
+      className="sticky top-0 z-50 flex flex-col w-full"
+    >
       {/* Announcement Top Bar */}
       <div 
         className="text-center py-2 text-sm font-medium z-20 relative"
@@ -321,7 +326,6 @@ const Navbar = () => {
           </div>
         </div>
       </div>
-      </FadeUp>
 
       {/* Mobile Search Bar Dropdown */}
       {mobileSearchOpen && (
@@ -338,8 +342,7 @@ const Navbar = () => {
           </div>
         </div>
       )}
-
-    </header>
+    </motion.header>
 
       {/* Mobile Slide-out Menu - Moved OUTSIDE header to fix sticky transform stacking context issue */}
       {mobileMenuOpen && (
