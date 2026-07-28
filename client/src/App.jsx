@@ -24,6 +24,7 @@ import Faq from './pages/Faq';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
 import About from './pages/About';
+import Contact from './pages/Contact';
 import { WishlistProvider } from './context/WishlistContext';
 import AdminRoutes from './admin/routes/AdminRoutes';
 import { AuthProvider } from './context/AuthContext';
@@ -88,6 +89,7 @@ const App = () => {
                   <Route path="/orders" element={<Orders />} />
                   <Route path="/warranty" element={<Warranty />} />
                   <Route path="/returns" element={<ReturnsAndRefunds />} />
+                  <Route path="/contact" element={<Contact />} />
                   <Route path="/pc-builder-guide" element={<PcBuilderGuide />} />
                   <Route path="/faq" element={<Faq />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
