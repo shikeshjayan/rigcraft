@@ -65,3 +65,10 @@ export const COUPON_APPLICABLE_TO = {
   CATEGORY: 'category',
   PREBUILT: 'prebuilt',
 };
+
+export const NEWSLETTER_STATUS = {
+  ACTIVE: 'active',
+  UNSUBSCRIBED: 'unsubscribed',
+};
+
+

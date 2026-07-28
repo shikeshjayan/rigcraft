@@ -29,6 +29,7 @@ import UserList from "../pages/users/UserList";
 import UserDetails from "../pages/users/UserDetails";
 import Settings from "../pages/settings/Settings";
 import Profile from "../pages/profile/Profile";
+import NewsletterList from "../pages/newsletter/NewsletterList";
 import { ROLES } from "../constants/status";
 
 const AdminRoutes = () => {
@@ -78,6 +79,8 @@ const AdminRoutes = () => {
 
         <Route path="users" element={<UserList />} />
         <Route path="users/:id" element={<UserDetails />} />
+
+        <Route path="newsletter" element={<NewsletterList />} />
 
         <Route path="settings" element={<Settings />} />
         <Route path="profile" element={<Profile />} />

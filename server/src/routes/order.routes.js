@@ -4,6 +4,7 @@ import { protect, authorize } from "../middlewares/auth.js";
 import validate from "../middlewares/validate.js";
 import {
   checkoutSchema,
+  cancelOrderSchema,
   updateOrderStatusSchema,
   updatePaymentStatusSchema,
 } from "../validators/order.validation.js";
@@ -22,7 +23,7 @@ router.get("/", protect, orderController.getOrders);
 
 router.get("/:id", protect, orderController.getOrder);
 
-router.patch("/:id/cancel", protect, orderController.cancelOrder);
+router.patch("/:id/cancel", protect, validate(cancelOrderSchema), orderController.cancelOrder);
 
 export default router;
 
