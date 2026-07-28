@@ -11,6 +11,21 @@ import apiClient from '../api/client';
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
 
+const mapCategoryToEnum = (cat) => {
+  if (!cat) return 'accessory';
+  const c = cat.toLowerCase();
+  if (c.includes('processor') || c.includes('cpu')) return 'cpu';
+  if (c.includes('motherboard')) return 'motherboard';
+  if (c.includes('graphic') || c.includes('gpu')) return 'gpu';
+  if (c.includes('memory') || c.includes('ram')) return 'ram';
+  if (c.includes('storage') || c.includes('ssd') || c.includes('hdd') || c.includes('drive')) return 'storage';
+  if (c.includes('power') || c.includes('psu')) return 'psu';
+  if (c.includes('case') || c.includes('cabinet')) return 'cabinet';
+  if (c.includes('cool')) return 'cooler';
+  if (c.includes('os') || c.includes('operating')) return 'operatingSystem';
+  return 'accessory';
+};
+
 const Chatbot = () => {
   const { user, isLoggedIn } = useAuth();
   const location = useLocation();
@@ -28,6 +43,8 @@ const Chatbot = () => {
     return saved ? JSON.parse(saved).length > 0 : false;
   });
   const [catalogData, setCatalogData] = useState(null);
+  const [activeBuildParts, setActiveBuildParts] = useState([]);
+  const [isBuilding, setIsBuilding] = useState(false);
   
   const idleTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -69,7 +86,9 @@ const Chatbot = () => {
               category: p.category?.name || 'Unknown',
               price: p.price,
               stock: p.stock > 0 ? 'In Stock' : 'Out of Stock',
-              specs: p.specs
+              specs: p.specs,
+              slug: p.slug,
+              image: p.images?.[0]?.url || p.images?.[0] || ''
             };
           });
           
@@ -80,7 +99,8 @@ const Chatbot = () => {
               name: p.name,
               price: p.price,
               category: p.category?.name || 'Prebuilt',
-              stock: p.stock > 0 ? 'In Stock' : 'Out of Stock'
+              stock: p.stock > 0 ? 'In Stock' : 'Out of Stock',
+              image: p.images?.[0]?.url || p.images?.[0] || ''
             };
           });
 
@@ -120,6 +140,31 @@ const Chatbot = () => {
       setIsOpen(true);
       setHasGreeted(true); // Skip default greeting
       
+      // Validate Catalog has all required parts
+      const requiredCategories = ['cpu', 'motherboard', 'gpu', 'ram', 'storage', 'psu', 'cabinet', 'cooler'];
+      const availableEnums = new Set(
+        catalogData?.products?.map(p => mapCategoryToEnum(p.category)) || []
+      );
+      
+      const missingCategories = requiredCategories.filter(c => !availableEnums.has(c));
+      
+      if (missingCategories.length > 0) {
+        setIsTyping(true);
+        if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
+        
+        setTimeout(() => {
+          setIsTyping(false);
+          setMessages(prev => [...prev, { 
+            role: 'ai', 
+            text: `**Rig AI Assistant Initiated.**\n\nI apologize, but we are currently out of stock for some essential PC components (missing: ${missingCategories.join(', ')}). I cannot guide you through a complete custom build at this moment.\n\nPlease check back later when our inventory is restocked!` 
+          }]);
+        }, 3000);
+        return; // Stop build flow
+      }
+
+      setIsBuilding(true);
+      setActiveBuildParts([]);
+      
       // Show 3 second typing animation before sending professional AI message
       setIsTyping(true);
       if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
@@ -136,7 +181,80 @@ const Chatbot = () => {
 
     window.addEventListener('open-rig-ai', handleRigAiEvent);
     return () => window.removeEventListener('open-rig-ai', handleRigAiEvent);
-  }, []);
+  }, [catalogData]);
+
+  const handleSelectComponent = async (product) => {
+    const updatedParts = [...activeBuildParts, { type: product.category, product }];
+    setActiveBuildParts(updatedParts);
+    
+    // Add user message to show selection in chat
+    setMessages(prev => [...prev, { role: 'user', text: `I selected the ${product.name} for my ${product.category}.` }]);
+    
+    setIsTyping(true);
+    if (idleTimeoutRef.current) clearTimeout(idleTimeoutRef.current);
+    
+    const hiddenPrompt = `SYSTEM: The user just selected ${product.name} as their ${product.category}. 
+Please respond by confirming their selection with EXACTLY THIS FORMAT: 
+"Your selected specs for the ${product.category} is:
+- **Name**: ${product.name}
+- **Price**: ₹${product.price}
+- **Details**: ${product.specs || 'N/A'}"
+Then recommend the next component category needed to build a PC (following the strict order: CPU -> Motherboard -> RAM -> GPU -> Storage -> Power Supply -> Cabinet -> Cooling). If all 8 basic parts are selected, output exactly [BUILD_COMPLETE].`;
+
+    try {
+      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
+      const promptText = `You are RigCraft, an AI PC Builder Assistant. 
+      
+Here is the live catalog:
+${JSON.stringify(catalogData)}
+
+Active Build State: User is building a PC
+Selected Parts: ${JSON.stringify(updatedParts)}
+
+INSTRUCTIONS:
+1. Guide the user step-by-step: CPU -> Motherboard -> RAM -> GPU -> Storage -> Power Supply -> Cabinet -> Cooling.
+2. Only recommend products from the catalog. Use exact prices. 
+3. CRITICAL INSTRUCTION: When suggesting a product from the catalog, you MUST append its exact ID in brackets like this: [PRODUCT_CARD: id]. Example: "I recommend the RTX 4090. [PRODUCT_CARD: 64a1b2c...]"
+4. Wait for the user to select a component (via UI button) before recommending the next category.
+5. If all 8 parts are selected, output exactly [BUILD_COMPLETE].
+
+User: ${hiddenPrompt}`;
+      
+      const result = await model.generateContent(promptText);
+      setMessages(prev => [...prev, { role: 'ai', text: result.response.text() }]);
+    } catch (error) {
+      console.error(error);
+      setMessages(prev => [...prev, { role: 'ai', text: "Error fetching next part. Please try again." }]);
+    } finally {
+      setIsTyping(false);
+      startIdleTimer();
+    }
+  };
+
+
+
+  const handleSaveBuild = async () => {
+    try {
+      const payload = {
+        name: "Rig AI Custom Build",
+        components: activeBuildParts.map(p => ({
+           type: mapCategoryToEnum(p.type),
+           product: p.product.id || p.product._id,
+           quantity: 1
+        })),
+        totalPrice: activeBuildParts.reduce((sum, p) => sum + (p.product.price || 0), 0)
+      };
+      
+      await apiClient.post('/builds', payload);
+      alert("PC Build saved to your profile!");
+      setIsBuilding(false);
+      setActiveBuildParts([]);
+      setMessages(prev => [...prev, { role: 'ai', text: "Success! Your custom PC has been saved to your profile under 'Your Builds'." }]);
+    } catch (error) {
+      alert("Failed to save build to profile.");
+      console.error(error);
+    }
+  };
 
 
   const startIdleTimer = () => {
@@ -162,13 +280,20 @@ const Chatbot = () => {
       
       const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
       
-      let promptText = `You are RigCraft, an AI assistant for a custom PC building website. Be helpful, concise, and friendly.
+      let promptText = `You are RigCraft, an AI PC Builder Assistant. 
       
-Here is the live catalog of products available in our store right now:
+Here is the live catalog:
 ${JSON.stringify(catalogData)}
 
-Only recommend products that exist in this catalog. If asked to build a PC, pick compatible parts from this catalog. If asked for pricing, use the exact prices from this catalog. Do not invent products.
-CRITICAL INSTRUCTION: If you recommend a specific product from the catalog, YOU MUST append its exact ID in brackets at the very end of your message like this: [PRODUCT_ID: id]. You can include multiple. Example: I recommend the RTX 4090. [PRODUCT_ID: 64a1b2c...]
+Active Build State: ${isBuilding ? 'User is building a PC' : 'General chat'}
+Selected Parts: ${JSON.stringify(activeBuildParts)}
+
+INSTRUCTIONS:
+1. If the user wants to build a PC, guide them step-by-step: CPU -> Motherboard -> RAM -> GPU -> Storage -> Power Supply -> Cabinet -> Cooling.
+2. Only recommend products from the catalog. Use exact prices. 
+3. CRITICAL INSTRUCTION: When suggesting a product from the catalog, you MUST append its exact ID in brackets like this: [PRODUCT_CARD: id]. Example: "I recommend the RTX 4090. [PRODUCT_CARD: 64a1b2c...]"
+4. Wait for the user to select a component (via UI button) before recommending the next category.
+5. If the user has finished building, or all parts are selected, output exactly [BUILD_COMPLETE].
 
 User: ${userText}`;
       
@@ -284,15 +409,19 @@ User: ${userText}`;
             <div className="flex-1 overflow-y-auto p-4 bg-[#F0F2F5] flex flex-col gap-3">
               {messages.map((msg, index) => {
                 if (msg.role === 'ai') {
-                  const productRegex = /\[PRODUCT_ID:\s*([^\]]+)\]/g;
+                  const productRegex = /\[PRODUCT_CARD:\s*([^\]]+)\]/g;
+                  const buildCompleteRegex = /\[BUILD_COMPLETE\]/g;
+                  
                   let text = msg.text;
+                  const isBuildComplete = buildCompleteRegex.test(text);
+                  
                   let match;
                   const productIds = [];
                   while ((match = productRegex.exec(text)) !== null) {
                     productIds.push(match[1].trim());
                   }
                   
-                  const cleanText = text.replace(productRegex, '').trim();
+                  const cleanText = text.replace(productRegex, '').replace(buildCompleteRegex, '').trim();
                   const allCatalog = [...(catalogData?.products || []), ...(catalogData?.prebuilts || [])];
                   const recommendedProducts = productIds.map(id => allCatalog.find(p => p.id === id)).filter(Boolean);
                   
@@ -301,30 +430,94 @@ User: ${userText}`;
                       key={index}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className="flex justify-start"
+                      className="flex justify-start flex-col gap-2 w-full"
                     >
-                      <div className="max-w-[85%] bg-[var(--color-primary)] text-white p-3 rounded-2xl rounded-tl-sm shadow-md">
-                        <div className="text-[13px] leading-relaxed whitespace-pre-wrap">
-                          {renderFormattedText(cleanText)}
-                          {recommendedProducts.length > 0 && (
-                            <div className="mt-3 flex flex-col gap-2">
-                              {recommendedProducts.map(p => (
-                                <button 
-                                  key={p.id}
-                                  onClick={() => {
-                                    setIsOpen(false);
-                                    navigate(`/detail/${p.id}?type=${p.type}`);
-                                  }}
-                                  className="bg-white text-[var(--color-primary)] border border-white rounded-md py-2 px-3 text-xs font-bold hover:bg-gray-100 transition-colors text-left truncate flex items-center justify-between"
-                                >
-                                  <span>View {p.name}</span>
-                                  <span>→</span>
-                                </button>
-                              ))}
-                            </div>
-                          )}
+                      {cleanText && (
+                        <div className="max-w-[85%] bg-[var(--color-primary)] text-white p-3 rounded-2xl rounded-tl-sm shadow-md">
+                          <div className="text-[13px] leading-relaxed whitespace-pre-wrap">
+                            {renderFormattedText(cleanText)}
+                          </div>
                         </div>
-                      </div>
+                      )}
+                      
+                      {recommendedProducts.length > 0 && (
+                        <div className="flex flex-col gap-3 w-[85%] mt-1">
+                          {recommendedProducts.map(p => (
+                            <div key={p.id} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
+                              {(() => {
+                                const finalImage = (p.image && p.image.includes('localhost:5000/uploads')) 
+                                  ? 'https://placehold.co/400x400/transparent/black?text=Product'
+                                  : p.image;
+                                
+                                return finalImage ? (
+                                  <div className="h-32 w-full bg-white p-2 border-b border-gray-100 flex items-center justify-center">
+                                    <img 
+                                      src={finalImage} 
+                                      alt={p.name} 
+                                      className="h-full object-contain" 
+                                      onError={(e) => {
+                                        e.target.onerror = null;
+                                        e.target.src = 'https://placehold.co/400x400/transparent/black?text=Product';
+                                      }}
+                                    />
+                                  </div>
+                                ) : (
+                                  <div className="h-32 w-full bg-gray-50 p-2 border-b border-gray-100 flex items-center justify-center">
+                                    <img src="https://placehold.co/400x400/transparent/black?text=Product" alt="Placeholder" className="h-full object-contain opacity-50" />
+                                  </div>
+                                );
+                              })()}
+                              <div className="p-3 flex flex-col gap-1">
+                                <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">{p.category}</span>
+                                <h4 className="font-bold text-gray-900 text-sm leading-tight line-clamp-2">{p.name}</h4>
+                                <div className="text-[var(--color-primary)] font-black mt-1">₹{p.price?.toLocaleString('en-IN')}</div>
+                                
+                                <div className="flex flex-col gap-2 mt-3">
+                                  {isBuilding && (
+                                    <button 
+                                      onClick={() => handleSelectComponent(p)}
+                                      disabled={activeBuildParts.some(part => part.type === p.category || part.product.id === p.id)}
+                                      className={`w-full text-white font-bold py-2 rounded-md transition-colors text-xs cursor-pointer ${
+                                        activeBuildParts.some(part => part.type === p.category || part.product.id === p.id) 
+                                        ? 'bg-gray-400 cursor-not-allowed' 
+                                        : 'bg-[var(--color-primary)] hover:brightness-110'
+                                      }`}
+                                    >
+                                      {activeBuildParts.some(part => part.type === p.category || part.product.id === p.id) ? 'Category Selected' : 'Select Component'}
+                                    </button>
+                                  )}
+                                  <button 
+                                    onClick={() => {
+                                      setIsOpen(false);
+                                      const destId = p.type === 'product' && p.slug ? p.slug : p.id;
+                                      navigate(`/detail/${destId}?type=${p.type}`);
+                                    }}
+                                    className="w-full bg-gray-100 text-gray-700 font-bold py-2 rounded-md hover:bg-gray-200 transition-colors text-xs border border-gray-200 cursor-pointer"
+                                  >
+                                    View Details
+                                  </button>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      
+                      {isBuildComplete && isBuilding && (
+                        <div className="w-[85%] bg-green-50 border border-green-200 rounded-xl p-4 mt-2 shadow-sm flex flex-col items-center text-center">
+                          <div className="w-10 h-10 bg-green-500 text-white rounded-full flex items-center justify-center mb-2">
+                            <span className="text-xl font-bold">✓</span>
+                          </div>
+                          <h4 className="font-bold text-green-800 text-sm mb-1">Build Complete!</h4>
+                          <p className="text-xs text-green-700 mb-3">You have selected all required components.</p>
+                          <button 
+                            onClick={handleSaveBuild}
+                            className="w-full bg-green-600 text-white font-bold py-2.5 rounded-md hover:bg-green-700 transition-colors shadow-md text-sm cursor-pointer"
+                          >
+                            Save Build to Profile
+                          </button>
+                        </div>
+                      )}
                     </motion.div>
                   );
                 } else {
