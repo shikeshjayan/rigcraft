@@ -133,6 +133,17 @@ export const ENDPOINTS = {
     UPDATE: "/settings",
   },
 
+  // Newsletter
+  NEWSLETTER: {
+    SUBSCRIBE: "/newsletter/subscribe",
+    UNSUBSCRIBE: "/newsletter/unsubscribe",
+    LIST: "/newsletter",
+    EXPORT: "/newsletter/export",
+    DETAILS: (id) => `/newsletter/${id}`,
+    UPDATE: (id) => `/newsletter/${id}`,
+    DELETE: (id) => `/newsletter/${id}`,
+  },
+
   // Addresses
   ADDRESS: {
     LIST: "/addresses",

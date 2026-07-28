@@ -18,6 +18,7 @@ router.post(
 
 router.post(
   "/verify",
+  protect,
   validate(verifyPaymentSchema),
   paymentController.verifyPayment
 );
