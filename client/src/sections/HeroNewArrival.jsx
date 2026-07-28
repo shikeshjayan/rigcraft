@@ -67,7 +67,7 @@ const HeroNewArrival = () => {
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
           {allItems.slice(30, 36).map((product) => (
-            <div key={product.id} className="flex-shrink-0 w-[280px] sm:w-[320px] md:w-[340px] flex flex-col snap-start">
+            <div key={product.id} className="flex-shrink-0 w-[280px] sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex flex-col snap-start">
               <Card 
                 id={product.id}
                 image={product.image}

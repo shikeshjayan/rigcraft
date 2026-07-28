@@ -15,13 +15,27 @@ const BuilderHero = () => {
         </div>
 
         {/* Header Content */}
-        <div className="max-w-3xl">
+        <div className="max-w-3xl mb-8">
           <h1 className="text-[24px] md:text-[32px] font-extrabold text-[#0F172A] mb-3 leading-tight">
             Configure Your Custom PC
           </h1>
           <p className="text-[14px] text-[#64748B] leading-relaxed">
             Select components to start your build. We'll handle compatibility checks automatically.
           </p>
+        </div>
+
+        {/* Hero Video */}
+        <div className="w-full rounded-xl overflow-hidden shadow-md mt-6 relative">
+          <video 
+            src="/prebuild-hero.mp4" 
+            autoPlay 
+            muted 
+            loop 
+            playsInline
+            className="w-full h-auto md:h-[400px] lg:h-[500px] object-cover"
+          />
+          {/* Optional Overlay if needed, left transparent for now */}
+          <div className="absolute inset-0 bg-black/10 pointer-events-none"></div>
         </div>
 
       </div>

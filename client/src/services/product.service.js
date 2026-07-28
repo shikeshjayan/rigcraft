@@ -8,7 +8,7 @@ export const productService = {
   },
 
   getBySlug: async (slug) => {
-    const { data } = await api.get(ENDPOINTS.PRODUCT.DETAILS(slug));
+    const { data } = await api.get(`/products/slug/${slug}`);
     return data;
   },
 

@@ -1,78 +1,79 @@
 import React from 'react';
-import HandymanOutlinedIcon from '@mui/icons-material/HandymanOutlined';
-import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
-import ConstructionOutlinedIcon from '@mui/icons-material/ConstructionOutlined';
+import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import VerifiedOutlinedIcon from '@mui/icons-material/VerifiedOutlined';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
+import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
+import SupportAgentOutlinedIcon from '@mui/icons-material/SupportAgentOutlined';
 
 const features = [
   {
     id: 1,
-    title: 'Compatibility Check',
-    description: 'Real-time AI-powered compatibility engine ensures every component works perfectly together.',
-    icon: <HandymanOutlinedIcon sx={{ fontSize: 32, color: 'var(--color-primary, #06B6D4)' }} />
+    title: 'Wide Selection',
+    description: '1000+ premium components from top brands',
+    icon: <Inventory2OutlinedIcon sx={{ fontSize: 36, color: 'var(--color-primary)' }} />
   },
   {
     id: 2,
-    title: 'Expert Support',
-    description: 'Our certified PC building experts are available 24/7 to guide you through every step.',
-    icon: <SupportAgentOutlinedIcon sx={{ fontSize: 32, color: 'var(--color-primary, #06B6D4)' }} />
+    title: 'Best Prices',
+    description: 'Competitive pricing guaranteed',
+    icon: <VerifiedOutlinedIcon sx={{ fontSize: 36, color: 'var(--color-primary)' }} />
   },
   {
     id: 3,
-    title: 'Free Assembly',
-    description: 'Every custom build is professionally assembled, tested, and stress-tested before shipping.',
-    icon: <ConstructionOutlinedIcon sx={{ fontSize: 32, color: 'var(--color-primary, #06B6D4)' }} />
+    title: 'Fast Shipping',
+    description: 'Quick delivery across India',
+    icon: <LocalShippingOutlinedIcon sx={{ fontSize: 36, color: 'var(--color-primary)' }} />
   },
   {
     id: 4,
-    title: 'Fast Delivery',
-    description: 'Assembled PCs delivered in 3-5 business days with full tracking and insurance.',
-    icon: <LocalShippingOutlinedIcon sx={{ fontSize: 32, color: 'var(--color-primary, #06B6D4)' }} />
+    title: 'Secure Shopping',
+    description: 'Safe & secure payment options',
+    icon: <SecurityOutlinedIcon sx={{ fontSize: 36, color: 'var(--color-primary)' }} />
+  },
+  {
+    id: 5,
+    title: 'Expert Support',
+    description: 'Professional help when you need it',
+    icon: <SupportAgentOutlinedIcon sx={{ fontSize: 36, color: 'var(--color-primary)' }} />
   }
 ];
 
 const WhyChooseUs = () => {
   return (
-    <section className="w-full py-20" style={{ backgroundColor: 'var(--color-bg-primary, #F9FAFB)' }}>
-      <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
+    <section className="w-full py-20 bg-white">
+      <div className="max-w-[1500px] mx-auto px-6 lg:px-8">
         
-        {/* Header Section (Same format as HeroDeals) */}
-        <div className="flex flex-col justify-center items-center text-center mb-16">
-          <p className="text-[12px] font-[800] uppercase tracking-widest mb-3" style={{ color: 'var(--color-primary, #06B6D4)' }}>
-            Our Promise
-          </p>
-          <h2 className="text-[32px] md:text-[40px] font-extrabold text-[#111111] uppercase tracking-wide">
-            Why Choose <span style={{ color: 'var(--color-primary, #06B6D4)' }}>RigCraft</span>
+        {/* Header Section */}
+        <div className="flex flex-col justify-center items-center text-center mb-12 max-w-3xl mx-auto">
+          <h2 className="text-[32px] md:text-[36px] font-extrabold text-[#111111] mb-4">
+            Why choose <span className='text-[var(--color-primary)]'>Rig</span> Craft
           </h2>
+          <p className="text-[15px] md:text-[16px] font-medium text-[#6B7280] leading-relaxed">
+            Experience unmatched quality, expert support, and the best prices in the market. We are dedicated to providing you with top-tier components and seamless custom PC builds.
+          </p>
         </div>
         
         {/* Grid Section */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
           {features.map((feature) => (
             <div 
               key={feature.id} 
-              className="flex flex-col items-center text-center px-6 py-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-[#F3F4F6] transition-all duration-300 hover:-translate-y-2 hover:shadow-[0_12px_40px_rgb(0,0,0,0.08)] hover:border-[var(--color-primary)] group"
+              className="flex flex-col items-center justify-start text-center px-4 py-10 shadow-sm border border-gray-300 transition-all duration-300 hover:shadow-md"
               style={{ 
-                backgroundColor: 'var(--color-bg-secondary, #ffffff)', 
+                backgroundColor: 'white', 
                 borderRadius: 'var(--radius-sm, 8px)' 
               }}
             >
               {/* Icon Wrapper */}
-              <div 
-                className="w-[72px] h-[72px] flex items-center justify-center mb-6"
-                style={{ 
-                  backgroundColor: 'rgba(6, 182, 212, 0.08)', // Faint primary color background
-                  borderRadius: '16px' 
-                }}
-              >
+              <div className="mb-6 flex items-center justify-center">
                 {feature.icon}
               </div>
               
               {/* Text Content */}
-              <h3 className="text-[18px] font-[800] text-[#111111] mb-3">
+              <h3 className="text-[16px] font-bold text-[#111111] mb-2">
                 {feature.title}
               </h3>
-              <p className="text-[14px] font-[500] text-[#6B7280] leading-relaxed">
+              <p className="text-[13px] font-medium text-[#6B7280] leading-snug">
                 {feature.description}
               </p>
             </div>

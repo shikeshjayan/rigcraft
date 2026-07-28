@@ -7,34 +7,40 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import Card from '../components/Card';
 import SkeletonCard from '../components/SkeletonCard';
 import Filter from '../components/Filter';
-import { allItems } from '../data/items';
+import { productService } from '../services/product.service';
+
+const CATEGORY_MAP = {
+  cpu: "processor",
+  gpu: "graphics_card",
+  ram: "memory",
+  motherboard: "motherboard",
+  storage: "storage",
+  psu: "power_supply",
+  case: "case",
+  cooling: "cooling",
+  accessories: "accessories",
+  software: "software",
+  networking: "networking"
+};
 
 const ComponentsCatalog = () => {
-  const { category } = useParams(); // For when routing from Mega Menu
+  const { category } = useParams();
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   
   const initialFilters = {
     priceMax: 500000,
     brands: [],
     ratings: [],
-    cpu: [],
-    motherboard: [],
-    gpu: [],
-    ram: [],
-    ssd: [],
-    psu: [],
-    cabinet: [],
-    cooling: [],
-    peripherals: [],
-    monitors: []
+    specs: {}
   };
 
   const [filters, setFilters] = useState(initialFilters);
   const [currentPage, setCurrentPage] = useState(1);
   const [isFiltering, setIsFiltering] = useState(false);
+  const [products, setProducts] = useState([]);
+  const [totalPages, setTotalPages] = useState(1);
   const itemsPerPage = 40; 
 
-  // Reset category filters when the URL category parameter changes
   useEffect(() => {
     if (category) {
       setFilters(initialFilters);
@@ -42,79 +48,122 @@ const ComponentsCatalog = () => {
     }
   }, [category]);
 
-  const baseComponents = useMemo(() => {
-    // Ensure we only show individual components. In this database, all items are components.
-    if (category) {
-      return allItems.filter(item => item.category === category);
+  const fetchProducts = async () => {
+    setIsFiltering(true);
+    try {
+      const categoryType = CATEGORY_MAP[category?.toLowerCase()];
+      const params = {
+        categoryType,
+        page: currentPage,
+        limit: itemsPerPage,
+      };
+
+      const res = await productService.list(params);
+      
+      let docs = [];
+      let pages = 1;
+      
+      if (res?.data?.docs) {
+        docs = res.data.docs;
+        pages = res.data.totalPages || 1;
+      } else if (res?.data?.data?.docs) {
+        docs = res.data.data.docs;
+        pages = res.data.data.totalPages || 1;
+      } else if (Array.isArray(res?.data)) {
+        docs = res.data;
+      } else if (Array.isArray(res?.data?.data)) {
+        docs = res.data.data;
+      } else if (Array.isArray(res?.docs)) {
+        docs = res.docs;
+        pages = res.totalPages || 1;
+      }
+
+      setProducts(docs);
+      setTotalPages(pages);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+      setProducts([]);
+    } finally {
+      setIsFiltering(false);
     }
-    return allItems;
-  }, [category]);
+  };
+
+  useEffect(() => {
+    fetchProducts();
+  }, [category, currentPage]); 
+
+  const dynamicFilterOptions = useMemo(() => {
+    const brands = new Set();
+    const ratings = new Set();
+    const specs = {};
+    
+    products.forEach(p => {
+      if (p.brand?.name) brands.add(p.brand.name);
+      
+      const rating = Math.floor(p.rating?.average || 0);
+      if (rating > 0) ratings.add(rating);
+      
+      if (p.specifications) {
+        Object.entries(p.specifications).forEach(([key, val]) => {
+          if (val && typeof val !== 'object') {
+            if (!specs[key]) specs[key] = new Set();
+            specs[key].add(String(val));
+          }
+        });
+      }
+    });
+
+    const parsedSpecs = Object.keys(specs).map(key => ({
+      key,
+      options: Array.from(specs[key]).sort()
+    }));
+
+    return {
+      brands: Array.from(brands).sort(),
+      ratings: Array.from(ratings).sort((a,b) => b - a),
+      specs: parsedSpecs,
+    };
+  }, [products]);
+
 
   const handleClearAll = () => {
     setFilters(initialFilters);
     setCurrentPage(1);
   };
 
-  const getPriceVal = (priceStr) => {
-    return parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
-  };
-
   const filteredComponents = useMemo(() => {
-    return baseComponents.filter(item => {
-      if (getPriceVal(item.price) > filters.priceMax) return false;
+    return products.filter(item => {
+      const price = item.salePrice || item.price || 0;
+      if (price > filters.priceMax) return false;
 
       if (filters.ratings.length > 0) {
-        const itemRating = parseFloat(item.rating) || 0;
+        const itemRating = item.rating?.average || 0;
         const meetsRating = filters.ratings.some(selectedRating => itemRating >= selectedRating);
         if (!meetsRating) return false;
       }
 
-      const hasKeyword = (selectedOptions, searchTargetStr) => {
-        if (selectedOptions.length === 0) return true;
-        const target = searchTargetStr.toLowerCase();
-        return selectedOptions.some(option => {
-          const lowerOpt = option.toLowerCase();
-          return target.includes(lowerOpt.split(' ')[0]);
-        });
-      };
-
-      const fullTextSearch = (item.title + ' ' + (item.specs ? item.specs.join(' ') : '') + ' ' + (item.brand || '')).toLowerCase();
-
-      if (filters.brands.length > 0) {
-        const itemBrand = item.brand ? item.brand.toLowerCase() : '';
-        const meetsBrand = filters.brands.some(b => itemBrand.includes(b.toLowerCase()) || fullTextSearch.includes(b.toLowerCase()));
-        if (!meetsBrand) return false;
+      if (filters.brands && filters.brands.length > 0) {
+        const itemBrand = item.brand?.name;
+        if (!itemBrand || !filters.brands.includes(itemBrand)) return false;
       }
 
-      if (!hasKeyword(filters.cpu, fullTextSearch)) return false;
-      if (!hasKeyword(filters.gpu, fullTextSearch)) return false;
-      if (!hasKeyword(filters.ram, fullTextSearch)) return false;
-      if (!hasKeyword(filters.ssd, fullTextSearch)) return false;
-      if (!hasKeyword(filters.motherboard, fullTextSearch)) return false;
-      if (!hasKeyword(filters.psu, fullTextSearch)) return false;
+      if (filters.specs) {
+        const specKeys = Object.keys(filters.specs);
+        for (let i = 0; i < specKeys.length; i++) {
+          const key = specKeys[i];
+          const selectedValues = filters.specs[key];
+          if (selectedValues && selectedValues.length > 0) {
+            const itemVal = item.specifications?.[key];
+            if (!itemVal || !selectedValues.includes(String(itemVal))) return false;
+          }
+        }
+      }
 
       return true;
     });
-  }, [filters, baseComponents]);
+  }, [filters, products]);
 
-  useEffect(() => {
-    setCurrentPage(1);
-    
-    // Trigger skeleton loading
-    setIsFiltering(true);
-    const timer = setTimeout(() => {
-      setIsFiltering(false);
-    }, 600); // 600ms skeleton loading duration
-    
-    return () => clearTimeout(timer);
-  }, [filters, category]);
-
-  const totalPages = Math.ceil(filteredComponents.length / itemsPerPage);
-  
-  const currentItems = useMemo(() => {
-    const start = (currentPage - 1) * itemsPerPage;
-    return filteredComponents.slice(start, start + itemsPerPage);
-  }, [filteredComponents, currentPage]);
+  const currentItems = filteredComponents; 
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
@@ -131,19 +180,23 @@ const ComponentsCatalog = () => {
   };
 
   const categoryTitle = category ? category.replace('-', ' ').toUpperCase() : 'ALL COMPONENTS';
+  
+  // Dynamic Grid classes
+  const gridClasses = filterDropdownOpen
+    ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-h-[800px] items-start content-start"
+    : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[800px] items-start content-start";
 
   return (
     <section id="catalog-top" className="w-full py-12 pb-24" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         
-        {/* Top Bar with Filters Button */}
         <div 
           className="flex justify-between items-center mb-6 sticky top-[111px] z-40 py-4 border-b border-transparent backdrop-blur-md transition-all duration-300"
-          style={{ backgroundColor: 'rgba(241, 245, 249, 0.95)' }} // Matches bg-secondary but translucent
+          style={{ backgroundColor: 'rgba(241, 245, 249, 0.95)' }}
         >
           <div>
             <h1 className="text-[24px] font-bold text-[#0F1111]">{categoryTitle}</h1>
-            <p className="text-[14px] text-[#565959]">Showing {filteredComponents.length} results</p>
+            <p className="text-[14px] text-[#565959]">Showing {currentItems.length} results</p>
           </div>
           
           <button 
@@ -154,14 +207,10 @@ const ComponentsCatalog = () => {
           </button>
         </div>
 
-        {/* Main Content Area */}
         <div className="flex relative gap-6">
-          
-          {/* Grid Area */}
-          <motion.div layout className="flex-1 min-w-0">
-            
+          <motion.div layout className="flex-1 min-w-0 transition-all duration-300">
             <AnimatePresence mode="wait">
-              {currentItems.length === 0 ? (
+              {currentItems.length === 0 && !isFiltering ? (
                 <motion.div 
                   key="empty"
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -170,10 +219,10 @@ const ComponentsCatalog = () => {
                   className="w-full p-20 text-center border border-dashed border-gray-300 rounded-lg bg-white"
                 >
                   <h3 className="text-[20px] font-bold text-[#0F1111] mb-2">No components found</h3>
-                  <p className="text-[#565959]">Try adjusting your filters or search criteria.</p>
+                  <p className="text-[#565959]">Try adjusting your filters or check back later.</p>
                   <button 
                     onClick={handleClearAll}
-                    className="mt-4 px-6 py-2 bg-[var(--color-primary)] text-white font-bold rounded-md hover:opacity-90"
+                    className="mt-4 px-6 py-2 bg-[var(--color-primary)] text-white font-bold rounded-md hover:opacity-90 cursor-pointer"
                   >
                     Clear All Filters
                   </button>
@@ -186,37 +235,46 @@ const ComponentsCatalog = () => {
                   exit={{ opacity: 0 }}
                   className="w-full"
                 >
-                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[800px] items-start content-start">
+                  <div className={gridClasses}>
                     {isFiltering ? (
-                      // Render Skeletons
-                      Array.from({ length: Math.min(itemsPerPage, filteredComponents.length || 10) }).map((_, idx) => (
+                      Array.from({ length: 10 }).map((_, idx) => (
                         <SkeletonCard key={`skeleton-${idx}`} compact={filterDropdownOpen} />
                       ))
                     ) : (
-                      // Render Real Cards without motion wrapper to prevent flying
-                      currentItems.map((item) => (
-                        <div key={item.id} className="block h-full animate-fade-in">
-                          <Link to={`/detail/${item.id}`} className="block h-full">
+                      currentItems.map((item) => {
+                        const price = item.salePrice || item.price;
+                        const mrp = item.salePrice ? item.price : null;
+                        const discount = item.salePrice ? Math.round(((item.price - item.salePrice) / item.price) * 100) + '% OFF' : null;
+                        const imageUrl = item.images?.[0]?.url || 'https://via.placeholder.com/300?text=No+Image';
+                        let specs = [];
+                        if (item.specifications) {
+                          const specVals = Object.values(item.specifications);
+                          specs = specVals.filter(v => typeof v === 'string').slice(0, 3);
+                        }
+                        
+                        return (
+                        <div key={item._id || item.id} className="block h-full animate-fade-in">
+                          <Link to={`/detail/${item.slug}`} className="block h-full">
                             <Card 
-                              id={item.id}
-                              image={item.image}
-                              title={item.title}
-                              specs={item.specs}
-                              description={item.description}
-                              price={item.price}
-                              mrp={item.mrp}
-                              discount={item.discount}
-                              tag={item.discount || 'SALE'}
+                              id={item.slug}
+                              image={imageUrl}
+                              title={item.name}
+                              specs={specs.length > 0 ? specs : undefined}
+                              description={item.shortDescription || item.description || ''}
+                              price={`₹${price?.toLocaleString('en-IN')}`}
+                              mrp={mrp ? `₹${mrp?.toLocaleString('en-IN')}` : undefined}
+                              discount={discount}
+                              tag={discount ? discount : null}
                               tagColor="#CC0C39"
                               compact={filterDropdownOpen} 
                             />
                           </Link>
                         </div>
-                      ))
+                        );
+                      })
                     )}
                   </div>
 
-                  {/* Pagination Controls */}
                   {totalPages > 1 && (
                     <motion.div 
                       initial={{ opacity: 0 }}
@@ -250,12 +308,12 @@ const ComponentsCatalog = () => {
             </AnimatePresence>
           </motion.div>
 
-          {/* Extracted Filter Sidebar Component */}
           <Filter 
             isOpen={filterDropdownOpen}
             filters={filters}
             setFilters={setFilters}
             onClearAll={handleClearAll}
+            dynamicOptions={dynamicFilterOptions}
           />
 
         </div>

@@ -30,7 +30,7 @@ const Wishlist = () => {
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <h2 className="text-[24px] font-bold text-[#282C3F] mb-4">Your wishlist is empty</h2>
             <p className="text-[#696E79] mb-8">Save items that you like in your wishlist. Review them anytime and easily move them to the bag.</p>
-            <a href="/" className="px-8 py-3 bg-white border border-[#FF3E6C] text-[#FF3E6C] font-bold rounded-sm hover:bg-[#FF3E6C] hover:text-white transition-colors">
+            <a href="/" className="px-8 py-3 bg-white border border-[var(--color-primary)] text-[var(--color-primary)] font-bold rounded-sm hover:bg-[var(--color-primary)] hover:text-white transition-colors">
               CONTINUE SHOPPING
             </a>
           </div>

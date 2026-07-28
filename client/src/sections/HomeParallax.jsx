@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence } from 'framer-motion';
 
-const TOTAL_FRAMES = 101;
+const TOTAL_FRAMES = 49
 
 const HomeParallax = () => {
   const containerRef = useRef(null);
@@ -28,8 +28,8 @@ const HomeParallax = () => {
     let loadedCount = 0;
     for (let i = 1; i <= TOTAL_FRAMES; i++) {
       const img = new Image();
-      const paddedIndex = String(i).padStart(3, '0');
-      img.src = `/hero-scroll/ezgif-frame-${paddedIndex}.jpg`;
+      const paddedIndex = String(i).padStart(6, '0');
+      img.src = `/hero-scroll/frame_${paddedIndex}.png`;
       img.onload = () => {
         loadedCount++;
         if (loadedCount === TOTAL_FRAMES) {
