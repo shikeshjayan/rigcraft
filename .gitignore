@@ -8,6 +8,7 @@ build/
 Thumbs.db
 DESIGN.md
 graphify-out
+API.md
 
 .agents/
 
