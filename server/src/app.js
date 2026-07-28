@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import dns from "dns";
 dns.setServers(["8.8.8.8", "1.1.1.1"]);
 
@@ -23,7 +26,10 @@ import dashboardRoutes from "./routes/dashboard.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
 import dealRoutes, { adminDealRoutes } from "./routes/deal.routes.js";
+import supportRoutes, { adminSupportRoutes } from "./routes/support.routes.js";
+import faqRoutes, { adminFaqRoutes } from "./routes/faq.routes.js";
 import newsletterRoutes from "./routes/newsletter.routes.js";
+import notificationRoutes, { adminNotificationRoutes } from "./routes/notification.routes.js";
 import errorHandler from "./middlewares/error.js";
 
 const { configureCloudinary } = await import("./config/cloudinary.js");
@@ -71,6 +77,14 @@ app.use("/api/v1/deals", dealRoutes);
 app.use("/api/v1/admin/deals", adminDealRoutes);
 
 app.use("/api/v1/newsletter", newsletterRoutes);
+
+app.use("/api/v1/notifications", notificationRoutes);
+app.use("/api/v1/admin/notifications", adminNotificationRoutes);
+
+app.use("/api/v1/support", supportRoutes);
+app.use("/api/v1/admin/support", adminSupportRoutes);
+app.use("/api/v1/faqs", faqRoutes);
+app.use("/api/v1/admin/faqs", adminFaqRoutes);
 
 app.use(errorHandler);
 

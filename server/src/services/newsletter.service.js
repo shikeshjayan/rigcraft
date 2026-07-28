@@ -1,5 +1,6 @@
 import newsletterRepository from "../repositories/newsletter.repository.js";
 import ApiError from "../utils/ApiError.js";
+import { sendEmail } from "./email.service.js";
 
 export const subscribe = async (email) => {
   const existing = await newsletterRepository.findByEmail(email);
@@ -13,12 +14,31 @@ export const subscribe = async (email) => {
     existing.subscribedAt = new Date();
     existing.unsubscribedAt = null;
     await existing.save();
+
+    await sendWelcomeEmail(email);
+    existing.lastEmailSent = new Date();
+    await existing.save();
+
     return existing;
   }
 
-  return newsletterRepository.create({
+  const subscriber = await newsletterRepository.create({
     email,
     subscribedAt: new Date(),
+  });
+
+  await sendWelcomeEmail(email);
+  subscriber.lastEmailSent = new Date();
+  await subscriber.save();
+
+  return subscriber;
+};
+
+const sendWelcomeEmail = async (email) => {
+  await sendEmail({
+    to: email,
+    subject: "Welcome to RigCraft Newsletter!",
+    html: `<p>Thank you for subscribing to the RigCraft newsletter!</p><p>Stay tuned for the latest PC building tips, exclusive deals, and new product announcements.</p>`,
   });
 };
 

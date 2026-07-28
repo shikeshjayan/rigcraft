@@ -71,4 +71,33 @@ export const NEWSLETTER_STATUS = {
   UNSUBSCRIBED: 'unsubscribed',
 };
 
+export const NOTIFICATION_TYPES = {
+  ORDER: 'order',
+  PAYMENT: 'payment',
+  REVIEW: 'review',
+  SUPPORT: 'support',
+  INVENTORY: 'inventory',
+  COUPON: 'coupon',
+  SYSTEM: 'system',
+  MARKETING: 'marketing',
+};
+
+export const NOTIFICATION_MODULES = {
+  ORDER: 'Order',
+  PAYMENT: 'Payment',
+  REVIEW: 'Review',
+  SUPPORT: 'Support',
+  INVENTORY: 'Inventory',
+  COUPON: 'Coupon',
+  DEAL: 'Deal',
+  SYSTEM: 'System',
+};
+
+export const NOTIFICATION_PRIORITIES = {
+  LOW: 'low',
+  NORMAL: 'normal',
+  HIGH: 'high',
+  CRITICAL: 'critical',
+};
+
 
