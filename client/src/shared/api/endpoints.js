@@ -61,14 +61,14 @@ export const ENDPOINTS = {
 
   // PC Builder
   BUILDER: {
-    LIST: "/builder",
-    CREATE: "/builder",
-    DETAILS: (id) => `/builder/${id}`,
-    UPDATE: (id) => `/builder/${id}`,
-    DELETE: (id) => `/builder/${id}`,
-    VALIDATE: (id) => `/builder/${id}/validate`,
-    DUPLICATE: (id) => `/builder/${id}/duplicate`,
-    ADD_TO_CART: (id) => `/builder/${id}/add-to-cart`,
+    LIST: "/builds",
+    CREATE: "/builds",
+    DETAILS: (id) => `/builds/${id}`,
+    UPDATE: (id) => `/builds/${id}`,
+    DELETE: (id) => `/builds/${id}`,
+    VALIDATE: (id) => `/builds/${id}/validate`,
+    DUPLICATE: (id) => `/builds/${id}/duplicate`,
+    ADD_TO_CART: (id) => `/builds/${id}/add-to-cart`,
   },
 
   // Cart
@@ -77,8 +77,8 @@ export const ENDPOINTS = {
     ADD_ITEM: "/cart/items",
     UPDATE_ITEM: (id) => `/cart/items/${id}`,
     REMOVE_ITEM: (id) => `/cart/items/${id}`,
-    APPLY_COUPON: "/cart/coupon",
-    REMOVE_COUPON: "/cart/coupon",
+    APPLY_COUPON: "/cart/apply-coupon",
+    REMOVE_COUPON: "/cart/remove-coupon",
     CLEAR: "/cart",
   },
 
@@ -133,6 +133,17 @@ export const ENDPOINTS = {
     UPDATE: "/settings",
   },
 
+  // Newsletter
+  NEWSLETTER: {
+    SUBSCRIBE: "/newsletter/subscribe",
+    UNSUBSCRIBE: "/newsletter/unsubscribe",
+    LIST: "/newsletter",
+    EXPORT: "/newsletter/export",
+    DETAILS: (id) => `/newsletter/${id}`,
+    UPDATE: (id) => `/newsletter/${id}`,
+    DELETE: (id) => `/newsletter/${id}`,
+  },
+
   // Addresses
   ADDRESS: {
     LIST: "/addresses",
@@ -140,5 +151,56 @@ export const ENDPOINTS = {
     DETAILS: (id) => `/addresses/${id}`,
     UPDATE: (id) => `/addresses/${id}`,
     DELETE: (id) => `/addresses/${id}`,
+  },
+
+  // Notifications (customer)
+  NOTIFICATION: {
+    LIST: "/notifications",
+    UNREAD: "/notifications/unread",
+    MARK_READ: (id) => `/notifications/${id}/read`,
+    MARK_ALL_READ: "/notifications/read-all",
+    DELETE: (id) => `/notifications/${id}`,
+  },
+
+  // Notifications (admin)
+  ADMIN_NOTIFICATION: {
+    LIST: "/admin/notifications",
+    UNREAD: "/admin/notifications/unread",
+    MARK_READ: (id) => `/admin/notifications/${id}/read`,
+    MARK_ALL_READ: "/admin/notifications/read-all",
+  },
+
+  // Support (customer)
+  SUPPORT: {
+    CREATE: "/support",
+    LIST: "/support",
+    DETAILS: (id) => `/support/${id}`,
+    MESSAGES: (id) => `/support/${id}/messages`,
+    CLOSE: (id) => `/support/${id}/close`,
+  },
+
+  // Support (admin)
+  ADMIN_SUPPORT: {
+    LIST: "/admin/support",
+    DETAILS: (id) => `/admin/support/${id}`,
+    REPLY: (id) => `/admin/support/${id}/messages`,
+    UPDATE_STATUS: (id) => `/admin/support/${id}/status`,
+    ASSIGN: (id) => `/admin/support/${id}/assign`,
+    PRIORITY: (id) => `/admin/support/${id}/priority`,
+    DELETE: (id) => `/admin/support/${id}`,
+  },
+
+  // FAQ (public)
+  FAQ: {
+    LIST: "/faqs",
+  },
+
+  // FAQ (admin)
+  ADMIN_FAQ: {
+    LIST: "/admin/faqs",
+    DETAILS: (id) => `/admin/faqs/${id}`,
+    CREATE: "/admin/faqs",
+    UPDATE: (id) => `/admin/faqs/${id}`,
+    DELETE: (id) => `/admin/faqs/${id}`,
   },
 };
