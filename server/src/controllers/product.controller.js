@@ -7,13 +7,16 @@ export const list = asyncHandler(async (req, res) => {
   ApiResponse.ok(result).send(res);
 });
 
-export const getById = asyncHandler(async (req, res) => {
-  const product = await productService.getById(req.params.id);
-  ApiResponse.ok(product).send(res);
-});
-
-export const getBySlug = asyncHandler(async (req, res) => {
-  const product = await productService.getBySlug(req.params.slug);
+export const getBySlugOrId = asyncHandler(async (req, res) => {
+  const { slugOrId } = req.params;
+  const isObjectId = /^[a-fA-F0-9]{24}$/.test(slugOrId);
+  let product;
+  if (isObjectId) {
+    product = await productService.getById(slugOrId);
+  }
+  if (!product) {
+    product = await productService.getBySlug(slugOrId);
+  }
   ApiResponse.ok(product).send(res);
 });
 
@@ -24,7 +27,7 @@ export const getFeatured = asyncHandler(async (req, res) => {
 
 export const getRelated = asyncHandler(async (req, res) => {
   const products = await productService.getRelated(
-    req.params.slug,
+    req.params.slugOrId,
     req.query.limit
   );
   ApiResponse.ok(products).send(res);
