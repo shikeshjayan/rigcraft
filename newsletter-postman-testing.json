@@ -1,0 +1,157 @@
+{
+  "info": {
+    "name": "RigCraft Newsletter API",
+    "baseUrl": "http://localhost:5000/api/v1"
+  },
+  "endpoints": {
+    "public": {
+      "subscribe": {
+        "method": "POST",
+        "url": "http://localhost:5000/api/v1/newsletter/subscribe",
+        "headers": { "Content-Type": "application/json" },
+        "body": { "email": "user@example.com" },
+        "expected": { "success": true, "message": "Subscribed successfully", "data": null }
+      },
+      "subscribe_second_user": {
+        "method": "POST",
+        "url": "http://localhost:5000/api/v1/newsletter/subscribe",
+        "headers": { "Content-Type": "application/json" },
+        "body": { "email": "test@rigcraft.com" }
+      },
+      "subscribe_duplicate": {
+        "method": "POST",
+        "url": "http://localhost:5000/api/v1/newsletter/subscribe",
+        "headers": { "Content-Type": "application/json" },
+        "body": { "email": "user@example.com" },
+        "expected": { "success": false, "message": "This email is already subscribed" }
+      },
+      "subscribe_invalid_email": {
+        "method": "POST",
+        "url": "http://localhost:5000/api/v1/newsletter/subscribe",
+        "headers": { "Content-Type": "application/json" },
+        "body": { "email": "not-an-email" },
+        "expected": { "success": false, "message": "Validation failed" }
+      },
+      "unsubscribe": {
+        "method": "POST",
+        "url": "http://localhost:5000/api/v1/newsletter/unsubscribe",
+        "headers": { "Content-Type": "application/json" },
+        "body": { "email": "user@example.com" },
+        "expected": { "success": true, "message": "You have been unsubscribed", "data": null }
+      },
+      "unsubscribe_not_found": {
+        "method": "POST",
+        "url": "http://localhost:5000/api/v1/newsletter/unsubscribe",
+        "headers": { "Content-Type": "application/json" },
+        "body": { "email": "nobody@example.com" },
+        "expected": { "success": false, "message": "Email not found" }
+      },
+      "resubscribe_after_unsubscribe": {
+        "method": "POST",
+        "url": "http://localhost:5000/api/v1/newsletter/subscribe",
+        "headers": { "Content-Type": "application/json" },
+        "body": { "email": "user@example.com" },
+        "expected": { "success": true, "message": "Subscribed successfully" },
+        "note": "Reactives the previously unsubscribed email"
+      }
+    },
+    "admin": {
+      "auth": {
+        "login": {
+          "method": "POST",
+          "url": "http://localhost:5000/api/v1/auth/login",
+          "body": { "email": "admin@rigcraft.com", "password": "admin123" }
+        }
+      },
+      "get_subscribers": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/v1/newsletter?page=1&limit=10&status=active",
+        "auth": "Bearer <token>",
+        "expected_shape": {
+          "success": true,
+          "data": {
+            "subscribers": [
+              {
+                "_id": "...",
+                "email": "user@example.com",
+                "status": "active",
+                "subscribedAt": "2026-07-27T00:00:00.000Z",
+                "unsubscribedAt": null,
+                "lastEmailSent": null,
+                "notes": null,
+                "createdAt": "...",
+                "updatedAt": "..."
+              }
+            ],
+            "pagination": { "page": 1, "limit": 10, "total": 1, "pages": 1 }
+          }
+        }
+      },
+      "get_subscriber_by_id": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/v1/newsletter/<subscriber_id>",
+        "auth": "Bearer <token>"
+      },
+      "update_subscriber": {
+        "method": "PUT",
+        "url": "http://localhost:5000/api/v1/newsletter/<subscriber_id>",
+        "auth": "Bearer <token>",
+        "headers": { "Content-Type": "application/json" },
+        "body": {
+          "status": "active",
+          "notes": "Subscribed via homepage popup"
+        }
+      },
+      "update_status_only": {
+        "method": "PUT",
+        "url": "http://localhost:5000/api/v1/newsletter/<subscriber_id>",
+        "auth": "Bearer <token>",
+        "body": { "status": "unsubscribed" }
+      },
+      "delete_subscriber": {
+        "method": "DELETE",
+        "url": "http://localhost:5000/api/v1/newsletter/<subscriber_id>",
+        "auth": "Bearer <token>",
+        "expected": { "success": true, "message": "Subscriber deleted", "data": null }
+      },
+      "export_csv": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/v1/newsletter/export",
+        "auth": "Bearer <token>",
+        "expected": {
+          "success": true,
+          "data": [
+            {
+              "email": "user@example.com",
+              "status": "active",
+              "subscribedAt": "...",
+              "unsubscribedAt": null,
+              "lastEmailSent": null,
+              "notes": "",
+              "createdAt": "..."
+            }
+          ]
+        }
+      },
+      "export_with_filter": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/v1/newsletter/export?status=active",
+        "auth": "Bearer <token>"
+      }
+    },
+    "error_responses": {
+      "unauthorized_no_token": {
+        "method": "GET",
+        "url": "http://localhost:5000/api/v1/newsletter",
+        "expected": { "success": false, "message": "Not authorized, no token" }
+      },
+      "forbidden_manager_update": {
+        "method": "PUT",
+        "url": "http://localhost:5000/api/v1/newsletter/<subscriber_id>",
+        "auth": "Bearer <manager_token>",
+        "expected": { "success": false, "message": "Not authorized, insufficient permissions" },
+        "note": "Managers can READ (GET) but cannot UPDATE or DELETE"
+      }
+    }
+  }
+}

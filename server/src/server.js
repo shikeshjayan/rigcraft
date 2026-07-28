@@ -1,12 +1,4 @@
-import dns from "dns";
-dns.setServers(["8.8.8.8", "1.1.1.1"]);
-
-import express from "express";
-import dotenv from "dotenv";
-import cookieParser from "cookie-parser";
-import cors from "cors";
-import helmet from "helmet";
-import morgan from "morgan";
+import http from "http";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
@@ -28,10 +20,6 @@ import errorHandler from "./middlewares/error.js";
 
 dotenv.config();
 
-const { configureCloudinary } = await import("./config/cloudinary.js");
-configureCloudinary();
-
-const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(helmet());
@@ -85,7 +73,9 @@ app.use(errorHandler);
 
 const startServer = async () => {
   await connectDB();
-  app.listen(PORT, () => {
+  const server = http.createServer(app);
+  initSocket(server);
+  server.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
   });
 };

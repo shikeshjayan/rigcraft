@@ -6,7 +6,6 @@ const addressSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      index: true,
     },
 
     label: {
@@ -91,7 +90,6 @@ const addressSchema = new mongoose.Schema(
   }
 );
 
-addressSchema.index({ user: 1 });
 addressSchema.index({ user: 1, isDefault: 1 });
 
 const Address = mongoose.model("Address", addressSchema);
