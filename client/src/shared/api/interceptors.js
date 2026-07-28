@@ -20,6 +20,12 @@ axiosInstance.interceptors.response.use(
 
   async (error) => {
     if (error.response?.status === 401) {
+      console.error("🔥 401 UNAUTHORIZED CAUGHT BY INTERCEPTOR 🔥");
+      console.error("Error Response Data:", error.response.data);
+      console.error("Request URL:", error.config.url);
+      
+      alert(`401 Error on ${error.config.url}: ${error.response.data?.message || 'Unknown error'}\n\nCheck console for details before it redirects.`);
+
       localStorage.removeItem("accessToken");
 
       if (window.location.pathname.startsWith("/admin")) {

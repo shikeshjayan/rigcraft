@@ -18,8 +18,7 @@ const Detail = () => {
   
   // Find the exact item that was clicked based on the URL ID
   // It could be a PC (id < 1000) or a Component (id >= 1000)
-  const parsedId = parseInt(id);
-  const pc = allPCs.find(p => p.id === parsedId) || allItems.find(p => p.id === parsedId);
+  const pc = allPCs.find(p => String(p.id) === String(id)) || allItems.find(p => String(p.id) === String(id));
 
   // Scroll to top when page loads
   useEffect(() => {
