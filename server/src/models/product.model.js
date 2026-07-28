@@ -66,6 +66,11 @@ const productSchema = new mongoose.Schema(
       default: PRODUCT_TYPES.COMPONENT,
     },
 
+    categoryType: {
+      type: String,
+      trim: true,
+    },
+
     category: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Category",

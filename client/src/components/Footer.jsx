@@ -94,10 +94,10 @@ const Footer = () => {
         <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
           
           {/* Top Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-10 mb-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:flex lg:justify-between gap-10 mb-16">
             
-            {/* Brand Column (Spans 2 cols on large) */}
-            <div className="lg:col-span-2 flex flex-col">
+            {/* Brand Column */}
+            <div className="flex flex-col lg:max-w-[350px]">
               <div className="flex items-center gap-2 mb-6 cursor-pointer">
                 <PrecisionManufacturingIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
                 <span className="text-[24px] font-black tracking-widest uppercase"><span style={{ color: 'var(--color-primary)',fontSize:"24px" }}>Rig</span>Craft</span>
@@ -131,7 +131,7 @@ const Footer = () => {
             <div className="flex flex-col">
               <h4 className="text-[14px] font-bold tracking-widest text-white mb-6 uppercase">Support</h4>
               <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">About RigCraft</li>
+                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/about" className="block w-full">About RigCraft</Link></li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Track Order</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/warranty" className="block w-full">Warranty Claims</Link></li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/returns" className="block w-full">Returns & Refunds</Link></li>
@@ -146,8 +146,6 @@ const Footer = () => {
               <h4 className="text-[14px] font-bold tracking-widest text-white mb-6 uppercase">Explore</h4>
               <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/pc-builder-guide" className="block w-full">PC Builder Guide</Link></li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Compatibility Checker</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Compare Builds</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Best Sellers</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">New Arrivals</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Today's Deals</li>
@@ -159,13 +157,11 @@ const Footer = () => {
           {/* Bottom Bar */}
           <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-800 gap-4 text-[13px] text-gray-400 font-medium">
             <div>
-              &copy; 2025 PCForge Technologies Pvt Ltd. All rights reserved.
+              &copy; {new Date().getFullYear()} PCForge Technologies Pvt Ltd. All rights reserved.
             </div>
             <div className="flex flex-wrap justify-center gap-6">
               <Link to="/privacy-policy" className="hover:text-[var(--color-primary)] transition-colors">Privacy Policy</Link>
               <Link to="/terms-of-service" className="hover:text-[var(--color-primary)] transition-colors">Terms of Service</Link>
-              <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Cookie Policy</a>
-              <a href="#" className="hover:text-[var(--color-primary)] transition-colors">Sitemap</a>
             </div>
           </div>
 

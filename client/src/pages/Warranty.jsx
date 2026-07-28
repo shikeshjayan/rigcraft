@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import FadeUp from '../components/FadeUp';
+import Breadcrumb from '../components/Breadcrumb';
 import BuildIcon from '@mui/icons-material/Build';
 import ShieldIcon from '@mui/icons-material/Shield';
 import AssignmentReturnIcon from '@mui/icons-material/AssignmentReturn';
@@ -31,6 +32,7 @@ const Warranty = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Warranty' }]} />
         <FadeUp>
           {/* Header */}
           <div className="text-center mb-16">

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FadeUp from '../components/FadeUp';
+import Breadcrumb from '../components/Breadcrumb';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import AutorenewIcon from '@mui/icons-material/Autorenew';
@@ -95,6 +96,7 @@ const Orders = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Orders' }]} />
         <FadeUp>
           <div className="flex flex-col lg:flex-row gap-8">
             

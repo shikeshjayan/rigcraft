@@ -1,4 +1,5 @@
 import cloudinary from "../config/cloudinary.js";
+import ApiError from "../utils/ApiError.js";
 
 export const uploadImage = async (file, folder) => {
   if (!file || !file.buffer) return null;
@@ -10,8 +11,12 @@ export const uploadImage = async (file, folder) => {
         transformation: { quality: "auto", fetch_format: "auto" },
       },
       (error, result) => {
-        if (error) reject(error);
-        else resolve(result);
+        if (error) {
+          console.error("Cloudinary Error:", error);
+          reject(ApiError.badRequest(error.message || "Image upload failed. Check your Cloudinary configuration."));
+        } else {
+          resolve(result);
+        }
       }
     );
     stream.end(file.buffer);
