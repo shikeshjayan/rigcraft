@@ -258,7 +258,11 @@ const BuilderWorkspace = () => {
                   </div>
                   
                   {/* AI Button */}
-                  <button className="relative flex flex-col cursor-pointer items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-1 h-10 hover:brightness-110 transition-all flex-shrink-0 group overflow-visible" style={{ borderRadius: 'var(--radius-sm)' }}>
+                  <button 
+                    onClick={() => window.dispatchEvent(new CustomEvent('open-rig-ai'))}
+                    className="relative flex flex-col cursor-pointer items-center justify-center bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold px-6 py-1 h-10 hover:brightness-110 transition-all flex-shrink-0 group overflow-visible" 
+                    style={{ borderRadius: 'var(--radius-sm)' }}
+                  >
                     <span className="text-[13px] uppercase tracking-wider">Build with Rig AI</span>
                     <span className="text-[9px] text-purple-200 uppercase tracking-widest -mt-0.5">Beta</span>
                     

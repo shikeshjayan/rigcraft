@@ -10,6 +10,8 @@ const AdminLayout = () => {
   const { isAuthenticated, user } = useAuthStore();
   const location = useLocation();
 
+  console.log("AdminLayout rendering, path:", location.pathname);
+
   if (!isAuthenticated || !user) {
     return <Navigate to="/admin/login" replace />;
   }
