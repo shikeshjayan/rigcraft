@@ -15,6 +15,15 @@ import productRoutes from "./routes/product.routes.js";
 import prebuiltPCRoutes from "./routes/prebuiltPC.routes.js";
 import buildRoutes from "./routes/build.routes.js";
 import addressRoutes from "./routes/address.routes.js";
+import dashboardRoutes from "./routes/dashboard.routes.js";
+import orderRoutes from "./routes/order.routes.js";
+import cartRoutes from "./routes/cart.routes.js";
+import couponRoutes from "./routes/coupon.routes.js";
+import paymentRoutes from "./routes/payment.routes.js";
+import reviewRoutes from "./routes/review.routes.js";
+import settingsRoutes from "./routes/settings.routes.js";
+import userRoutes from "./routes/user.routes.js";
+import wishlistRoutes from "./routes/wishlist.routes.js";
 import errorHandler from "./middlewares/error.js";
 
 dotenv.config();
@@ -45,6 +54,15 @@ app.use("/api/v1/products", productRoutes);
 app.use("/api/v1/prebuilt-pcs", prebuiltPCRoutes);
 app.use("/api/v1/builds", buildRoutes);
 app.use("/api/v1/addresses", addressRoutes);
+app.use("/api/v1/dashboard", dashboardRoutes);
+app.use("/api/v1/orders", orderRoutes);
+app.use("/api/v1/cart", cartRoutes);
+app.use("/api/v1/coupons", couponRoutes);
+app.use("/api/v1/payments", paymentRoutes);
+app.use("/api/v1/reviews", reviewRoutes);
+app.use("/api/v1/settings", settingsRoutes);
+app.use("/api/v1/users", userRoutes);
+app.use("/api/v1/wishlists", wishlistRoutes);
 
 app.use(errorHandler);
 

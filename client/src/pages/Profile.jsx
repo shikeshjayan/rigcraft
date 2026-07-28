@@ -15,6 +15,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import FadeUp from '../components/FadeUp';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
+import Breadcrumb from '../components/Breadcrumb';
 
 const Profile = () => {
   const { isLoggedIn, user, logout } = useAuth();
@@ -176,6 +177,7 @@ const Profile = () => {
     <>
       <section className="w-full py-8 min-h-screen bg-gray-50 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
+          <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Profile' }]} />
           <div className="flex flex-col lg:flex-row gap-6">
             
             {/* LEFT SIDEBAR */}

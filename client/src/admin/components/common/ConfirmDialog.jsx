@@ -6,12 +6,14 @@ const ConfirmDialog = ({ open, title, message, confirmLabel = "Delete", cancelLa
     <Dialog
       open={open}
       onClose={onCancel}
-      PaperProps={{
-        sx: {
-          borderRadius: "var(--radius-admin-modal)",
-          boxShadow: "var(--shadow-admin-modal)",
-          minWidth: 400,
-        },
+      slotProps={{
+        paper: {
+          sx: {
+            borderRadius: "var(--radius-admin-modal)",
+            boxShadow: "var(--shadow-admin-modal)",
+            minWidth: 400,
+          },
+        }
       }}
     >
       <DialogTitle sx={{ fontWeight: 600, fontSize: "1.125rem", color: "var(--color-admin-text)" }}>

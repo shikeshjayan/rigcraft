@@ -5,6 +5,7 @@ import StarIcon from '@mui/icons-material/Star';
 import StarHalfIcon from '@mui/icons-material/StarHalf';
 import StarOutlineIcon from '@mui/icons-material/StarBorder';
 import Card from '../components/Card';
+import Breadcrumb from '../components/Breadcrumb';
 
 const ComponentsCatalog = () => {
   const { category } = useParams();
@@ -38,6 +39,7 @@ const ComponentsCatalog = () => {
   return (
     <section className="w-full py-8 pb-24" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
+        <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Components', path: '/components' }, { label: categoryTitle }]} />
         
         <div className="flex justify-between items-center mb-8 border-b border-[#E2E8F0] pb-4">
           <h1 className="text-[28px] font-bold text-[#0F1111]">{categoryTitle} CATALOG</h1>

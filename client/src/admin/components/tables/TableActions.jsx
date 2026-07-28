@@ -30,12 +30,14 @@ const TableActions = ({ actions = [] }) => {
         onClose={handleClose}
         transformOrigin={{ horizontal: "right", vertical: "top" }}
         anchorOrigin={{ horizontal: "right", vertical: "bottom" }}
-        PaperProps={{
-          sx: {
-            minWidth: 160,
-            borderRadius: "var(--radius-admin-modal)",
-            boxShadow: "var(--shadow-admin-dropdown)",
-          },
+        slotProps={{
+          paper: {
+            sx: {
+              minWidth: 160,
+              borderRadius: "var(--radius-admin-modal)",
+              boxShadow: "var(--shadow-admin-dropdown)",
+            },
+          }
         }}
       >
         {actions.map((action, idx) => {

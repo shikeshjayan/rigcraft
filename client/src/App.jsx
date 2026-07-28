@@ -23,6 +23,7 @@ import PcBuilderGuide from './pages/PcBuilderGuide';
 import Faq from './pages/Faq';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
+import About from './pages/About';
 import { WishlistProvider } from './context/WishlistContext';
 import AdminRoutes from './admin/routes/AdminRoutes';
 import { AuthProvider } from './context/AuthContext';
@@ -53,6 +54,7 @@ const PublicLayout = () => {
         </AnimatePresence>
       </div>
       <Footer />
+      <Chatbot />
     </div>
   );
 };
@@ -74,6 +76,7 @@ const App = () => {
                   <Route path="/components" element={<Components />} />
                   <Route path="/components/:category" element={<Components />} />
                   <Route path="/detail/:id" element={<Detail />} />
+                  <Route path="/detail/:productName/:id" element={<Detail />} />
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/deals" element={<Dels />} />
@@ -89,9 +92,9 @@ const App = () => {
                   <Route path="/faq" element={<Faq />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/terms-of-service" element={<Terms />} />
+                  <Route path="/about" element={<About />} />
                 </Route>
               </Routes>
-              <Chatbot />
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>

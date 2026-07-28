@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import FadeUp from '../components/FadeUp';
+import Breadcrumb from '../components/Breadcrumb';
 
 const Wishlist = () => {
   const { wishlist, removeFromWishlist } = useWishlist();
@@ -18,6 +19,7 @@ const Wishlist = () => {
       <div className="max-w-[1400px] mx-auto">
         
         {/* Header */}
+        <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Wishlist' }]} />
         <div className="mb-10 flex items-baseline gap-2">
           <h1 className="text-[20px] font-[800] text-[#282C3F]">My Wishlist</h1>
           <span className="text-[20px] font-normal text-[#282C3F]">{wishlist.length} items</span>

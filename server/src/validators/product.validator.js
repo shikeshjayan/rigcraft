@@ -15,6 +15,7 @@ const productBase = {
   name: z.string().min(1, "Name is required").max(150).trim(),
   sku: z.string().min(1, "SKU is required").max(50).trim().toUpperCase(),
   productType: z.nativeEnum(PRODUCT_TYPES).optional(),
+  categoryType: z.string().trim().optional(),
   category: objectId,
   brand: objectId,
   shortDescription: z.string().max(300).trim().optional(),

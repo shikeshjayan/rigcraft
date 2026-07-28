@@ -11,7 +11,7 @@ import AdminThumbnail from "../../components/common/AdminThumbnail";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { productService, PRODUCT_TYPE_DISPLAY } from "../../services/productService";
-import { CATEGORY_TYPES } from "../../constants/categoryTypes";
+import { CATEGORY_TYPES, CATEGORY_TYPE_COLORS } from "../../constants/categoryTypes";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
@@ -130,9 +130,10 @@ const ProductList = () => {
       </Box>
     )},
     { key: "categoryType", label: "Type", render: (val) => {
-      const info = PRODUCT_TYPE_DISPLAY[val];
-      return info ? (
-        <Chip label={info.label} size="small" sx={{ backgroundColor: `${info.color}15`, color: info.color, fontWeight: 500, fontSize: "0.7rem" }} />
+      const typeDef = CATEGORY_TYPES.find(c => c.value === val);
+      const color = typeDef ? (CATEGORY_TYPE_COLORS[val] || "var(--color-admin-primary)") : "var(--color-admin-muted)";
+      return typeDef ? (
+        <Chip label={typeDef.label} size="small" sx={{ backgroundColor: `${color}15`, color: color, fontWeight: 500, fontSize: "0.7rem" }} />
       ) : val;
     }},
     { key: "price", label: "Price", render: (val, row) => (
