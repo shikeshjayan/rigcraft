@@ -16,6 +16,7 @@ export const list = async (query) => {
     category,
     brand,
     productType,
+    categoryType,
     status,
     minPrice,
     maxPrice,
@@ -29,6 +30,7 @@ export const list = async (query) => {
   if (category) filter.category = category;
   if (brand) filter.brand = brand;
   if (productType) filter.productType = productType;
+  if (categoryType) filter.categoryType = categoryType;
   if (status) filter.status = status;
   if (isFeatured !== undefined) filter.isFeatured = isFeatured === "true";
 

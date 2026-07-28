@@ -7,8 +7,6 @@ import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
 import SmartToyIcon from '@mui/icons-material/SmartToy'; // Fallback icon
 import apiClient from '../api/client';
-import { allPCs } from '../data/mockData';
-import { allItems } from '../data/items';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
@@ -62,11 +60,11 @@ const Chatbot = () => {
           const productsArray = productsRes.data?.data?.docs || productsRes.data?.data || [];
           const prebuiltsArray = prebuiltsRes.data?.data?.docs || prebuiltsRes.data?.data || [];
           
-          // Map to minimize tokens and link to mock IDs for the detail page
+          // Map to minimize tokens
           const products = productsArray.map(p => {
-            const mockMatch = allItems.find(m => m.title.toLowerCase() === p.name.toLowerCase());
             return {
-              id: mockMatch ? mockMatch.id : p._id,
+              id: p._id,
+              type: 'product',
               name: p.name,
               category: p.category?.name || 'Unknown',
               price: p.price,
@@ -76,9 +74,9 @@ const Chatbot = () => {
           });
           
           const prebuilts = prebuiltsArray.map(p => {
-            const mockMatch = allPCs.find(m => m.title.toLowerCase() === p.name.toLowerCase());
             return {
-              id: mockMatch ? mockMatch.id : p._id,
+              id: p._id,
+              type: 'prebuilt',
               name: p.name,
               price: p.price,
               category: p.category?.name || 'Prebuilt',
@@ -315,7 +313,7 @@ User: ${userText}`;
                                   key={p.id}
                                   onClick={() => {
                                     setIsOpen(false);
-                                    navigate(`/detail/${p.id}`);
+                                    navigate(`/detail/${p.id}?type=${p.type}`);
                                   }}
                                   className="bg-white text-[var(--color-primary)] border border-white rounded-md py-2 px-3 text-xs font-bold hover:bg-gray-100 transition-colors text-left truncate flex items-center justify-between"
                                 >

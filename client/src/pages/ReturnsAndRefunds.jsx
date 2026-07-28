@@ -1,5 +1,6 @@
 import React from 'react';
 import FadeUp from '../components/FadeUp';
+import Breadcrumb from '../components/Breadcrumb';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
 import ReplyAllIcon from '@mui/icons-material/ReplyAll';
 import ComputerIcon from '@mui/icons-material/Computer';
@@ -11,6 +12,7 @@ const ReturnsAndRefunds = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Returns & Refunds' }]} />
         <FadeUp>
           {/* Header */}
           <div className="text-center mb-16">

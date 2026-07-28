@@ -1,10 +1,12 @@
 import React from 'react';
 import { motion } from 'framer-motion';
+import Breadcrumb from '../components/Breadcrumb';
 
 const PrivacyPolicy = () => {
   return (
-    <div className="min-h-screen bg-[var(--color-bg-primary)] pt-16 pb-24">
+    <div className="w-full min-h-screen bg-[var(--color-bg-primary)] pt-16 pb-24">
       <div className="max-w-4xl mx-auto px-6">
+        <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Privacy Policy' }]} />
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}

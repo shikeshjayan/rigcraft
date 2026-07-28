@@ -46,9 +46,11 @@ const AdminInput = ({ label, error, helperText, type, inputProps, InputLabelProp
       variant="outlined"
       type={type}
       focused={focused}
-      inputProps={mergedInputProps}
-      InputLabelProps={mergedInputLabelProps}
-      InputProps={mergedInputWrapperProps}
+      slotProps={{
+        htmlInput: mergedInputProps,
+        inputLabel: mergedInputLabelProps,
+        input: mergedInputWrapperProps,
+      }}
       onKeyDown={handleKeyDown}
       onChange={handleChange}
       onBlur={onBlur}

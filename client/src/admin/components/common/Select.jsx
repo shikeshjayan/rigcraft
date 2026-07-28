@@ -11,8 +11,10 @@ const AdminSelect = ({ label, options, value, onChange, error, helperText, place
       error={error}
       helperText={helperText}
       variant="outlined"
-      SelectProps={{ displayEmpty: true }}
-      InputLabelProps={{ shrink: !!value || !!placeholder || undefined }}
+      slotProps={{
+        select: { displayEmpty: true },
+        inputLabel: { shrink: !!value || !!placeholder || undefined },
+      }}
       sx={{
         "& .MuiOutlinedInput-root": {
           borderRadius: "var(--radius-admin-input)",

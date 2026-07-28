@@ -9,7 +9,7 @@ const normalizeProduct = (p) => ({
   __v: undefined,
   brandId: p.brand?.toString ? p.brand.toString() : p.brand,
   categoryId: p.category?.toString ? p.category.toString() : p.category,
-  categoryType: p.productType || p.categoryType,
+  categoryType: p.categoryType || p.productType,
   isActive: p.status === "active",
   comparePrice: p.salePrice ?? p.comparePrice ?? null,
   length: p.dimensions?.length,
@@ -40,7 +40,7 @@ const adaptParams = (params) => {
   p.page = (p.page || 0) + 1;
   p.limit = p.pageSize;
   delete p.pageSize;
-  if (p.categoryType) { p.productType = CATEGORY_TO_PRODUCT_TYPE[p.categoryType] || "component"; delete p.categoryType; }
+  if (p.categoryType) { p.productType = CATEGORY_TO_PRODUCT_TYPE[p.categoryType] || "component"; }
   if (p.brandId) { p.brand = p.brandId; delete p.brandId; }
   if (p.isActive === "true") { p.status = "active"; delete p.isActive; }
   else if (p.isActive === "false") { p.status = "draft"; delete p.isActive; }
@@ -59,7 +59,7 @@ const CATEGORY_TO_PRODUCT_TYPE = {
 const adaptPayload = (data) => {
   const p = { ...data };
   if (p.isActive !== undefined) { p.status = p.isActive ? "active" : "draft"; delete p.isActive; }
-  if (p.categoryType) { p.productType = CATEGORY_TO_PRODUCT_TYPE[p.categoryType] || "component"; delete p.categoryType; }
+  if (p.categoryType) { p.productType = CATEGORY_TO_PRODUCT_TYPE[p.categoryType] || "component"; }
   if (p.brandId) { p.brand = p.brandId; delete p.brandId; }
   if (p.categoryId) { p.category = p.categoryId; delete p.categoryId; }
   if (p.comparePrice !== undefined) { if (p.comparePrice) p.salePrice = p.comparePrice; delete p.comparePrice; }
@@ -67,9 +67,17 @@ const adaptPayload = (data) => {
     p.dimensions = { length: p.length, width: p.width, height: p.height };
     delete p.length; delete p.width; delete p.height;
   }
+  if (typeof p.tags === "string") {
+    p.tags = p.tags.split(",").map(t => t.trim()).filter(Boolean);
+  }
   if (Array.isArray(p.specifications)) {
     p.specifications = Object.fromEntries(
       p.specifications.filter((s) => s.key).map((s) => [s.key, s.value])
+    );
+  }
+  if (Array.isArray(p.compatibility)) {
+    p.compatibility = Object.fromEntries(
+      p.compatibility.filter((c) => c.key).map((c) => [c.key, c.value])
     );
   }
   delete p.id;

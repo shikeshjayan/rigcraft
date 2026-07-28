@@ -185,12 +185,14 @@ const Sidebar = ({ open, onClose, collapsed, onToggleCollapse }) => {
         anchor="left"
         open={open}
         onClose={onClose}
-        PaperProps={{
-          sx: {
-            width: SIDEBAR_EXPANDED,
-            backgroundColor: "transparent",
-            border: "none",
-          },
+        slotProps={{
+          paper: {
+            sx: {
+              width: SIDEBAR_EXPANDED,
+              backgroundColor: "transparent",
+              border: "none",
+            },
+          }
         }}
       >
         {sidebarContent}

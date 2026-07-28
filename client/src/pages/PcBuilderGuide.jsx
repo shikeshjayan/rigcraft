@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import FadeUp from '../components/FadeUp';
+import Breadcrumb from '../components/Breadcrumb';
 import MemoryIcon from '@mui/icons-material/Memory';
 import ExtensionIcon from '@mui/icons-material/Extension';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
@@ -15,6 +16,7 @@ const PcBuilderGuide = () => {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
+        <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'PC Builder Guide' }]} />
         <FadeUp>
           {/* Header */}
           <div className="text-center mb-16 relative">
