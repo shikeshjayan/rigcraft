@@ -21,4 +21,9 @@ export const wishlistService = {
     const { data } = await api.delete(ENDPOINTS.WISHLIST.CLEAR);
     return data;
   },
+
+  moveToCart: async (itemId) => {
+    const { data } = await api.post(ENDPOINTS.WISHLIST.MOVE_TO_CART(itemId));
+    return data;
+  },
 };
