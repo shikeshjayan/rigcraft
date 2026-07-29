@@ -23,8 +23,9 @@ import {
   Notifications as NotificationsIcon,
 } from "@mui/icons-material";
 import useAuthStore from "../../store/authStore";
+import useNotificationStore from "../../store/notificationStore";
 import { SIDEBAR_SECTIONS } from "../../constants/sidebar";
-import { notificationService } from "../../services/notificationService";
+import { settingsService } from "../../services/settingsService";
 
 const iconMap = {
   Dashboard: DashboardIcon,
@@ -125,11 +126,17 @@ const Sidebar = ({ open, onClose, collapsed, onToggleCollapse }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { user, logout } = useAuthStore();
-  const [notifCount, setNotifCount] = useState(0);
+  const notifCount = useNotificationStore((s) => s.unreadCount);
   const [activeSection, setActiveSection] = useState("Catalog");
+  const [brand, setBrand] = useState({ storeName: "RigCraft", logo: null });
 
   useEffect(() => {
-    notificationService.getUnreadCount().then(setNotifCount).catch(() => {});
+    settingsService.get().then((data) => {
+      setBrand({
+        storeName: data.storeName || "RigCraft",
+        logo: data.logo?.url ? data.logo : null,
+      });
+    }).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -159,17 +166,27 @@ const Sidebar = ({ open, onClose, collapsed, onToggleCollapse }) => {
   const sidebarContent = (
     <div className="flex flex-col h-full transition-all duration-300" style={{ backgroundColor: "var(--color-admin-sidebar)" }}>
       <div className={`flex items-center gap-3 px-6 py-5 ${collapsed ? "justify-center px-0" : ""}`} style={{ borderBottom: "1px solid var(--color-admin-divider)" }}>
-        <div
-          className="w-8 h-8 flex items-center justify-center text-white font-extrabold text-sm flex-shrink-0 animate-admin-pulse-glow"
-          style={{ borderRadius: "var(--radius-admin-button)" }}
-          style={{ background: "linear-gradient(135deg, var(--color-admin-primary) 0%, var(--color-admin-primary-light) 100%)" }}
-        >
-          RC
-        </div>
+        {brand.logo?.url ? (
+          <img
+            src={brand.logo.url}
+            alt={brand.storeName}
+            className="w-8 h-8 object-contain flex-shrink-0"
+            style={{ borderRadius: "var(--radius-admin-button)" }}
+          />
+        ) : (
+          <div
+            className="w-8 h-8 flex items-center justify-center text-white font-extrabold text-sm flex-shrink-0"
+            style={{ borderRadius: "var(--radius-admin-button)", background: "linear-gradient(135deg, var(--color-admin-primary) 0%, var(--color-admin-primary-light) 100%)" }}
+          >
+            {brand.storeName ? brand.storeName.trim().split(/\s+/).length >= 2
+              ? (brand.storeName.trim().split(/\s+/)[0][0] + brand.storeName.trim().split(/\s+/)[1][0]).toUpperCase()
+              : brand.storeName.slice(0, 2).toUpperCase()
+              : "RC"}
+          </div>
+        )}
         {!collapsed && (
-          <span className="font-extrabold text-lg">
-            <span style={{ color: "var(--color-admin-primary)" }}>Rig</span>
-            <span style={{ color: "var(--color-admin-white)" }}>Craft</span>
+          <span className="font-extrabold text-lg" style={{ color: "var(--color-admin-white)" }}>
+            {brand.storeName || "RigCraft"}
           </span>
         )}
       </div>

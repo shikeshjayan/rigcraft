@@ -26,6 +26,8 @@ export const ENDPOINTS = {
     UPDATE: (id) => `/admin/deals/${id}`,
     DELETE: (id) => `/admin/deals/${id}`,
     DELETE_ENDED: "/admin/deals",
+    PRODUCTS: "/admin/deals/products",
+    PREBUILT_PCS: "/admin/deals/prebuilt-pcs",
   },
 
   // Dashboard
@@ -222,6 +224,7 @@ export const ENDPOINTS = {
   ADMIN_NOTIFICATION: {
     LIST: "/admin/notifications",
     UNREAD: "/admin/notifications/unread",
+    DETAILS: (id) => `/admin/notifications/${id}`,
     MARK_READ: (id) => `/admin/notifications/${id}/read`,
     MARK_ALL_READ: "/admin/notifications/read-all",
   },

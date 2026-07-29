@@ -3,6 +3,7 @@ import Product from "../models/product.model.js";
 import productRepository from "../repositories/product.repository.js";
 import categoryRepository from "../repositories/category.repository.js";
 import brandRepository from "../repositories/brand.repository.js";
+import { getSettings } from "../models/settings.model.js";
 import ApiError from "../utils/ApiError.js";
 import * as uploadService from "./upload.service.js";
 
@@ -33,6 +34,11 @@ export const list = async (query) => {
   if (categoryType) filter.categoryType = categoryType;
   if (status) filter.status = status;
   if (isFeatured !== undefined) filter.isFeatured = isFeatured === "true";
+
+  const settings = await getSettings();
+  if (settings?.inventory?.hideOutOfStock && !query.status) {
+    filter.stock = { $gt: 0 };
+  }
 
   if (minPrice || maxPrice) {
     filter.price = {};

@@ -48,12 +48,18 @@ const Dashboard = () => {
     fetchData();
   }, []);
 
+  const changeStr = (val) => {
+    const num = val ?? 0;
+    return `${num >= 0 ? "+" : ""}${num}%`;
+  };
+  const isPositive = (val) => (val ?? 0) >= 0;
+
   const statCards = stats
     ? [
-        { title: "Total Revenue", value: formatCurrency(stats.totalRevenue), icon: AttachMoney, change: `${stats.revenueChange >= 0 ? "+" : ""}${stats.revenueChange}%`, changeColor: stats.revenueChange >= 0 ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
-        { title: "Orders", value: stats.totalOrders.toLocaleString(), icon: ShoppingCart, change: `${stats.ordersChange >= 0 ? "+" : ""}${stats.ordersChange}%`, changeColor: stats.ordersChange >= 0 ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
-        { title: "Products", value: stats.totalProducts.toLocaleString(), icon: Inventory, change: `${stats.productsChange >= 0 ? "+" : ""}${stats.productsChange}%`, changeColor: stats.productsChange >= 0 ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
-        { title: "Customers", value: stats.totalCustomers.toLocaleString(), icon: People, change: `${stats.customersChange >= 0 ? "+" : ""}${stats.customersChange}%`, changeColor: stats.customersChange >= 0 ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
+        { title: "Total Revenue", value: formatCurrency(stats.totalRevenue), icon: AttachMoney, change: changeStr(stats.revenueChange), changeColor: isPositive(stats.revenueChange) ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
+        { title: "Orders", value: stats.totalOrders.toLocaleString(), icon: ShoppingCart, change: changeStr(stats.ordersChange), changeColor: isPositive(stats.ordersChange) ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
+        { title: "Products", value: stats.totalProducts.toLocaleString(), icon: Inventory, change: changeStr(stats.productsChange), changeColor: isPositive(stats.productsChange) ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
+        { title: "Customers", value: stats.totalCustomers.toLocaleString(), icon: People, change: changeStr(stats.customersChange), changeColor: isPositive(stats.customersChange) ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
       ]
     : [];
 

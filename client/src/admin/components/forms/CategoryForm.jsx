@@ -26,7 +26,7 @@ const CategoryForm = ({ defaultValues, onSubmit, loading, categories = [], submi
       description: "",
       parentId: "",
       isActive: true,
-      order: 0,
+      order: "",
       image: null,
       ...defaultValues,
     },

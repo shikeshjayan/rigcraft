@@ -24,12 +24,14 @@ import Cart from "../src/models/cart.model.js";
 import SavedBuild from "../src/models/saved-build.model.js";
 import Settings from "../src/models/settings.model.js";
 import BuildSetting from "../src/models/build-setting.model.js";
+import FAQ from "../src/models/faq.model.js";
 
 import categories from "./data/categories.js";
 import brands from "./data/brands.js";
 import productsData from "./data/products.js";
 import prebuiltPcsData from "./data/prebuilt-pcs.js";
 import couponsData from "./data/coupons.js";
+import faqsData from "./data/faqs.js";
 
 // ───────────────────────────────────────────
 //   Helpers
@@ -152,6 +154,11 @@ async function seed() {
   console.log("  Seeding BuildSetting...");
   await BuildSetting.create({ enabled: true });
   summary.push(["Build Settings", 1]);
+
+    // ── 2a. FAQs ──
+  console.log("  Seeding FAQs...");
+  const faqDocs = await FAQ.create(faqsData);
+  summary.push(["FAQs", faqDocs.length]);
 
   // ── 3. Categories ──
   console.log("  Seeding Categories...");

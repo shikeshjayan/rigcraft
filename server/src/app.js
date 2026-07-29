@@ -17,7 +17,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const uploadsDir =
   process.env.VERCEL_ENV === "production"
     ? path.resolve("/tmp", "uploads")
-    : path.resolve(__dirname, "uploads");
+    : path.resolve(__dirname, "../uploads");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
@@ -43,6 +43,7 @@ import faqRoutes, { adminFaqRoutes } from "./routes/faq.routes.js";
 import newsletterRoutes from "./routes/newsletter.routes.js";
 import notificationRoutes, { adminNotificationRoutes } from "./routes/notification.routes.js";
 import errorHandler from "./middlewares/error.js";
+import maintenanceMode from "./middlewares/maintenanceMode.js";
 
 const { configureCloudinary } = await import("./config/cloudinary.js");
 configureCloudinary();
@@ -58,6 +59,8 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use("/uploads", express.static(uploadsDir));
+
+app.use(maintenanceMode);
 
 app.get("/", (req, res) => {
   res.send("Welcome to the RigCraft E-commerce API!");

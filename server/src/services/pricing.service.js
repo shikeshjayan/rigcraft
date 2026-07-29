@@ -44,6 +44,7 @@ export const calculateShipping = (
 
 export const calculateTax = (amount, settings) => {
   if (!settings.tax || !settings.tax.rate) return 0;
+  if (settings.tax.pricesIncludeTax) return 0;
   return Math.round(amount * settings.tax.rate * 100) / 100;
 };
 

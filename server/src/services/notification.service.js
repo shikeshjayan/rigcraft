@@ -109,8 +109,20 @@ export const markAllAsRead = async (userId) => {
   return notificationRepository.markAllAsRead(userId);
 };
 
+export const adminMarkAsRead = async (notificationId) => {
+  return notificationRepository.markAsRead(notificationId);
+};
+
 export const markAllAdminAsRead = async (role) => {
   return notificationRepository.markAllAsReadByRole(role);
+};
+
+export const getNotificationById = async (notificationId) => {
+  return notificationRepository.findById(notificationId);
+};
+
+export const getAdminNotificationById = async (notificationId) => {
+  return notificationRepository.findById(notificationId);
 };
 
 export const deleteNotification = async (notificationId, userId) => {
