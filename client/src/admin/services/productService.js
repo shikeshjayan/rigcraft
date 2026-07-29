@@ -1,29 +1,43 @@
 import api from "../../shared/api/axios";
 import { ENDPOINTS } from "../../shared/api/endpoints";
 import { toFormData } from "../../shared/utils/formDataHelper";
+import { SPEC_TEMPLATES } from "../constants/compatibilityFields";
+
+const SPEC_LABEL_MAP = {};
+Object.values(SPEC_TEMPLATES).forEach((templates) => {
+  templates.forEach(({ key, label }) => {
+    SPEC_LABEL_MAP[key] = label;
+  });
+});
 
 const normalizeProduct = (p) => ({
   ...p,
   id: p._id,
+  _id: undefined,
   _id: undefined,
   __v: undefined,
   brandId: p.brand?.toString ? p.brand.toString() : p.brand,
   categoryId: p.category?.toString ? p.category.toString() : p.category,
   categoryType: p.categoryType || p.productType,
   isActive: p.status === "active",
-  comparePrice: p.salePrice ?? p.comparePrice ?? null,
+  regularPrice: p.price ?? p.regularPrice ?? 0,
+  salePrice: p.salePrice ?? p.salePrice ?? null,
+  saleStart: p.saleStart || "",
+  saleEnd: p.saleEnd || "",
   length: p.dimensions?.length,
   width: p.dimensions?.width,
   height: p.dimensions?.height,
+  warrantyDuration: p.warranty?.duration ?? 0,
+  warrantyUnit: p.warranty?.unit || "month",
+  warrantyType: p.warranty?.type || "manufacturer",
   specifications: p.specifications
-    ? Object.entries(p.specifications).map(([key, value]) => ({ key, value, label: "" }))
+    ? Object.entries(p.specifications).map(([key, value]) => ({ key, value, label: SPEC_LABEL_MAP[key] || "" }))
     : [],
   brand: undefined,
   category: undefined,
   dimensions: undefined,
   productType: undefined,
   status: undefined,
-  salePrice: undefined,
 });
 
 const normalizeList = (res) => {
@@ -62,7 +76,8 @@ const adaptPayload = (data) => {
   if (p.categoryType) { p.productType = CATEGORY_TO_PRODUCT_TYPE[p.categoryType] || "component"; }
   if (p.brandId) { p.brand = p.brandId; delete p.brandId; }
   if (p.categoryId) { p.category = p.categoryId; delete p.categoryId; }
-  if (p.comparePrice !== undefined) { if (p.comparePrice) p.salePrice = p.comparePrice; delete p.comparePrice; }
+  if (p.salePrice !== undefined || p.salePrice === 0) { /* keep salePrice as-is */ }
+  if (p.regularPrice !== undefined) { p.price = p.regularPrice; delete p.regularPrice; }
   if (p.length !== undefined || p.width !== undefined || p.height !== undefined) {
     p.dimensions = { length: p.length, width: p.width, height: p.height };
     delete p.length; delete p.width; delete p.height;
@@ -72,7 +87,9 @@ const adaptPayload = (data) => {
   }
   if (Array.isArray(p.specifications)) {
     p.specifications = Object.fromEntries(
-      p.specifications.filter((s) => s.key).map((s) => [s.key, s.value])
+      p.specifications
+        .filter((s) => s.key || s.label)
+        .map((s) => [s.key || s.label.toLowerCase().replace(/\s+/g, "_"), s.value])
     );
   }
   if (Array.isArray(p.compatibility)) {
@@ -80,6 +97,20 @@ const adaptPayload = (data) => {
       p.compatibility.filter((c) => c.key).map((c) => [c.key, c.value])
     );
   }
+  if (p.warrantyDuration !== undefined || p.warrantyUnit !== undefined || p.warrantyType !== undefined) {
+    p.warranty = {
+      duration: p.warrantyDuration ?? 0,
+      unit: p.warrantyUnit || "month",
+      type: p.warrantyType || "manufacturer",
+    }
+    delete p.warrantyDuration;
+    delete p.warrantyUnit;
+    delete p.warrantyType;
+  }
+  if (p.saleStart) p.saleStart = new Date(p.saleStart).toISOString();
+  else delete p.saleStart;
+  if (p.saleEnd) p.saleEnd = new Date(p.saleEnd).toISOString();
+  else delete p.saleEnd;
   delete p.id;
   delete p._id;
   return p;

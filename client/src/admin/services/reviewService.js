@@ -6,7 +6,7 @@ const normalizeReview = (r) => ({
   id: r._id,
   _id: undefined,
   __v: undefined,
-  status: r.isVisible ? "approved" : r.status === "hidden" ? "hidden" : "pending",
+  status: r.status || "pending",
   product: r.item
     ? { id: r.item._id || r.item, name: r.item?.name || r.item?.title || "Unknown Product" }
     : r.product || { id: "", name: "Unknown Product" },
@@ -16,7 +16,6 @@ const normalizeReview = (r) => ({
         name: r.user.name || `${r.user.firstName || ""} ${r.user.lastName || ""}`.trim() || "Unknown",
       }
     : r.customer || { name: "Unknown" },
-  isVisible: undefined,
   item: undefined,
   itemModel: undefined,
   user: undefined,
@@ -37,7 +36,7 @@ export const reviewService = {
       page: page + 1,
       limit: pageSize,
       search: search || undefined,
-      status: status === "approved" ? "visible" : status === "pending" ? "hidden" : status || undefined,
+      status: status || undefined,
       rating: rating || undefined,
     };
     Object.keys(params).forEach((k) => params[k] === undefined && delete params[k]);
@@ -51,8 +50,7 @@ export const reviewService = {
   },
 
   updateStatus: async (id, status) => {
-    const backendStatus = status === "approved" ? "visible" : status === "hidden" ? "hidden" : "hidden";
-    const { data } = await api.patch(ENDPOINTS.ADMIN_REVIEW.UPDATE_STATUS(id), { status: backendStatus });
+    const { data } = await api.patch(ENDPOINTS.ADMIN_REVIEW.UPDATE_STATUS(id), { status });
     return normalizeReview(data.data);
   },
 

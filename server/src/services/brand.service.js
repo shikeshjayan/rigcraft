@@ -25,8 +25,13 @@ export const create = async (data, file) => {
 };
 
 export const update = async (id, data, file) => {
+  const existing = await brandRepository.findById(id);
+
+  if (data.logo === null && existing.logo?.publicId) {
+    await uploadService.deleteImage(existing.logo.publicId);
+  }
+
   if (file) {
-    const existing = await brandRepository.findById(id);
     const logo = await uploadService.replaceImage(
       existing.logo?.publicId,
       file,

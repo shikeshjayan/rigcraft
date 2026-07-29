@@ -29,10 +29,16 @@ const normalizePrebuilt = (p) => ({
   id: p._id,
   _id: undefined,
   __v: undefined,
-  price: p.pricing?.price ?? p.price,
-  comparePrice: p.pricing?.salePrice ?? p.comparePrice ?? null,
+  regularPrice: p.price ?? p.regularPrice ?? 0,
+  salePrice: p.salePrice ?? p.salePrice ?? null,
+  saleStart: p.saleStart || "",
+  saleEnd: p.saleEnd || "",
   isActive: p.status === "active",
   isFeatured: p.isFeatured ?? false,
+  category: p.category || "",
+  warrantyDuration: p.warranty?.duration ?? 0,
+  warrantyUnit: p.warranty?.unit || "month",
+  warrantyType: p.warranty?.type || "manufacturer",
   image: p.images?.[0]?.url || null,
   images: p.images || [],
   components: Array.isArray(p.components)
@@ -65,11 +71,27 @@ const adaptParams = (params) => {
 const adaptPayload = (data) => {
   const p = { ...data };
   if (p.isActive !== undefined) { p.status = p.isActive ? "active" : "draft"; delete p.isActive; }
-  if (p.comparePrice !== undefined) {
+  if (!p.category) delete p.category;
+  if (p.warrantyDuration !== undefined || p.warrantyUnit !== undefined || p.warrantyType !== undefined) {
+    p.warranty = {
+      duration: p.warrantyDuration ?? 0,
+      unit: p.warrantyUnit || "month",
+      type: p.warrantyType || "manufacturer",
+    };
+    delete p.warrantyDuration;
+    delete p.warrantyUnit;
+    delete p.warrantyType;
+  }
+  if (p.regularPrice !== undefined || p.salePrice !== undefined || p.saleStart !== undefined || p.saleEnd !== undefined) {
     p.pricing = { price: p.price };
-    if (p.comparePrice) p.pricing.salePrice = p.comparePrice;
+    if (p.salePrice !== undefined) p.pricing.salePrice = p.salePrice;
+    if (p.saleStart) p.pricing.saleStart = new Date(p.saleStart).toISOString();
+    if (p.saleEnd) p.pricing.saleEnd = new Date(p.saleEnd).toISOString();
     delete p.price;
-    delete p.comparePrice;
+    delete p.regularPrice;
+    delete p.salePrice;
+    delete p.saleStart;
+    delete p.saleEnd;
   }
   if (p.components && typeof p.components === "object" && !Array.isArray(p.components)) {
     p.components = Object.entries(p.components)

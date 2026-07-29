@@ -136,14 +136,14 @@ const ProductList = () => {
         <Chip label={typeDef.label} size="small" sx={{ backgroundColor: `${color}15`, color: color, fontWeight: 500, fontSize: "0.7rem" }} />
       ) : val;
     }},
-    { key: "price", label: "Price", render: (val, row) => (
-      <Box>
-        <Box sx={{ fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{formatCurrency(val)}</Box>
-        {row.comparePrice && (
-          <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)", textDecoration: "line-through" }}>{formatCurrency(row.comparePrice)}</Box>
-        )}
-      </Box>
-    )},
+{ key: "price", label: "Regular Price", render: (val, row) => (
+       <Box>
+         <Box sx={{ fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{formatCurrency(val)}</Box>
+         {row.salePrice && (
+           <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)", textDecoration: "line-through" }}>{formatCurrency(row.salePrice)}</Box>
+         )}
+       </Box>
+     )},
     { key: "stock", label: "Stock", align: "center", render: (val) => (
       <Chip label={val} size="small" color={val === 0 ? "error" : val < 10 ? "warning" : "default"} variant="outlined" sx={{ fontSize: "0.75rem" }} />
     )},

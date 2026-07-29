@@ -46,6 +46,13 @@ export const getWishlist = async (userId) => {
   return wishlist;
 };
 
+export const adminGetUserWishlist = async (userId) => {
+  let wishlist = await wishlistRepository.findByUser(userId);
+  if (!wishlist) return { user: userId, items: [] };
+  await wishlist.populate("items.item");
+  return wishlist;
+};
+
 export const addToWishlist = async (userId, { itemType, itemId }) => {
   const resolved = await resolveItem(itemType, itemId);
 

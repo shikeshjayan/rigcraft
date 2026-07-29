@@ -117,9 +117,16 @@ export const ENDPOINTS = {
   // Users
   USER: {
     LIST: "/users",
+    CREATE: "/users",
     DETAILS: (id) => `/users/${id}`,
     UPDATE: (id) => `/users/${id}`,
     DELETE: (id) => `/users/${id}`,
+    TOGGLE_BLOCK: (id) => `/users/${id}/block`,
+    ORDERS: (id) => `/users/${id}/orders`,
+    ADDRESSES: (id) => `/users/${id}/addresses`,
+    REVIEWS: (id) => `/users/${id}/reviews`,
+    WISHLIST: (id) => `/users/${id}/wishlist`,
+    BUILDS: (id) => `/users/${id}/builds`,
   },
 
   // Uploads
@@ -131,6 +138,7 @@ export const ENDPOINTS = {
   SETTINGS: {
     GET: "/settings",
     UPDATE: "/settings",
+    PUBLIC: "/settings/public",
   },
 
   // Newsletter

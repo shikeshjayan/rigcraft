@@ -382,6 +382,25 @@ export const adminGetAllOrders = async (query = {}) => {
   };
 };
 
+export const adminGetUserOrders = async (userId, query = {}) => {
+  const { page = 1, limit = 20, sort = { createdAt: -1 } } = query;
+
+  const skip = (page - 1) * limit;
+  const [orders, total] = await Promise.all([
+    Order.find({ user: userId })
+      .sort(sort)
+      .skip(skip)
+      .limit(Number(limit))
+      .populate("items.item", "name image"),
+    Order.countDocuments({ user: userId }),
+  ]);
+
+  return {
+    orders,
+    pagination: { page: Number(page), limit: Number(limit), total, pages: Math.ceil(total / Number(limit)) },
+  };
+};
+
 export const adminGetOrder = async (orderId) => {
   const order = await Order.findById(orderId).populate(
     "user",

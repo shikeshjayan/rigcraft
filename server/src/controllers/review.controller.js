@@ -61,9 +61,11 @@ export const adminGetReview = asyncHandler(async (req, res) => {
 
 export const adminUpdateStatus = asyncHandler(async (req, res) => {
   const review = await reviewService.adminUpdateStatus(req.params.id, req.body.status);
-  const msg = review.isVisible
-    ? "Review is now visible"
-    : "Review has been hidden";
+  const msg = review.status === "approved"
+    ? "Review approved"
+    : review.status === "rejected"
+      ? "Review rejected"
+      : "Review status updated";
   ApiResponse.ok(review, msg).send(res);
 });
 

@@ -125,19 +125,28 @@ export const update = async (id, data, files) => {
   }
 
   if (files && files.length > 0) {
+    // Images the frontend sent back to keep (existing images user chose to retain)
+    const keptImages = data.images || [];
+    const keepPublicIds = new Set(keptImages.map((img) => img.publicId).filter(Boolean));
+
+    // Delete only removed images from Cloudinary
     for (const img of product.images) {
-      if (img.publicId) {
+      if (img.publicId && !keepPublicIds.has(img.publicId)) {
         await uploadService.deleteImage(img.publicId);
       }
     }
 
-    const images = await uploadService.uploadMultipleImages(files, FOLDER);
-    data.images = images.map((img, i) => ({
+    // Upload new images
+    const uploaded = await uploadService.uploadMultipleImages(files, FOLDER);
+    const newImages = uploaded.map((img) => ({
       ...img,
       alt: data.name || product.name,
-      isPrimary: i === 0,
     }));
-  } else {
+
+    // Merge kept existing + new uploads
+    data.images = [...keptImages, ...newImages];
+    if (data.images.length > 0) data.images[0].isPrimary = true;
+  } else if (data.images === undefined) {
     delete data.images;
   }
 
