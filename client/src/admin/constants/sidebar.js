@@ -54,6 +54,12 @@ export const SIDEBAR_SECTIONS = [
         icon: "Discount",
         roles: ["super_admin", "admin"],
       },
+      {
+        label: "Deals",
+        path: "/admin/deals",
+        icon: "Campaign",
+        roles: ["super_admin", "admin", "manager"],
+      },
     ],
   },
   {
@@ -65,23 +71,6 @@ export const SIDEBAR_SECTIONS = [
         icon: "Campaign",
         roles: ["super_admin", "admin", "manager"],
       },
-    ],
-  },
-  {
-    section: "Customers",
-    items: [
-      {
-        label: "Users",
-        path: "/admin/users",
-        icon: "People",
-        roles: ["super_admin"],
-      },
-      {
-        label: "Customers",
-        path: "/admin/users",
-        icon: "People",
-        roles: ["admin"],
-      },
       {
         label: "Reviews",
         path: "/admin/reviews",
@@ -91,8 +80,42 @@ export const SIDEBAR_SECTIONS = [
     ],
   },
   {
-    section: null,
+    section: "Customers",
     items: [
+      {
+        label: "Users",
+        path: "/admin/users",
+        icon: "People",
+        roles: ["super_admin", "admin"],
+      },
+    ],
+  },
+  {
+    section: "Support",
+    items: [
+      {
+        label: "Tickets",
+        path: "/admin/support",
+        icon: "HeadsetMic",
+        roles: ["super_admin", "admin", "manager"],
+      },
+      {
+        label: "FAQs",
+        path: "/admin/faqs",
+        icon: "QuestionAnswer",
+        roles: ["super_admin", "admin", "manager"],
+      },
+    ],
+  },
+  {
+    section: "System",
+    items: [
+      {
+        label: "Notifications",
+        path: "/admin/notifications",
+        icon: "Notifications",
+        roles: ["super_admin", "admin", "manager"],
+      },
       {
         label: "Settings",
         path: "/admin/settings",

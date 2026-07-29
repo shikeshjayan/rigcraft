@@ -16,9 +16,12 @@ const ComponentSelector = ({ open, onClose, onSelect, categoryType, excludeIds =
       setLoading(true);
       productService.list({ page: 0, pageSize: 50, categoryType, search })
         .then((res) => {
+          console.log("Response from productService.list:", res);
           setProducts(res.data.filter((p) => !excludeIds.includes(p.id)));
         })
-        .catch(() => {})
+        .catch((err) => {
+          console.error("Error fetching products:", err);
+        })
         .finally(() => setLoading(false));
     }
   }, [open, categoryType, search, excludeIds]);

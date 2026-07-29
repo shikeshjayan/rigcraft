@@ -205,6 +205,17 @@ async function seed() {
 
   // ── 6. Products ──
   console.log("  Seeding Products...");
+  const COMPONENT_TYPE_TO_CATEGORY_TYPE = {
+    cpu: "processor",
+    gpu: "graphics_card",
+    motherboard: "motherboard",
+    ram: "memory",
+    storage: "storage",
+    psu: "power_supply",
+    cabinet: "case",
+    cooler: "cooling",
+    accessory: "accessories",
+  };
   const productPayloads = productsData.map((p) => {
     const slug = slugify(p.name, { lower: true, strict: true });
     return {
@@ -212,6 +223,7 @@ async function seed() {
       slug,
       sku: p.sku,
       productType: "component",
+      categoryType: COMPONENT_TYPE_TO_CATEGORY_TYPE[p.componentType] || "",
       category: catMap.get(p.categoryName),
       brand: brandMap.get(p.brandName),
       shortDescription: p.shortDescription,
@@ -223,7 +235,6 @@ async function seed() {
       isFeatured: p.isFeatured ?? false,
       featuredOrder: p.featuredOrder || 0,
       status: p.status,
-      componentType: p.componentType,
       images: [{
         url: `${IMGBASE}/${slug}/400/400`,
         publicId: null,

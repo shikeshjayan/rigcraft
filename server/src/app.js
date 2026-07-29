@@ -14,8 +14,13 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const uploadsDir = path.resolve(__dirname, "../uploads");
-fs.mkdirSync(uploadsDir, { recursive: true });
+const uploadsDir =
+  process.env.VERCEL_ENV === "production"
+    ? path.resolve("/tmp", "uploads")
+    : path.resolve(__dirname, "uploads");
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 import authRoutes from "./routes/auth.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
 import brandRoutes from "./routes/brand.routes.js";

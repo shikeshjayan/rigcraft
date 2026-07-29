@@ -1,8 +1,8 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box, Chip, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, MenuItem, Typography,
+  TextField, MenuItem, Typography, Tabs, Tab,
 } from "@mui/material";
 import { Add as AddIcon } from "@mui/icons-material";
 import DataTable from "../../components/tables/DataTable";
@@ -40,6 +40,10 @@ const UserList = () => {
   const [creating, setCreating] = useState(false);
   const [form, setForm] = useState({ firstName: "", lastName: "", email: "", password: "", phone: "", role: "customer" });
 
+  const ROLE_TABS = ["All", "Customers", "Admins", "Managers"];
+  const ROLE_FILTER = ["", "customer", "admin", "manager"];
+  const [roleTab, setRoleTab] = useState(0);
+
   const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
@@ -55,23 +59,13 @@ const UserList = () => {
 
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
-  const { staff, customers } = useMemo(() => {
-    const staff = users.filter((u) => u.role === "admin" || u.role === "manager");
-    const customers = users.filter((u) => u.role === "customer");
-    return { staff, customers };
-  }, [users]);
+  const handleTabChange = (_, v) => {
+    setRoleTab(v);
+    setFilters((prev) => ({ ...prev, role: ROLE_FILTER[v] }));
+    setPage(0);
+  };
 
   const filterOptions = [
-    {
-      key: "role",
-      label: "Role",
-      options: [
-        { value: "", label: "All" },
-        { value: "customer", label: "Customer" },
-        { value: "admin", label: "Admin" },
-        { value: "manager", label: "Manager" },
-      ],
-    },
     {
       key: "status",
       label: "Status",
@@ -134,42 +128,26 @@ const UserList = () => {
         onAdd={() => setCreateOpen(true)}
         addLabel="New User"
       />
+      <Box sx={{ px: 3 }}>
+        <Tabs
+          value={roleTab}
+          onChange={handleTabChange}
+          sx={{
+            minHeight: 40,
+            "& .MuiTab-root": { textTransform: "none", fontWeight: 600, fontSize: "0.8125rem", minHeight: 40, py: 0.75, color: "var(--color-admin-text-secondary)", "&.Mui-selected": { color: "var(--color-admin-primary) !important" } },
+            "& .MuiTabs-indicator": { backgroundColor: "var(--color-admin-primary)" },
+          }}
+        >
+          {ROLE_TABS.map((label) => <Tab key={label} label={label} />)}
+        </Tabs>
+      </Box>
+
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
 
-      {staff.length > 0 && (
-        <Box sx={{ px: 4, pt: 3, pb: 1 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "var(--color-admin-text)", fontSize: "0.8125rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Staff ({staff.length})
-          </Typography>
-        </Box>
-      )}
-      {staff.length > 0 && (
-        <DataTable
-          columns={columns}
-          rows={staff}
-          loading={false}
-          total={staff.length}
-          page={0}
-          pageSize={staff.length}
-          onPageChange={() => {}}
-          onPageSizeChange={() => {}}
-          onRowClick={(row) => navigate(`/admin/users/${row.id}`)}
-          rowsPerPageOptions={[]}
-          sx={{ mx: 4, mb: 2 }}
-        />
-      )}
-
-      {customers.length > 0 && (
-        <Box sx={{ px: 4, pt: staff.length > 0 ? 1 : 3, pb: 1 }}>
-          <Typography variant="subtitle2" sx={{ fontWeight: 700, color: "var(--color-admin-text)", fontSize: "0.8125rem", textTransform: "uppercase", letterSpacing: "0.05em" }}>
-            Customers ({customers.length})
-          </Typography>
-        </Box>
-      )}
       <DataTable
         columns={columns}
-        rows={customers}
-        loading={loading && users.length === 0}
+        rows={users}
+        loading={loading}
         total={total}
         page={page}
         pageSize={pageSize}
@@ -177,7 +155,7 @@ const UserList = () => {
         onPageSizeChange={setPageSize}
         onRowClick={(row) => navigate(`/admin/users/${row.id}`)}
         rowsPerPageOptions={[10, 25, 50, 100]}
-        sx={{ mx: 4, mb: 3 }}
+        sx={{ mx: 3, mb: 3 }}
       />
 
       <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="sm" fullWidth
