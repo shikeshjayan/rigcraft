@@ -113,7 +113,7 @@ const HeroReview = () => {
   }, [selectedReview]);
 
   return (
-    <section className="w-full py-20 relative" style={{ backgroundColor: 'var(--color-bg-secondary, #F9FAFB)' }}>
+    <section className="w-full py-20 relative" style={{ backgroundColor: 'var(--color-bg-primary, #F9FAFB)' }}>
       <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
         
         {/* Header Section (Centered format) */}

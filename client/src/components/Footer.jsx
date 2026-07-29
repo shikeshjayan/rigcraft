@@ -71,7 +71,7 @@ const Footer = () => {
               />
               <button 
                 type="submit"
-                className="px-6 py-3 bg-[#1E3A8A] text-white font-bold hover:brightness-110 transition-all whitespace-nowrap cursor-pointer"
+                className="px-6 py-3 bg-[var(--color-primary)] border border-white text-white font-bold hover:brightness-110 transition-all whitespace-nowrap cursor-pointer"
                 style={{ borderRadius: '0 var(--radius-sm, 8px) var(--radius-sm, 8px) 0' }}
               >
                 Subscribe
@@ -135,7 +135,7 @@ const Footer = () => {
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Track Order</li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/warranty" className="block w-full">Warranty Claims</Link></li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/returns" className="block w-full">Returns & Refunds</Link></li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Contact Support</li>
+                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/contact" className="block w-full">Contact Support</Link></li>
                 <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/faq" className="block w-full">FAQs</Link></li>
               </ul>
             </div>

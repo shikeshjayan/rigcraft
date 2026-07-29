@@ -134,9 +134,9 @@ const Login = () => {
             <div className="text-center mb-8">
               <div
                 className="w-14 h-14 flex items-center justify-center text-white font-extrabold text-xl mx-auto mb-4 cursor-default animate-admin-float"
-                style={{ borderRadius: "var(--radius-admin-button)" }}
                 style={{
-                   background: "linear-gradient(135deg, var(--color-admin-primary) 0%, var(--color-admin-primary-light) 100%)",
+                  borderRadius: "var(--radius-admin-button)",
+                  background: "linear-gradient(135deg, var(--color-admin-primary) 0%, var(--color-admin-primary-light) 100%)",
                 }}
               >
                 RC

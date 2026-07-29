@@ -35,7 +35,7 @@ const Detail = () => {
       setLoading(true);
       setError(false);
       try {
-        const endpoint = typeParam === 'prebuilt' ? `/prebuilt-pcs/${id}` : `/products/${id}`;
+        const endpoint = typeParam === 'prebuilt' ? `/prebuilt-pcs/${id}` : `/products/slug/${id}`;
         const res = await apiClient.get(endpoint);
         setPc(res.data?.data || res.data);
       } catch (err) {

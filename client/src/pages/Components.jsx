@@ -21,7 +21,7 @@ const Components = () => {
         <Breadcrumb items={breadcrumbItems} />
       </div>
       {/* 1st section: bg-primary */}
-      <FadeUp delay={0.1}><ComponentsHero /></FadeUp>
+      <FadeUp delay={0.1}><ComponentsHero category={category} /></FadeUp>
       
       {/* 2nd section: bg-secondary */}
       <FadeUp delay={0.2}><ComponentsCatalog /></FadeUp>
