@@ -7,6 +7,7 @@ import * as pricingService from "./pricing.service.js";
 import ApiError from "../utils/ApiError.js";
 import { CART_ITEM_TYPES } from "../constants/constants.js";
 import Cart from "../models/cart.model.js";
+import { getSettings } from "../models/settings.model.js";
 
 const ITEM_TYPE_MODEL_MAP = {
   [CART_ITEM_TYPES.PRODUCT]: "Product",
@@ -22,7 +23,9 @@ const resolveItemPrice = async (itemType, itemId, quantity) => {
     if (product.status !== "active") {
       throw ApiError.badRequest("Product is not available");
     }
-    if (product.stock < quantity) {
+    const settings = await getSettings();
+    const allowBackorders = settings?.inventory?.allowBackorders === true;
+    if (!allowBackorders && product.stock < quantity) {
       throw ApiError.badRequest(`Insufficient stock for ${product.name}`);
     }
     effectivePrice =
@@ -42,7 +45,9 @@ const resolveItemPrice = async (itemType, itemId, quantity) => {
     if (prebuilt.status !== "active") {
       throw ApiError.badRequest("Prebuilt PC is not available");
     }
-    if (prebuilt.stock < quantity) {
+    const settings = await getSettings();
+    const allowBackorders = settings?.inventory?.allowBackorders === true;
+    if (!allowBackorders && prebuilt.stock < quantity) {
       throw ApiError.badRequest(`Insufficient stock for ${prebuilt.name}`);
     }
     effectivePrice =
@@ -168,9 +173,12 @@ export const updateQuantity = async (userId, itemId, quantity) => {
   const item = cart.items.id(itemId);
   if (!item) throw ApiError.notFound("Item not found in cart");
 
+  const settings = await getSettings();
+  const allowBackorders = settings?.inventory?.allowBackorders === true;
+
   if (item.itemType === CART_ITEM_TYPES.PRODUCT) {
     const product = await productRepository.findById(item.item);
-    if (product.stock < quantity) {
+    if (!allowBackorders && product.stock < quantity) {
       throw ApiError.badRequest(
         `Insufficient stock. Only ${product.stock} available.`
       );
@@ -179,7 +187,7 @@ export const updateQuantity = async (userId, itemId, quantity) => {
 
   if (item.itemType === CART_ITEM_TYPES.PREBUILT) {
     const prebuilt = await prebuiltPCRepository.findById(item.item);
-    if (prebuilt.stock < quantity) {
+    if (!allowBackorders && prebuilt.stock < quantity) {
       throw ApiError.badRequest(
         `Insufficient stock. Only ${prebuilt.stock} available.`
       );
@@ -315,6 +323,11 @@ export const removeCoupon = async (userId) => {
 export const validateStock = async (userId) => {
   const cart = await getOrCreateCart(userId);
   await cart.populate("items.item");
+
+  const settings = await getSettings();
+  if (settings?.inventory?.allowBackorders === true) {
+    return { valid: true, issues: [] };
+  }
 
   const issues = [];
 

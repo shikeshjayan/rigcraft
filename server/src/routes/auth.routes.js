@@ -31,7 +31,7 @@ router.post('/reset-password', authLimiter, validate(resetPasswordSchema), authC
 router.post('/refresh-token', authLimiter, authController.refresh);
 
 router.get('/profile', protect, authController.getProfile);
-router.put('/profile', protect, validate(updateProfileSchema), authController.updateProfile);
+router.put('/profile', protect, uploadSingleImage("avatar"), validate(updateProfileSchema), authController.updateProfile);
 router.put('/cart', protect, authController.updateCart);
 router.put('/wishlist', protect, authController.updateWishlist);
 router.put('/password', protect, validate(updatePasswordSchema), authController.updatePassword);

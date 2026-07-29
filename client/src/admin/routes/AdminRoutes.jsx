@@ -39,6 +39,7 @@ import FaqEdit from "../pages/faqs/FaqEdit";
 import SupportList from "../pages/support/SupportList";
 import SupportDetails from "../pages/support/SupportDetails";
 import NotificationList from "../pages/notifications/NotificationList";
+import NotificationDetails from "../pages/notifications/NotificationDetails";
 import { ROLES } from "../constants/status";
 
 const AdminRoutes = () => {
@@ -101,6 +102,7 @@ const AdminRoutes = () => {
         <Route path="support/:id" element={<SupportDetails />} />
 
         <Route path="notifications" element={<NotificationList />} />
+        <Route path="notifications/:id" element={<NotificationDetails />} />
 
         <Route path="newsletter" element={<NewsletterList />} />
 

@@ -57,6 +57,40 @@ const dealSchema = new mongoose.Schema(
         ref: "PrebuiltPC",
       },
     ],
+
+    // Coupon-style fields for admin deals
+    code: {
+      type: String,
+      trim: true,
+      uppercase: true,
+    },
+
+    type: {
+      type: String,
+      enum: ["percentage", "fixed"],
+      default: "percentage",
+    },
+
+    value: {
+      type: Number,
+      min: 0,
+    },
+
+    minOrder: {
+      type: Number,
+      min: 0,
+    },
+
+    maxUses: {
+      type: Number,
+      min: 1,
+    },
+
+    usedCount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
   },
   { timestamps: true },
 );

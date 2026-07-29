@@ -18,6 +18,9 @@ router.get("/:slug", dealController.getBySlug);
 
 // ── Admin routes ───────────────────────────────────────────────
 adminRouter.get("/", protect, authorize("admin"), dealController.getAll);
+adminRouter.get("/active-list", protect, authorize("admin"), dealController.getActiveForHomepage);
+adminRouter.get("/products", protect, authorize("admin"), dealController.getProductsForDeal);
+adminRouter.get("/prebuilt-pcs", protect, authorize("admin"), dealController.getPrebuiltPCsForDeal);
 
 adminRouter.get("/:id", protect, authorize("admin"), dealController.getById);
 
@@ -25,7 +28,6 @@ adminRouter.post(
   "/",
   protect,
   authorize("admin"),
-  uploadSingleImage("banner"),
   validate(createDealSchema),
   dealController.create,
 );
@@ -34,7 +36,6 @@ adminRouter.put(
   "/:id",
   protect,
   authorize("admin"),
-  uploadSingleImage("banner"),
   validate(updateDealSchema),
   dealController.update,
 );

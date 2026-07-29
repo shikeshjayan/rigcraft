@@ -12,12 +12,13 @@ import * as cartService from "./cart.service.js";
 import ApiError from "../utils/ApiError.js";
 import Order from "../models/order.model.js";
 import Cart from "../models/cart.model.js";
+import { getSettings } from "../models/settings.model.js";
 
-const ORDER_NUMBER_PREFIX = "RIG";
 const CHECKOUT_EXPIRY_MINUTES = 30;
 const ORDER_NUMBER_RETRIES = 5;
 
-export const generateOrderNumber = async () => {
+export const generateOrderNumber = async (prefix) => {
+  const effectivePrefix = prefix || "RIG";
   const now = new Date();
   const yy = now.getFullYear().toString().slice(2);
   const mm = String(now.getMonth() + 1).padStart(2, "0");
@@ -26,7 +27,7 @@ export const generateOrderNumber = async () => {
 
   for (let attempt = 0; attempt < ORDER_NUMBER_RETRIES; attempt++) {
     const random = crypto.randomBytes(3).toString("hex").toUpperCase();
-    const orderNumber = `${ORDER_NUMBER_PREFIX}-${dateStr}-${random}`;
+    const orderNumber = `${effectivePrefix}-${dateStr}-${random}`;
 
     const existing = await orderRepository.findByOrderNumber(orderNumber);
     if (!existing) return orderNumber;
@@ -158,6 +159,15 @@ export const checkout = async (userId, { addressId, paymentMethod }, user) => {
     );
   }
 
+  const settings = await getSettings();
+
+  if (paymentMethod === "razorpay" && settings.payment && !settings.payment.enableRazorpay) {
+    throw ApiError.badRequest("Razorpay payments are currently disabled");
+  }
+  if (paymentMethod === "cod" && settings.payment && !settings.payment.enableCod) {
+    throw ApiError.badRequest("Cash on delivery is currently disabled");
+  }
+
   let coupon = null;
   if (cart.coupon) {
     const code = cart.coupon.code || cart.coupon;
@@ -182,7 +192,15 @@ export const checkout = async (userId, { addressId, paymentMethod }, user) => {
     total: cart.total,
   };
 
-  const orderNumber = await generateOrderNumber();
+  if (paymentMethod === "cod" && settings.payment?.minOrderAmount > 0 && totals.total < settings.payment.minOrderAmount) {
+    throw ApiError.badRequest(`Minimum order amount for COD is ${settings.payment.minOrderAmount}`);
+  }
+  if (paymentMethod === "razorpay" && settings.payment?.maxOrderAmount > 0 && totals.total > settings.payment.maxOrderAmount) {
+    throw ApiError.badRequest(`Maximum order amount for Razorpay is ${settings.payment.maxOrderAmount}`);
+  }
+
+  const orderPrefix = settings?.order?.prefix || "RIG";
+  const orderNumber = await generateOrderNumber(orderPrefix);
 
   const orderData = {
     orderNumber,
@@ -235,7 +253,9 @@ export const checkout = async (userId, { addressId, paymentMethod }, user) => {
     pushHistory(order, "confirmed", user, "Order placed via COD");
     await order.save({ validateBeforeSave: false });
 
-    await reduceStock(order.items);
+    if (settings.inventory?.autoUpdateInventory !== false) {
+      await reduceStock(order.items);
+    }
 
     if (coupon) {
       await couponService.incrementUsage(coupon._id);
@@ -268,7 +288,10 @@ export const confirmPayment = async (orderId, razorpayPaymentId, user) => {
   pushHistory(order, "confirmed", user, "Payment confirmed via Razorpay");
   await order.save({ validateBeforeSave: false });
 
-  await reduceStock(order.items);
+  const settings = await getSettings();
+  if (settings.inventory?.autoUpdateInventory !== false) {
+    await reduceStock(order.items);
+  }
 
   if (order.coupon?.code) {
     const couponDoc = await couponRepository.findByCode(order.coupon.code);
@@ -315,6 +338,12 @@ export const getOrder = async (orderId, userId) => {
 };
 
 export const cancelOrder = async (orderId, userId, user, reason) => {
+  const settings = await getSettings();
+
+  if (settings.order && !settings.order.allowCancellation) {
+    throw ApiError.forbidden("Order cancellation is currently disabled");
+  }
+
   const order = await orderRepository.findById(orderId);
 
   if (order.user.toString() !== userId.toString()) {
@@ -326,6 +355,15 @@ export const cancelOrder = async (orderId, userId, user, reason) => {
     throw ApiError.badRequest(
       `Order cannot be cancelled in "${order.orderStatus}" status`
     );
+  }
+
+  const timeLimitHours = settings.order?.cancellationTimeLimit;
+  if (timeLimitHours > 0) {
+    const elapsedMs = Date.now() - new Date(order.createdAt).getTime();
+    const limitMs = timeLimitHours * 60 * 60 * 1000;
+    if (elapsedMs > limitMs) {
+      throw ApiError.badRequest(`Cancellation period has expired (${timeLimitHours} hour limit)`);
+    }
   }
 
   if (order.paymentStatus === "paid") {

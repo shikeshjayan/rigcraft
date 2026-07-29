@@ -19,6 +19,10 @@ const normalizeList = (res) => {
 };
 
 export const notificationService = {
+  getById: async (id) => {
+    const { data } = await api.get(ENDPOINTS.ADMIN_NOTIFICATION.DETAILS(id));
+    return normalize(data.data);
+  },
   list: async ({ page = 0, pageSize = 10 } = {}) => {
     const params = { page: page + 1, limit: pageSize };
     const { data } = await api.get(ENDPOINTS.ADMIN_NOTIFICATION.LIST, { params });
