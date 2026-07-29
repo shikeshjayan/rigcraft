@@ -1,6 +1,12 @@
 import app from '../src/app.js';
 import connectDB from '../src/config/db.js';
 
-connectDB();
+let appInstance;
 
-export default app;
+export default async function (req, res) {
+  if (!appInstance) {
+    await connectDB();
+    appInstance = app;
+  }
+  return appInstance(req, res);
+}
