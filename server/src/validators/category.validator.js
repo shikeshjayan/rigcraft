@@ -6,11 +6,12 @@ export const createCategorySchema = z.object({
   description: z.string().max(500).trim().optional(),
   image: z
     .object({
-      url: z.string().url().optional(),
-      publicId: z.string().optional(),
+      url: z.string().min(1, "Image URL is required"),
+      publicId: z.string().nullish(),
       alt: z.string().optional(),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   parent: z
     .string()
     .refine((val) => mongoose.Types.ObjectId.isValid(val), "Invalid parent ID")
@@ -25,11 +26,12 @@ export const updateCategorySchema = z.object({
   description: z.string().max(500).trim().optional(),
   image: z
     .object({
-      url: z.string().url().optional(),
-      publicId: z.string().optional(),
+      url: z.string().min(1, "Image URL is required"),
+      publicId: z.string().nullish(),
       alt: z.string().optional(),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   parent: z
     .string()
     .refine((val) => mongoose.Types.ObjectId.isValid(val), "Invalid parent ID")

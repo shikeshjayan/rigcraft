@@ -83,9 +83,10 @@ const reviewSchema = new mongoose.Schema(
       default: 0,
     },
 
-    isVisible: {
-      type: Boolean,
-      default: true,
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
     },
   },
   {
@@ -99,7 +100,7 @@ const reviewSchema = new mongoose.Schema(
 reviewSchema.index({ user: 1, item: 1, itemType: 1 }, { unique: true });
 reviewSchema.index({ item: 1 });
 reviewSchema.index({ rating: 1 });
-reviewSchema.index({ isVisible: 1 });
+reviewSchema.index({ status: 1 });
 
 reviewSchema.plugin(mongoosePaginate);
 

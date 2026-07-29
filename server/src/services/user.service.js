@@ -1,3 +1,4 @@
+import bcrypt from "bcryptjs";
 import User from "../models/user.model.js";
 import userRepository from "../repositories/user.repository.js";
 import Order from "../models/order.model.js";
@@ -6,8 +7,29 @@ import Cart from "../models/cart.model.js";
 import Wishlist from "../models/wishlist.model.js";
 import Address from "../models/address.model.js";
 import SavedBuild from "../models/saved-build.model.js";
+import buildRepository from "../repositories/build.repository.js";
+import wishlistRepository from "../repositories/wishlist.repository.js";
 import * as uploadService from "./upload.service.js";
 import ApiError from "../utils/ApiError.js";
+
+export const createUser = async (data) => {
+  const { firstName, lastName, email, password, phone, role } = data;
+
+  const exists = await User.findOne({ email });
+  if (exists) throw ApiError.conflict("A user with this email already exists");
+
+  const hashed = await bcrypt.hash(password, 12);
+  const user = await userRepository.create({
+    firstName,
+    lastName,
+    email,
+    password: hashed,
+    phone: phone || "",
+    role: role || "customer",
+  });
+
+  return { id: user._id, name: `${user.firstName} ${user.lastName}`, email: user.email, role: user.role };
+};
 
 export const list = async (query = {}) => {
   const { page = 1, limit = 20, search, role, status, sort = "-createdAt" } = query;
@@ -16,7 +38,7 @@ export const list = async (query = {}) => {
 
   if (role) filter.role = role;
   if (status === "active") filter.isBlocked = false;
-  if (status === "inactive") filter.isBlocked = true;
+  if (status === "blocked") filter.isBlocked = true;
   if (search) {
     const regex = { $regex: search, $options: "i" };
     filter.$or = [
@@ -35,7 +57,25 @@ export const list = async (query = {}) => {
 
   const skip = (Number(page) - 1) * Number(limit);
   const [users, total] = await Promise.all([
-    User.find(filter).sort(sortOptions).skip(skip).limit(Number(limit)).lean(),
+    User.aggregate([
+      { $match: filter },
+      {
+        $addFields: {
+          rolePriority: {
+            $switch: {
+              branches: [
+                { case: { $eq: ["$role", "admin"] }, then: 1 },
+                { case: { $eq: ["$role", "manager"] }, then: 2 },
+              ],
+              default: 3,
+            },
+          },
+        },
+      },
+      { $sort: { rolePriority: 1, ...sortOptions } },
+      { $skip: skip },
+      { $limit: Number(limit) },
+    ]),
     User.countDocuments(filter),
   ]);
 
@@ -61,7 +101,8 @@ export const list = async (query = {}) => {
     name: `${u.firstName} ${u.lastName}`,
     email: u.email,
     role: u.role,
-    status: u.isBlocked ? "inactive" : "active",
+    isBlocked: u.isBlocked,
+    status: u.isBlocked ? "blocked" : "active",
     avatar: u.avatar?.url || null,
     orders: statsMap[u._id.toString()]?.orders || 0,
     totalSpent: statsMap[u._id.toString()]?.totalSpent || 0,
@@ -123,16 +164,19 @@ export const getById = async (id) => {
   const u = await User.findById(id).lean();
   if (!u) throw ApiError.notFound("User not found");
 
-  const orderStats = await Order.aggregate([
-    { $match: { user: u._id, paymentStatus: "paid" } },
-    {
-      $group: {
-        _id: null,
-        orders: { $sum: 1 },
-        totalSpent: { $sum: "$total" },
-      },
-    },
+  const [orderStats, reviewCount, wishlistCount, buildCount] = await Promise.all([
+    Order.aggregate([
+      { $match: { user: u._id, paymentStatus: "paid" } },
+      { $group: { _id: null, orders: { $sum: 1 }, totalSpent: { $sum: "$total" } } },
+    ]),
+    Review.countDocuments({ user: u._id }),
+    Wishlist.findOne({ user: u._id }).then((w) => w?.items?.length || 0),
+    SavedBuild.countDocuments({ user: u._id }),
   ]);
+
+  const stats = orderStats[0] || { orders: 0, totalSpent: 0 };
+  const totalSpent = stats.totalSpent || 0;
+  const orders = stats.orders || 0;
 
   return {
     id: u._id,
@@ -140,12 +184,19 @@ export const getById = async (id) => {
     email: u.email,
     phone: u.phone,
     role: u.role,
-    status: u.isBlocked ? "inactive" : "active",
+    isBlocked: u.isBlocked,
+    status: u.isBlocked ? "blocked" : "active",
     avatar: u.avatar?.url || null,
     isEmailVerified: u.isEmailVerified,
-    orders: orderStats[0]?.orders || 0,
-    totalSpent: orderStats[0]?.totalSpent || 0,
     registeredAt: u.createdAt,
     lastLogin: u.lastLogin,
+    stats: {
+      orders,
+      totalSpent,
+      avgOrderValue: orders > 0 ? Math.round(totalSpent / orders) : 0,
+      reviews: reviewCount,
+      wishlist: wishlistCount,
+      savedBuilds: buildCount,
+    },
   };
 };

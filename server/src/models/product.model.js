@@ -18,7 +18,6 @@ const imageSchema = new mongoose.Schema(
 
     publicId: {
       type: String,
-      required: true,
     },
 
     alt: {

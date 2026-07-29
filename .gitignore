@@ -6,6 +6,7 @@ build/
 *.log
 .DS_Store
 Thumbs.db
+server/uploads/
 DESIGN.md
 graphify-out
 API.md

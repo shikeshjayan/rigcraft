@@ -34,14 +34,19 @@ const productSchema = z.object({
   categoryType: z.string().optional(),
   description: z.string().optional(),
   shortDescription: z.string().max(300).optional(),
-  price: z.coerce.number().min(0, "Price must be positive"),
-  comparePrice: z.coerce.number().min(0).optional().nullable(),
+  regularPrice: z.coerce.number().min(0, "Price must be positive"),
+  salePrice: z.coerce.number().min(0).optional().nullable(),
+  saleStart: z.string().optional(),
+  saleEnd: z.string().optional(),
   stock: z.coerce.number().int().min(0).optional(),
   lowStockThreshold: z.coerce.number().int().min(0).optional(),
   weight: z.coerce.number().min(0).optional(),
   length: z.coerce.number().min(0).optional(),
   width: z.coerce.number().min(0).optional(),
   height: z.coerce.number().min(0).optional(),
+  warrantyDuration: z.coerce.number().int().min(0).optional(),
+  warrantyUnit: z.string().optional(),
+  warrantyType: z.string().optional(),
   isActive: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
   metaTitle: z.string().max(60).optional(),
@@ -111,14 +116,19 @@ const ProductForm = ({
       categoryType: "",
       description: "",
       shortDescription: "",
-      price: 0,
-      comparePrice: null,
+regularPrice: 0,
+       salePrice: null,
+       saleStart: "",
+       saleEnd: "",
       stock: 0,
       lowStockThreshold: 5,
       weight: 0,
       length: 0,
       width: 0,
       height: 0,
+      warrantyDuration: 0,
+      warrantyUnit: "month",
+      warrantyType: "manufacturer",
       isActive: true,
       isFeatured: false,
       metaTitle: "",
@@ -317,32 +327,62 @@ const ProductForm = ({
       </SectionAccordion>
 
       <SectionAccordion title="Pricing">
-        <Grid container spacing={2}>
+<Grid container spacing={2}>
+           <Grid size={{ xs: 12, sm: 6 }}>
+             <Controller
+               name="regularPrice"
+               control={control}
+               render={({ field }) => (
+                 <AdminInput
+                   label="Regular Price ($)"
+                   type="number"
+                   error={!!errors.regularPrice}
+                   helperText={errors.regularPrice?.message}
+                   {...field}
+                 />
+               )}
+             />
+           </Grid>
+           <Grid size={{ xs: 12, sm: 6 }}>
+             <Controller
+               name="salePrice"
+               control={control}
+               render={({ field }) => (
+                 <AdminInput
+                   label="Sale Price ($)"
+                   type="number"
+                   {...field}
+                   value={field.value ?? ""}
+                 />
+               )}
+             />
+          </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Controller
-              name="price"
+              name="saleStart"
               control={control}
               render={({ field }) => (
                 <AdminInput
-                  label="Price ($)"
-                  type="number"
-                  error={!!errors.price}
-                  helperText={errors.price?.message}
+                  label="Sale Start"
+                  type="datetime-local"
                   {...field}
+                  value={field.value ?? ""}
+                  InputLabelProps={{ shrink: true }}
                 />
               )}
             />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Controller
-              name="comparePrice"
+              name="saleEnd"
               control={control}
               render={({ field }) => (
                 <AdminInput
-                  label="Compare Price ($)"
-                  type="number"
+                  label="Sale End"
+                  type="datetime-local"
                   {...field}
                   value={field.value ?? ""}
+                  InputLabelProps={{ shrink: true }}
                 />
               )}
             />
@@ -487,6 +527,52 @@ const ProductForm = ({
         </Grid>
       </SectionAccordion>
 
+      <SectionAccordion title="Warranty">
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <Controller
+              name="warrantyDuration"
+              control={control}
+              render={({ field }) => (
+                <AdminInput label="Duration" type="number" {...field} />
+              )}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <Controller
+              name="warrantyUnit"
+              control={control}
+              render={({ field }) => (
+                <AdminSelect
+                  label="Unit"
+                  options={[
+                    { value: "month", label: "Month(s)" },
+                    { value: "year", label: "Year(s)" },
+                  ]}
+                  {...field}
+                />
+              )}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 4 }}>
+            <Controller
+              name="warrantyType"
+              control={control}
+              render={({ field }) => (
+                <AdminSelect
+                  label="Type"
+                  options={[
+                    { value: "manufacturer", label: "Manufacturer" },
+                    { value: "seller", label: "Seller" },
+                  ]}
+                  {...field}
+                />
+              )}
+            />
+          </Grid>
+        </Grid>
+      </SectionAccordion>
+
       {selectedType && (
         <SectionAccordion title="Specifications">
           <Box sx={{ mb: 2 }}>
@@ -500,12 +586,23 @@ const ProductForm = ({
           </Box>
           {fields.map((field, idx) => {
             const tpl = specTemplate.find((s) => s.key === field.key);
+            const isCustom = !tpl;
             return (
               <Grid container spacing={1} key={field.id} sx={{ mb: 1 }}>
                 <Grid size={{ xs: 4 }}>
                   <AdminInput
                     label="Label"
-                    {...register(`specifications.${idx}.label`)}
+                    {...register(`specifications.${idx}.label`, {
+                      onChange: (e) => {
+                        if (isCustom && !field.key) {
+                          const generated = e.target.value
+                            .toLowerCase()
+                            .replace(/\s+/g, "_")
+                            .replace(/[^a-z0-9_]/g, "");
+                          setValue(`specifications.${idx}.key`, generated);
+                        }
+                      },
+                    })}
                     size="small"
                   />
                 </Grid>

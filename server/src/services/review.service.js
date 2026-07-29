@@ -153,6 +153,15 @@ export const getUserReviews = async (userId, query) => {
   });
 };
 
+export const adminGetUserReviews = async (userId, query) => {
+  const { page = 1, limit = 20 } = query;
+  return reviewRepository.adminFindAll({
+    page: Number(page),
+    limit: Number(limit),
+    filter: { user: userId },
+  });
+};
+
 export const adminGetAllReviews = async (query) => {
   const { page = 1, limit = 20, sort, search, status, rating } = query;
 
@@ -164,8 +173,9 @@ export const adminGetAllReviews = async (query) => {
   else sortOptions.createdAt = -1;
 
   const extraFilter = {};
-  if (status === "visible") extraFilter.isVisible = true;
-  else if (status === "hidden") extraFilter.isVisible = false;
+  if (["pending", "approved", "rejected"].includes(status)) {
+    extraFilter.status = status;
+  }
   if (rating) extraFilter.rating = Number(rating);
   if (search) {
     extraFilter.$or = [
@@ -190,10 +200,7 @@ export const adminGetReview = async (reviewId) => {
 
 export const adminUpdateStatus = async (reviewId, status) => {
   const review = await reviewRepository.findById(reviewId);
-  const isVisible = status === "visible";
-  const updated = await reviewRepository.updateById(reviewId, {
-    isVisible,
-  });
+  const updated = await reviewRepository.updateById(reviewId, { status });
   await recalculateRating(review.item, review.itemType);
   return updated;
 };
