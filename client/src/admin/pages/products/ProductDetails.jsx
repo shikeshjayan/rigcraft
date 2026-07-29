@@ -76,11 +76,9 @@ const ProductDetails = () => {
         <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Pricing & Inventory</Typography>
           <Grid container spacing={2}>
-            <DetailRow label="Price" value={formatCurrency(product.price)} />
-            <DetailRow label="Compare Price" value={product.comparePrice ? formatCurrency(product.comparePrice) : "—"} />
-            <DetailRow label="Cost Price" value={product.costPrice ? formatCurrency(product.costPrice) : "—"} />
+            <DetailRow label="Regular Price" value={formatCurrency(product.price)} />
+            <DetailRow label="Sale Price" value={product.salePrice ? formatCurrency(product.salePrice) : "—"} />
             <DetailRow label="Stock" value={product.stock} />
-            <DetailRow label="Track Inventory" value={product.trackInventory ? "Yes" : "No"} />
             <DetailRow label="Low Stock Threshold" value={product.lowStockThreshold} />
           </Grid>
         </Box>

@@ -10,11 +10,12 @@ export const createDealSchema = z.object({
   description: z.string().max(1000).trim().optional(),
   banner: z
     .object({
-      url: z.string().url().optional(),
-      publicId: z.string().optional(),
+      url: z.string().min(1, "Image URL is required"),
+      publicId: z.string().nullish(),
       alt: z.string().optional(),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   startDate: z.string().min(1, "Start date is required"),
   endDate: z.string().min(1, "End date is required"),
   isActive: z.boolean().optional(),
@@ -27,11 +28,12 @@ export const updateDealSchema = z.object({
   description: z.string().max(1000).trim().optional(),
   banner: z
     .object({
-      url: z.string().url().optional(),
-      publicId: z.string().optional(),
+      url: z.string().min(1, "Image URL is required"),
+      publicId: z.string().nullish(),
       alt: z.string().optional(),
     })
-    .optional(),
+    .optional()
+    .nullable(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   isActive: z.boolean().optional(),

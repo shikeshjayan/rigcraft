@@ -72,6 +72,7 @@ export const getStats = async () => {
     ordersChange: calcChange(totalOrders, prevOrders),
     productsChange: calcChange(totalProducts, prevProducts),
     customersChange: calcChange(totalCustomers, prevCustomers),
+    notificationCount: 0, // Horizontal for now - make dynamic later
   };
 };
 

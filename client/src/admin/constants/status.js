@@ -42,6 +42,11 @@ export const REVIEW_STATUS_COLOR = {
   rejected: "error",
 };
 
+export const USER_STATUS_COLOR = {
+  active: "success",
+  blocked: "error",
+};
+
 export const COUPON_STATUS = {
   ACTIVE: "active",
   EXPIRED: "expired",

@@ -7,7 +7,7 @@ const normalizeCategory = (c) => ({
   id: c._id,
   _id: undefined,
   __v: undefined,
-  parentId: c.parent?.toString ? c.parent.toString() : c.parent,
+  parentId: c.parent?._id ? c.parent._id.toString() : (typeof c.parent === "string" ? c.parent : null),
   productCount: c.productCount ?? 0,
   parent: undefined,
 });

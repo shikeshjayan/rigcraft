@@ -18,8 +18,8 @@ const componentSlotSchema = z
   .strict();
 
 const imageSchema = z.object({
-  url: z.string().url(),
-  publicId: z.string().optional(),
+  url: z.string().min(1, "Image URL is required"),
+  publicId: z.string().nullish(),
   alt: z.string().optional(),
   isPrimary: z.boolean().optional(),
 });

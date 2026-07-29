@@ -35,8 +35,8 @@ const ProductEdit = () => {
   const handleSubmit = async (data) => {
     setSaving(true);
     try {
-      const payload = { ...data, comparePrice: data.comparePrice || null, costPrice: data.costPrice || null };
-      payload.images = payload.images?.map((img) => img.file).filter(Boolean) || [];
+      const payload = { ...data, comparePrice: data.comparePrice || null };
+      payload.images = payload.images?.map((img) => (img.file instanceof File ? img.file : img)).filter(Boolean) || [];
       await productService.update(id, payload);
       toast("Product updated successfully");
       navigate("/admin/products");

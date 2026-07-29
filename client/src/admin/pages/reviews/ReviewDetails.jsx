@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box, Typography, Grid, Rating, Chip } from "@mui/material";
+import { Box, Typography, Grid, Rating } from "@mui/material";
 import { ArrowBack as ArrowBackIcon, Check as ApproveIcon, Close as RejectIcon } from "@mui/icons-material";
 import { reviewService } from "../../services/reviewService";
 import { REVIEW_STATUS_COLOR } from "../../constants/status";
@@ -9,6 +9,7 @@ import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
 import StatusBadge from "../../components/common/StatusBadge";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { extractError } from "../../utils/extractError";
 
 const DetailRow = ({ label, value }) => (
@@ -25,6 +26,7 @@ const ReviewDetails = () => {
   const [review, setReview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
 
   useEffect(() => {
     reviewService.getById(id)
@@ -79,16 +81,65 @@ const ReviewDetails = () => {
           <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", lineHeight: 1.7 }}>{review.comment}</Typography>
         </Box>
 
-        {review.status === "pending" && (
-          <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)", display: "flex", gap: 2 }}>
-            <AdminButton variant="success" size="small" icon={<ApproveIcon />} onClick={() => handleStatus("approved")} loading={updating}>
-              Approve
-            </AdminButton>
-            <AdminButton variant="danger" size="small" icon={<RejectIcon />} onClick={() => handleStatus("rejected")} loading={updating}>
-              Reject
-            </AdminButton>
+        {review.images?.length > 0 && (
+          <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+            <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", mb: 1.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              Review Images ({review.images.length})
+            </Typography>
+            <Box sx={{ display: "flex", gap: 1.5, flexWrap: "wrap" }}>
+              {review.images.map((img, i) => (
+                <Box
+                  key={i}
+                  component="img"
+                  src={img.url}
+                  alt={img.alt || "Review image"}
+                  sx={{
+                    width: 120,
+                    height: 120,
+                    borderRadius: 1,
+                    objectFit: "cover",
+                    border: "1px solid var(--color-admin-border)",
+                    cursor: "pointer",
+                    transition: "opacity 0.2s",
+                    "&:hover": { opacity: 0.85 },
+                  }}
+                  onClick={() => window.open(img.url, "_blank")}
+                />
+              ))}
+            </Box>
           </Box>
         )}
+
+        <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)", display: "flex", gap: 2 }}>
+          {review.status !== "approved" && (
+            <AdminButton variant="success" size="small" icon={<ApproveIcon />} onClick={() => setConfirmAction("approved")}>
+              Approve
+            </AdminButton>
+          )}
+          {review.status !== "rejected" && (
+            <AdminButton variant="danger" size="small" icon={<RejectIcon />} onClick={() => setConfirmAction("rejected")}>
+              Reject
+            </AdminButton>
+          )}
+        </Box>
+
+        <ConfirmDialog
+          open={!!confirmAction}
+          title={confirmAction === "approved" ? "Approve Review" : "Reject Review"}
+          message={
+            confirmAction === "approved"
+              ? "Are you sure you want to approve this review? It will become visible on the public site."
+              : "Are you sure you want to reject this review? It will be hidden from the public site."
+          }
+          confirmLabel={confirmAction === "approved" ? "Approve" : "Reject"}
+          severity={confirmAction === "approved" ? "success" : "danger"}
+          loading={updating}
+          onConfirm={() => {
+            handleStatus(confirmAction);
+            setConfirmAction(null);
+          }}
+          onCancel={() => setConfirmAction(null)}
+        />
       </Box>
     </Box>
   );

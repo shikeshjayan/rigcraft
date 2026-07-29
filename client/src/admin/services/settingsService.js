@@ -7,6 +7,11 @@ export const settingsService = {
     return data.data;
   },
 
+  getPublic: async () => {
+    const { data } = await api.get(ENDPOINTS.SETTINGS.PUBLIC);
+    return data.data;
+  },
+
   update: async (settingsData) => {
     const { data } = await api.put(ENDPOINTS.SETTINGS.UPDATE, settingsData);
     return data.data;

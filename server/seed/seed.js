@@ -113,6 +113,8 @@ const REVIEW_COMMENTS = [
   "Exactly what I needed for my upgrade. Fits perfectly.",
 ];
 
+const IMGBASE = "https://picsum.photos/seed";
+
 // ───────────────────────────────────────────
 //   Seeder
 // ───────────────────────────────────────────
@@ -153,14 +155,30 @@ async function seed() {
 
   // ── 3. Categories ──
   console.log("  Seeding Categories...");
-  const catDocs = await Category.create(categories);
+  const categoriesWithImages = categories.map((c) => ({
+    ...c,
+    image: {
+      url: `${IMGBASE}/${slugify(c.name, { lower: true, strict: true })}/200/200`,
+      publicId: null,
+      alt: c.name,
+    },
+  }));
+  const catDocs = await Category.create(categoriesWithImages);
   catDocs.forEach((d, i) => { categories[i]._id = d._id; });
   const catMap = new Map(catDocs.map((d) => [d.name, d._id]));
   summary.push(["Categories", catDocs.length]);
 
   // ── 4. Brands ──
   console.log("  Seeding Brands...");
-  const brandDocs = await Brand.create(brands);
+  const brandsWithLogos = brands.map((b) => ({
+    ...b,
+    logo: {
+      url: `${IMGBASE}/${slugify(b.name, { lower: true, strict: true })}/200/200`,
+      publicId: null,
+      alt: b.name,
+    },
+  }));
+  const brandDocs = await Brand.create(brandsWithLogos);
   const brandMap = new Map(brandDocs.map((d) => [d.name, d._id]));
   summary.push(["Brands", brandDocs.length]);
 
@@ -187,24 +205,33 @@ async function seed() {
 
   // ── 6. Products ──
   console.log("  Seeding Products...");
-  const productPayloads = productsData.map((p) => ({
-    name: p.name,
-    slug: slugify(p.name, { lower: true, strict: true }),
-    sku: p.sku,
-    productType: "component",
-    category: catMap.get(p.categoryName),
-    brand: brandMap.get(p.brandName),
-    shortDescription: p.shortDescription,
-    tags: p.tags,
-    price: p.price,
-    salePrice: p.salePrice || undefined,
-    stock: p.stock,
-    warranty: p.warranty,
-    isFeatured: p.isFeatured ?? false,
-    featuredOrder: p.featuredOrder || 0,
-    status: p.status,
-    componentType: p.componentType,
-  }));
+  const productPayloads = productsData.map((p) => {
+    const slug = slugify(p.name, { lower: true, strict: true });
+    return {
+      name: p.name,
+      slug,
+      sku: p.sku,
+      productType: "component",
+      category: catMap.get(p.categoryName),
+      brand: brandMap.get(p.brandName),
+      shortDescription: p.shortDescription,
+      tags: p.tags,
+      price: p.price,
+      salePrice: p.salePrice || undefined,
+      stock: p.stock,
+      warranty: p.warranty,
+      isFeatured: p.isFeatured ?? false,
+      featuredOrder: p.featuredOrder || 0,
+      status: p.status,
+      componentType: p.componentType,
+      images: [{
+        url: `${IMGBASE}/${slug}/400/400`,
+        publicId: null,
+        alt: p.name,
+        isPrimary: true,
+      }],
+    };
+  });
   const productDocs = await Product.create(productPayloads);
   // Inject specifications separately (Mongoose v9 Map type workaround)
   for (const p of productsData) {
@@ -229,9 +256,10 @@ async function seed() {
       if (!prod) throw new Error(`Product SKU not found: ${cs.sku}`);
       return { type: cs.type, product: prod._id, quantity: cs.quantity || 1 };
     });
+    const slug = slugify(pc.name, { lower: true, strict: true });
     return {
       name: pc.name,
-      slug: slugify(pc.name, { lower: true, strict: true }),
+      slug,
       sku: pc.sku,
       shortDescription: pc.shortDescription,
       description: pc.description,
@@ -247,6 +275,12 @@ async function seed() {
       isFeatured: pc.isFeatured ?? false,
       featuredOrder: pc.featuredOrder || 0,
       status: pc.status,
+      images: [{
+        url: `${IMGBASE}/${slug}/400/400`,
+        publicId: null,
+        alt: pc.name,
+        isPrimary: true,
+      }],
     };
   });
   const prebuiltDocs = await PrebuiltPC.create(prebuiltPayloads);
@@ -363,7 +397,7 @@ async function seed() {
       title: REVIEW_COMMENTS[i % REVIEW_COMMENTS.length].slice(0, 60),
       comment: REVIEW_COMMENTS[i % REVIEW_COMMENTS.length],
       isVerifiedPurchase: !!relatedOrder,
-      isVisible: true,
+      status: "approved",
       createdAt: generatePastDate(4),
     });
   }

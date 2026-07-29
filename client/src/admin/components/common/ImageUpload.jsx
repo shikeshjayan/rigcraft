@@ -25,7 +25,11 @@ const ImageUpload = ({ images = [], onChange, maxFiles = 5, multiple = true }) =
   };
 
   const handleRemove = (id) => {
-    const updated = images.filter((img) => img.id !== id);
+    const updated = images.filter((img) => {
+      const identifier = img?.id || img?.url || img?.publicId;
+      if (identifier !== undefined) return identifier !== id;
+      return img !== id;
+    });
     onChange(updated);
   };
 
