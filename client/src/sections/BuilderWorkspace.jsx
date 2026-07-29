@@ -1,9 +1,8 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/client';
-import { allItems } from '../data/items';
 import SearchIcon from '@mui/icons-material/Search';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import CloseIcon from '@mui/icons-material/Close';
@@ -21,8 +20,11 @@ const STEPS = [
   { id: 9, label: 'Review', category: null },
 ];
 
+const getTypeName = (type) => typeof type === 'string' ? type : type?.name || 'UNKNOWN';
+
 const BuilderWorkspace = () => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [allItems, setAllItems] = useState([]);
   const [selectedParts, setSelectedParts] = useState({
     cpu: null,
     motherboard: null,
@@ -40,6 +42,53 @@ const BuilderWorkspace = () => {
   const [assemblyMode, setAssemblyMode] = useState('parts');
   const { addToCart } = useCart();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state && location.state.draftBuild) {
+      const CATEGORY_MAP = {
+        processor: "cpu",
+        motherboard: "motherboard",
+        ram: "ram",
+        storage: "ssd",
+        gpu: "gpu",
+        case: "cabinet",
+        "power-supply": "psu",
+        cooling: "cooling",
+        cpu: "cpu",
+        ssd: "ssd",
+        cabinet: "cabinet",
+        psu: "psu"
+      };
+      
+      const mappedDraftBuild = {};
+      Object.entries(location.state.draftBuild).forEach(([key, product]) => {
+        const normalizedKey = key.toLowerCase();
+        const finalKey = CATEGORY_MAP[normalizedKey] || normalizedKey;
+        mappedDraftBuild[finalKey] = product;
+      });
+
+      setSelectedParts(prev => ({
+        ...prev,
+        ...mappedDraftBuild
+      }));
+      localStorage.removeItem('draftBuild');
+      
+      // Navigate to the next empty step
+      let nextStep = 1;
+      const categories = ['cpu', 'motherboard', 'ram', 'ssd', 'gpu', 'cabinet', 'psu', 'cooling'];
+      for (let i = 0; i < categories.length; i++) {
+        if (!mappedDraftBuild[categories[i]]) {
+          nextStep = i + 1;
+          break;
+        }
+      }
+      setCurrentStep(nextStep);
+      
+      // Clean up location state using React Router so refresh doesn't trigger it again
+      navigate('.', { replace: true, state: {} });
+    }
+  }, [location.state, navigate]);
 
   const handleSaveBuild = async () => {
     const typeMapping = {
@@ -98,10 +147,51 @@ const BuilderWorkspace = () => {
   useEffect(() => {
     setSearchQuery('');
     setBrandFilter('All Brands');
-    window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [currentStep]);
 
   const activeCategory = STEPS.find(s => s.id === currentStep)?.category;
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const { data } = await apiClient.get('/products?limit=1000');
+        if (data && data.data) {
+          const docs = data.data.docs || data.data;
+          const pcArray = Array.isArray(docs) ? docs : [];
+          
+          const formatted = pcArray.map(p => {
+            const priceVal = p.pricing?.price || p.priceVal || p.price || 0;
+            const mrpVal = p.pricing?.salePrice || p.mrpVal || p.mrp || 0;
+            let categoryName = (p.category?.name || p.categoryType || (typeof p.category === 'string' && p.category) || p.productType || '').toLowerCase();
+            // normalize category names for the builder
+            if (categoryName.includes('processor')) categoryName = 'cpu';
+            if (categoryName.includes('graphic')) categoryName = 'gpu';
+            if (categoryName.includes('memory') || categoryName.includes('ram')) categoryName = 'ram';
+            if (categoryName.includes('storage')) categoryName = 'ssd';
+            if (categoryName.includes('power_supply') || categoryName.includes('power supply')) categoryName = 'psu';
+            if (categoryName.includes('case') || categoryName.includes('cabinet')) categoryName = 'cabinet';
+            
+            return {
+              ...p,
+              id: p._id || p.id,
+              image: p.images?.[0]?.url || p.images?.[0] || p.image || null,
+              title: p.name || p.title,
+              price: priceVal ? `₹${priceVal.toLocaleString()}` : p.price,
+              priceVal: priceVal,
+              mrp: mrpVal ? `₹${mrpVal.toLocaleString()}` : p.mrp,
+              category: categoryName,
+              brand: typeof p.brand === 'string' ? p.brand : p.brand?.name || 'Unknown',
+              specs: p.specifications ? Object.entries(p.specifications).map(([k, v]) => `${k}: ${v}`) : []
+            };
+          });
+          setAllItems(formatted);
+        }
+      } catch (error) {
+        console.error('Failed to fetch components', error);
+      }
+    };
+    fetchProducts();
+  }, []);
 
   // Filter components based on current step and search/filters
   const availableComponents = useMemo(() => {
@@ -179,8 +269,8 @@ const BuilderWorkspace = () => {
       
       {/* 1. Progress Stepper Bar */}
       <div className="w-full bg-white border-b border-[#E2E8F0] py-4 md:py-9 sticky top-[96px] md:top-[108px] z-30 shadow-sm">
-        <div className="max-w-[1500px] mx-auto px-2 md:px-4 lg:px-8">
-          <div className="grid grid-cols-5 gap-y-4 gap-x-1 lg:flex lg:items-center lg:justify-between lg:overflow-x-auto hide-scrollbar lg:gap-4">
+        <div className="max-w-[1500px] mx-auto px-2 md:px-4 lg:px-[100px]">
+          <div className="grid grid-cols-5 gap-y-4 gap-x-1 lg:flex lg:items-center lg:justify-between lg:overflow-x-auto hide-scrollbar lg:gap-2">
             {STEPS.map((step, index) => {
               const isActive = currentStep === step.id;
               const hasItem = step.category && selectedParts[step.category] != null;
@@ -199,15 +289,15 @@ const BuilderWorkspace = () => {
               }
               
               return (
-                <div key={step.id} className="flex flex-col lg:flex-row items-center lg:justify-center gap-1 lg:gap-2 shrink-0 cursor-pointer text-center lg:text-left" onClick={() => setCurrentStep(step.id)}>
-                  <div className={`w-7 h-7 lg:w-8 lg:h-8 rounded-full flex items-center justify-center font-bold text-[11px] lg:text-[13px] transition-colors mx-auto lg:mx-0 ${stepBg}`}>
+                <div key={step.id} className="flex flex-col lg:flex-row items-center lg:justify-center gap-1 lg:gap-1.5 shrink-0 cursor-pointer text-center lg:text-left" onClick={() => setCurrentStep(step.id)}>
+                  <div className={`w-7 h-7 lg:w-7 lg:h-7 rounded-full flex items-center justify-center font-bold text-[11px] lg:text-[12px] transition-colors mx-auto lg:mx-0 ${stepBg}`}>
                     {step.id}
                   </div>
-                  <span className={`text-[10px] lg:text-[14px] leading-tight lg:leading-normal font-bold ${isActive ? 'text-[#0F172A]' : 'text-[#64748B]'}`}>
+                  <span className={`text-[10px] lg:text-[13px] leading-tight lg:leading-normal font-bold ${isActive ? 'text-[#0F172A]' : 'text-[#64748B]'}`}>
                     {step.label}
                   </span>
                   {index < STEPS.length - 1 && (
-                    <div className="w-8 xl:w-12 h-[2px] bg-[#E2E8F0] ml-2 hidden xl:block"></div>
+                    <div className="w-4 lg:w-4 xl:w-6 h-[2px] bg-[#E2E8F0] ml-1 hidden xl:block"></div>
                   )}
                 </div>
               );
@@ -299,7 +389,7 @@ const BuilderWorkspace = () => {
                               >
                                 {item.title}
                               </h3>
-                              <p className="text-[13px] text-[#64748B]">{item.brand} | {item.category.toUpperCase()}</p>
+                              <p className="text-[13px] text-[#64748B]">{getTypeName(item.brand)} | {getTypeName(item.category).toUpperCase()}</p>
                             </div>
                             {item.specs && item.specs[0] && (
                               <div className="bg-[#F8FAFC] border border-[#CBD5E1] text-[#334155] text-[11px] font-bold px-2 py-1 whitespace-nowrap" style={{ borderRadius: 'var(--radius-sm)' }}>
@@ -385,15 +475,15 @@ const BuilderWorkspace = () => {
                           <div className="text-[14px] font-bold text-[#0052FF] mb-1">{step.label}</div>
                           {item ? (
                             <>
-                              <div className="text-[16px] font-bold text-[#0F172A]">{item.title}</div>
-                              <div className="text-[13px] text-[#64748B]">{item.brand}</div>
+                              <div className="text-[16px] font-bold text-[#0F172A]">{item.title || item.name}</div>
+                              <div className="text-[13px] text-[#64748B]">{item.brand?.name || item.brand || 'Generic'}</div>
                             </>
                           ) : (
                             <div className="text-[14px] text-[#EF4444] font-medium">Missing Component! Please select a {step.label}.</div>
                           )}
                         </div>
                         <div className="text-[18px] font-bold text-[#0F172A] whitespace-nowrap">
-                          {item ? item.price : '---'}
+                          {item ? (typeof item.price === 'number' ? formatPrice(item.price) : typeof item.priceVal === 'number' ? formatPrice(item.priceVal) : item.price) : '---'}
                         </div>
                       </div>
                     );
@@ -421,14 +511,14 @@ const BuilderWorkspace = () => {
                       <div className="flex-grow pr-2">
                         <div className="text-[14px] font-bold text-[#0052FF] mb-1">{step.label}</div>
                         {item ? (
-                          <div className="text-[13px] text-[#0F172A] font-medium leading-tight cursor-pointer hover:text-[#0052FF]" onClick={() => setActivePopupItem(item)}>{item.title}</div>
+                          <div className="text-[13px] text-[#0F172A] font-medium leading-tight cursor-pointer hover:text-[#0052FF]" onClick={() => setActivePopupItem(item)}>{item.title || item.name}</div>
                         ) : (
                           <div className="text-[13px] text-[#64748B] italic">Pending selection...</div>
                         )}
                       </div>
                       <div className="flex flex-col items-end shrink-0 gap-1 mt-1">
                         <div className="text-[14px] font-bold text-[#0F172A] whitespace-nowrap">
-                          {item ? item.price : '---'}
+                          {item ? (typeof item.price === 'number' ? formatPrice(item.price) : typeof item.priceVal === 'number' ? formatPrice(item.priceVal) : item.price) : '---'}
                         </div>
                         {item && (
                           <button onClick={() => handleRemovePart(step.category)} className="text-[11px] text-[#EF4444] font-bold hover:underline cursor-pointer">
@@ -522,7 +612,7 @@ const BuilderWorkspace = () => {
               </div>
               
               <div className="w-full md:w-3/5 p-8 flex flex-col">
-                <div className="text-[13px] font-bold text-[#0052FF] mb-2">{activePopupItem.brand} | {activePopupItem.category?.toUpperCase()}</div>
+                <div className="text-[13px] font-bold text-[#0052FF] mb-2">{getTypeName(activePopupItem.brand)} | {getTypeName(activePopupItem.category)?.toUpperCase()}</div>
                 <h2 className="text-[24px] font-bold text-[#0F172A] leading-tight mb-4">{activePopupItem.title}</h2>
                 <p className="text-[14px] text-[#64748B] mb-6 leading-relaxed">
                   {activePopupItem.description}

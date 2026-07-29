@@ -4,6 +4,7 @@ import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 
 const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp, discount, compact = false, category = '' }) => {
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
@@ -54,7 +55,7 @@ const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp,
 
   return (
     <div 
-      onClick={() => navigate(`/detail/${formattedTitle}/${id}`)}
+      onClick={() => navigate(`/detail/${formattedTitle}/${id}${category ? `?type=${category}` : ''}`)}
       className="relative flex flex-col h-full overflow-hidden border border-gray-300 group transition-all duration-300 cursor-pointer bg-white border border-gray-100 hover:shadow-xl"
       style={{ 
         borderRadius: 'var(--radius-sm)', 
@@ -91,11 +92,18 @@ const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp,
           </button>
         </div>
 
-        <img 
-          src={image || 'https://placehold.co/400x400/transparent/black?text=Product'} 
-          alt={title} 
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
-        />
+        {image ? (
+          <img 
+            src={image} 
+            alt={title} 
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" 
+          />
+        ) : (
+          <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400 group-hover:bg-gray-200 transition-colors duration-300">
+            <ImageOutlinedIcon sx={{ fontSize: compact ? 40 : 64, opacity: 0.5 }} />
+            <span className="text-[10px] font-bold uppercase tracking-widest mt-2 opacity-50">No Image</span>
+          </div>
+        )}
       </div>
 
       {/* Details Section */}

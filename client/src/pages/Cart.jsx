@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import CartHero from '../sections/CartHero';
 import CartWorkspace from '../sections/CartWorkspace';
 import CartSuggestions from '../sections/CartSuggestions';
@@ -6,7 +7,17 @@ import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 
 const Cart = () => {
-  const [checkoutStep, setCheckoutStep] = useState('bag'); // 'bag', 'address', 'payment'
+  const location = useLocation();
+  const stepParam = new URLSearchParams(location.search).get('step') || 'bag';
+  const [checkoutStep, setCheckoutStep] = useState(stepParam); // 'bag', 'address', 'payment'
+
+  // If URL changes dynamically while on the page
+  useEffect(() => {
+    const step = new URLSearchParams(location.search).get('step');
+    if (step) {
+      setCheckoutStep(step);
+    }
+  }, [location.search]);
 
   useEffect(() => {
     window.scrollTo(0, 0);

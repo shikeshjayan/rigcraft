@@ -4,10 +4,12 @@ import { Link, useParams } from 'react-router-dom';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import ConstructionIcon from '@mui/icons-material/Construction';
 import Card from '../components/Card';
 import SkeletonCard from '../components/SkeletonCard';
 import Filter from '../components/Filter';
 import { productService } from '../services/product.service';
+import apiClient from '../api/client';
 
 const CATEGORY_MAP = {
   cpu: "processor",
@@ -253,7 +255,7 @@ const ComponentsCatalog = () => {
                         }
                         
                         return (
-                        <div key={item._id || item.id} className="block h-full animate-fade-in">
+                        <div key={item._id || item.id} className="block h-full animate-fade-in relative group">
                           <Link to={`/detail/${item.slug}`} className="block h-full">
                             <Card 
                               id={item.slug}

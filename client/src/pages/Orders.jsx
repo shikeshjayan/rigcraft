@@ -10,41 +10,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 
-const INITIAL_ORDERS = [
-  {
-    id: 'ORD-938210',
-    date: '2026-07-24',
-    item: {
-      id: 1,
-      title: 'Intel Core i9-14900K Desktop Processor 24 cores (8 P-cores + 16 E-cores)',
-      image: 'https://images.unsplash.com/photo-1591799264318-7e6ef8ddb7ea?w=500&auto=format&fit=crop&q=60',
-      price: 589.99,
-    },
-    status: 'In Process', 
-  },
-  {
-    id: 'ORD-883102',
-    date: '2026-07-22',
-    item: {
-      id: 2,
-      title: 'ASUS ROG Strix GeForce RTX™ 4090 White OC Edition',
-      image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?w=500&auto=format&fit=crop&q=60',
-      price: 2199.99,
-    },
-    status: 'On the way',
-  },
-  {
-    id: 'ORD-721004',
-    date: '2026-06-15',
-    item: {
-      id: 5,
-      title: 'Corsair Vengeance RGB 64GB (2x32GB) DDR5 6000MHz',
-      image: 'https://images.unsplash.com/photo-1563191911-e65f8655ebf9?w=500&auto=format&fit=crop&q=60',
-      price: 219.99,
-    },
-    status: 'Delivered',
-  }
-];
+const INITIAL_ORDERS = [];
 
 const ORDER_STATUSES = [
   { label: 'In Process', icon: <AutorenewIcon fontSize="small" /> },
@@ -53,7 +19,7 @@ const ORDER_STATUSES = [
   { label: 'Delivered', icon: <CheckCircleIcon fontSize="small" /> }
 ];
 
-const Orders = () => {
+const Orders = ({ embedded = false }) => {
   const navigate = useNavigate();
   const [orders, setOrders] = useState(INITIAL_ORDERS);
   const [filter, setFilter] = useState('All');
@@ -93,11 +59,8 @@ const Orders = () => {
     return ORDER_STATUSES.findIndex(s => s.label === status);
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Orders' }]} />
-        <FadeUp>
+  const content = (
+    <FadeUp>
           <div className="flex flex-col lg:flex-row gap-8">
             
             {/* LEFT SIDEBAR: FILTERS & CONTACT */}
@@ -264,40 +227,56 @@ const Orders = () => {
 
           </div>
         </FadeUp>
-      </div>
+  );
 
-      {/* Cancellation Modal */}
-      {showCancelModal && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-          <FadeUp>
-            <div className="bg-white rounded-md p-6 max-w-sm w-full shadow-2xl border-t-4 border-red-500" style={{ borderRadius: 'var(--radius-sm)' }}>
-              <div className="flex flex-col items-center text-center mb-6">
-                <WarningAmberIcon sx={{ fontSize: 48, color: '#EF4444' }} className="mb-4" />
-                <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-wide">Cancel Order?</h3>
-                <p className="text-gray-600 text-sm font-medium">Are you sure you want to cancel <br/><span className="font-bold text-gray-900">{orderToCancel?.id}</span>?</p>
-                <p className="text-[12px] text-gray-500 mt-2">This action cannot be undone.</p>
-              </div>
-              
-              <div className="flex gap-3">
-                <button 
-                  onClick={() => setShowCancelModal(false)}
-                  className="flex-1 py-2.5 font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer uppercase tracking-wider text-[13px]"
-                  style={{ borderRadius: 'var(--radius-sm)' }}
-                >
-                  No, Keep It
-                </button>
-                <button 
-                  onClick={confirmCancel}
-                  className="flex-1 py-2.5 font-bold text-white bg-red-600 hover:bg-red-700 transition-colors cursor-pointer flex items-center justify-center gap-2 uppercase tracking-wider text-[13px]"
-                  style={{ borderRadius: 'var(--radius-sm)' }}
-                >
-                  Yes, Cancel
-                </button>
-              </div>
-            </div>
-          </FadeUp>
+  const modalContent = showCancelModal && (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+      <FadeUp>
+        <div className="bg-white rounded-md p-6 max-w-sm w-full shadow-2xl border-t-4 border-red-500" style={{ borderRadius: 'var(--radius-sm)' }}>
+          <div className="flex flex-col items-center text-center mb-6">
+            <WarningAmberIcon sx={{ fontSize: 48, color: '#EF4444' }} className="mb-4" />
+            <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-wide">Cancel Order?</h3>
+            <p className="text-gray-600 text-sm font-medium">Are you sure you want to cancel <br/><span className="font-bold text-gray-900">{orderToCancel?.id}</span>?</p>
+            <p className="text-[12px] text-gray-500 mt-2">This action cannot be undone.</p>
+          </div>
+          
+          <div className="flex gap-3">
+            <button 
+              onClick={() => setShowCancelModal(false)}
+              className="flex-1 py-2.5 font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer uppercase tracking-wider text-[13px]"
+              style={{ borderRadius: 'var(--radius-sm)' }}
+            >
+              No, Keep It
+            </button>
+            <button 
+              onClick={confirmCancel}
+              className="flex-1 py-2.5 font-bold text-white bg-red-600 hover:bg-red-700 transition-colors cursor-pointer flex items-center justify-center gap-2 uppercase tracking-wider text-[13px]"
+              style={{ borderRadius: 'var(--radius-sm)' }}
+            >
+              Yes, Cancel
+            </button>
+          </div>
         </div>
-      )}
+      </FadeUp>
+    </div>
+  );
+
+  if (embedded) {
+    return (
+      <>
+        {content}
+        {modalContent}
+      </>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-7xl mx-auto">
+        <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Orders' }]} />
+        {content}
+      </div>
+      {modalContent}
     </div>
   );
 };
