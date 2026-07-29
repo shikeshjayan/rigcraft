@@ -47,11 +47,13 @@ export const adminGetUnreadCount = asyncHandler(async (req, res) => {
 });
 
 export const adminMarkAsRead = asyncHandler(async (req, res) => {
-  const notification = await notificationService.markAsRead(
-    req.params.id,
-    req.user._id
-  );
+  const notification = await notificationService.adminMarkAsRead(req.params.id);
   ApiResponse.ok(notification, "Notification marked as read").send(res);
+});
+
+export const adminGetNotification = asyncHandler(async (req, res) => {
+  const notification = await notificationService.getAdminNotificationById(req.params.id);
+  ApiResponse.ok(notification, "Notification fetched successfully").send(res);
 });
 
 export const adminMarkAllAsRead = asyncHandler(async (req, res) => {

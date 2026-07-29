@@ -16,8 +16,14 @@ export const createDealSchema = z.object({
     })
     .optional()
     .nullable(),
-  startDate: z.string().min(1, "Start date is required"),
-  endDate: z.string().min(1, "End date is required"),
+  code: z.string().min(1, "Code is required").trim(),
+  type: z.enum(["percentage", "fixed"]),
+  value: z.number().min(0, "Value must be positive"),
+  minOrder: z.number().min(0, "Minimum order must be positive").optional(),
+  maxUses: z.number().min(0, "Max uses must be positive").optional(),
+  usedCount: z.number().min(0).optional().default(0),
+  startDate: z.coerce.date(),
+  endDate: z.coerce.date(),
   isActive: z.boolean().optional(),
   products: z.array(objectId).optional(),
   prebuiltPcs: z.array(objectId).optional(),
@@ -34,8 +40,13 @@ export const updateDealSchema = z.object({
     })
     .optional()
     .nullable(),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
+  code: z.string().min(1).trim().optional(),
+  type: z.enum(["percentage", "fixed"]).optional(),
+  value: z.number().min(0, "Value must be positive").optional(),
+  minOrder: z.number().min(0, "Minimum order must be positive").optional(),
+  maxUses: z.number().min(0, "Max uses must be positive").optional(),
+  startDate: z.coerce.date().optional(),
+  endDate: z.coerce.date().optional(),
   isActive: z.boolean().optional(),
   products: z.array(objectId).optional(),
   prebuiltPcs: z.array(objectId).optional(),

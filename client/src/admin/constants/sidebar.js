@@ -120,7 +120,7 @@ export const SIDEBAR_SECTIONS = [
         label: "Settings",
         path: "/admin/settings",
         icon: "Settings",
-        roles: ["super_admin"],
+        roles: ["super_admin", "admin"],
       },
     ],
   },

@@ -22,6 +22,21 @@ export const getActive = asyncHandler(async (req, res) => {
   ApiResponse.ok(deals).send(res);
 });
 
+export const getActiveForHomepage = asyncHandler(async (req, res) => {
+  const deals = await dealService.getActiveForHomepage();
+  ApiResponse.ok(deals).send(res);
+});
+
+export const getProductsForDeal = asyncHandler(async (req, res) => {
+  const products = await dealService.getProductsForDeal();
+  ApiResponse.ok(products).send(res);
+});
+
+export const getPrebuiltPCsForDeal = asyncHandler(async (req, res) => {
+  const prebuiltPCs = await dealService.getPrebuiltPCsForDeal();
+  ApiResponse.ok(prebuiltPCs).send(res);
+});
+
 export const create = asyncHandler(async (req, res) => {
   const deal = await dealService.create(req.body, req.file);
   ApiResponse.created(deal, "Deal created").send(res);
