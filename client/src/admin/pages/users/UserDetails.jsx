@@ -76,14 +76,19 @@ const UserDetails = () => {
 
   const [orders, setOrders] = useState([]);
   const [ordersLoading, setOrdersLoading] = useState(false);
+  const [ordersLoaded, setOrdersLoaded] = useState(false);
   const [reviews, setReviews] = useState([]);
   const [reviewsLoading, setReviewsLoading] = useState(false);
+  const [reviewsLoaded, setReviewsLoaded] = useState(false);
   const [addresses, setAddresses] = useState([]);
   const [addressesLoading, setAddressesLoading] = useState(false);
+  const [addressesLoaded, setAddressesLoaded] = useState(false);
   const [wishlist, setWishlist] = useState({ items: [] });
   const [wishlistLoading, setWishlistLoading] = useState(false);
+  const [wishlistLoaded, setWishlistLoaded] = useState(false);
   const [builds, setBuilds] = useState([]);
   const [buildsLoading, setBuildsLoading] = useState(false);
+  const [buildsLoaded, setBuildsLoaded] = useState(false);
 
   useEffect(() => {
     userService.getById(id)
@@ -93,27 +98,27 @@ const UserDetails = () => {
   }, [id, navigate, toast]);
 
   useEffect(() => {
-    if (tab === 1 && orders.length === 0 && !ordersLoading) {
+    if (tab === 1 && !ordersLoaded && !ordersLoading) {
       setOrdersLoading(true);
-      userService.getOrders(id).then((r) => setOrders(r.orders || [])).catch(() => {}).finally(() => setOrdersLoading(false));
+      userService.getOrders(id).then((r) => { setOrders(r.orders || []); setOrdersLoaded(true); }).catch((err) => { toast(extractError(err, "Failed to load orders"), "error"); setOrdersLoaded(true); }).finally(() => setOrdersLoading(false));
     }
-    if (tab === 2 && reviews.length === 0 && !reviewsLoading) {
+    if (tab === 2 && !reviewsLoaded && !reviewsLoading) {
       setReviewsLoading(true);
-      userService.getReviews(id).then((r) => setReviews(r.docs || [])).catch(() => {}).finally(() => setReviewsLoading(false));
+      userService.getReviews(id).then((r) => { setReviews(r.docs || []); setReviewsLoaded(true); }).catch((err) => { toast(extractError(err, "Failed to load reviews"), "error"); setReviewsLoaded(true); }).finally(() => setReviewsLoading(false));
     }
-    if (tab === 3 && addresses.length === 0 && !addressesLoading) {
+    if (tab === 3 && !addressesLoaded && !addressesLoading) {
       setAddressesLoading(true);
-      userService.getAddresses(id).then(setAddresses).catch(() => {}).finally(() => setAddressesLoading(false));
+      userService.getAddresses(id).then((r) => { setAddresses(r); setAddressesLoaded(true); }).catch((err) => { toast(extractError(err, "Failed to load addresses"), "error"); setAddressesLoaded(true); }).finally(() => setAddressesLoading(false));
     }
-    if (tab === 4 && wishlist.items.length === 0 && !wishlistLoading) {
+    if (tab === 4 && !wishlistLoaded && !wishlistLoading) {
       setWishlistLoading(true);
-      userService.getWishlist(id).then(setWishlist).catch(() => {}).finally(() => setWishlistLoading(false));
+      userService.getWishlist(id).then((r) => { setWishlist(r); setWishlistLoaded(true); }).catch((err) => { toast(extractError(err, "Failed to load wishlist"), "error"); setWishlistLoaded(true); }).finally(() => setWishlistLoading(false));
     }
-    if (tab === 5 && builds.length === 0 && !buildsLoading) {
+    if (tab === 5 && !buildsLoaded && !buildsLoading) {
       setBuildsLoading(true);
-      userService.getBuilds(id).then((r) => setBuilds(r.docs || [])).catch(() => {}).finally(() => setBuildsLoading(false));
+      userService.getBuilds(id).then((r) => { setBuilds(r.docs || []); setBuildsLoaded(true); }).catch((err) => { toast(extractError(err, "Failed to load builds"), "error"); setBuildsLoaded(true); }).finally(() => setBuildsLoading(false));
     }
-  }, [tab, id, orders.length, ordersLoading, reviews.length, reviewsLoading, addresses.length, addressesLoading, wishlist.items.length, wishlistLoading, builds.length, buildsLoading]);
+  }, [tab, id, ordersLoaded, ordersLoading, reviewsLoaded, reviewsLoading, addressesLoaded, addressesLoading, wishlistLoaded, wishlistLoading, buildsLoaded, buildsLoading]);
 
   const handleSave = async () => {
     setSaving(true);
@@ -273,7 +278,11 @@ const UserDetails = () => {
 
       {/* Tab 1: Orders */}
       <TabPanel value={tab} index={1}>
-        {ordersLoading ? <Loading /> : orders.length === 0 ? (
+        {ordersLoading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
+            <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full" />
+          </Box>
+        ) : !ordersLoaded ? null : orders.length === 0 ? (
           <Box sx={{ textAlign: "center", py: 6, color: "var(--color-admin-muted)" }}>No orders found</Box>
         ) : (
           <Box sx={{ overflowX: "auto" }}>
@@ -313,7 +322,11 @@ const UserDetails = () => {
 
       {/* Tab 2: Reviews */}
       <TabPanel value={tab} index={2}>
-        {reviewsLoading ? <Loading /> : reviews.length === 0 ? (
+        {reviewsLoading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
+            <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full" />
+          </Box>
+        ) : !reviewsLoaded ? null : reviews.length === 0 ? (
           <Box sx={{ textAlign: "center", py: 6, color: "var(--color-admin-muted)" }}>No reviews found</Box>
         ) : (
           <Box sx={{ overflowX: "auto" }}>
@@ -355,7 +368,11 @@ const UserDetails = () => {
 
       {/* Tab 3: Addresses */}
       <TabPanel value={tab} index={3}>
-        {addressesLoading ? <Loading /> : addresses.length === 0 ? (
+        {addressesLoading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
+            <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full" />
+          </Box>
+        ) : !addressesLoaded ? null : addresses.length === 0 ? (
           <Box sx={{ textAlign: "center", py: 6, color: "var(--color-admin-muted)" }}>No addresses saved</Box>
         ) : (
           <Grid container spacing={2}>
@@ -379,7 +396,11 @@ const UserDetails = () => {
 
       {/* Tab 4: Wishlist */}
       <TabPanel value={tab} index={4}>
-        {wishlistLoading ? <Loading /> : !wishlist.items?.length ? (
+        {wishlistLoading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
+            <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full" />
+          </Box>
+        ) : !wishlistLoaded ? null : !wishlist.items?.length ? (
           <Box sx={{ textAlign: "center", py: 6, color: "var(--color-admin-muted)" }}>Wishlist is empty</Box>
         ) : (
           <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
@@ -398,7 +419,11 @@ const UserDetails = () => {
 
       {/* Tab 5: PC Builds */}
       <TabPanel value={tab} index={5}>
-        {buildsLoading ? <Loading /> : builds.length === 0 ? (
+        {buildsLoading ? (
+          <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
+            <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full" />
+          </Box>
+        ) : !buildsLoaded ? null : builds.length === 0 ? (
           <Box sx={{ textAlign: "center", py: 6, color: "var(--color-admin-muted)" }}>No saved builds</Box>
         ) : (
           <Grid container spacing={2}>

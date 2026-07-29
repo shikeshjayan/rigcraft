@@ -41,8 +41,19 @@ const normalizeProduct = (p) => ({
 });
 
 const normalizeList = (res) => {
-  const docs = res.docs || res.data || res.products || res;
-  const items = Array.isArray(docs) ? docs.map(normalizeProduct) : [];
+  if (!res) return { data: [], total: 0 };
+  let docs = [];
+  if (Array.isArray(res)) {
+    docs = res;
+  } else if (Array.isArray(res.docs)) {
+    docs = res.docs;
+  } else if (Array.isArray(res.data)) {
+    docs = res.data;
+  } else if (Array.isArray(res.products)) {
+    docs = res.products;
+  }
+
+  const items = docs.map(normalizeProduct);
   return {
     data: items,
     total: res.totalDocs ?? res.total ?? res.pagination?.total ?? items.length,
