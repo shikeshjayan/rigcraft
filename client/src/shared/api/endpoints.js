@@ -11,6 +11,23 @@ export const ENDPOINTS = {
     RESET_PASSWORD: "/auth/reset-password",
   },
 
+  // Deals (public)
+  DEAL: {
+    LIST: "/deals",
+    ACTIVE: "/deals/active",
+    DETAILS: (slug) => `/deals/${slug}`,
+  },
+
+  // Deals (admin)
+  ADMIN_DEAL: {
+    LIST: "/admin/deals",
+    DETAILS: (id) => `/admin/deals/${id}`,
+    CREATE: "/admin/deals",
+    UPDATE: (id) => `/admin/deals/${id}`,
+    DELETE: (id) => `/admin/deals/${id}`,
+    DELETE_ENDED: "/admin/deals",
+  },
+
   // Dashboard
   DASHBOARD: {
     STATS: "/dashboard/stats",
@@ -57,6 +74,10 @@ export const ENDPOINTS = {
     DETAILS: (id) => `/prebuilt-pcs/${id}`,
     UPDATE: (id) => `/prebuilt-pcs/${id}`,
     DELETE: (id) => `/prebuilt-pcs/${id}`,
+    FEATURED: "/prebuilt-pcs/featured",
+    CATEGORY: (category) => `/prebuilt-pcs/category/${category}`,
+    SIMILAR: (slugOrId) => `/prebuilt-pcs/${slugOrId}/similar`,
+    COMPONENTS: (slugOrId) => `/prebuilt-pcs/${slugOrId}/components`,
   },
 
   // PC Builder
@@ -69,6 +90,14 @@ export const ENDPOINTS = {
     VALIDATE: (id) => `/builds/${id}/validate`,
     DUPLICATE: (id) => `/builds/${id}/duplicate`,
     ADD_TO_CART: (id) => `/builds/${id}/add-to-cart`,
+  },
+
+  // PC Builder (admin)
+  ADMIN_BUILDER: {
+    LIST: "/builds/admin",
+    ANALYTICS: "/builds/admin/analytics",
+    ISSUES: "/builds/admin/issues",
+    SETTINGS: "/builds/admin/settings",
   },
 
   // Cart
@@ -84,10 +113,20 @@ export const ENDPOINTS = {
 
   // Wishlist
   WISHLIST: {
-    GET: "/wishlist",
-    ADD_ITEM: "/wishlist/items",
-    REMOVE_ITEM: (id) => `/wishlist/items/${id}`,
-    CLEAR: "/wishlist",
+    GET: "/wishlists",
+    ADD_ITEM: "/wishlists",
+    REMOVE_ITEM: (id) => `/wishlists/${id}`,
+    CLEAR: "/wishlists",
+    MOVE_TO_CART: (id) => `/wishlists/${id}/move-to-cart`,
+  },
+
+  // Reviews (public)
+  REVIEW: {
+    LIST: "/reviews",
+    CREATE: "/reviews",
+    DETAILS: (id) => `/reviews/${id}`,
+    UPDATE: (id) => `/reviews/${id}`,
+    DELETE: (id) => `/reviews/${id}`,
   },
 
   // Coupons
@@ -99,11 +138,20 @@ export const ENDPOINTS = {
     DELETE: (id) => `/coupons/${id}`,
   },
 
+  // Orders (user)
+  ORDER: {
+    CHECKOUT: "/orders/checkout",
+    LIST: "/orders",
+    DETAILS: (id) => `/orders/${id}`,
+    CANCEL: (id) => `/orders/${id}/cancel`,
+  },
+
   // Admin Orders
   ADMIN_ORDER: {
     LIST: "/admin/orders",
     DETAILS: (id) => `/admin/orders/${id}`,
     UPDATE_STATUS: (id) => `/admin/orders/${id}/status`,
+    UPDATE_PAYMENT_STATUS: (id) => `/admin/orders/${id}/payment-status`,
   },
 
   // Admin Reviews
