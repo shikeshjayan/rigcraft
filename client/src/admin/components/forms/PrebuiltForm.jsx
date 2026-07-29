@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Box, Grid, Typography, Switch as MuiSwitch, Chip, IconButton } from "@mui/material";
 import { Add as AddIcon, Delete as DeleteIcon, Edit as EditIcon } from "@mui/icons-material";
 import AdminInput from "../common/Input";
+import AdminSelect from "../common/Select";
 import ImageUpload from "../common/ImageUpload";
 import AdminButton from "../common/Button";
 import ComponentSelector from "./ComponentSelector";

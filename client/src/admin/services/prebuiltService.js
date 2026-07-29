@@ -42,15 +42,34 @@ const normalizePrebuilt = (p) => ({
   image: p.images?.[0]?.url || null,
   images: p.images || [],
   components: Array.isArray(p.components)
-    ? Object.fromEntries(p.components.map((c) => [COMPONENT_TYPE_TO_SLOT[c.slot || c.type] || c.slot || c.type, c.product?.toString ? c.product.toString() : c.product]))
+    ? Object.fromEntries(p.components.map((c) => {
+        const key = COMPONENT_TYPE_TO_SLOT[c.slot || c.type] || c.slot || c.type;
+        const val = c.product && typeof c.product === "object" && c.product._id
+          ? c.product._id.toString()
+          : typeof c.product === "string"
+            ? c.product
+            : c.product?.toString?.() || c.product;
+        return [key, val];
+      }))
     : p.components || {},
   pricing: undefined,
   status: undefined,
 });
 
 const normalizeList = (res) => {
-  const docs = res.docs || res.data || res.prebuiltPCs || [];
-  const items = Array.isArray(docs) ? docs.map(normalizePrebuilt) : [];
+  if (!res) return { data: [], total: 0 };
+  let docs = [];
+  if (Array.isArray(res)) {
+    docs = res;
+  } else if (Array.isArray(res.docs)) {
+    docs = res.docs;
+  } else if (Array.isArray(res.data)) {
+    docs = res.data;
+  } else if (Array.isArray(res.prebuiltPCs)) {
+    docs = res.prebuiltPCs;
+  }
+
+  const items = docs.map(normalizePrebuilt);
   return {
     data: items,
     total: res.totalDocs ?? res.total ?? res.pagination?.total ?? items.length,
