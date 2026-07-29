@@ -1,21 +1,33 @@
 import mongoose from "mongoose";
 
+let cached = global.mongoose;
+
+if (!cached) {
+  cached = global.mongoose = { conn: null, promise: null };
+}
+
 const connectDB = async () => {
-  try {
-    const mongoUri = process.env.MONGODB_URI;
-    if (mongoUri) {
-      console.log("MongoDB URI found, attempting to connect...");
-      console.log(`MongoDB URI starts with: ${mongoUri.substring(0, 20)}...`);
-    } else {
-      console.error("MongoDB URI not found. Please set the MONGODB_URI environment variable.");
-      process.exit(1);
-    }
-    const conn = await mongoose.connect(mongoUri);
-    console.log(`MongoDB connected: ${conn.connection.host}`);
-  } catch (error) {
-    console.error(`MongoDB connection error: ${error.message}`);
-    process.exit(1);
+  if (cached.conn) {
+    console.log("Using cached database connection");
+    return cached.conn;
   }
+
+  if (!cached.promise) {
+    const mongoUri = process.env.MONGODB_URI;
+    if (!mongoUri) {
+      console.error("MongoDB URI not found. Please set the MONGODB_URI environment variable.");
+      throw new Error("MongoDB URI not found. Please set the MONGODB_URI environment variable.");
+    }
+    
+    console.log("Creating new database connection");
+    cached.promise = mongoose.connect(mongoUri, { bufferCommands: false }).then((mongoose) => {
+      console.log("Database connection successful");
+      return mongoose;
+    });
+  }
+  
+  cached.conn = await cached.promise;
+  return cached.conn;
 };
 
 export default connectDB;
