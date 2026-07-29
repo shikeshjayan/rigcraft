@@ -7,8 +7,7 @@ const normalizeUser = (u) => ({
   _id: undefined,
   __v: undefined,
   name: u.name || `${u.firstName || ""} ${u.lastName || ""}`.trim() || "Unknown",
-  status: u.isBlocked ? "inactive" : "active",
-  isBlocked: undefined,
+  status: u.isBlocked ? "blocked" : "active",
   firstName: undefined,
   lastName: undefined,
 });
@@ -35,6 +34,11 @@ export const userService = {
     return normalizeUser(data.data);
   },
 
+  create: async (userData) => {
+    const { data } = await api.post(ENDPOINTS.USER.CREATE, userData);
+    return data.data;
+  },
+
   update: async (id, userData) => {
     const payload = { ...userData };
     if (payload.name) {
@@ -45,9 +49,43 @@ export const userService = {
     }
     delete payload.id;
     delete payload._id;
-    delete payload.role;
     delete payload.status;
     const { data } = await api.put(ENDPOINTS.USER.UPDATE(id), payload);
     return normalizeUser(data.data);
+  },
+
+  toggleBlock: async (id) => {
+    const { data } = await api.patch(ENDPOINTS.USER.TOGGLE_BLOCK(id));
+    return data.data;
+  },
+
+  remove: async (id) => {
+    const { data } = await api.delete(ENDPOINTS.USER.DELETE(id));
+    return data;
+  },
+
+  getOrders: async (id, params = {}) => {
+    const { data } = await api.get(ENDPOINTS.USER.ORDERS(id), { params });
+    return data.data;
+  },
+
+  getAddresses: async (id) => {
+    const { data } = await api.get(ENDPOINTS.USER.ADDRESSES(id));
+    return data.data;
+  },
+
+  getReviews: async (id, params = {}) => {
+    const { data } = await api.get(ENDPOINTS.USER.REVIEWS(id), { params });
+    return data.data;
+  },
+
+  getWishlist: async (id) => {
+    const { data } = await api.get(ENDPOINTS.USER.WISHLIST(id));
+    return data.data;
+  },
+
+  getBuilds: async (id, params = {}) => {
+    const { data } = await api.get(ENDPOINTS.USER.BUILDS(id), { params });
+    return data.data;
   },
 };

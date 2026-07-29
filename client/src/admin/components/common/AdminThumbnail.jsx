@@ -1,22 +1,12 @@
 import { useState } from "react";
 import { Box } from "@mui/material";
+import SiteLogoPlaceholder from "./SiteLogoPlaceholder";
 
 const AdminThumbnail = ({ src, alt = "", size = 36, fallback, sx = {} }) => {
   const [error, setError] = useState(false);
 
   if (!src || error) {
-    return fallback || (
-      <Box sx={{
-        width: size, height: size, borderRadius: "var(--radius-admin-badge)",
-        backgroundColor: "var(--color-admin-bg-tertiary)",
-        display: "flex", alignItems: "center", justifyContent: "center",
-        flexShrink: 0, ...sx,
-      }}>
-        <Box sx={{ fontSize: "0.625rem", fontWeight: 700, color: "var(--color-admin-muted)", textTransform: "uppercase" }}>
-          ?
-        </Box>
-      </Box>
-    );
+    return fallback || <SiteLogoPlaceholder size={size} sx={sx} />;
   }
 
   return (

@@ -18,11 +18,17 @@ const prebuiltSchema = z.object({
   sku: z.string().min(1, "SKU is required").max(50),
   description: z.string().optional(),
   shortDescription: z.string().max(300).optional(),
-  price: z.coerce.number().min(0, "Price must be positive"),
-  comparePrice: z.coerce.number().min(0).optional().nullable(),
+  regularPrice: z.coerce.number().min(0, "Price must be positive"),
+  salePrice: z.coerce.number().min(0).optional().nullable(),
+  saleStart: z.string().optional(),
+  saleEnd: z.string().optional(),
   stock: z.coerce.number().int().min(0).optional(),
   isActive: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
+  category: z.string().optional(),
+  warrantyDuration: z.coerce.number().int().min(0).optional(),
+  warrantyUnit: z.string().optional(),
+  warrantyType: z.string().optional(),
   components: z.record(z.string(), z.union([z.string(), z.null()])).optional(),
   tags: z.array(z.string()).optional(),
   image: z.any().optional(),
@@ -48,8 +54,9 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
     resolver: zodResolver(prebuiltSchema),
     defaultValues: {
       name: "", sku: "", description: "", shortDescription: "",
-      price: 0, comparePrice: null, stock: 0,
-      isActive: true, isFeatured: false,
+      regularPrice: 0, salePrice: null, saleStart: "", saleEnd: "",
+      stock: 0, isActive: true, isFeatured: false,
+      category: "", warrantyDuration: 0, warrantyUnit: "month", warrantyType: "manufacturer",
       components: {},
       tags: [], image: null,
       ...defaultValues,
@@ -109,19 +116,47 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
             )} />
 
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <Controller name="price" control={control} render={({ field }) => (
-                  <AdminInput label="Price ($)" type="number" error={!!errors.price} helperText={errors.price?.message} {...field} />
+              <Grid size={{ xs: 12, sm: 3 }}>
+                <Controller name="regularPrice" control={control} render={({ field }) => (
+                  <AdminInput label="Regular Price ($)" type="number" error={!!errors.regularPrice} helperText={errors.regularPrice?.message} {...field} />
                 )} />
               </Grid>
-              <Grid size={{ xs: 12, sm: 4 }}>
-                <Controller name="comparePrice" control={control} render={({ field }) => (
-                  <AdminInput label="Compare Price ($)" type="number" {...field} value={field.value ?? ""} />
+              <Grid size={{ xs: 12, sm: 3 }}>
+                <Controller name="salePrice" control={control} render={({ field }) => (
+                  <AdminInput label="Sale Price ($)" type="number" {...field} value={field.value ?? ""} />
                 )} />
               </Grid>
-              <Grid size={{ xs: 12, sm: 4 }}>
+              <Grid size={{ xs: 12, sm: 3 }}>
                 <Controller name="stock" control={control} render={({ field }) => (
                   <AdminInput label="Stock" type="number" {...field} />
+                )} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 3 }}>
+                <Controller name="saleStart" control={control} render={({ field }) => (
+                  <AdminInput label="Sale Start" type="datetime-local" {...field} value={field.value ?? ""} InputLabelProps={{ shrink: true }} />
+                )} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 3 }}>
+                <Controller name="saleEnd" control={control} render={({ field }) => (
+                  <AdminInput label="Sale End" type="datetime-local" {...field} value={field.value ?? ""} InputLabelProps={{ shrink: true }} />
+                )} />
+              </Grid>
+            </Grid>
+
+            <Grid container spacing={2}>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <Controller name="warrantyDuration" control={control} render={({ field }) => (
+                  <AdminInput label="Warranty Duration" type="number" {...field} />
+                )} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <Controller name="warrantyUnit" control={control} render={({ field }) => (
+                  <AdminSelect label="Warranty Unit" options={[{ value: "month", label: "Month(s)" }, { value: "year", label: "Year(s)" }]} {...field} />
+                )} />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 4 }}>
+                <Controller name="warrantyType" control={control} render={({ field }) => (
+                  <AdminSelect label="Warranty Type" options={[{ value: "manufacturer", label: "Manufacturer" }, { value: "seller", label: "Seller" }]} {...field} />
                 )} />
               </Grid>
             </Grid>
@@ -180,6 +215,19 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
               <Typography variant="subtitle2" sx={{ mb: 2, color: "var(--color-admin-text)", fontWeight: 600 }}>Image</Typography>
               <Controller name="image" control={control} render={({ field }) => (
                 <ImageUpload images={field.value ? [field.value] : []} onChange={(files) => field.onChange(files[0] || null)} maxFiles={1} multiple={false} />
+              )} />
+            </Box>
+
+            <Box sx={{ p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+              <Typography variant="subtitle2" sx={{ mb: 2, color: "var(--color-admin-text)", fontWeight: 600 }}>Category</Typography>
+              <Controller name="category" control={control} render={({ field }) => (
+                <AdminSelect label="Category" options={[
+                  { value: "gaming", label: "Gaming" },
+                  { value: "streaming", label: "Streaming" },
+                  { value: "workstation", label: "Workstation" },
+                  { value: "office", label: "Office" },
+                  { value: "budget", label: "Budget" },
+                ]} {...field} value={field.value ?? ""} />
               )} />
             </Box>
 

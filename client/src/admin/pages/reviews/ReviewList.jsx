@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Rating, Chip } from "@mui/material";
-import { Visibility } from "@mui/icons-material";
+import { Box, Rating } from "@mui/material";
+import { Image as ImageIcon } from "@mui/icons-material";
 import DataTable from "../../components/tables/DataTable";
 import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
@@ -79,6 +79,29 @@ const ReviewList = () => {
     { key: "customer", label: "Customer", render: (val) => <Box sx={{ fontSize: "0.875rem" }}>{val.name}</Box> },
     { key: "rating", label: "Rating", render: (val) => <Rating value={val} readOnly size="small" /> },
     { key: "title", label: "Title", render: (val) => <Box sx={{ fontSize: "0.8125rem", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{val}</Box> },
+    { key: "images", label: "Images", render: (val, row) => {
+      const images = row.images || val;
+      if (!images?.length) return null;
+      return (
+        <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
+          <ImageIcon sx={{ fontSize: 16, color: "var(--color-admin-muted)" }} />
+          <Box sx={{ display: "flex", gap: 0.5 }}>
+            {images.slice(0, 3).map((img, i) => (
+              <Box
+                key={i}
+                component="img"
+                src={img.url || img}
+                alt=""
+                sx={{ width: 28, height: 28, borderRadius: "4px", objectFit: "cover", border: "1px solid var(--color-admin-border)" }}
+              />
+            ))}
+            {images.length > 3 && (
+              <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)", display: "flex", alignItems: "center" }}>+{images.length - 3}</Box>
+            )}
+          </Box>
+        </Box>
+      );
+    }},
     { key: "status", label: "Status", render: (val) => <StatusBadge status={val} colorMap={REVIEW_STATUS_COLOR} /> },
     { key: "createdAt", label: "Date", render: (val) => formatDate(val) },
   ];

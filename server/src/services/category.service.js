@@ -57,6 +57,10 @@ export const update = async (id, data, file) => {
 
   const category = await categoryRepository.findById(id);
 
+  if (data.image === null && category.image?.publicId) {
+    await uploadService.deleteImage(category.image.publicId);
+  }
+
   if (data.name && data.name !== category.name) {
     const slug = generateSlug(data.name);
     const existing = await categoryRepository.findOne({

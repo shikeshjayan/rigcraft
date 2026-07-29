@@ -28,8 +28,8 @@ const ProductCreate = () => {
   const handleSubmit = async (data) => {
     setLoading(true);
     try {
-      const payload = { ...data, comparePrice: data.comparePrice || null, costPrice: data.costPrice || null };
-      payload.images = payload.images?.map((img) => img.file).filter(Boolean) || [];
+      const payload = { ...data, comparePrice: data.comparePrice || null };
+      payload.images = payload.images?.map((img) => (img.file instanceof File ? img.file : img)).filter(Boolean) || [];
       await productService.create(payload);
       toast("Product created successfully");
       navigate("/admin/products");

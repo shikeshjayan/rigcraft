@@ -14,7 +14,7 @@ class ReviewRepository extends BaseRepository {
       rating,
     } = options;
 
-    const filter = { item: itemId, itemType, isVisible: true };
+    const filter = { item: itemId, itemType, status: "approved" };
     if (rating) filter.rating = Number(rating);
 
     return this.model.paginate(filter, {
@@ -52,7 +52,7 @@ class ReviewRepository extends BaseRepository {
 
   async getRatingStats(itemId, itemType) {
     const stats = await this.model.aggregate([
-      { $match: { item: itemId, itemType, isVisible: true } },
+      { $match: { item: itemId, itemType, status: "approved" } },
       {
         $group: {
           _id: null,

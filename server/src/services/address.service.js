@@ -23,6 +23,10 @@ export const getAddresses = async (userId) => {
   return addressRepository.findByUser(userId);
 };
 
+export const adminGetUserAddresses = async (userId) => {
+  return addressRepository.findByUser(userId);
+};
+
 export const getAddress = async (addressId, userId) => {
   const address = await addressRepository.findById(addressId);
   if (address.user.toString() !== userId.toString()) {

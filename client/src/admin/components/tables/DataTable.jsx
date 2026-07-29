@@ -118,7 +118,7 @@ const DataTable = ({
           component="div"
           count={total}
           page={page}
-          onPageChange={(_, p) => onPageChange(p)}
+          onPageChange={onPageChange}
           rowsPerPage={pageSize}
           onRowsPerPageChange={(e) => onPageSizeChange(parseInt(e.target.value, 10))}
           rowsPerPageOptions={rowsPerPageOptions || [10, 25, 50, 100]}
