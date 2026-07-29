@@ -55,10 +55,10 @@ const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp,
   return (
     <div 
       onClick={() => navigate(`/detail/${formattedTitle}/${id}`)}
-      className="relative flex flex-col h-full overflow-hidden group transition-all duration-300 cursor-pointer bg-white border border-gray-100 hover:shadow-xl"
+      className="relative flex flex-col h-full overflow-hidden border border-gray-300 group transition-all duration-300 cursor-pointer bg-white border border-gray-100 hover:shadow-xl"
       style={{ 
         borderRadius: 'var(--radius-sm)', 
-        minHeight: compact ? '320px' : '420px'
+        minHeight: compact ? '320px' : '420px'  
       }}
     >
       {/* Image Container */}

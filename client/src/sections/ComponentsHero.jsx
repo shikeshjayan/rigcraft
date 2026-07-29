@@ -3,8 +3,62 @@ import { motion } from 'framer-motion';
 import MemoryIcon from '@mui/icons-material/Memory';
 import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
 import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
+import StorageIcon from '@mui/icons-material/Storage';
+import PowerIcon from '@mui/icons-material/Power';
+import SettingsInputComponentIcon from '@mui/icons-material/SettingsInputComponent';
 
-const ComponentsHero = () => {
+const CATEGORY_DETAILS = {
+  cpu: { title: "PROCESSORS (CPUs)", desc: "Power your next build with top-tier processors.", icon: MemoryIcon },
+  gpu: { title: "GRAPHICS CARDS", desc: "Experience lifelike visuals with next-gen GPUs.", icon: VideogameAssetIcon },
+  motherboard: { title: "MOTHERBOARDS", desc: "The foundation of your ultimate gaming rig.", icon: DeveloperBoardIcon },
+  ram: { title: "MEMORY (RAM)", desc: "Multitask flawlessly with high-speed memory.", icon: MemoryIcon },
+  storage: { title: "STORAGE (SSDs/HDDs)", desc: "Lightning-fast load times and massive capacity.", icon: StorageIcon },
+  psu: { title: "POWER SUPPLIES", desc: "Reliable and efficient power for your system.", icon: PowerIcon },
+  case: { title: "PC CASES", desc: "Showcase your build in style with premium cases.", icon: SettingsInputComponentIcon },
+  cooling: { title: "COOLING SOLUTIONS", desc: "Keep temperatures low and performance high.", icon: SettingsInputComponentIcon },
+};
+
+const ComponentsHero = ({ category }) => {
+  if (category) {
+    const details = CATEGORY_DETAILS[category.toLowerCase()] || { 
+      title: category.toUpperCase().replace('-', ' '), 
+      desc: "Browse premium hardware for your custom build.", 
+      icon: SettingsInputComponentIcon 
+    };
+    const IconComponent = details.icon;
+    
+    return (
+      <section className="relative w-full overflow-hidden flex items-center justify-center py-8" style={{ backgroundColor: 'var(--color-bg-primary)', minHeight: '160px' }}>
+        <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-center md:justify-start gap-6">
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="p-5 rounded-full bg-[var(--color-bg-secondary)] text-[var(--color-primary)] shadow-sm border border-[var(--color-border)]"
+          >
+            <IconComponent sx={{ fontSize: 40 }} />
+          </motion.div>
+          <div className="text-center md:text-left">
+            <motion.h1 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              className="font-extrabold text-[#111111] text-[28px] md:text-[36px]"
+            >
+              {details.title}
+            </motion.h1>
+            <motion.p 
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1 }}
+              className="font-medium text-[#6B7280] text-[15px] md:text-[16px] mt-1"
+            >
+              {details.desc}
+            </motion.p>
+          </div>
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section className="relative w-full overflow-hidden flex items-center justify-center py-20 lg:py-32" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <div className="relative z-10 w-full max-w-[1400px] mx-auto px-6 lg:px-8 text-center flex flex-col items-center">

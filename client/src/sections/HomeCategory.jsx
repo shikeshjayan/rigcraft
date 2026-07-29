@@ -16,7 +16,7 @@ const categories = [
 
 const HomeCategory = () => {
   return (
-    <section className="w-full py-20" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+    <section className="w-full py-20" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
         
         {/* Header Section */}
