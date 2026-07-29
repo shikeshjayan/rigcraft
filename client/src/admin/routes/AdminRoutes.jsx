@@ -30,6 +30,15 @@ import UserDetails from "../pages/users/UserDetails";
 import Settings from "../pages/settings/Settings";
 import Profile from "../pages/profile/Profile";
 import NewsletterList from "../pages/newsletter/NewsletterList";
+import DealList from "../pages/deals/DealList";
+import DealCreate from "../pages/deals/DealCreate";
+import DealEdit from "../pages/deals/DealEdit";
+import FaqList from "../pages/faqs/FaqList";
+import FaqCreate from "../pages/faqs/FaqCreate";
+import FaqEdit from "../pages/faqs/FaqEdit";
+import SupportList from "../pages/support/SupportList";
+import SupportDetails from "../pages/support/SupportDetails";
+import NotificationList from "../pages/notifications/NotificationList";
 import { ROLES } from "../constants/status";
 
 const AdminRoutes = () => {
@@ -79,6 +88,19 @@ const AdminRoutes = () => {
 
         <Route path="users" element={<UserList />} />
         <Route path="users/:id" element={<UserDetails />} />
+
+        <Route path="deals" element={<DealList />} />
+        <Route path="deals/new" element={<DealCreate />} />
+        <Route path="deals/:id/edit" element={<DealEdit />} />
+
+        <Route path="faqs" element={<FaqList />} />
+        <Route path="faqs/new" element={<FaqCreate />} />
+        <Route path="faqs/:id/edit" element={<FaqEdit />} />
+
+        <Route path="support" element={<SupportList />} />
+        <Route path="support/:id" element={<SupportDetails />} />
+
+        <Route path="notifications" element={<NotificationList />} />
 
         <Route path="newsletter" element={<NewsletterList />} />
 

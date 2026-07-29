@@ -1,5 +1,6 @@
 import BaseRepository from "./base.repository.js";
 import PrebuiltPC from "../models/prebuiltPC.model.js";
+import ApiError from "../utils/ApiError.js";
 
 const COMPONENT_POPULATE = [
   {
@@ -12,6 +13,12 @@ const COMPONENT_POPULATE = [
 class PrebuiltPCRepository extends BaseRepository {
   constructor() {
     super(PrebuiltPC);
+  }
+
+  async findById(id) {
+    const doc = await this.model.findById(id).populate(COMPONENT_POPULATE);
+    if (!doc || doc.isDeleted) throw ApiError.notFound("Prebuilt PC not found");
+    return doc;
   }
 
   async findBySlug(slug) {
