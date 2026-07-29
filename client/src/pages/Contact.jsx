@@ -4,7 +4,7 @@ import LocationOnIcon from '@mui/icons-material/LocationOn';
 import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-
+import apiClient from '../api/client';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -23,17 +23,29 @@ const Contact = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.name && formData.email && formData.message && formData.consent) {
-      setShowPopup(true);
-      // Reset form
-      setFormData({ name: '', email: '', message: '', consent: false });
-      
-      // Hide popup after 3 seconds
-      setTimeout(() => {
-        setShowPopup(false);
-      }, 3000);
+      try {
+        setIsSubmitting(true);
+        const res = await apiClient.post('/support/contact', {
+          name: formData.name,
+          email: formData.email,
+          message: formData.message
+        });
+        
+        if (res.data.success) {
+          setShowPopup(true);
+          setFormData({ name: '', email: '', message: '', consent: false });
+          setTimeout(() => setShowPopup(false), 3000);
+        }
+      } catch (error) {
+        alert("Failed to send message. Please try again later.");
+      } finally {
+        setIsSubmitting(false);
+      }
     } else {
       alert("Please fill all fields and agree to the terms.");
     }
@@ -152,8 +164,8 @@ const Contact = () => {
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    placeholder="John Doe"
-                    className="w-full px-4 py-3 border border-gray-200 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 outline-none transition-all bg-gray-50 focus:bg-white"
+                    placeholder="Enter your Full Name"
+                    className="w-full px-4 py-3 border border-gray-200 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
                     style={{ borderRadius: 'var(--radius-sm, 8px)' }}
                   />
                 </div>
@@ -167,8 +179,8 @@ const Contact = () => {
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    placeholder="john@example.com"
-                    className="w-full px-4 py-3 border border-gray-200 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 outline-none transition-all bg-gray-50 focus:bg-white"
+                    placeholder="Enter your Email Address"
+                    className="w-full px-4 py-3 border border-gray-200 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
                     style={{ borderRadius: 'var(--radius-sm, 8px)' }}
                   />
                 </div>
@@ -181,9 +193,9 @@ const Contact = () => {
                     value={formData.message}
                     onChange={handleChange}
                     required
-                    placeholder="Describe your issue or inquiry in detail..."
+                    placeholder="Enter your message here..."
                     rows="5"
-                    className="w-full px-4 py-3 border border-gray-200 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 outline-none transition-all bg-gray-50 focus:bg-white resize-none"
+                    className="w-full px-4 py-3 border border-gray-200 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 outline-none transition-all bg-gray-50 focus:bg-white resize-none text-gray-900 placeholder-gray-400"
                     style={{ borderRadius: 'var(--radius-sm, 8px)' }}
                   ></textarea>
                 </div>
@@ -208,18 +220,18 @@ const Contact = () => {
                 </div>
 
                 <motion.button
-                  whileHover={formData.consent ? { scale: 1.02 } : {}}
-                  whileTap={formData.consent ? { scale: 0.98 } : {}}
+                  whileHover={formData.consent && !isSubmitting ? { scale: 1.02 } : {}}
+                  whileTap={formData.consent && !isSubmitting ? { scale: 0.98 } : {}}
                   type="submit"
-                  disabled={!formData.consent}
+                  disabled={!formData.consent || isSubmitting}
                   style={{ borderRadius: 'var(--radius-sm, 8px)' }}
                   className={`mt-4 w-full font-bold py-4 transition-all flex items-center justify-center gap-2 ${
-                    formData.consent 
+                    formData.consent && !isSubmitting
                       ? 'bg-[var(--color-primary)] text-white shadow-lg shadow-[var(--color-primary)]/30 hover:brightness-110 cursor-pointer' 
                       : 'bg-gray-200 text-gray-400 cursor-not-allowed shadow-none'
                   }`}
                 >
-                  Connect with Support
+                  {isSubmitting ? 'Sending...' : 'Connect with Support'}
                 </motion.button>
               </form>
             </div>

@@ -7,9 +7,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import Card from '../components/Card';
 import SkeletonCard from '../components/SkeletonCard';
 import Filter from '../components/Filter';
-
-// Using allItems as the unified source.
-import { allItems } from '../data/items';
+import apiClient from '../api/client';
 
 const PrebuildCatalog = () => {
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
@@ -38,8 +36,40 @@ const PrebuildCatalog = () => {
   const [isFiltering, setIsFiltering] = useState(false);
   const itemsPerPage = 40; // 5 columns * 8 rows
 
-  // Ensure we filter for prebuilt-like PCs or just use allItems for demo if categories aren't strictly 'prebuilt'
-  const basePCs = useMemo(() => allItems.slice(0, 100), []);
+  const [basePCs, setBasePCs] = useState([]);
+
+  useEffect(() => {
+    const fetchPrebuilts = async () => {
+      try {
+        const { data } = await apiClient.get('/prebuilt-pcs');
+        if (data && data.data) {
+          const docs = data.data.docs || data.data;
+          const pcArray = Array.isArray(docs) ? docs : [];
+          
+          const formatted = pcArray.map(pc => {
+            const priceVal = pc.pricing?.price || pc.priceVal || 0;
+            const mrpVal = pc.pricing?.salePrice || pc.mrpVal || 0;
+            
+            return {
+              ...pc,
+              id: pc._id || pc.id,
+              image: pc.images?.[0]?.url || pc.images?.[0] || pc.image || null,
+              title: pc.name || pc.title,
+              price: priceVal ? `₹${priceVal.toLocaleString()}` : pc.price,
+              priceVal: priceVal,
+              mrp: mrpVal ? `₹${mrpVal.toLocaleString()}` : pc.mrp,
+              specs: pc.specs || pc.tags || [],
+              brand: pc.brand || ''
+            };
+          });
+          setBasePCs(formatted);
+        }
+      } catch (error) {
+        console.error('Failed to fetch prebuilt PCs', error);
+      }
+    };
+    fetchPrebuilts();
+  }, []);
 
   const handleClearAll = () => {
     setFilters(initialFilters);
@@ -48,7 +78,9 @@ const PrebuildCatalog = () => {
 
   // Extract a numeric price for filtering
   const getPriceVal = (priceStr) => {
-    return parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
+    if (typeof priceStr === 'number') return priceStr;
+    if (!priceStr) return 0;
+    return parseInt(String(priceStr).replace(/[^0-9]/g, '')) || 0;
   };
 
   // Deep Filtering Logic
@@ -232,6 +264,7 @@ const PrebuildCatalog = () => {
                               tag={pc.discount || 'SALE'}
                               tagColor="#CC0C39"
                               compact={filterDropdownOpen} 
+                              category="prebuilt"
                             />
                           </Link>
                         </div>

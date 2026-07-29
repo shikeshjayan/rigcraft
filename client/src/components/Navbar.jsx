@@ -6,6 +6,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import DesktopWindowsOutlinedIcon from '@mui/icons-material/DesktopWindowsOutlined';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
@@ -45,8 +46,8 @@ const Navbar = () => {
     retry: false
   });
 
-  const firstName = isLoggedIn ? (profileData?.data?.firstName || user?.firstName || 'Customer') : 'Customer';
-  const profileText = isLoggedIn ? (profileData?.data?.firstName || user?.firstName || 'Profile') : 'Profile';
+  const firstName = isLoggedIn ? (user?.firstName || profileData?.data?.firstName || 'Customer') : 'Customer';
+  const profileText = isLoggedIn ? (user?.firstName || profileData?.data?.firstName || 'Profile') : 'Profile';
 
   const isHome = location.pathname === '/';
   const isPrebuild = location.pathname === '/prebuild';
@@ -245,6 +246,7 @@ const Navbar = () => {
                     
                     <ul className="flex flex-col text-[14px] text-[#334155] font-medium pb-2">
                       {isLoggedIn && (
+                        <>
                         <li 
                           onClick={() => navigate('/profile')}
                           className="mx-2 my-0.5 px-3 py-2.5 rounded-sm hover:bg-gradient-to-r hover:from-[#E8F4FF] hover:to-transparent hover:text-[var(--color-primary)] transition-all cursor-pointer flex items-center gap-3 group/item"
@@ -252,6 +254,14 @@ const Navbar = () => {
                           <PersonOutlineOutlinedIcon fontSize="small" className="text-[var(--color-primary)] opacity-80 group-hover/item:opacity-100" />
                           My Profile
                         </li>
+                        <li 
+                          onClick={() => navigate('/profile?tab=builds')}
+                          className="mx-2 my-0.5 px-3 py-2.5 rounded-sm hover:bg-gradient-to-r hover:from-[#E8F4FF] hover:to-transparent hover:text-[var(--color-primary)] transition-all cursor-pointer flex items-center gap-3 group/item"
+                        >
+                          <DesktopWindowsOutlinedIcon fontSize="small" className="text-[var(--color-primary)] opacity-80 group-hover/item:opacity-100" />
+                          Your Build
+                        </li>
+                        </>
                       )}
                       <li 
                         onClick={() => navigate('/orders')}

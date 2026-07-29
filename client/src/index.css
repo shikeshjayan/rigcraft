@@ -6,6 +6,16 @@
   body {
     font-family: 'Inter', sans-serif;
   }
+  
+  /* Make all interactive elements have a pointer cursor globally */
+  button, a, [role="button"], label, input[type="radio"], input[type="checkbox"], select, summary {
+    cursor: pointer !important;
+  }
+  
+  /* Also try to catch custom clickable items that have specific styles */
+  [class*="hover:"], [onClick] {
+    cursor: pointer;
+  }
 }
 
 @theme {
