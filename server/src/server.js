@@ -1,3 +1,10 @@
+import express from "express";
+import dotenv from "dotenv";
+import helmet from "helmet";
+import cors from "cors";
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
+import { initSocket } from "./socket/index.js";
 import http from "http";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.routes.js";
@@ -20,15 +27,16 @@ import errorHandler from "./middlewares/error.js";
 
 dotenv.config();
 
+const app = express();
 const PORT = process.env.PORT || 5000;
 
 app.use(helmet());
 
-const allowedOrigins = process.env.CORS_ORIGIN 
-  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim()) 
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
   : ['http://localhost:5173'];
 
-app.use(cors({ 
+app.use(cors({
   origin: function (origin, callback) {
     // allow requests with no origin (like mobile apps or curl requests)
     if (!origin) return callback(null, true);
@@ -38,7 +46,7 @@ app.use(cors({
     }
     return callback(null, true);
   },
-  credentials: true 
+  credentials: true
 }));
 
 app.use(morgan("dev"));
