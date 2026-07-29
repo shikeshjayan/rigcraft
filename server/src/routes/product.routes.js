@@ -13,9 +13,8 @@ const router = Router();
 // Public
 router.get("/", productController.list);
 router.get("/featured", productController.getFeatured);
-router.get("/:id", productController.getById);
-router.get("/:slug/related", productController.getRelated);
-router.get("/slug/:slug", productController.getBySlug);
+router.get("/:slugOrId/related", productController.getRelated);
+router.get("/:slugOrId", productController.getBySlugOrId);
 
 // Admin
 router.post(
