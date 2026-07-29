@@ -85,8 +85,8 @@ export const ENDPOINTS = {
   // Wishlist
   WISHLIST: {
     GET: "/wishlist",
-    ADD_ITEM: "/wishlist/items",
-    REMOVE_ITEM: (id) => `/wishlist/items/${id}`,
+    ADD_ITEM: "/wishlist",
+    REMOVE_ITEM: (id) => `/wishlist/${id}`,
     CLEAR: "/wishlist",
   },
 
