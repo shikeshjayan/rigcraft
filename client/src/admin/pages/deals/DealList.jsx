@@ -42,7 +42,7 @@ const DealList = () => {
   const fetchDeals = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await dealService.list({ page, pageSize, search, ...filters });
+      const result = await dealService.list({ page, pageSize, search, status: filters.status });
       setDeals(result.data);
       setTotal(result.total);
     } catch (err) {
@@ -50,7 +50,7 @@ const DealList = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, search, filters, toast]);
+  }, [page, pageSize, search, filters.status, toast]);
 
   useEffect(() => { fetchDeals(); }, [fetchDeals]);
 

@@ -2,6 +2,7 @@ import reviewRepository from "../repositories/review.repository.js";
 import productRepository from "../repositories/product.repository.js";
 import prebuiltPCRepository from "../repositories/prebuiltPC.repository.js";
 import Order from "../models/order.model.js";
+import { getSettings } from "../models/settings.model.js";
 import * as uploadService from "./upload.service.js";
 import ApiError from "../utils/ApiError.js";
 
@@ -25,6 +26,12 @@ const verifyPurchase = async (userId, itemId, itemType) => {
 export const createReview = async (userId, data, files) => {
   const { itemType, item, rating, title, comment } = data;
 
+  const settings = await getSettings();
+
+  if (settings.review && !settings.review.allowReviews) {
+    throw ApiError.forbidden("Reviews are currently disabled");
+  }
+
   const isPurchased = await verifyPurchase(userId, item, itemType);
   if (!isPurchased) {
     throw ApiError.forbidden("You must purchase this item before reviewing");
@@ -40,7 +47,12 @@ export const createReview = async (userId, data, files) => {
   }
 
   let images = [];
-  if (files && files.length > 0) {
+  const allowImages = settings.review?.allowImages !== false;
+  if (files && files.length > 0 && allowImages) {
+    const maxImages = settings.review?.maxImages || 5;
+    if (files.length > maxImages) {
+      throw ApiError.badRequest(`Maximum ${maxImages} images allowed per review`);
+    }
     const uploaded = await uploadService.uploadMultipleImages(files, FOLDER);
     images = uploaded.map((img) => ({ ...img, alt: title || "Review image" }));
   }
@@ -57,6 +69,7 @@ export const createReview = async (userId, data, files) => {
     comment,
     images,
     isVerifiedPurchase: true,
+    status: settings.review?.autoApprove ? "approved" : "pending",
   });
 
   await recalculateRating(item, itemType);

@@ -15,14 +15,19 @@ const Profile = () => {
   const [changingPassword, setChangingPassword] = useState(false);
   const [avatar, setAvatar] = useState([]);
 
-  const [name, setName] = useState(user?.name || "");
+  const [name, setName] = useState(
+    user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || ''
+  );
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
   const splitName = (fullName) => {
-    const parts = (fullName || "").split(" ");
-    return { firstName: parts[0] || "", lastName: parts.slice(1).join(" ") || "" };
+    const parts = (fullName || "").trim().split(/\s+/);
+    return {
+      firstName: parts[0] || "",
+      ...(parts.length > 1 ? { lastName: parts.slice(1).join(" ") } : {}),
+    };
   };
 
   const handleSaveProfile = async () => {

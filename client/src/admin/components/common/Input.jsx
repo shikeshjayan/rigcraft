@@ -1,12 +1,15 @@
 import { TextField } from "@mui/material";
 
-const AdminInput = ({ label, error, helperText, type, inputProps, InputLabelProps: inputLabelPropsProp, InputProps: inputPropsProp, onKeyDown, onChange, onBlur, min, ...props }) => {
+const AdminInput = ({ label, error, helperText, type, inputProps, InputLabelProps: inputLabelPropsProp, InputProps: inputPropsProp, onKeyDown, onChange, onBlur, min, value, ...props }) => {
   const isNumber = type === "number";
   const isDate = type === "datetime-local" || type === "date" || type === "time" || type === "month" || type === "week";
 
   const mergedInputProps = isNumber
-    ? { min: min ?? 0, ...inputProps }
+    ? { min: min ?? 0, placeholder: "0", ...inputProps }
     : inputProps;
+
+  // If it's a number input and the value is 0, display an empty string to show the placeholder
+  const displayValue = isNumber && value === 0 ? "" : value;
 
   const mergedInputLabelProps = isDate
     ? { shrink: true, ...inputLabelPropsProp }
@@ -46,6 +49,7 @@ const AdminInput = ({ label, error, helperText, type, inputProps, InputLabelProp
       variant="outlined"
       type={type}
       focused={focused}
+      value={displayValue} // Use the new displayValue
       slotProps={{
         htmlInput: mergedInputProps,
         inputLabel: mergedInputLabelProps,

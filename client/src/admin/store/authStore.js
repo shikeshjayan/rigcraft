@@ -35,7 +35,15 @@ const useAuthStore = create(
         set({ user: null, isAuthenticated: false });
       },
 
-      setUser: (user) => set({ user }),
+      setUser: (userData) => {
+        const normalized = {
+          ...userData,
+          id: userData.id || userData._id,
+          name: userData.name || [userData.firstName, userData.lastName].filter(Boolean).join(' ') || '',
+          avatar: typeof userData.avatar === 'object' && userData.avatar ? userData.avatar.url : (userData.avatar || null),
+        };
+        set({ user: normalized });
+      },
     }),
     {
       name: "admin-auth-storage",

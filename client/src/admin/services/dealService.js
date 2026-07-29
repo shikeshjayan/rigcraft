@@ -18,9 +18,11 @@ const normalizeList = (res) => {
 };
 
 export const dealService = {
-  list: async ({ page = 0, pageSize = 10, search = "" } = {}) => {
+  list: async ({ page = 0, pageSize = 10, search = "", status = "" } = {}) => {
     const params = { page: page + 1, limit: pageSize };
     if (search) params.search = search.trim();
+    if (status === "active") params.isActive = "true";
+    if (status === "expired" || status === "scheduled") params.isActive = "false";
     const { data } = await api.get(ENDPOINTS.ADMIN_DEAL.LIST, { params });
     return normalizeList(data.data);
   },
@@ -34,14 +36,7 @@ export const dealService = {
     const payload = { ...dealData };
     delete payload.id;
     delete payload._id;
-    const fd = new FormData();
-    Object.entries(payload).forEach(([k, v]) => {
-      if (v !== undefined && v !== null) fd.append(k, v);
-    });
-    if (dealData.banner instanceof File) {
-      fd.append("banner", dealData.banner);
-    }
-    const { data } = await api.post(ENDPOINTS.ADMIN_DEAL.CREATE, fd);
+    const { data } = await api.post(ENDPOINTS.ADMIN_DEAL.CREATE, payload);
     return normalizeDeal(data.data);
   },
 
@@ -49,14 +44,7 @@ export const dealService = {
     const payload = { ...dealData };
     delete payload.id;
     delete payload._id;
-    const fd = new FormData();
-    Object.entries(payload).forEach(([k, v]) => {
-      if (v !== undefined && v !== null) fd.append(k, v);
-    });
-    if (dealData.banner instanceof File) {
-      fd.append("banner", dealData.banner);
-    }
-    const { data } = await api.put(ENDPOINTS.ADMIN_DEAL.UPDATE(id), fd);
+    const { data } = await api.put(ENDPOINTS.ADMIN_DEAL.UPDATE(id), payload);
     return normalizeDeal(data.data);
   },
 
@@ -68,5 +56,27 @@ export const dealService = {
   deleteEnded: async () => {
     const { data } = await api.delete(ENDPOINTS.ADMIN_DEAL.DELETE_ENDED);
     return data;
+  },
+
+  getProductsForDeal: async () => {
+    const { data } = await api.get(ENDPOINTS.ADMIN_DEAL.PRODUCTS, { params: { limit: 1000 } });
+    const responseData = data.data || {};
+    return Array.isArray(responseData) ? responseData : Array.isArray(responseData.docs) ? responseData.docs : [];
+  },
+
+  getPrebuiltPCsForDeal: async () => {
+    const { data } = await api.get(ENDPOINTS.ADMIN_DEAL.PREBUILT_PCS, { params: { limit: 1000 } });
+    const responseData = data.data || {};
+    return Array.isArray(responseData) ? responseData : Array.isArray(responseData.docs) ? responseData.docs : [];
+  },
+
+  getProductById: async (id) => {
+    const { data } = await api.get(ENDPOINTS.PRODUCT.DETAILS(id));
+    return data.data;
+  },
+
+  getPrebuiltById: async (id) => {
+    const { data } = await api.get(ENDPOINTS.PREBUILT.DETAILS(id));
+    return data.data;
   },
 };

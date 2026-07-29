@@ -53,6 +53,20 @@ export const getActive = async () => {
   return dealRepository.findActive();
 };
 
+export const getActiveForHomepage = async () => {
+  return dealRepository.findActiveForHomepage();
+};
+
+export const getProductsForDeal = async () => {
+  const Product = require("../models/product.model.js");
+  return Product.find().sort({ name: 1 });
+};
+
+export const getPrebuiltPCsForDeal = async () => {
+  const PrebuiltPC = require("../models/prebuiltPC.model.js");
+  return PrebuiltPC.find().sort({ name: 1 });
+};
+
 export const create = async (data, file) => {
   const slug = generateSlug(data.title);
   const existing = await dealRepository.findOne({ slug });
@@ -67,7 +81,13 @@ export const create = async (data, file) => {
     data.banner = { ...image, alt: data.title };
   }
 
-  return dealRepository.create(data);
+  const deal = await dealRepository.create(data);
+  
+  if (data.code) {
+    return deal.populate("products prebuiltPcs");
+  }
+  
+  return deal.populate("products prebuiltPcs");
 };
 
 export const update = async (id, data, file) => {
@@ -91,7 +111,13 @@ export const update = async (id, data, file) => {
     data.banner = { ...image, alt: data.title || deal.title };
   }
 
-  return dealRepository.updateById(id, data);
+  const updatedDeal = await dealRepository.updateById(id, data);
+  
+  if (updatedDeal.code) {
+    return updatedDeal.populate("products prebuiltPcs");
+  }
+  
+  return updatedDeal.populate("products prebuiltPcs");
 };
 
 export const remove = async (id) => {

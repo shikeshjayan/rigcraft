@@ -33,6 +33,13 @@ adminNotificationRoutes.get(
   notificationController.adminGetUnreadCount
 );
 
+adminNotificationRoutes.get(
+  "/:id",
+  protect,
+  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  notificationController.adminGetNotification
+);
+
 adminNotificationRoutes.put(
   "/:id/read",
   protect,

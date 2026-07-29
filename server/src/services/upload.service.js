@@ -5,7 +5,10 @@ import { fileURLToPath } from "url";
 import crypto from "crypto";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const UPLOADS_ROOT = path.resolve(__dirname, "../../uploads");
+const UPLOADS_ROOT =
+  process.env.VERCEL_ENV === "production"
+    ? path.resolve("/tmp/uploads")
+    : path.resolve(__dirname, "../../uploads");
 
 const isCloudinaryConfigured = () => {
   const config = cloudinary.config();

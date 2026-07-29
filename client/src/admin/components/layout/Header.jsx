@@ -1,11 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import {
   IconButton,
   Avatar,
-  InputBase,
   Badge,
-  Paper,
   useMediaQuery,
   useTheme,
 } from "@mui/material";
@@ -13,10 +11,11 @@ import {
   Menu as MenuIcon,
   MenuOpen as MenuOpenIcon,
   Notifications as NotificationsIcon,
-  Search as SearchIcon,
   NavigateNext as NavigateNextIcon,
 } from "@mui/icons-material";
 import useAuthStore from "../../store/authStore";
+import useNotificationStore from "../../store/notificationStore";
+import NotificationPanel from "../common/NotificationPanel";
 
 const ROUTE_TITLES = {
   "/admin/dashboard": "Dashboard",
@@ -65,7 +64,15 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { user } = useAuthStore();
-  const [searchOpen, setSearchOpen] = useState(false);
+  const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
+  const fetchUnreadCount = useNotificationStore((s) => s.fetchUnreadCount);
+
+  useEffect(() => {
+    fetchUnreadCount();
+    const interval = setInterval(fetchUnreadCount, 30000);
+    return () => clearInterval(interval);
+  }, [fetchUnreadCount]);
 
   const breadcrumbs = getBreadcrumbs(location.pathname);
 
@@ -115,66 +122,34 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
       </div>
 
       <div className="flex items-center gap-2">
-        <Paper
-          elevation={0}
-          sx={{
-            display: { xs: searchOpen ? "flex" : "none", md: "flex" },
-            alignItems: "center",
-            px: 1.5,
-            py: 0.5,
-            borderRadius: "var(--radius-admin-input)",
-            border: "1px solid var(--color-admin-border)",
-            backgroundColor: "var(--color-admin-bg-tertiary)",
-            width: searchOpen ? 200 : { md: 220 },
-            transition: "all 0.2s",
-            "&:focus-within": {
-              borderColor: "var(--color-admin-primary)",
-              backgroundColor: "var(--color-admin-card)",
-              boxShadow: "0 0 0 3px rgba(37, 99, 235, 0.1)",
-            },
-          }}
-        >
-          <SearchIcon
-            sx={{ fontSize: 18, color: "var(--color-admin-muted)", mr: 1 }}
-          />
-          <InputBase
-            placeholder="Search products..."
-            sx={{
-              fontSize: "0.8125rem",
-              color: "var(--color-admin-text)",
-              width: "100%",
-              "& input::placeholder": {
-                color: "var(--color-admin-muted)",
-                opacity: 1,
-                fontWeight: 500,
-              },
-            }}
-          />
-        </Paper>
 
         <IconButton
-          onClick={() => setSearchOpen(!searchOpen)}
-          sx={{ display: { md: "none" }, color: "var(--color-admin-text-secondary)" }}
+          onClick={(e) => setNotificationAnchorEl(e.currentTarget)}
+          sx={{ color: "var(--color-admin-text-secondary)" }}
         >
-          <SearchIcon />
-        </IconButton>
-
-        <IconButton sx={{ color: "var(--color-admin-text-secondary)" }}>
           <Badge
+            badgeContent={unreadCount}
+            max={99}
             sx={{
               "& .MuiBadge-badge": {
                 backgroundColor: "#FF3E6C",
                 color: "#fff",
                 fontSize: 10,
-                minWidth: 8,
-                height: 8,
+                fontWeight: 700,
+                minWidth: 16,
+                height: 16,
               },
             }}
-            variant="dot"
           >
             <NotificationsIcon />
           </Badge>
         </IconButton>
+
+        <NotificationPanel
+          anchorEl={notificationAnchorEl}
+          open={Boolean(notificationAnchorEl)}
+          onClose={() => setNotificationAnchorEl(null)}
+        />
 
         <button
           onClick={() => navigate("/admin/profile")}
