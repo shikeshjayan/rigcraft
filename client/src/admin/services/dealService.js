@@ -48,35 +48,13 @@ export const dealService = {
     return normalizeDeal(data.data);
   },
 
+  toggleStatus: async (id) => {
+    const { data } = await api.patch(ENDPOINTS.ADMIN_DEAL.TOGGLE_STATUS(id));
+    return normalizeDeal(data.data);
+  },
+
   delete: async (id) => {
     const { data } = await api.delete(ENDPOINTS.ADMIN_DEAL.DELETE(id));
     return data;
-  },
-
-  deleteEnded: async () => {
-    const { data } = await api.delete(ENDPOINTS.ADMIN_DEAL.DELETE_ENDED);
-    return data;
-  },
-
-  getProductsForDeal: async () => {
-    const { data } = await api.get(ENDPOINTS.ADMIN_DEAL.PRODUCTS, { params: { limit: 1000 } });
-    const responseData = data.data || {};
-    return Array.isArray(responseData) ? responseData : Array.isArray(responseData.docs) ? responseData.docs : [];
-  },
-
-  getPrebuiltPCsForDeal: async () => {
-    const { data } = await api.get(ENDPOINTS.ADMIN_DEAL.PREBUILT_PCS, { params: { limit: 1000 } });
-    const responseData = data.data || {};
-    return Array.isArray(responseData) ? responseData : Array.isArray(responseData.docs) ? responseData.docs : [];
-  },
-
-  getProductById: async (id) => {
-    const { data } = await api.get(ENDPOINTS.PRODUCT.DETAILS(id));
-    return data.data;
-  },
-
-  getPrebuiltById: async (id) => {
-    const { data } = await api.get(ENDPOINTS.PREBUILT.DETAILS(id));
-    return data.data;
   },
 };

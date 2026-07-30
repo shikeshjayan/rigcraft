@@ -22,8 +22,8 @@ export const getAll = async (query = {}) => {
   }
 
   const deals = await dealRepository.findAll(filter, {
-    populate: "products prebuiltPcs",
-    sort: { createdAt: -1 },
+    populate: "products prebuiltPCs",
+    sort: { displayOrder: 1, createdAt: -1 },
   });
   const total = await dealRepository.count(filter);
 
@@ -40,7 +40,8 @@ export const getAll = async (query = {}) => {
 
 export const getById = async (id) => {
   const deal = await dealRepository.findById(id);
-  return deal.populate("products prebuiltPcs");
+  if (!deal) throw ApiError.notFound("Deal not found");
+  return deal.populate("products prebuiltPCs");
 };
 
 export const getBySlug = async (slug) => {
@@ -57,41 +58,28 @@ export const getActiveForHomepage = async () => {
   return dealRepository.findActiveForHomepage();
 };
 
-export const getProductsForDeal = async () => {
-  const Product = require("../models/product.model.js");
-  return Product.find().sort({ name: 1 });
-};
-
-export const getPrebuiltPCsForDeal = async () => {
-  const PrebuiltPC = require("../models/prebuiltPC.model.js");
-  return PrebuiltPC.find().sort({ name: 1 });
-};
-
-export const create = async (data, file) => {
+export const create = async (data, files) => {
   const slug = generateSlug(data.title);
   const existing = await dealRepository.findOne({ slug });
-  if (existing) {
-    data.slug = `${slug}-${Date.now()}`;
-  } else {
-    data.slug = slug;
+  data.slug = existing ? `${slug}-${Date.now()}` : slug;
+
+  if (files?.desktopBanner?.[0]) {
+    const image = await uploadService.uploadImage(files.desktopBanner[0], FOLDER);
+    data.desktopBanner = { ...image, alt: data.title };
   }
 
-  if (file) {
-    const image = await uploadService.uploadImage(file, FOLDER);
-    data.banner = { ...image, alt: data.title };
+  if (files?.mobileBanner?.[0]) {
+    const image = await uploadService.uploadImage(files.mobileBanner[0], FOLDER);
+    data.mobileBanner = { ...image, alt: data.title };
   }
 
   const deal = await dealRepository.create(data);
-  
-  if (data.code) {
-    return deal.populate("products prebuiltPcs");
-  }
-  
-  return deal.populate("products prebuiltPcs");
+  return deal.populate("products prebuiltPCs");
 };
 
-export const update = async (id, data, file) => {
+export const update = async (id, data, files) => {
   const deal = await dealRepository.findById(id);
+  if (!deal) throw ApiError.notFound("Deal not found");
 
   if (data.title && data.title !== deal.title) {
     const slug = generateSlug(data.title);
@@ -102,49 +90,46 @@ export const update = async (id, data, file) => {
     data.slug = existing ? `${slug}-${Date.now()}` : slug;
   }
 
-  if (file) {
+  if (files?.desktopBanner?.[0]) {
     const image = await uploadService.replaceImage(
-      deal.banner?.publicId,
-      file,
+      deal.desktopBanner?.publicId,
+      files.desktopBanner[0],
       FOLDER,
     );
-    data.banner = { ...image, alt: data.title || deal.title };
+    data.desktopBanner = { ...image, alt: data.title || deal.title };
+  }
+
+  if (files?.mobileBanner?.[0]) {
+    const image = await uploadService.replaceImage(
+      deal.mobileBanner?.publicId,
+      files.mobileBanner[0],
+      FOLDER,
+    );
+    data.mobileBanner = { ...image, alt: data.title || deal.title };
   }
 
   const updatedDeal = await dealRepository.updateById(id, data);
-  
-  if (updatedDeal.code) {
-    return updatedDeal.populate("products prebuiltPcs");
-  }
-  
-  return updatedDeal.populate("products prebuiltPcs");
+  return updatedDeal.populate("products prebuiltPCs");
 };
 
 export const remove = async (id) => {
   const deal = await dealRepository.findById(id);
+  if (!deal) throw ApiError.notFound("Deal not found");
 
-  if (deal.banner?.publicId) {
-    await uploadService.deleteImage(deal.banner.publicId);
+  if (deal.desktopBanner?.publicId) {
+    await uploadService.deleteImage(deal.desktopBanner.publicId);
+  }
+  if (deal.mobileBanner?.publicId) {
+    await uploadService.deleteImage(deal.mobileBanner.publicId);
   }
 
   return dealRepository.deleteById(id);
 };
 
-export const removeEnded = async () => {
-  const now = new Date();
-  const ended = await dealRepository.findAll({
-    endDate: { $lt: now },
-  });
+export const toggleStatus = async (id) => {
+  const deal = await dealRepository.findById(id);
+  if (!deal) throw ApiError.notFound("Deal not found");
 
-  for (const deal of ended) {
-    if (deal.banner?.publicId) {
-      await uploadService.deleteImage(deal.banner.publicId);
-    }
-  }
-
-  const result = await dealRepository.model.deleteMany({
-    endDate: { $lt: now },
-  });
-
-  return { deletedCount: result.deletedCount };
+  deal.isActive = !deal.isActive;
+  return deal.save();
 };

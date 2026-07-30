@@ -1,7 +1,12 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Chip } from "@mui/material";
-import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
+import {
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  ToggleOn as ToggleOnIcon,
+  ToggleOff as ToggleOffIcon,
+} from "@mui/icons-material";
 import DataTable from "../../components/tables/DataTable";
 import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
@@ -11,7 +16,6 @@ import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { dealService } from "../../services/dealService";
 import { extractError } from "../../utils/extractError";
-import { formatCurrency } from "../../utils/formatCurrency";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
@@ -28,7 +32,7 @@ const DealList = () => {
   const { toast } = useToast();
   const { maxRows, containerRef } = useViewportRows();
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
-  const { search, setSearch } = useSearch();
+  const { searchQuery: search, setSearchQuery: setSearch } = useSearch();
 
   useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
 
@@ -37,22 +41,28 @@ const DealList = () => {
   const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState({ status: "" });
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [selected, setSelected] = useState([]);
+  const [refreshKey, setRefreshKey] = useState(0);
 
-  const fetchDeals = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await dealService.list({ page, pageSize, search, status: filters.status });
-      setDeals(result.data);
-      setTotal(result.total);
-    } catch (err) {
-      toast(extractError(err, "Failed to load deals"), "error");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize, search, filters.status, toast]);
+  const refetch = () => setRefreshKey((k) => k + 1);
 
-  useEffect(() => { fetchDeals(); }, [fetchDeals]);
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const result = await dealService.list({ page, pageSize, search, status: filters.status });
+        if (!cancelled) {
+          setDeals(result.data);
+          setTotal(result.total);
+        }
+      } catch (err) {
+        if (!cancelled) toast(extractError(err, "Failed to load deals"), "error");
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [page, pageSize, search, filters.status, toast, refreshKey]);
 
   const handleDelete = (id) => setDeleteTarget(id);
 
@@ -62,20 +72,19 @@ const DealList = () => {
       await dealService.delete(deleteTarget);
       toast("Deal deleted");
       setDeleteTarget(null);
-      fetchDeals();
+      refetch();
     } catch (err) {
       toast(extractError(err, "Failed to delete deal"), "error");
     }
   };
 
-  const handleBulkDelete = async () => {
+  const handleToggleStatus = async (id) => {
     try {
-      await Promise.all(selected.map((id) => dealService.delete(id)));
-      toast(`${selected.length} deals deleted`);
-      setSelected([]);
-      fetchDeals();
+      const updated = await dealService.toggleStatus(id);
+      toast(`Deal ${updated.isActive ? "activated" : "deactivated"}`);
+      refetch();
     } catch (err) {
-      toast(extractError(err, "Failed to delete deals"), "error");
+      toast(extractError(err, "Failed to toggle status"), "error");
     }
   };
 
@@ -104,24 +113,57 @@ const DealList = () => {
 
   const columns = [
     {
-      key: "code",
-      label: "Code",
-      render: (val) => <Chip label={val} size="small" sx={{ fontFamily: "var(--font-admin-mono)", fontWeight: 700, borderRadius: "var(--radius-admin-badge)", backgroundColor: "var(--color-admin-bg-tertiary)", letterSpacing: "0.05em" }} />,
+      key: "banner",
+      label: "Banner",
+      render: (_, row) => {
+        const url = row.desktopBanner?.url || row.mobileBanner?.url;
+        return url ? (
+          <Box
+            component="img"
+            src={url}
+            alt={row.title}
+            sx={{ width: 60, height: 36, borderRadius: "var(--radius-admin-badge)", objectFit: "cover", border: "1px solid var(--color-admin-border)" }}
+          />
+        ) : (
+          <Box sx={{ width: 60, height: 36, borderRadius: "var(--radius-admin-badge)", backgroundColor: "var(--color-admin-bg-tertiary)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.625rem", color: "var(--color-admin-muted)" }}>
+            No img
+          </Box>
+        );
+      },
     },
     {
-      key: "discount",
-      label: "Discount",
-      render: (_, row) => row.type === "percentage" ? `${row.value}%` : row.type === "fixed" ? formatCurrency(row.value) : "—",
+      key: "title",
+      label: "Title",
+      render: (val, row) => (
+        <Box>
+          <Box sx={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val}</Box>
+          {row.slug && <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)", fontFamily: "var(--font-admin-mono)" }}>{row.slug}</Box>}
+        </Box>
+      ),
     },
-    { key: "minOrder", label: "Min Order", render: (val) => val ? formatCurrency(val) : "—" },
-    { key: "usage", label: "Usage", render: (_, row) => `${row.usedCount || 0} / ${row.maxUses || "∞"}` },
-    { key: "startDate", label: "Start", render: (val) => val ? formatDate(val) : "—" },
-    { key: "endDate", label: "End", render: (val) => val ? formatDate(val) : "—" },
     {
       key: "isActive",
       label: "Status",
       render: (_, row) => <StatusBadge status={getDealStatus(row)} colorMap={DEAL_STATUS_COLOR} />,
     },
+    {
+      key: "products",
+      label: "Products",
+      render: (val) => {
+        const count = Array.isArray(val) ? val.length : 0;
+        return <Chip label={count} size="small" sx={{ fontWeight: 600, minWidth: 32 }} />;
+      },
+    },
+    {
+      key: "prebuiltPCs",
+      label: "Prebuilt PCs",
+      render: (val) => {
+        const count = Array.isArray(val) ? val.length : 0;
+        return <Chip label={count} size="small" sx={{ fontWeight: 600, minWidth: 32 }} />;
+      },
+    },
+    { key: "startDate", label: "Start Date", render: (val) => val ? formatDate(val) : "—" },
+    { key: "endDate", label: "End Date", render: (val) => val ? formatDate(val) : "—" },
     {
       key: "actions",
       label: "",
@@ -129,6 +171,12 @@ const DealList = () => {
         <TableActions
           actions={[
             { label: "Edit", icon: EditIcon, onClick: () => navigate(`/admin/deals/${row.id}/edit`) },
+            {
+              label: row.isActive ? "Deactivate" : "Activate",
+              icon: row.isActive ? ToggleOffIcon : ToggleOnIcon,
+              onClick: () => handleToggleStatus(row.id),
+            },
+            { divider: true },
             { label: "Delete", icon: DeleteIcon, danger: true, onClick: () => handleDelete(row.id) },
           ]}
         />
@@ -144,7 +192,7 @@ const DealList = () => {
         onSearchChange={setSearch}
         addPath="/admin/deals/new"
         addLabel="New Deal"
-        onRefresh={fetchDeals}
+        onRefresh={refetch}
       />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
       <DataTable
@@ -157,30 +205,6 @@ const DealList = () => {
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
         onRowClick={(row) => navigate(`/admin/deals/${row.id}/edit`)}
-        selected={selected}
-        onSelectAll={() => setSelected(selected.length === deals.length ? [] : deals.map((r) => r.id))}
-        onSelectOne={(id) => setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id])}
-        selectable
-        headerSlots={{
-          actions: (
-            <Box
-              onClick={selected.length > 0 ? handleBulkDelete : undefined}
-              sx={{
-                cursor: selected.length > 0 ? "pointer" : "default",
-                visibility: selected.length > 0 ? "visible" : "hidden",
-                fontWeight: 600,
-                fontSize: "0.75rem",
-                color: "var(--color-admin-danger)",
-                textTransform: "uppercase",
-                letterSpacing: "0.05em",
-                whiteSpace: "nowrap",
-                userSelect: "none",
-              }}
-            >
-              Delete All
-            </Box>
-          ),
-        }}
         rowsPerPageOptions={[10, 25, 50, 100]}
       />
       <ConfirmDialog

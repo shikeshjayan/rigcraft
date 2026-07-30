@@ -9,13 +9,7 @@ class DealRepository extends BaseRepository {
   async findBySlug(slug) {
     return this.model
       .findOne({ slug })
-      .populate("products prebuiltPcs");
-  }
-
-  async findByCode(code) {
-    return this.model
-      .findOne({ code })
-      .populate("products prebuiltPcs");
+      .populate("products prebuiltPCs");
   }
 
   async findActive() {
@@ -26,8 +20,8 @@ class DealRepository extends BaseRepository {
         startDate: { $lte: now },
         endDate: { $gte: now },
       })
-      .populate("products prebuiltPcs")
-      .sort({ createdAt: -1 });
+      .populate("products prebuiltPCs")
+      .sort({ displayOrder: 1, createdAt: -1 });
   }
 
   async findActiveForHomepage() {
@@ -38,9 +32,9 @@ class DealRepository extends BaseRepository {
         startDate: { $lte: now },
         endDate: { $gte: now },
       })
-      .populate("products prebuiltPcs")
+      .populate("products prebuiltPCs")
       .limit(8)
-      .sort({ createdAt: -1 });
+      .sort({ displayOrder: 1, createdAt: -1 });
   }
 }
 

@@ -25,9 +25,7 @@ export const ENDPOINTS = {
     CREATE: "/admin/deals",
     UPDATE: (id) => `/admin/deals/${id}`,
     DELETE: (id) => `/admin/deals/${id}`,
-    DELETE_ENDED: "/admin/deals",
-    PRODUCTS: "/admin/deals/products",
-    PREBUILT_PCS: "/admin/deals/prebuilt-pcs",
+    TOGGLE_STATUS: (id) => `/admin/deals/${id}/status`,
   },
 
   // Dashboard
