@@ -27,23 +27,13 @@ export const getActiveForHomepage = asyncHandler(async (req, res) => {
   ApiResponse.ok(deals).send(res);
 });
 
-export const getProductsForDeal = asyncHandler(async (req, res) => {
-  const products = await dealService.getProductsForDeal();
-  ApiResponse.ok(products).send(res);
-});
-
-export const getPrebuiltPCsForDeal = asyncHandler(async (req, res) => {
-  const prebuiltPCs = await dealService.getPrebuiltPCsForDeal();
-  ApiResponse.ok(prebuiltPCs).send(res);
-});
-
 export const create = asyncHandler(async (req, res) => {
-  const deal = await dealService.create(req.body, req.file);
+  const deal = await dealService.create(req.body, req.files);
   ApiResponse.created(deal, "Deal created").send(res);
 });
 
 export const update = asyncHandler(async (req, res) => {
-  const deal = await dealService.update(req.params.id, req.body, req.file);
+  const deal = await dealService.update(req.params.id, req.body, req.files);
   ApiResponse.ok(deal, "Deal updated").send(res);
 });
 
@@ -52,7 +42,7 @@ export const remove = asyncHandler(async (req, res) => {
   ApiResponse.ok(null, "Deal deleted").send(res);
 });
 
-export const removeEnded = asyncHandler(async (req, res) => {
-  const result = await dealService.removeEnded();
-  ApiResponse.ok(result, `${result.deletedCount} ended deal(s) deleted`).send(res);
+export const toggleStatus = asyncHandler(async (req, res) => {
+  const deal = await dealService.toggleStatus(req.params.id);
+  ApiResponse.ok(deal, `Deal ${deal.isActive ? "activated" : "deactivated"}`).send(res);
 });
