@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { getPublicSettings } from '../services/settings.service';
 import FadeUp from './FadeUp';
 import XIcon from '@mui/icons-material/X';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
@@ -43,6 +45,13 @@ const Footer = () => {
     }, 3000);
   };
 
+  const { data: brandData } = useQuery({
+    queryKey: ['publicSettings'],
+    queryFn: getPublicSettings,
+    staleTime: 300000,
+  });
+  const brand = brandData?.general;
+
   return (
     <footer className="w-full">
       <FadeUp delay={0.2}>
@@ -50,7 +59,7 @@ const Footer = () => {
       <div className="w-full py-12" style={{ backgroundColor: 'var(--color-primary, #2563EB)' }}>
         <div className="max-w-[1400px] mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-white text-center md:text-left">
-            <h3 className="text-[24px] md:text-[28px] font-extrabold tracking-wide mb-2">Join the PCForge Community</h3>
+            <h3 className="text-[24px] md:text-[28px] font-extrabold tracking-wide mb-2">Join the {brand?.storeName || 'RigCraft'} Community</h3>
             <p className="text-[15px] text-blue-100 font-medium">Get early access to drops, exclusive discounts, and hardware news.</p>
           </div>
           <div className="flex flex-col w-full md:w-[450px] lg:w-[500px] max-w-xl relative">
@@ -99,18 +108,32 @@ const Footer = () => {
             {/* Brand Column */}
             <div className="flex flex-col lg:max-w-[350px]">
               <div className="flex items-center gap-2 mb-6 cursor-pointer">
-                <PrecisionManufacturingIcon sx={{ fontSize: 32, color: 'white' }} />
-                <span className="text-[24px] font-black tracking-widest uppercase"><span style={{ color: 'white',fontSize:"24px" }}>Rig</span> Craft</span>
+                {brand?.logo?.url ? (
+                  <img src={brand.logo.url} alt={brand.storeName || 'RigCraft'} className="w-8 h-8 object-contain brightness-0 invert" />
+                ) : (
+                  <PrecisionManufacturingIcon sx={{ fontSize: 32, color: 'white' }} />
+                )}
+                <span className="text-[24px] font-black tracking-widest uppercase"><span style={{ color: 'white',fontSize:"24px" }}>{(brand?.storeName || 'RigCraft').slice(0, 3)}</span>{(brand?.storeName || 'RigCraft').slice(3)}</span>
               </div>
               <p className="text-[15px] text-gray-400 leading-relaxed mb-8 font-medium">
-                India's premier PC building platform. Custom gaming PCs, premium components, and expert support — all in one place.
+                {brand?.description || "India's premier PC building platform. Custom gaming PCs, premium components, and expert support — all in one place."}
               </p>
               <div className="flex items-center gap-4">
-                <a href="#" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><XIcon /></a>
-                <a href="#" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><LinkedInIcon /></a>
-                <a href="#" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><FacebookIcon /></a>
-                <a href="#" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><YouTubeIcon /></a>
-                <a href="#" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><InstagramIcon /></a>
+                {brand?.social?.twitter && (
+                  <a href={brand.social.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><XIcon /></a>
+                )}
+                {brand?.social?.linkedin && (
+                  <a href={brand.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><LinkedInIcon /></a>
+                )}
+                {brand?.social?.facebook && (
+                  <a href={brand.social.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><FacebookIcon /></a>
+                )}
+                {brand?.social?.youtube && (
+                  <a href={brand.social.youtube} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><YouTubeIcon /></a>
+                )}
+                {brand?.social?.instagram && (
+                  <a href={brand.social.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><InstagramIcon /></a>
+                )}
               </div>
             </div>
 
@@ -157,7 +180,7 @@ const Footer = () => {
           {/* Bottom Bar */}
           <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-800 gap-4 text-[13px] text-gray-400 font-medium">
             <div>
-              &copy; {new Date().getFullYear()} Rig Craft Pvt Ltd. All rights reserved.
+              &copy; {new Date().getFullYear()} {brand?.storeName || 'Rig Craft'} Pvt Ltd. All rights reserved.
             </div>
             <div className="flex flex-wrap justify-center gap-6">
               <Link to="/privacy-policy" className="hover:text-[var(--color-primary)] transition-colors">Privacy Policy</Link>
