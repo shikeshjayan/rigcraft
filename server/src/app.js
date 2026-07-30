@@ -51,7 +51,18 @@ configureCloudinary();
 const app = express();
 
 app.use(helmet());
-app.use(cors({ origin: true, credentials: true }));
+const allowedOrigins = [process.env.CORS_ORIGIN, 'http://localhost:5173'];
+
+app.use(cors({ 
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  }, 
+  credentials: true 
+}));
 app.use(morgan("dev"));
 app.use(express.json({
   verify: (req, res, buf) => { req.rawBody = buf.toString(); }
