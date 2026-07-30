@@ -242,7 +242,7 @@ const Customerlogin = () => {
                         style={{ borderRadius: 'var(--radius-sm)' }}
                       />
                       {index === 2 && <span className="text-gray-400 font-bold mx-1">-</span>}
-                    </React.Fragment>
+                    </Fragment>
                   ))}
                 </div>
 
