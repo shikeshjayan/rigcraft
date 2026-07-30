@@ -54,17 +54,17 @@ export const SIDEBAR_SECTIONS = [
         icon: "Discount",
         roles: ["super_admin", "admin"],
       },
+    ],
+  },
+  {
+    section: "Marketing",
+    items: [
       {
         label: "Deals",
         path: "/admin/deals",
         icon: "Campaign",
         roles: ["super_admin", "admin", "manager"],
       },
-    ],
-  },
-  {
-    section: "Marketing",
-    items: [
       {
         label: "Newsletter",
         path: "/admin/newsletter",

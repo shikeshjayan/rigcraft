@@ -6,7 +6,7 @@ import {
   createDealSchema,
   updateDealSchema,
 } from "../validators/deal.validator.js";
-import { uploadSingleImage } from "../middlewares/upload.middleware.js";
+import { uploadFields } from "../middlewares/upload.middleware.js";
 
 const router = Router();
 const adminRouter = Router();
@@ -17,36 +17,49 @@ router.get("/active", dealController.getActive);
 router.get("/:slug", dealController.getBySlug);
 
 // ── Admin routes ───────────────────────────────────────────────
-adminRouter.get("/", protect, authorize("admin"), dealController.getAll);
-adminRouter.get("/active-list", protect, authorize("admin"), dealController.getActiveForHomepage);
-adminRouter.get("/products", protect, authorize("admin"), dealController.getProductsForDeal);
-adminRouter.get("/prebuilt-pcs", protect, authorize("admin"), dealController.getPrebuiltPCsForDeal);
 
-adminRouter.get("/:id", protect, authorize("admin"), dealController.getById);
+// List & search
+adminRouter.get("/", protect, authorize("admin", "manager"), dealController.getAll);
+adminRouter.get("/active-list", protect, authorize("admin", "manager"), dealController.getActiveForHomepage);
 
+// Single deal
+adminRouter.get("/:id", protect, authorize("admin", "manager"), dealController.getById);
+
+// Create
 adminRouter.post(
   "/",
   protect,
-  authorize("admin"),
+  authorize("admin", "manager"),
+  uploadFields([
+    { name: "desktopBanner", maxCount: 1 },
+    { name: "mobileBanner", maxCount: 1 },
+  ]),
   validate(createDealSchema),
   dealController.create,
 );
 
+// Update
 adminRouter.put(
   "/:id",
   protect,
-  authorize("admin"),
+  authorize("admin", "manager"),
+  uploadFields([
+    { name: "desktopBanner", maxCount: 1 },
+    { name: "mobileBanner", maxCount: 1 },
+  ]),
   validate(updateDealSchema),
   dealController.update,
 );
 
-adminRouter.delete(
-  "/",
+// Toggle active status
+adminRouter.patch(
+  "/:id/status",
   protect,
-  authorize("admin"),
-  dealController.removeEnded,
+  authorize("admin", "manager"),
+  dealController.toggleStatus,
 );
 
+// Delete (admin only)
 adminRouter.delete(
   "/:id",
   protect,

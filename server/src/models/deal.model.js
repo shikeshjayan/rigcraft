@@ -23,7 +23,13 @@ const dealSchema = new mongoose.Schema(
       maxlength: 1000,
     },
 
-    banner: {
+    desktopBanner: {
+      url: { type: String, trim: true },
+      publicId: { type: String, trim: true },
+      alt: { type: String, trim: true },
+    },
+
+    mobileBanner: {
       url: { type: String, trim: true },
       publicId: { type: String, trim: true },
       alt: { type: String, trim: true },
@@ -39,11 +45,6 @@ const dealSchema = new mongoose.Schema(
       required: true,
     },
 
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-
     products: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -51,45 +52,50 @@ const dealSchema = new mongoose.Schema(
       },
     ],
 
-    prebuiltPcs: [
+    prebuiltPCs: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "PrebuiltPC",
       },
     ],
 
-    // Coupon-style fields for admin deals
-    code: {
+    promotion: {
+      topBar: {
+        enabled: { type: Boolean, default: false },
+        text: { type: String, trim: true, maxlength: 200 },
+      },
+      homeOffer: {
+        enabled: { type: Boolean, default: false },
+        title: { type: String, trim: true, maxlength: 200 },
+        description: { type: String, trim: true, maxlength: 500 },
+        banner: {
+          url: { type: String, trim: true },
+          publicId: { type: String, trim: true },
+          alt: { type: String, trim: true },
+        },
+      },
+    },
+
+    buttonText: {
       type: String,
       trim: true,
-      uppercase: true,
+      maxlength: 100,
     },
 
-    type: {
+    buttonLink: {
       type: String,
-      enum: ["percentage", "fixed"],
-      default: "percentage",
+      trim: true,
+      maxlength: 500,
     },
 
-    value: {
-      type: Number,
-      min: 0,
-    },
-
-    minOrder: {
-      type: Number,
-      min: 0,
-    },
-
-    maxUses: {
-      type: Number,
-      min: 1,
-    },
-
-    usedCount: {
+    displayOrder: {
       type: Number,
       default: 0,
-      min: 0,
+    },
+
+    isActive: {
+      type: Boolean,
+      default: true,
     },
   },
   { timestamps: true },
@@ -103,5 +109,6 @@ dealSchema.pre("save", function () {
 
 dealSchema.index({ isActive: 1, endDate: 1 });
 dealSchema.index({ startDate: 1, endDate: 1 });
+dealSchema.index({ displayOrder: 1 });
 
 export default mongoose.model("Deal", dealSchema);
