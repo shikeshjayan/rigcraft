@@ -37,7 +37,7 @@ export { couponSchema };
 
 const COUPON_TYPES = [
   { value: "percentage", label: "Percentage (%)" },
-  { value: "fixed", label: "Fixed Amount ($)" },
+  { value: "fixed", label: "Fixed Amount (₹)" },
   { value: "free_shipping", label: "Free Shipping" },
 ];
 
@@ -92,13 +92,13 @@ const CouponForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Co
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
                 <Controller name="value" control={control} render={({ field }) => (
-                  <AdminInput label={type === "percentage" ? "Percentage (%)" : type === "fixed" ? "Amount ($)" : "N/A"} type="number" disabled={type === "free_shipping"} error={!!errors.value} helperText={errors.value?.message} {...field} />
+                  <AdminInput label={type === "percentage" ? "Percentage (%)" : type === "fixed" ? "Amount (₹)" : "N/A"} type="number" disabled={type === "free_shipping"} error={!!errors.value} helperText={errors.value?.message} {...field} />
                 )} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
                 {type === "percentage" && (
                   <Controller name="maximumDiscount" control={control} render={({ field }) => (
-                    <AdminInput label="Max Discount ($)" type="number" error={!!errors.maximumDiscount} helperText={errors.maximumDiscount?.message} {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)} />
+                    <AdminInput label="Max Discount (₹)" type="number" error={!!errors.maximumDiscount} helperText={errors.maximumDiscount?.message} {...field} value={field.value ?? ""} onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : null)} />
                   )} />
                 )}
               </Grid>
@@ -120,7 +120,7 @@ const CouponForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Co
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 4 }}>
                 <Controller name="minOrder" control={control} render={({ field }) => (
-                  <AdminInput label="Minimum Order ($)" type="number" {...field} />
+                  <AdminInput label="Minimum Order (₹)" type="number" {...field} />
                 )} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>

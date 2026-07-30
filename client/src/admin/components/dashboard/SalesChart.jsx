@@ -26,7 +26,7 @@ const CustomTooltip = ({ active, payload, label }) => {
         </Typography>
         {payload.map((entry, i) => (
           <Typography key={i} variant="body2" sx={{ fontWeight: 600, color: entry.color }}>
-            {entry.name === "orders" ? `${entry.value} orders` : `$${entry.value.toLocaleString()}`}
+            {entry.name === "orders" ? `${entry.value} orders` : `₹${entry.value.toLocaleString()}`}
           </Typography>
         ))}
       </Box>
@@ -79,7 +79,7 @@ const SalesChart = ({ data = [] }) => {
             tick={{ fontSize: 12, fill: "var(--color-admin-muted)" }}
             axisLine={false}
             tickLine={false}
-            tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+            tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
           />
           <Tooltip content={<CustomTooltip />} />
           <Bar

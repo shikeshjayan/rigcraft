@@ -21,7 +21,7 @@ export default [
     question: "What payment methods do you accept?",
     answer:
       "We accept all major credit cards (VISA, Mastercard, AMEX) and PayPal payments.",
-    category: "Payment",
+    category: "Payments",
     isActive: true,
   },
   {

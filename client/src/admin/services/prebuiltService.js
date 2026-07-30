@@ -1,7 +1,7 @@
 import api from "../../shared/api/axios";
 import { ENDPOINTS } from "../../shared/api/endpoints";
 
-const COMPONENT_SLOTS = [
+const HARDWARE_SLOTS = [
   { key: "processor", label: "Processor (CPU)", categoryType: "processor", required: true },
   { key: "graphics_card", label: "Graphics Card (GPU)", categoryType: "graphics_card", required: true },
   { key: "memory", label: "Memory (RAM)", categoryType: "memory", required: true },
@@ -12,27 +12,42 @@ const COMPONENT_SLOTS = [
   { key: "case", label: "Case", categoryType: "case", required: true },
 ];
 
-export { COMPONENT_SLOTS };
+const ADDON_SLOTS = [
+  { key: "os", label: "Operating System", categoryType: "software", required: false },
+  { key: "accessory", label: "Accessory", categoryType: "accessories", required: false },
+];
+
+const COMPONENT_SLOTS = [...HARDWARE_SLOTS, ...ADDON_SLOTS];
+export { HARDWARE_SLOTS, ADDON_SLOTS, COMPONENT_SLOTS };
 
 const SLOT_TO_COMPONENT_TYPE = {
   processor: "cpu", graphics_card: "gpu", memory: "ram",
   storage: "storage", motherboard: "motherboard",
   power_supply: "psu", cooling: "cooler", case: "cabinet",
+  os: "operatingSystem", accessory: "accessory",
 };
 
 const COMPONENT_TYPE_TO_SLOT = Object.fromEntries(
   Object.entries(SLOT_TO_COMPONENT_TYPE).map(([k, v]) => [v, k])
 );
 
+const toLocalDatetime = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
 const normalizePrebuilt = (p) => ({
   ...p,
   id: p._id,
   _id: undefined,
   __v: undefined,
-  regularPrice: p.price ?? p.regularPrice ?? 0,
-  salePrice: p.salePrice ?? p.salePrice ?? null,
-  saleStart: p.saleStart || "",
-  saleEnd: p.saleEnd || "",
+  regularPrice: p.pricing?.price ?? p.price ?? p.regularPrice ?? 0,
+  salePrice: p.pricing?.salePrice ?? p.salePrice ?? null,
+  saleStart: toLocalDatetime(p.pricing?.saleStart ?? p.saleStart),
+  saleEnd: toLocalDatetime(p.pricing?.saleEnd ?? p.saleEnd),
   isActive: p.status === "active",
   isFeatured: p.isFeatured ?? false,
   category: p.category || "",
@@ -102,7 +117,7 @@ const adaptPayload = (data) => {
     delete p.warrantyType;
   }
   if (p.regularPrice !== undefined || p.salePrice !== undefined || p.saleStart !== undefined || p.saleEnd !== undefined) {
-    p.pricing = { price: p.price };
+    p.pricing = { price: p.regularPrice };
     if (p.salePrice !== undefined) p.pricing.salePrice = p.salePrice;
     if (p.saleStart) p.pricing.saleStart = new Date(p.saleStart).toISOString();
     if (p.saleEnd) p.pricing.saleEnd = new Date(p.saleEnd).toISOString();

@@ -25,6 +25,11 @@ import SavedBuild from "../src/models/saved-build.model.js";
 import Settings from "../src/models/settings.model.js";
 import BuildSetting from "../src/models/build-setting.model.js";
 import FAQ from "../src/models/faq.model.js";
+import Deal from "../src/models/deal.model.js";
+import Newsletter from "../src/models/newsletter.model.js";
+import SupportTicket from "../src/models/support-ticket.model.js";
+import SupportMessage from "../src/models/support-message.model.js";
+import Notification from "../src/models/notification.model.js";
 
 import categories from "./data/categories.js";
 import brands from "./data/brands.js";
@@ -32,6 +37,8 @@ import productsData from "./data/products.js";
 import prebuiltPcsData from "./data/prebuilt-pcs.js";
 import couponsData from "./data/coupons.js";
 import faqsData from "./data/faqs.js";
+import dealsData from "./data/deals.js";
+import newslettersData from "./data/newsletter.js";
 
 // ───────────────────────────────────────────
 //   Helpers
@@ -139,14 +146,49 @@ async function seed() {
   // ── 1. Settings ──
   console.log("  Seeding Settings...");
   await Settings.create({
-    shipping: { standardRate: 100, freeShippingThreshold: 500, expressRate: 200 },
-    tax: { rate: 0.18, name: "GST" },
-    currency: { code: "INR", symbol: "₹" },
     storeName: "RigCraft",
     storeEmail: "support@rigcraft.com",
     storePhone: "+91-1800-123-4567",
+    description: "India's premier PC building destination — custom rigs, premium components, and expert support.",
     address: "42, Tech Park Boulevard, Koramangala, Bengaluru, Karnataka 560034",
+    whatsapp: "+91-98765-43210",
+    logo: { url: `${IMGBASE}/rigcraft-logo/200/60`, publicId: null, alt: "RigCraft" },
+    favicon: { url: `${IMGBASE}/rigcraft-favicon/32/32`, publicId: null, alt: "RigCraft" },
+    shipping: {
+      standardRate: 100,
+      freeShippingThreshold: 500,
+      expressRate: 200,
+      estimatedDelivery: "3-5 Business Days",
+      codAvailable: true,
+    },
+    tax: { rate: 0.18, name: "GST", pricesIncludeTax: false },
+    payment: { enableRazorpay: true, enableCod: true, minOrderAmount: 0, maxOrderAmount: 0 },
+    currency: { code: "INR", symbol: "₹" },
+    social: {
+      facebook: "https://facebook.com/rigcraft",
+      instagram: "https://instagram.com/rigcraft",
+      youtube: "https://youtube.com/@rigcraft",
+      linkedin: "https://linkedin.com/company/rigcraft",
+      twitter: "https://twitter.com/rigcraft",
+    },
+    seo: {
+      defaultTitle: "RigCraft — Build Your Dream PC",
+      defaultDescription: "India's premier PC building destination. Custom gaming rigs, workstation PCs, and premium components from top brands.",
+      defaultOgImage: { url: `${IMGBASE}/rigcraft-og/1200/630`, publicId: null, alt: "RigCraft" },
+      metaKeywords: "PC builder, gaming PC, custom PC, computer components, India,rigcraft",
+    },
+    order: { prefix: "RC-", allowCancellation: true, cancellationTimeLimit: 24, cancelPendingAfter: 24 },
+    inventory: { lowStockThreshold: 10, allowBackorders: false, hideOutOfStock: false, autoUpdateInventory: true },
+    review: { allowReviews: true, verifiedPurchaseOnly: true, autoApprove: false, allowImages: true, maxImages: 5 },
     maintenanceMode: false,
+    maintenanceMessage: "We'll be back soon!",
+    notification: {
+      orderConfirmation: true,
+      shippingUpdate: true,
+      paymentConfirmation: true,
+      lowStockAlerts: true,
+      newOrderAlerts: true,
+    },
   });
   summary.push(["Settings", 1]);
 
@@ -192,8 +234,16 @@ async function seed() {
   // ── 5. Users ──
   console.log("  Seeding Users...");
 
+  const staffData = [
+    { firstName: "Admin", lastName: "User", email: "admin@rigcraft.com", phone: "+91-1800-000-0001", password: "Admin@123", role: "admin", isEmailVerified: true },
+    { firstName: "Manager", lastName: "User", email: "manager@rigcraft.com", phone: "+91-1800-000-0002", password: "Manager@123", role: "manager", isEmailVerified: true },
+  ];
+  const staffDocs = await User.create(staffData);
+  const adminUser = staffDocs[0];
+  const managerUser = staffDocs[1];
+
   const customerData = [];
-  for (let i = 0; i < 6; i++) {
+  for (let i = 0; i < 20; i++) {
     const firstName = faker.person.firstName();
     const lastName = faker.person.lastName();
     customerData.push({
@@ -206,8 +256,9 @@ async function seed() {
     });
   }
 
-  const allUsers = await User.create(customerData);
-  const customers = allUsers;
+  const customerDocs = await User.create(customerData);
+  const allUsers = [...staffDocs, ...customerDocs];
+  const customers = customerDocs;
   summary.push(["Users", allUsers.length]);
 
   // ── 6. Products ──
@@ -325,11 +376,33 @@ async function seed() {
   const couponDocs = await Coupon.create(couponPayloads);
   summary.push(["Coupons", couponDocs.length]);
 
-  // ── 9. Orders ──
+  // ── 9. Deals ──
+  console.log("  Seeding Deals...");
+  const dealPayloads = dealsData.map((d) => ({
+    ...d,
+    desktopBanner: { url: `${IMGBASE}/deal-${slugify(d.title, { lower: true, strict: true })}-desktop/1920/600`, publicId: null, alt: d.title },
+    mobileBanner: { url: `${IMGBASE}/deal-${slugify(d.title, { lower: true, strict: true })}-mobile/640/640`, publicId: null, alt: d.title },
+    promotion: {
+      ...d.promotion,
+      homeOffer: d.promotion.homeOffer?.enabled ? {
+        ...d.promotion.homeOffer,
+        banner: { url: `${IMGBASE}/deal-${slugify(d.title, { lower: true, strict: true })}-offer/800/400`, publicId: null, alt: d.promotion.homeOffer.title },
+      } : { enabled: false },
+    },
+  }));
+  const dealDocs = await Deal.create(dealPayloads);
+  summary.push(["Deals", dealDocs.length]);
+
+  // ── 10. Newsletter ──
+  console.log("  Seeding Newsletter...");
+  const newsletterDocs = await Newsletter.create(newslettersData);
+  summary.push(["Newsletter Subscribers", newsletterDocs.length]);
+
+  // ── 11. Orders ──
   console.log("  Seeding Orders...");
   const orders = [];
   const productValues = [...productMap.values()];
-  for (let i = 0; i < 25; i++) {
+  for (let i = 0; i < 60; i++) {
     const user = customers[randomInt(0, customers.length - 1)];
     const numItems = randomInt(1, 3);
     const chosen = pickRandom(productValues, numItems);
@@ -390,12 +463,12 @@ async function seed() {
   const orderDocs = await Order.create(orders);
   summary.push(["Orders", orderDocs.length]);
 
-  // ── 10. Reviews ──
+  // ── 12. Reviews ──
   console.log("  Seeding Reviews...");
   const reviews = [];
   const deliveredOrders = orderDocs.filter((o) => o.orderStatus === "delivered");
   const reviewedProducts = new Set();
-  for (let i = 0; i < 40; i++) {
+  for (let i = 0; i < 100; i++) {
     const product = productValues[randomInt(0, productValues.length - 1)];
     const user = customers[randomInt(0, customers.length - 1)];
     const isVerified = deliveredOrders.length > 0 && Math.random() > 0.4;
@@ -422,7 +495,99 @@ async function seed() {
   const reviewDocs = await Review.create(reviews);
   summary.push(["Reviews", reviewDocs.length]);
 
-  // ── 11. Addresses ──
+  // ── 13. Support Tickets & Messages ──
+  console.log("  Seeding Support Tickets...");
+  const ticketSubjects = [
+    "Order not delivered yet", "Wrong item received", "Refund not processed",
+    "Shipping address change request", "Product warranty inquiry",
+    "Payment deduction but order failed", "Damaged product received",
+    "Cancel order request", "Wrong configuration shipped",
+    "Delivery delayed beyond estimate", "Replacement needed for GPU",
+    "Invoice not received",
+  ];
+  const issueTypes = ["order", "shipping", "refund", "shipping", "warranty", "payment", "product", "order", "shipping", "shipping", "replacement", "other"];
+  const ticketStatuses = ["open", "in_progress", "resolved", "closed", "open", "in_progress", "open", "waiting_customer", "resolved", "in_progress", "open", "closed"];
+  const ticketPriorities = ["high", "medium", "medium", "low", "low", "urgent", "high", "medium", "medium", "low", "high", "low"];
+  const ticketDocs = [];
+  for (let i = 0; i < 12; i++) {
+    const customer = customers[randomInt(0, customers.length - 1)];
+    const ticket = await SupportTicket.create({
+      ticketNumber: `TKT-${String(i + 1).padStart(5, "0")}`,
+      user: customer._id,
+      order: orderDocs[i % orderDocs.length]._id,
+      issueType: issueTypes[i],
+      subject: ticketSubjects[i],
+      description: `Customer reported: ${ticketSubjects[i].toLowerCase()}. Please look into this at the earliest.`,
+      status: ticketStatuses[i],
+      priority: ticketPriorities[i],
+      lastMessageAt: generatePastDate(randomInt(1, 14)),
+    });
+    ticketDocs.push(ticket);
+  }
+  summary.push(["Support Tickets", ticketDocs.length]);
+
+  console.log("  Seeding Support Messages...");
+  const messageDocs = [];
+  for (const ticket of ticketDocs) {
+    const customer = await User.findById(ticket.user);
+    const customerMsg = await SupportMessage.create({
+      ticket: ticket._id,
+      sender: ticket.user,
+      senderRole: "customer",
+      message: `I need help with my ${ticket.issueType} issue. ${ticket.subject}`,
+      isRead: ticket.status === "closed" || ticket.status === "resolved",
+    });
+    messageDocs.push(customerMsg);
+
+    if (ticket.status !== "open") {
+      const adminMsg = await SupportMessage.create({
+        ticket: ticket._id,
+        sender: adminUser._id,
+        senderRole: "admin",
+        message: `Thank you for reaching out. We are looking into your ${ticket.issueType} issue and will get back to you shortly.`,
+        isRead: ticket.status === "closed",
+      });
+      messageDocs.push(adminMsg);
+    }
+  }
+  summary.push(["Support Messages", messageDocs.length]);
+
+  // ── 14. Notifications ──
+  console.log("  Seeding Notifications...");
+  const notificationTypes = [
+    { type: "order", title: "New order placed", message: "A new order #RIG-2501-ABC has been placed.", module: "Order", priority: "normal" },
+    { type: "review", title: "New review submitted", message: "A customer submitted a 4-star review on RTX 4060.", module: "Review", priority: "low" },
+    { type: "inventory", title: "Low stock alert", message: "AMD Ryzen 5 7600X is running low on stock (3 units left).", module: "Inventory", priority: "high" },
+    { type: "payment", title: "Payment failed", message: "A payment of ₹45,000 for order RIG-2502-DEF has failed.", module: "Payment", priority: "critical" },
+    { type: "system", title: "System update", message: "Scheduled maintenance is planned for tonight at 2 AM.", module: "System", priority: "normal" },
+    { type: "coupon", title: "Coupon expiring soon", message: "Coupon SUMMER10 expires in 3 days.", module: "Coupon", priority: "low" },
+    { type: "order", title: "Order delivered", message: "Order RIG-2503-GHI has been marked as delivered.", module: "Order", priority: "normal" },
+    { type: "support", title: "New support ticket", message: "A new support ticket TKT-00003 has been created.", module: "Support", priority: "normal" },
+    { type: "inventory", title: "Stock replenished", message: "Corsair Vengeance 32GB DDR5 has been restocked (50 units).", module: "Inventory", priority: "low" },
+    { type: "order", title: "Order cancelled", message: "Order RIG-2504-JKL has been cancelled by the customer.", module: "Order", priority: "normal" },
+    { type: "marketing", title: "Newsletter campaign sent", message: "Flash sale newsletter sent to 5,420 subscribers.", module: "System", priority: "low" },
+    { type: "review", title: "1-star review flagged", message: "A 1-star review on Product XYZ has been flagged for review.", module: "Review", priority: "high" },
+    { type: "system", title: "Backup completed", message: "Daily database backup completed successfully.", module: "System", priority: "low" },
+    { type: "order", title: "Refund processed", message: "Refund of ₹12,500 for order RIG-2505-MNO has been processed.", module: "Payment", priority: "normal" },
+    { type: "support", title: "Ticket escalated", message: "Support ticket TKT-00008 has been escalated to high priority.", module: "Support", priority: "high" },
+  ];
+  const notificationDocs = [];
+  for (let i = 0; i < notificationTypes.length; i++) {
+    const n = notificationTypes[i];
+    notificationDocs.push(await Notification.create({
+      recipient: adminUser._id,
+      recipientRole: "admin",
+      type: n.type,
+      title: n.title,
+      message: n.message,
+      module: n.module,
+      priority: n.priority,
+      isRead: i < 5,
+    }));
+  }
+  summary.push(["Notifications", notificationDocs.length]);
+
+  // ── 15. Addresses ──
   console.log("  Seeding Addresses...");
   const addresses = [];
   for (const user of customers) {
@@ -457,7 +622,7 @@ async function seed() {
   const addressDocs = await Address.create(addresses);
   summary.push(["Addresses", addressDocs.length]);
 
-  // ── 12. Wishlists ──
+  // ── 15. Wishlists ──
   console.log("  Seeding Wishlists...");
   const wishlists = [];
   for (const user of customers) {
@@ -471,7 +636,7 @@ async function seed() {
   const wishlistDocs = await Wishlist.create(wishlists);
   summary.push(["Wishlists", wishlistDocs.length]);
 
-  // ── 13. Carts ──
+  // ── 16. Carts ──
   console.log("  Seeding Carts...");
   const carts = [];
   for (const user of customers) {
@@ -500,10 +665,10 @@ async function seed() {
   const cartDocs = await Cart.create(carts);
   summary.push(["Carts", cartDocs.length]);
 
-  // ── 14. Saved Builds ──
+  // ── 17. Saved Builds ──
   console.log("  Seeding Saved Builds...");
   const savedBuilds = [];
-  const buildUsers = pickRandom(customers, 4);
+  const buildUsers = pickRandom(customers, 10);
   for (const user of buildUsers) {
     const cpu = productMap.get("CPU-AMD-7600X");
     const gpu = productMap.get("GPU-NVD-RTX4060");

@@ -9,10 +9,10 @@ import AdminSelect from "../common/Select";
 import ImageUpload from "../common/ImageUpload";
 import AdminButton from "../common/Button";
 import ComponentSelector from "./ComponentSelector";
-import { COMPONENT_SLOTS } from "../../services/prebuiltService";
+import { HARDWARE_SLOTS, ADDON_SLOTS } from "../../services/prebuiltService";
 import { useToast } from "../common/Toast";
 
-const requiredSlotKeys = COMPONENT_SLOTS.filter((s) => s.required).map((s) => s.key);
+const requiredSlotKeys = HARDWARE_SLOTS.filter((s) => s.required).map((s) => s.key);
 
 const prebuiltSchema = z.object({
   name: z.string().min(1, "Name is required").max(150),
@@ -37,7 +37,7 @@ const prebuiltSchema = z.object({
   const comps = data.components || {};
   for (const key of requiredSlotKeys) {
     if (!comps[key]) {
-      const slot = COMPONENT_SLOTS.find((s) => s.key === key);
+      const slot = HARDWARE_SLOTS.find((s) => s.key === key);
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: `${slot?.label || key} is required`,
@@ -117,27 +117,29 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
             )} />
 
             <Grid container spacing={2}>
-              <Grid size={{ xs: 12, sm: 3 }}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <Controller name="regularPrice" control={control} render={({ field }) => (
                   <AdminInput label="Regular Price ($)" type="number" error={!!errors.regularPrice} helperText={errors.regularPrice?.message} {...field} />
                 )} />
               </Grid>
-              <Grid size={{ xs: 12, sm: 3 }}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <Controller name="salePrice" control={control} render={({ field }) => (
                   <AdminInput label="Sale Price ($)" type="number" {...field} value={field.value ?? ""} />
                 )} />
               </Grid>
-              <Grid size={{ xs: 12, sm: 3 }}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <Controller name="stock" control={control} render={({ field }) => (
                   <AdminInput label="Stock" type="number" {...field} />
                 )} />
               </Grid>
-              <Grid size={{ xs: 12, sm: 3 }}>
+            </Grid>
+            <Grid container spacing={2} sx={{ mt: 2 }}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Controller name="saleStart" control={control} render={({ field }) => (
                   <AdminInput label="Sale Start" type="datetime-local" {...field} value={field.value ?? ""} InputLabelProps={{ shrink: true }} />
                 )} />
               </Grid>
-              <Grid size={{ xs: 12, sm: 3 }}>
+              <Grid size={{ xs: 12, sm: 6 }}>
                 <Controller name="saleEnd" control={control} render={({ field }) => (
                   <AdminInput label="Sale End" type="datetime-local" {...field} value={field.value ?? ""} InputLabelProps={{ shrink: true }} />
                 )} />
@@ -167,13 +169,46 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
                 Component Slots
               </Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                {COMPONENT_SLOTS.map((slot) => {
+                {HARDWARE_SLOTS.map((slot) => {
                   const selectedId = components[slot.key];
                   return (
                     <Box key={slot.key} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 1.5, border: "1px solid", borderColor: errors.components?.[slot.key] ? "var(--color-admin-danger)" : "var(--color-admin-border)", borderRadius: "var(--radius-admin-badge)", backgroundColor: "var(--color-admin-bg-tertiary)" }}>
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)" }}>
                           {slot.label} {slot.required && <span style={{ color: "var(--color-admin-danger)" }}>*</span>}
+                        </Typography>
+                        <Typography variant="caption" sx={{ color: errors.components?.[slot.key] ? "var(--color-admin-danger)" : selectedId ? "var(--color-admin-success)" : "var(--color-admin-muted)" }}>
+                          {errors.components?.[slot.key] ? errors.components[slot.key].message : selectedId ? `Product ID: ${selectedId}` : "Not assigned"}
+                        </Typography>
+                      </Box>
+                      <Box sx={{ display: "flex", gap: 0.5 }}>
+                        <AdminButton variant="ghost" size="small" icon={<EditIcon />} onClick={() => setSlotSelector({ open: true, slot })}>
+                          {selectedId ? "Change" : "Select"}
+                        </AdminButton>
+                        {selectedId && (
+                          <IconButton size="small" onClick={() => removeSlot(slot.key)} sx={{ color: "var(--color-admin-danger)" }}>
+                            <DeleteIcon fontSize="small" />
+                          </IconButton>
+                        )}
+                      </Box>
+                    </Box>
+                  );
+                })}
+              </Box>
+            </Box>
+
+            <Box>
+              <Typography variant="subtitle2" sx={{ mb: 1.5, color: "var(--color-admin-text)", fontWeight: 600 }}>
+                Software &amp; Accessories
+              </Typography>
+              <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                {ADDON_SLOTS.map((slot) => {
+                  const selectedId = components[slot.key];
+                  return (
+                    <Box key={slot.key} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 1.5, border: "1px solid", borderColor: errors.components?.[slot.key] ? "var(--color-admin-danger)" : "var(--color-admin-border)", borderRadius: "var(--radius-admin-badge)", backgroundColor: "var(--color-admin-bg-tertiary)" }}>
+                      <Box>
+                        <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)" }}>
+                          {slot.label}
                         </Typography>
                         <Typography variant="caption" sx={{ color: errors.components?.[slot.key] ? "var(--color-admin-danger)" : selectedId ? "var(--color-admin-success)" : "var(--color-admin-muted)" }}>
                           {errors.components?.[slot.key] ? errors.components[slot.key].message : selectedId ? `Product ID: ${selectedId}` : "Not assigned"}

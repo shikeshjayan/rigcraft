@@ -2,7 +2,6 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import AdminLayout from "../components/layout/AdminLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import { ToastProvider } from "../components/common/Toast";
-import Login from "../pages/auth/Login";
 import Dashboard from "../pages/dashboard/Dashboard";
 import CategoryList from "../pages/categories/CategoryList";
 import CategoryCreate from "../pages/categories/CategoryCreate";
@@ -45,11 +44,11 @@ import { ROLES } from "../constants/status";
 const AdminRoutes = () => {
   return (
     <Routes>
-      <Route path="login" element={<Login />} />
+      <Route path="login" element={<Navigate to="/login" replace />} />
 
       <Route
         element={
-          <ProtectedRoute allowedRoles={["super_admin", "admin", "manager"]}>
+          <ProtectedRoute allowedRoles={["admin", "manager"]}>
             <ToastProvider>
               <AdminLayout />
             </ToastProvider>

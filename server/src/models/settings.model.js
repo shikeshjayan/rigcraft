@@ -243,6 +243,29 @@ const settingsSchema = new mongoose.Schema(
       trim: true,
     },
 
+    notification: {
+      orderConfirmation: {
+        type: Boolean,
+        default: true,
+      },
+      shippingUpdate: {
+        type: Boolean,
+        default: true,
+      },
+      paymentConfirmation: {
+        type: Boolean,
+        default: true,
+      },
+      lowStockAlerts: {
+        type: Boolean,
+        default: true,
+      },
+      newOrderAlerts: {
+        type: Boolean,
+        default: true,
+      },
+    },
+
     currency: {
       code: {
         type: String,
