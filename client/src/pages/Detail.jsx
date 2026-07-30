@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, Link, useLocation } from 'react-router-dom';
+import { useParams, Link, useLocation, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import FadeUp from '../components/FadeUp';
+import { allItems } from '../data/items';
+import { useCart } from '../context/CartContext';
 
 // Icons
 import AddIcon from '@mui/icons-material/Add';
@@ -24,6 +26,50 @@ const Detail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
+  const [showAddedToast, setShowAddedToast] = useState(false);
+
+  const navigate = useNavigate();
+  const { addToCart } = useCart();
+
+  const handleBuyNow = () => {
+    addToCart(pc);
+    navigate('/cart?step=address');
+  };
+
+  const handleAddToCart = () => {
+    addToCart(pc);
+  };
+
+  const handleAddToBuild = () => {
+    let draftBuild = JSON.parse(localStorage.getItem('draftBuild')) || {};
+    
+    let dbCategory = 'misc';
+    if (pc.category?.slug) dbCategory = pc.category.slug;
+    else if (typeof pc.category === 'string') dbCategory = pc.category.toLowerCase();
+    
+    const CATEGORY_MAP = {
+      processor: "cpu",
+      motherboard: "motherboard",
+      ram: "ram",
+      storage: "ssd",
+      gpu: "gpu",
+      case: "cabinet",
+      "power-supply": "psu",
+      cooling: "cooling"
+    };
+    
+    let categoryKey = CATEGORY_MAP[dbCategory] || dbCategory;
+    
+    if (draftBuild[categoryKey]) {
+       if(!window.confirm(`You already have a ${categoryKey} in your active build. Replace it?`)) return;
+    }
+    
+    draftBuild[categoryKey] = pc;
+    localStorage.setItem('draftBuild', JSON.stringify(draftBuild));
+    
+    setShowAddedToast(true);
+    setTimeout(() => setShowAddedToast(false), 4000);
+  };
 
   // Scroll to top when page loads
   useEffect(() => {
@@ -35,12 +81,29 @@ const Detail = () => {
       setLoading(true);
       setError(false);
       try {
-        const endpoint = typeParam === 'prebuilt' ? `/prebuilt-pcs/${id}` : `/products/slug/${id}`;
+        const endpoint = typeParam === 'prebuilt' ? `/prebuilt-pcs/${id}` : `/products/${id}`;
         const res = await apiClient.get(endpoint);
         setPc(res.data?.data || res.data);
       } catch (err) {
-        console.error("Failed to load product details", err);
-        setError(true);
+        // Fallback to local items if API fails (e.g. for mock component items)
+        const mockItem = allItems.find(item => item.id.toString() === id);
+        if (mockItem) {
+          setPc({
+            _id: mockItem.id,
+            name: mockItem.title,
+            description: mockItem.description,
+            price: mockItem.priceVal,
+            salePrice: mockItem.priceVal,
+            images: [{ url: mockItem.image }],
+            rating: { average: parseFloat(mockItem.rating), count: mockItem.reviews },
+            brand: { name: mockItem.brand },
+            specifications: { Processor: mockItem.specs ? mockItem.specs.join(', ') : '' },
+            isMock: true
+          });
+        } else {
+          console.error("Failed to load product details", err);
+          setError(true);
+        }
       } finally {
         setLoading(false);
       }
@@ -114,7 +177,7 @@ const Detail = () => {
           <div className="w-full lg:w-[60%] flex flex-col">
             
             {/* Image Gallery */}
-            <div className="w-full bg-[#E5E7EB] rounded-sm mb-4 aspect-video flex items-center justify-center p-8">
+            <div className="w-full h-[400px] lg:h-[500px] bg-[#E5E7EB] rounded-sm mb-4 flex items-center justify-center p-8">
               <img src={currentImage} alt={title} className="max-h-full max-w-full object-contain mix-blend-multiply" />
             </div>
             
@@ -274,14 +337,14 @@ const Detail = () => {
 
               {/* Buttons */}
               <div className="flex flex-col gap-3">
-                <button disabled={pc.stock <= 0} className={`w-full text-white font-bold py-3 rounded-sm shadow-sm transition-colors ${pc.stock > 0 ? 'bg-[#0047AB] hover:bg-[#003380] cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}>
+                <button onClick={handleBuyNow} disabled={pc.stock <= 0} className={`w-full text-white font-bold py-3 rounded-sm shadow-sm transition-colors ${pc.stock > 0 ? 'bg-[#0047AB] hover:bg-[#003380] cursor-pointer' : 'bg-gray-400 cursor-not-allowed'}`}>
                   Buy Now
                 </button>
-                <button disabled={pc.stock <= 0} className={`w-full bg-white text-[#0047AB] border border-[#0047AB] font-bold py-3 rounded-sm transition-colors ${pc.stock > 0 ? 'hover:bg-[#F0F6FF] cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}>
+                <button onClick={handleAddToCart} disabled={pc.stock <= 0} className={`w-full bg-white text-[#0047AB] border border-[#0047AB] font-bold py-3 rounded-sm transition-colors ${pc.stock > 0 ? 'hover:bg-[#F0F6FF] cursor-pointer' : 'opacity-50 cursor-not-allowed'}`}>
                   Add to Cart
                 </button>
                 {!isPrebuilt && (
-                  <button className="w-full bg-[#1F2937] text-white font-bold py-3 rounded-sm hover:bg-[#111827] transition-colors flex justify-center items-center gap-2 cursor-pointer mt-2">
+                  <button onClick={handleAddToBuild} className="w-full bg-[#1F2937] text-white font-bold py-3 rounded-sm hover:bg-[#111827] transition-colors flex justify-center items-center gap-2 cursor-pointer mt-2">
                     <ConstructionIcon sx={{ fontSize: 18 }} /> Add to Active Build
                   </button>
                 )}
@@ -292,6 +355,12 @@ const Detail = () => {
 
         </div>
       </div>
+      {/* Toast Notification */}
+      {showAddedToast && (
+        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in flex items-center gap-2">
+          <CheckCircleOutlineIcon /> Component added to your Active Build!
+        </div>
+      )}
     </div>
     </FadeUp>
   );

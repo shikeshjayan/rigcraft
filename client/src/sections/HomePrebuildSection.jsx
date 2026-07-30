@@ -1,8 +1,30 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Card from '../components/Card';
-import { allItems } from '../data/items';
+import { Link, useNavigate } from 'react-router-dom';
+import apiClient from '../api/client';
 
 const HomePrebuildSection = () => {
+  const [prebuilts, setPrebuilts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const fetchPrebuilts = async () => {
+      try {
+        const { data } = await apiClient.get('/prebuilt-pcs');
+        if (data && data.data) {
+          const docs = data.data.docs || data.data;
+          setPrebuilts(Array.isArray(docs) ? docs.slice(0, 8) : []);
+        }
+      } catch (error) {
+        console.error('Failed to fetch prebuilt PCs', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPrebuilts();
+  }, []);
+
   return (
     <section className="w-full py-16" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
@@ -17,31 +39,43 @@ const HomePrebuildSection = () => {
               Discover our range of high-performance prebuilt gaming and workstation PCs.
             </p>
           </div>
-          <a href="#" className="font-[600] text-[16px] flex items-center gap-1 mt-4 md:mt-0 transition-transform hover:translate-x-1" style={{ color: 'var(--color-primary)' }}>
+          <Link to="/prebuild" className="font-[600] text-[16px] flex items-center gap-1 mt-4 md:mt-0 transition-transform hover:translate-x-1 cursor-pointer" style={{ color: 'var(--color-primary)' }}>
             View All Prebuilt PCs
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
             </svg>
-          </a>
+          </Link>
         </div>
         
         {/* Grid Section (4 columns, 2 rows) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {allItems.slice(0, 8).map((pc) => (
-            <Card 
-              key={pc.id}
-              id={pc.id}
-              image={pc.image}
-              title={pc.title}
-              specs={pc.specs}
-              description={pc.description}
-              price={pc.price}
-              mrp={pc.mrp}
-              discount={pc.discount}
-              tag={pc.tag}
-              tagColor={pc.tagColor}
-            />
-          ))}
+          {prebuilts.map((pc) => {
+            const id = pc._id || pc.id;
+            const image = pc.images?.[0]?.url || pc.images?.[0] || pc.image || null;
+            const title = pc.name || pc.title;
+            const priceVal = pc.pricing?.price || pc.priceVal;
+            const mrpVal = pc.pricing?.salePrice || pc.mrpVal;
+            const price = priceVal ? `₹${priceVal.toLocaleString()}` : pc.price;
+            const mrp = mrpVal ? `₹${mrpVal.toLocaleString()}` : pc.mrp;
+            const specs = pc.specs || pc.tags || [];
+            
+            return (
+              <Card 
+                key={id}
+                id={id}
+                image={image}
+                title={title}
+                specs={specs}
+                description={pc.description}
+                price={price}
+                mrp={mrp}
+                discount={pc.discount}
+                tag={pc.tag}
+                tagColor={pc.tagColor}
+                category="prebuilt"
+              />
+            );
+          })}
         </div>
 
       </div>

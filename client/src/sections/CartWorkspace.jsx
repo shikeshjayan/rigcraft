@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/client';
@@ -15,12 +15,22 @@ import BusinessIcon from '@mui/icons-material/Business';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
+const getTypeName = (type) => typeof type === 'string' ? type : type?.name || 'UNKNOWN';
+
 const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
-  const { cartItems, removeFromCart } = useCart();
+  const { cartItems, removeFromCart, clearCart } = useCart();
   const { isLoggedIn } = useAuth();
-  
+
   // Track selected items by cartItemId (or id for legacy items)
   const [selectedItemIds, setSelectedItemIds] = useState(cartItems.map(item => item.cartItemId || item.id));
+  const hasInitializedSelection = useRef(false);
+
+  useEffect(() => {
+    if (cartItems.length > 0 && !hasInitializedSelection.current) {
+      setSelectedItemIds(cartItems.map(item => item.cartItemId || item.id));
+      hasInitializedSelection.current = true;
+    }
+  }, [cartItems]);
 
   const [showCouponPopup, setShowCouponPopup] = useState(false);
   const [couponInput, setCouponInput] = useState('');
@@ -28,7 +38,156 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   const [donationAmount, setDonationAmount] = useState(10);
   const [isDonating, setIsDonating] = useState(false);
   const [showStateDropdown, setShowStateDropdown] = useState(false);
-  
+  const navigate = useNavigate();
+  const [paymentMethod, setPaymentMethod] = useState('razorpay');
+
+  const syncCartToBackend = async () => {
+    try {
+      await apiClient.delete('/cart').catch(() => { });
+      let syncedCount = 0;
+      for (const item of cartItems) {
+        if (selectedItemIds.includes(item.cartItemId || item.id)) {
+          let itemType = 'product';
+          if (item.type === 'custom-build') itemType = 'savedBuild';
+          else if (item.type === 'PC' || item.type === 'prebuilt') itemType = 'prebuilt';
+          if (item.itemType) itemType = item.itemType;
+
+          const itemId = item.id || item._id || item.item;
+
+          if (!itemId || !/^[a-fA-F0-9]{24}$/.test(String(itemId))) {
+            throw new Error(`Item "${item.title || 'Unknown'}" is a mock item. Please remove it and add real products from the catalog.`);
+          }
+
+          await apiClient.post('/cart/items', {
+            itemType,
+            itemId,
+            quantity: item.qty || 1
+          });
+          syncedCount++;
+        }
+      }
+
+      if (syncedCount === 0) {
+        throw new Error("No valid items selected for checkout.");
+      }
+      return true;
+    } catch (error) {
+      console.error('Failed to sync cart', error);
+      alert(`Cart Sync Error: ${error.response?.data?.message || error.message}`);
+      return false;
+    }
+  };
+
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
+  };
+
+  const handleCheckout = async () => {
+    try {
+      const selectedAddress = savedAddresses[selectedAddressId];
+      if (!selectedAddress) {
+        alert('Please select a delivery address');
+        return;
+      }
+
+      const isSynced = await syncCartToBackend();
+      if (!isSynced) return;
+
+      if (paymentMethod === 'cod') {
+        const orderData = {
+          addressId: selectedAddress._id || selectedAddress.id,
+          paymentMethod: 'cod'
+        };
+        const orderResponse = await apiClient.post('/orders/checkout', orderData);
+        if (!orderResponse.data.success) {
+          alert('Failed to place order');
+          return;
+        }
+        clearCart();
+        navigate('/profile');
+        return;
+      }
+
+      const res = await loadRazorpayScript();
+      if (!res) {
+        alert('Razorpay SDK failed to load. Are you online?');
+        return;
+      }
+
+      // Step 1: Create Order in Backend
+      const orderData = {
+        addressId: selectedAddress._id || selectedAddress.id,
+        paymentMethod: 'razorpay'
+      };
+      const orderResponse = await apiClient.post('/orders/checkout', orderData);
+
+      if (!orderResponse.data.success) {
+        alert('Failed to create order');
+        return;
+      }
+
+      const orderId = orderResponse.data.data.order._id;
+
+      // Step 2: Create Razorpay Order
+      const rzpOrderResponse = await apiClient.post('/payments/create-razorpay-order', { orderId });
+      if (!rzpOrderResponse.data.success) {
+        alert('Failed to initialize Razorpay checkout');
+        return;
+      }
+
+      const { razorpay } = rzpOrderResponse.data.data;
+
+      // Step 3: Open Razorpay Checkout
+      const options = {
+        key: razorpay.keyId,
+        amount: razorpay.amount,
+        currency: razorpay.currency,
+        name: 'Rigcraft',
+        description: 'Order Payment',
+        order_id: razorpay.orderId,
+        handler: async function (response) {
+          try {
+            // Step 4: Verify Payment
+            const verifyResponse = await apiClient.post('/payments/verify', {
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature
+            });
+
+            if (verifyResponse.data.success) {
+              clearCart();
+              navigate('/orders');
+            } else {
+              alert('Payment Verification Failed');
+            }
+          } catch (error) {
+            console.error('Verify error:', error);
+            alert('An error occurred during payment verification.');
+          }
+        },
+        prefill: {
+          name: selectedAddress.fullName,
+          contact: selectedAddress.phone,
+        },
+        theme: {
+          color: '#0052FF'
+        }
+      };
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.open();
+    } catch (error) {
+      console.error('Checkout error:', error);
+      alert(`Checkout Failed: ${error.response?.data?.message || error.message}`);
+    }
+  };
+
   // Address States
   const [savedAddresses, setSavedAddresses] = useState([]);
   const [isAddingAddress, setIsAddingAddress] = useState(true);
@@ -42,13 +201,13 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   });
 
   const statesList = [
-    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh", 
-    "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand", 
-    "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur", 
-    "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan", 
-    "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", 
-    "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands", 
-    "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", 
+    "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chhattisgarh",
+    "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jharkhand",
+    "Karnataka", "Kerala", "Madhya Pradesh", "Maharashtra", "Manipur",
+    "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Punjab", "Rajasthan",
+    "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh",
+    "Uttarakhand", "West Bengal", "Andaman and Nicobar Islands",
+    "Chandigarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi",
     "Jammu and Kashmir", "Ladakh", "Lakshadweep", "Puducherry"
   ];
 
@@ -97,8 +256,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   };
 
   const toggleItemSelection = (cartItemId) => {
-    setSelectedItemIds(prev => 
-      prev.includes(cartItemId) 
+    setSelectedItemIds(prev =>
+      prev.includes(cartItemId)
         ? prev.filter(id => id !== cartItemId)
         : [...prev, cartItemId]
     );
@@ -169,7 +328,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   const totalDiscount = checkoutItems.reduce((sum, item) => sum + ((parsePrice(item.mrp, item.price) - parsePrice(item.price)) * (item.qty || 1)), 0);
   const couponDiscount = isCouponApplied ? 500 : 0;
   const platformFee = 0;
-  const finalTotal = totalMRP - totalDiscount - couponDiscount + (isDonating ? donationAmount : 0) + platformFee;
+  const codFee = (checkoutStep === 'payment' && paymentMethod === 'cod') ? 60 : 0;
+  const finalTotal = totalMRP - totalDiscount - couponDiscount + (isDonating ? donationAmount : 0) + platformFee + codFee;
 
   const formatPrice = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
@@ -188,12 +348,12 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   return (
     <section className="w-full py-8 min-h-screen" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
       <div className="max-w-[1200px] mx-auto px-4 lg:px-8">
-        
+
         <div className="flex flex-col lg:flex-row gap-6">
-          
+
           {/* Left Column - 60% */}
           <div className="w-full lg:w-[60%] flex flex-col gap-4">
-            
+
             {checkoutStep === 'bag' ? (
               <>
                 {/* Check Delivery */}
@@ -224,11 +384,11 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                 {/* Item Header */}
                 <div className="flex items-center justify-between mt-4">
                   <div className="flex items-center gap-2 font-bold text-[15px] text-[#0F172A]">
-                    <input 
-                      type="checkbox" 
+                    <input
+                      type="checkbox"
                       checked={selectedItemIds.length === cartItems.length && cartItems.length > 0}
                       onChange={toggleAllSelection}
-                      className="w-4 h-4 accent-[#0052FF] cursor-pointer" 
+                      className="w-4 h-4 accent-[#0052FF] cursor-pointer"
                     />
                     {selectedItemIds.length}/{cartItems.length} ITEMS SELECTED
                   </div>
@@ -249,11 +409,11 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                         <div key={uniqueId || index} className="bg-white border-2 border-[#E2E8F0] p-4 rounded-sm relative flex flex-col gap-4 shadow-sm hover:border-[#2563EB] transition-colors">
                           <div className="flex justify-between items-start">
                             <div className="flex gap-4 items-start">
-                              <input 
-                                type="checkbox" 
+                              <input
+                                type="checkbox"
                                 checked={selectedItemIds.includes(uniqueId)}
                                 onChange={() => toggleItemSelection(uniqueId)}
-                                className="w-4 h-4 accent-[#0052FF] cursor-pointer mt-1" 
+                                className="w-4 h-4 accent-[#0052FF] cursor-pointer mt-1"
                               />
                               <div>
                                 <h3 className="text-[16px] font-black text-[#0F172A] mb-1 uppercase tracking-tight">{item.title}</h3>
@@ -270,17 +430,17 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                               <div className="text-[18px] font-black text-[#2563EB]">{item.price}</div>
                             </div>
                           </div>
-                          
+
                           <div className="flex gap-2 overflow-x-auto items-center py-3 border-t border-gray-100 mt-2">
                             {item.components?.map((comp, idx) => (
                               <div key={idx} className="w-14 h-14 bg-gray-50 flex flex-col items-center justify-center rounded-sm shrink-0 border border-gray-100 p-1 relative group" title={comp.product?.title}>
                                 {comp.product?.image ? (
-                                  <img src={comp.product.image} alt={comp.type} className="w-full h-full object-contain mix-blend-multiply" />
+                                  <img src={comp.product.image} alt={getTypeName(comp.type)} className="w-full h-full object-contain mix-blend-multiply" />
                                 ) : (
-                                  <span className="text-[8px] text-gray-400 font-bold uppercase">{comp.type.substring(0,3)}</span>
+                                  <span className="text-[8px] text-gray-400 font-bold uppercase">{getTypeName(comp.type).substring(0, 3)}</span>
                                 )}
                                 <div className="absolute -bottom-2 opacity-0 group-hover:opacity-100 bg-black text-white text-[9px] px-1 rounded whitespace-nowrap transition-opacity z-10 font-bold">
-                                  {comp.type}
+                                  {getTypeName(comp.type)}
                                 </div>
                               </div>
                             ))}
@@ -290,40 +450,40 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                     }
 
                     return (
-                    <div key={uniqueId || index} className="bg-white border border-[#E2E8F0] p-4 rounded-sm relative flex gap-4 hover:shadow-sm transition-shadow">
-                      <button onClick={() => removeFromCart(item.id)} className="absolute top-4 right-4 text-[#94A3B8] hover:text-[#0F172A] cursor-pointer">
-                        <CloseIcon sx={{ fontSize: 20 }} />
-                      </button>
-                      
-                      <div className="w-28 h-36 bg-[#F8FAFC] shrink-0 p-2 relative">
-                        <input 
-                          type="checkbox" 
-                          checked={selectedItemIds.includes(uniqueId)}
-                          onChange={() => toggleItemSelection(uniqueId)}
-                          className="absolute top-2 left-2 z-10 w-4 h-4 accent-[#0052FF] cursor-pointer" 
-                        />
-                        <img src={item.image} alt={item.title} className="w-full h-full object-contain mix-blend-multiply" />
-                      </div>
-                      
-                      <div className="flex flex-col flex-grow py-1">
-                        <h3 className="text-[15px] font-bold text-[#0F172A] mb-1">{item.brand || 'Rigcraft'}</h3>
-                        <p className="text-[14px] text-[#64748B] mb-2 pr-6 line-clamp-1">{item.title}</p>
-                        <p className="text-[12px] text-[#94A3B8] mb-3">Sold by: RetailNet</p>
-                        
-                        <div className="flex items-center gap-2 mb-2">
-                          <span className="text-[15px] font-bold text-[#0F172A]">{formatPrice(parsePrice(item.price))}</span>
-                          {item.mrp && (
-                            <span className="text-[13px] text-[#94A3B8] line-through">{item.mrp}</span>
-                          )}
-                          {item.discount && (
-                            <span className="text-[13px] font-bold text-[#FF905A]">{item.discount}</span>
-                          )}
+                      <div key={uniqueId || index} className="bg-white border border-[#E2E8F0] p-4 rounded-sm relative flex gap-4 hover:shadow-sm transition-shadow">
+                        <button onClick={() => removeFromCart(item.id)} className="absolute top-4 right-4 text-[#94A3B8] hover:text-[#0F172A] cursor-pointer">
+                          <CloseIcon sx={{ fontSize: 20 }} />
+                        </button>
+
+                        <div className="w-28 h-36 bg-[#F8FAFC] shrink-0 p-2 relative">
+                          <input
+                            type="checkbox"
+                            checked={selectedItemIds.includes(uniqueId)}
+                            onChange={() => toggleItemSelection(uniqueId)}
+                            className="absolute top-2 left-2 z-10 w-4 h-4 accent-[#0052FF] cursor-pointer"
+                          />
+                          <img src={item.image} alt={item.title} className="w-full h-full object-contain mix-blend-multiply" />
                         </div>
-                        <div className="text-[12px] text-[#0F172A] flex items-center gap-1">
-                          <span className="font-bold">14 days</span> return available
+
+                        <div className="flex flex-col flex-grow py-1">
+                          <h3 className="text-[15px] font-bold text-[#0F172A] mb-1">{getTypeName(item.brand) || 'Rigcraft'}</h3>
+                          <p className="text-[14px] text-[#64748B] mb-2 pr-6 line-clamp-1">{item.title}</p>
+                          <p className="text-[12px] text-[#94A3B8] mb-3">Sold by: RetailNet</p>
+
+                          <div className="flex items-center gap-2 mb-2">
+                            <span className="text-[15px] font-bold text-[#0F172A]">{formatPrice(parsePrice(item.price))}</span>
+                            {item.mrp && (
+                              <span className="text-[13px] text-[#94A3B8] line-through">{item.mrp}</span>
+                            )}
+                            {item.discount && (
+                              <span className="text-[13px] font-bold text-[#FF905A]">{item.discount}</span>
+                            )}
+                          </div>
+                          <div className="text-[12px] text-[#0F172A] flex items-center gap-1">
+                            <span className="font-bold">14 days</span> return available
+                          </div>
                         </div>
                       </div>
-                    </div>
                     );
                   })}
                 </div>
@@ -341,66 +501,66 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               /* Address Form Step */
               <div className="bg-white border border-[#E2E8F0] p-6 rounded-sm mb-4">
                 <div className="flex items-center gap-2 mb-6">
-                  <div className="bg-[#EFF6FF] text-[#0052FF] p-1 rounded-sm"><PersonOutlineIcon fontSize="small"/></div>
+                  <div className="bg-[#EFF6FF] text-[#0052FF] p-1 rounded-sm"><PersonOutlineIcon fontSize="small" /></div>
                   <span className="font-bold text-[14px] text-[#0F172A]">CONTACT DETAILS</span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Full Name*</label>
-                    <input type="text" placeholder="Full Name (e.g. Ravi Sharma)" value={addressForm.fullName} onChange={e => setAddressForm({...addressForm, fullName: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Full Name (e.g. Ravi Sharma)" value={addressForm.fullName} onChange={e => setAddressForm({ ...addressForm, fullName: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Mobile No*</label>
-                    <input type="text" placeholder="Phone (e.g. 9876543210)" value={addressForm.phone} onChange={e => setAddressForm({...addressForm, phone: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Phone (e.g. 9876543210)" value={addressForm.phone} onChange={e => setAddressForm({ ...addressForm, phone: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Alternate Phone</label>
-                    <input type="text" placeholder="Alternate Phone (e.g. 9988776655)" value={addressForm.alternatePhone} onChange={e => setAddressForm({...addressForm, alternatePhone: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Alternate Phone (e.g. 9988776655)" value={addressForm.alternatePhone} onChange={e => setAddressForm({ ...addressForm, alternatePhone: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Pin Code*</label>
-                    <input type="text" placeholder="Postal Code (e.g. 400004)" value={addressForm.postalCode} onChange={e => setAddressForm({...addressForm, postalCode: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Postal Code (e.g. 400004)" value={addressForm.postalCode} onChange={e => setAddressForm({ ...addressForm, postalCode: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                 </div>
 
                 <div className="border-t border-[#E2E8F0] my-6"></div>
 
                 <div className="flex items-center gap-2 mb-6">
-                  <div className="bg-[#EFF6FF] text-[#0052FF] p-1 rounded-sm"><LocationOnOutlinedIcon fontSize="small"/></div>
+                  <div className="bg-[#EFF6FF] text-[#0052FF] p-1 rounded-sm"><LocationOnOutlinedIcon fontSize="small" /></div>
                   <span className="font-bold text-[14px] text-[#0F172A]">SHIPPING ADDRESS</span>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row gap-4 mb-4">
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Address Line 1*</label>
-                    <input type="text" placeholder="Address Line 1 (e.g. 42, Girgaon Road)" value={addressForm.addressLine1} onChange={e => setAddressForm({...addressForm, addressLine1: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Address Line 1 (e.g. 42, Girgaon Road)" value={addressForm.addressLine1} onChange={e => setAddressForm({ ...addressForm, addressLine1: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Address Line 2</label>
-                    <input type="text" placeholder="Address Line 2 (e.g. Near Chandan Cinema)" value={addressForm.addressLine2} onChange={e => setAddressForm({...addressForm, addressLine2: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Address Line 2 (e.g. Near Chandan Cinema)" value={addressForm.addressLine2} onChange={e => setAddressForm({ ...addressForm, addressLine2: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row gap-4 mb-4">
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Landmark</label>
-                    <input type="text" placeholder="Landmark (e.g. Opposite City Mall)" value={addressForm.landmark} onChange={e => setAddressForm({...addressForm, landmark: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Landmark (e.g. Opposite City Mall)" value={addressForm.landmark} onChange={e => setAddressForm({ ...addressForm, landmark: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">City / District*</label>
-                    <input type="text" placeholder="City (e.g. Mumbai)" value={addressForm.city} onChange={e => setAddressForm({...addressForm, city: e.target.value})} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="City (e.g. Mumbai)" value={addressForm.city} onChange={e => setAddressForm({ ...addressForm, city: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                 </div>
-                
+
                 <div className="flex flex-col sm:flex-row gap-4 mb-4">
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">State*</label>
-                    <select 
-                      value={addressForm.state} 
-                      onChange={e => setAddressForm({...addressForm, state: e.target.value})} 
+                    <select
+                      value={addressForm.state}
+                      onChange={e => setAddressForm({ ...addressForm, state: e.target.value })}
                       className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors cursor-pointer"
                     >
                       <option value="" disabled>Select State</option>
@@ -421,25 +581,25 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                   <div>
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-3">Address Type / Label*</label>
                     <div className="flex gap-2 mb-2">
-                      <button 
+                      <button
                         type="button"
-                        onClick={() => setAddressForm({...addressForm, label: 'Home'})}
+                        onClick={() => setAddressForm({ ...addressForm, label: 'Home' })}
                         className={`flex items-center gap-2 px-5 py-2 rounded-sm text-[13px] font-bold cursor-pointer transition-colors ${addressForm.label === 'Home' ? 'bg-[#0052FF] text-white border border-[#0052FF]' : 'bg-white border border-[#CBD5E1] text-[#0F172A] hover:border-[#0052FF]'}`}
                       >
                         Home
                       </button>
-                      <button 
+                      <button
                         type="button"
-                        onClick={() => setAddressForm({...addressForm, label: 'Office'})}
+                        onClick={() => setAddressForm({ ...addressForm, label: 'Office' })}
                         className={`flex items-center gap-2 px-5 py-2 rounded-sm text-[13px] font-bold cursor-pointer transition-colors ${addressForm.label === 'Office' ? 'bg-[#0052FF] text-white border border-[#0052FF]' : 'bg-white border border-[#CBD5E1] text-[#0F172A] hover:border-[#0052FF]'}`}
                       >
                         Office
                       </button>
                     </div>
-                    <input type="text" placeholder="Or type custom label (e.g. parent's home)" value={addressForm.label} onChange={e => setAddressForm({...addressForm, label: e.target.value})} className="w-full sm:w-[250px] border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Or type custom label (e.g. parent's home)" value={addressForm.label} onChange={e => setAddressForm({ ...addressForm, label: e.target.value })} className="w-full sm:w-[250px] border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                   <label className="flex-1 flex items-center gap-2 cursor-pointer pb-3 sm:pb-3 sm:justify-end">
-                    <input type="checkbox" checked={addressForm.isDefault} onChange={e => setAddressForm({...addressForm, isDefault: e.target.checked})} className="w-4 h-4 accent-[#0052FF] cursor-pointer" />
+                    <input type="checkbox" checked={addressForm.isDefault} onChange={e => setAddressForm({ ...addressForm, isDefault: e.target.checked })} className="w-4 h-4 accent-[#0052FF] cursor-pointer" />
                     <span className="text-[13px] text-[#0F172A] font-bold flex flex-col">
                       <span>Set as default</span>
                     </span>
@@ -460,6 +620,39 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                   </button>
                 </div>
               </div>
+            ) : checkoutStep === 'payment' ? (
+              <div className="bg-white border border-[#E2E8F0] p-6 rounded-sm mb-4">
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="bg-[#EFF6FF] text-[#0052FF] p-1 rounded-sm"><VerifiedUserIcon fontSize="small" /></div>
+                  <span className="font-bold text-[14px] text-[#0F172A]">PAYMENT OPTIONS</span>
+                </div>
+                <div className="flex flex-col gap-4">
+                  <div
+                    onClick={() => setPaymentMethod('razorpay')}
+                    className={`border rounded-sm p-4 cursor-pointer transition-colors ${paymentMethod === 'razorpay' ? 'border-[#0052FF] bg-[#EFF6FF]' : 'border-[#CBD5E1] bg-[#F8FAFC] hover:border-[#0052FF]'}`}
+                  >
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="radio" checked={paymentMethod === 'razorpay'} readOnly className="w-4 h-4 accent-[#0052FF]" />
+                      <span className="font-bold text-[15px] text-[#0F172A]">Pay with Razorpay (Cards, UPI, NetBanking)</span>
+                    </label>
+                    <p className="text-[12px] text-[#64748B] mt-2 ml-7">
+                      Secure payments via Razorpay. You will be redirected to the payment gateway.
+                    </p>
+                  </div>
+                  <div
+                    onClick={() => setPaymentMethod('cod')}
+                    className={`border rounded-sm p-4 cursor-pointer transition-colors ${paymentMethod === 'cod' ? 'border-[#0052FF] bg-[#EFF6FF]' : 'border-[#CBD5E1] bg-[#F8FAFC] hover:border-[#0052FF]'}`}
+                  >
+                    <label className="flex items-center gap-3 cursor-pointer">
+                      <input type="radio" checked={paymentMethod === 'cod'} readOnly className="w-4 h-4 accent-[#0052FF]" />
+                      <span className="font-bold text-[15px] text-[#0F172A]">Cash on Delivery (Cash/UPI)</span>
+                    </label>
+                    <p className="text-[12px] text-[#64748B] mt-2 ml-7">
+                      Pay at your doorstep. A ₹60 fee is applied for COD orders.
+                    </p>
+                  </div>
+                </div>
+              </div>
             ) : (
               /* Address List Step */
               <div>
@@ -472,14 +665,14 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                     ADD NEW ADDRESS
                   </button>
                 </div>
-                
+
                 {savedAddresses.map((addr, index) => (
                   <div key={index} className="bg-white border border-[#E2E8F0] p-6 rounded-sm mb-4">
                     <div className="flex items-start gap-4">
-                      <input 
-                        type="radio" 
-                        name="deliveryAddress" 
-                        checked={selectedAddressId === index} 
+                      <input
+                        type="radio"
+                        name="deliveryAddress"
+                        checked={selectedAddressId === index}
                         onChange={() => setSelectedAddressId(index)}
                         className="mt-1 w-4 h-4 accent-[#0052FF] cursor-pointer"
                       />
@@ -490,7 +683,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                           {addr.isDefault && <span className="bg-[#DBEAFE] text-[#1D4ED8] text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase">DEFAULT</span>}
                         </div>
                         <div className="text-[13px] text-[#64748B] mb-2 leading-relaxed">
-                          {addr.addressLine1}{addr.addressLine2 ? `, ${addr.addressLine2}` : ''},<br/>
+                          {addr.addressLine1}{addr.addressLine2 ? `, ${addr.addressLine2}` : ''},<br />
                           {addr.landmark ? `Landmark: ${addr.landmark}, ` : ''}{addr.city}, {addr.state} - {addr.postalCode}
                         </div>
                         <div className="text-[13px] text-[#0F172A] mb-4 flex flex-col gap-1">
@@ -501,15 +694,15 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                           <li>Cash on Delivery available</li>
                         </ul>
                         <div className="flex gap-4">
-                          <button onClick={() => {setAddressToRemove(index); setShowRemoveConfirm(true);}} className="text-[12px] font-bold text-[#0F172A] border border-[#CBD5E1] py-2 px-6 rounded-sm hover:border-[#0F172A] transition-colors cursor-pointer">REMOVE</button>
+                          <button onClick={() => { setAddressToRemove(index); setShowRemoveConfirm(true); }} className="text-[12px] font-bold text-[#0F172A] border border-[#CBD5E1] py-2 px-6 rounded-sm hover:border-[#0F172A] transition-colors cursor-pointer">REMOVE</button>
                           <button onClick={() => handleEditAddress(index)} className="text-[12px] font-bold text-[#0F172A] border border-[#CBD5E1] py-2 px-6 rounded-sm hover:border-[#0F172A] transition-colors cursor-pointer">EDIT</button>
                         </div>
                       </div>
                     </div>
                   </div>
                 ))}
-                
-                <div 
+
+                <div
                   onClick={() => { setIsAddingAddress(true); setEditingAddressId(null); setAddressForm({ fullName: '', phone: '', alternatePhone: '', addressLine1: '', addressLine2: '', landmark: '', city: '', state: '', country: 'India', postalCode: '', label: '', isDefault: false }); }}
                   className="border border-dashed border-[#94A3B8] bg-white py-4 rounded-sm flex items-center justify-center gap-2 cursor-pointer hover:border-[#0052FF] hover:text-[#0052FF] transition-colors text-[14px] font-bold text-[#0F172A]"
                 >
@@ -523,7 +716,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
           {/* Right Column - 40% */}
           <div className="w-full lg:w-[40%]">
             <div className="sticky top-[105px] flex flex-col gap-4">
-              
+
               {checkoutStep === 'bag' ? (
                 <>
                   {/* Coupons */}
@@ -533,7 +726,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                       <div className="flex items-center gap-3 text-[14px] font-bold text-[#0F172A]">
                         <LocalOfferOutlinedIcon sx={{ fontSize: 20 }} className="text-[#64748B]" /> Apply Coupons
                       </div>
-                      <button 
+                      <button
                         onClick={() => setShowCouponPopup(true)}
                         className={`text-[13px] font-bold py-1.5 cursor-pointer px-4 border rounded-sm transition-colors ${isCouponApplied ? 'border-[#10B981] text-[#10B981]' : 'border-[#0052FF] text-[#0052FF] hover:bg-[#EFF6FF]'}`}
                       >
@@ -551,8 +744,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                     </label>
                     <div className="flex gap-3 mb-3">
                       {[10, 20, 50, 100].map(amt => (
-                        <button 
-                          key={amt} 
+                        <button
+                          key={amt}
                           onClick={() => { setDonationAmount(amt); setIsDonating(true); }}
                           className={`py-1.5 px-4 rounded-full border text-[13px] font-bold cursor-pointer transition-colors ${isDonating && donationAmount === amt ? 'border-[#0052FF] text-[#0052FF]' : 'border-[#CBD5E1] text-[#0F172A] hover:border-[#94A3B8]'}`}
                         >
@@ -566,7 +759,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                   {/* Price Details */}
                   <div className="bg-white border border-[#E2E8F0] rounded-sm p-4">
                     <div className="text-[12px] font-bold text-[#64748B] mb-4 uppercase">Price Details ({checkoutItems.length} Items)</div>
-                    
+
                     <div className="flex flex-col gap-3 text-[14px] text-[#0F172A] mb-4 border-b border-[#E2E8F0] pb-4">
                       <div className="flex justify-between items-center relative">
                         <span>Total MRP</span>
@@ -599,7 +792,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                       By placing the order, you agree to Rigcraft's <span className="text-[#0052FF] font-bold cursor-pointer hover:underline">Terms of Use</span> and <span className="text-[#0052FF] font-bold cursor-pointer hover:underline">Privacy Policy</span>
                     </p>
 
-                    <button 
+                    <button
                       onClick={() => setCheckoutStep('address')}
                       className="w-full bg-[#0052FF] text-white font-bold py-3.5 rounded-sm hover:bg-[#1E3A8A] transition-colors tracking-wide cursor-pointer"
                     >
@@ -644,18 +837,25 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                         <span className="flex flex-col"><span>Platform Fee</span> <span className="text-[#0052FF] text-[10px] font-bold uppercase cursor-pointer">Know More</span></span>
                         <span className="text-[#10B981] font-bold uppercase">Free</span>
                       </div>
-                      
+
                       <div className="border-t border-[#E2E8F0] my-4"></div>
 
                       <div className="flex justify-between items-start">
                         <div className="flex flex-col">
-                          <span className="text-[16px] font-extrabold text-[#0F172A] leading-tight">Total<br/>Amount</span>
+                          <span className="text-[16px] font-extrabold text-[#0F172A] leading-tight">Total<br />Amount</span>
                         </div>
                         <span className="text-[16px] font-extrabold text-[#0F172A]">{formatPrice(finalTotal)}</span>
                       </div>
 
-                      {!isAddingAddress && (
-                        <button 
+                      {checkoutStep === 'payment' ? (
+                        <button
+                          onClick={handleCheckout}
+                          className="w-full bg-[#0052FF] text-white font-bold py-3 rounded-sm hover:bg-[#1E3A8A] transition-colors tracking-wide cursor-pointer mt-6 flex items-center justify-center gap-2"
+                        >
+                          {paymentMethod === 'cod' ? 'PLACE ORDER' : <><VerifiedUserIcon fontSize="small" /> PAY SECURELY</>}
+                        </button>
+                      ) : !isAddingAddress && (
+                        <button
                           onClick={() => {
                             if (selectedAddressId !== null) {
                               setCheckoutStep('payment');
@@ -682,7 +882,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       {/* Remove Confirm Popup */}
       <AnimatePresence>
         {showRemoveConfirm && (
-          <motion.div 
+          <motion.div
             key="remove-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -690,7 +890,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
             onClick={() => setShowRemoveConfirm(false)}
           >
-            <motion.div 
+            <motion.div
               key="remove-modal"
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -700,15 +900,15 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
             >
               <h2 className="text-[18px] font-bold text-[#0F172A] mb-2">Remove Address</h2>
               <p className="text-[14px] text-[#64748B] mb-6">Are you sure you want to remove this address?</p>
-              
+
               <div className="flex gap-4">
-                <button 
+                <button
                   onClick={() => setShowRemoveConfirm(false)}
                   className="flex-1 border border-[#0052FF] text-[#0052FF] font-bold py-2 rounded-sm hover:bg-[#EFF6FF] transition-colors text-[13px] cursor-pointer"
                 >
                   CANCEL
                 </button>
-                <button 
+                <button
                   onClick={confirmRemove}
                   className="flex-1 bg-[#0052FF] text-white font-bold py-2 rounded-sm hover:bg-[#1E3A8A] transition-colors text-[13px] cursor-pointer"
                 >
@@ -723,7 +923,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       {/* Coupon Popup */}
       <AnimatePresence>
         {showCouponPopup && (
-          <motion.div 
+          <motion.div
             key="coupon-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
@@ -731,7 +931,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
             className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
             onClick={() => setShowCouponPopup(false)}
           >
-            <motion.div 
+            <motion.div
               key="coupon-modal"
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
@@ -739,32 +939,32 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               onClick={e => e.stopPropagation()}
               className="bg-white rounded-md w-full max-w-[400px] p-6 shadow-xl relative"
             >
-              <button 
+              <button
                 onClick={() => setShowCouponPopup(false)}
                 className="absolute top-4 cursor-pointer right-4 text-[#94A3B8] hover:text-[#0F172A]"
               >
                 <CloseIcon />
               </button>
               <h2 className="text-[18px] font-bold text-[#0F172A] mb-4">Apply Coupon</h2>
-              
+
               <div className="flex gap-2 mb-6">
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={couponInput}
                   onChange={e => setCouponInput(e.target.value)}
                   placeholder="Enter coupon code"
-                  autoFocus 
+                  autoFocus
                   className="flex-grow border border-[#CBD5E1] rounded-sm px-3 py-2 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] bg-white z-10"
                 />
-                <button 
+                <button
                   onClick={handleApplyCoupon}
                   className="bg-[#0052FF] cursor-pointer text-white font-bold px-6 rounded-sm text-[13px] hover:bg-[#1E3A8A] transition-colors cursor-pointer"
                 >
                   VERIFY
                 </button>
               </div>
-              
-              <div 
+
+              <div
                 className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-sm p-3 cursor-pointer hover:border-[#0052FF] transition-colors"
                 onClick={handleSelectAvailableCoupon}
               >
