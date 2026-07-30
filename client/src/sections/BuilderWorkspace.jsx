@@ -40,6 +40,7 @@ const BuilderWorkspace = () => {
   const [brandFilter, setBrandFilter] = useState('All Brands');
   const [activePopupItem, setActivePopupItem] = useState(null);
   const [assemblyMode, setAssemblyMode] = useState('parts');
+  const [buildPopupMessage, setBuildPopupMessage] = useState(null);
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
@@ -122,7 +123,8 @@ const BuilderWorkspace = () => {
       };
       const { data } = await apiClient.post('/builds', payload);
       if (data.success) {
-        alert('Custom build successfully saved to your Profile!');
+        setBuildPopupMessage('Build Added Successfully!');
+        setTimeout(() => setBuildPopupMessage(null), 4000);
         
         // Reset builder state
         setSelectedParts({
@@ -164,12 +166,14 @@ const BuilderWorkspace = () => {
             const mrpVal = p.pricing?.salePrice || p.mrpVal || p.mrp || 0;
             let categoryName = (p.category?.name || p.categoryType || (typeof p.category === 'string' && p.category) || p.productType || '').toLowerCase();
             // normalize category names for the builder
-            if (categoryName.includes('processor')) categoryName = 'cpu';
-            if (categoryName.includes('graphic')) categoryName = 'gpu';
-            if (categoryName.includes('memory') || categoryName.includes('ram')) categoryName = 'ram';
-            if (categoryName.includes('storage')) categoryName = 'ssd';
-            if (categoryName.includes('power_supply') || categoryName.includes('power supply')) categoryName = 'psu';
-            if (categoryName.includes('case') || categoryName.includes('cabinet')) categoryName = 'cabinet';
+            if (categoryName.includes('motherboard')) categoryName = 'motherboard';
+            else if (categoryName.includes('cooling') || categoryName.includes('cooler')) categoryName = 'cooling';
+            else if (categoryName.includes('cpu') || categoryName.includes('processor')) categoryName = 'cpu';
+            else if (categoryName.includes('graphic') || categoryName.includes('gpu')) categoryName = 'gpu';
+            else if (categoryName.includes('memory') || categoryName.includes('ram')) categoryName = 'ram';
+            else if (categoryName.includes('storage') || categoryName.includes('ssd') || categoryName.includes('hdd')) categoryName = 'ssd';
+            else if (categoryName.includes('power') || categoryName.includes('psu')) categoryName = 'psu';
+            else if (categoryName.includes('case') || categoryName.includes('cabinet')) categoryName = 'cabinet';
             
             return {
               ...p,
@@ -213,7 +217,7 @@ const BuilderWorkspace = () => {
 
       return true;
     });
-  }, [activeCategory, searchQuery, brandFilter]);
+  }, [activeCategory, searchQuery, brandFilter, allItems]);
 
   // Derived state for summary
   const basePrice = useMemo(() => {
@@ -642,6 +646,27 @@ const BuilderWorkspace = () => {
                 </div>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Success Popup */}
+      <AnimatePresence>
+        {buildPopupMessage && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: "-50%", x: "-50%" }}
+            exit={{ opacity: 0, scale: 0.9, y: 20 }}
+            className="fixed top-1/2 left-1/2 z-[200] bg-white px-8 py-6 shadow-[0_10px_40px_rgba(0,0,0,0.2)] flex flex-col items-center justify-center gap-3 border border-[#E2E8F0]"
+            style={{ borderRadius: 'var(--radius-sm)' }}
+          >
+            <div className="w-14 h-14 rounded-full bg-[#E6F4EA] flex items-center justify-center text-[#137333]">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+            <h3 className="text-[20px] font-bold text-[#0F172A]">{buildPopupMessage}</h3>
+            <p className="text-[14px] text-[#64748B]">You can view your custom build in your profile.</p>
           </motion.div>
         )}
       </AnimatePresence>

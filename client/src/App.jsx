@@ -35,6 +35,8 @@ import BackToTop from './components/BackToTop';
 import ScrollToTop from './components/ScrollToTop';
 import PageTransition from './components/PageTransition';
 
+import FirstOrderCoupon from './components/FirstOrderCoupon';
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -49,6 +51,7 @@ const PublicLayout = () => {
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       <Navbar />
+      <FirstOrderCoupon />
       <div className="flex-grow bg-white">
         <AnimatePresence mode="wait">
           <PageTransition key={location.pathname}>

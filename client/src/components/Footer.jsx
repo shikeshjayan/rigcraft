@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { getPublicSettings } from '../services/settings.service';
 import FadeUp from './FadeUp';
+import apiClient from '../api/client';
 import XIcon from '@mui/icons-material/X';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
 import FacebookIcon from '@mui/icons-material/Facebook';
@@ -14,6 +15,25 @@ const Footer = () => {
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState('idle'); // 'idle', 'error', 'success'
+  const [showPopup, setShowPopup] = useState(false);
+
+  const subscribeMutation = useMutation({
+    mutationFn: (emailData) => apiClient.post('/newsletter/subscribe', emailData),
+    onSuccess: () => {
+      setStatus('success');
+      setMessage('');
+      setEmail('');
+      setShowPopup(true);
+      setTimeout(() => {
+        setShowPopup(false);
+        setStatus('idle');
+      }, 3000);
+    },
+    onError: (error) => {
+      setStatus('error');
+      setMessage(error.response?.data?.message || 'Failed to subscribe. Please try again later.');
+    }
+  });
 
   const handleSubscribe = (e) => {
     e.preventDefault();
@@ -33,16 +53,7 @@ const Footer = () => {
       return;
     }
 
-    // Simulate successful subscription
-    setStatus('success');
-    setMessage('Thanks for subscribing!');
-    setEmail('');
-    
-    // Clear success message after 3 seconds
-    setTimeout(() => {
-      setMessage('');
-      setStatus('idle');
-    }, 3000);
+    subscribeMutation.mutate({ email });
   };
 
   const { data: brandData } = useQuery({
@@ -80,10 +91,11 @@ const Footer = () => {
               />
               <button 
                 type="submit"
-                className="px-6 py-3 bg-[var(--color-primary)] border border-white text-white font-bold hover:brightness-110 transition-all whitespace-nowrap cursor-pointer"
+                disabled={subscribeMutation.isPending}
+                className="px-6 py-3 bg-[var(--color-primary)] border border-white text-white font-bold hover:brightness-110 transition-all whitespace-nowrap cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed"
                 style={{ borderRadius: '0 var(--radius-sm, 8px) var(--radius-sm, 8px) 0' }}
               >
-                Subscribe
+                {subscribeMutation.isPending ? 'Subscribing...' : 'Subscribe'}
               </button>
             </form>
             {/* Validation Message */}
@@ -191,6 +203,26 @@ const Footer = () => {
         </div>
       </div>
       </FadeUp>
+
+      {/* Subscription Success Popup */}
+      {showPopup && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowPopup(false)}></div>
+          <FadeUp>
+            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full relative z-10 text-center border-t-4 border-[var(--color-primary)]">
+              <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-6">
+                <svg className="h-8 w-8 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-wide">Congratulations!</h3>
+              <p className="text-[15px] text-gray-600 font-medium leading-relaxed">
+                You have successfully subscribed to our newsletter. You will now receive early access to exclusive offers and our latest hardware deals.
+              </p>
+            </div>
+          </FadeUp>
+        </div>
+      )}
     </footer>
   );
 };
