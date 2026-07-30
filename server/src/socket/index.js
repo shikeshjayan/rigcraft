@@ -13,7 +13,7 @@ export const getIO = () => {
 export const initSocket = (httpServer) => {
   io = new Server(httpServer, {
     cors: {
-      origin: process.env.CORS_ORIGIN || "http://localhost:5173",
+      origin: process.env.CORS_ORIGIN ? [process.env.CORS_ORIGIN, "http://localhost:5173"] : "http://localhost:5173",
       credentials: true,
     },
   });
