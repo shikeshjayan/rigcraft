@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import { useCart } from '../context/CartContext';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
@@ -28,6 +29,7 @@ const mapCategoryToEnum = (cat) => {
 
 const Chatbot = () => {
   const { user, isLoggedIn } = useAuth();
+  const { addToCart } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -62,6 +64,17 @@ const Chatbot = () => {
       localStorage.setItem('rigcraft_chat', JSON.stringify(messages));
     }
   }, [messages]);
+
+  // Clear messages when user logs out (transition from true to false)
+  const prevIsLoggedIn = useRef(isLoggedIn);
+  useEffect(() => {
+    if (prevIsLoggedIn.current === true && isLoggedIn === false) {
+      setMessages([]);
+      setHasGreeted(false);
+      localStorage.removeItem('rigcraft_chat');
+    }
+    prevIsLoggedIn.current = isLoggedIn;
+  }, [isLoggedIn]);
 
   // Fetch catalog data when chat is opened
   useEffect(() => {
@@ -199,7 +212,11 @@ Please respond by confirming their selection with EXACTLY THIS FORMAT:
 - **Name**: ${product.name}
 - **Price**: ₹${product.price}
 - **Details**: ${product.specs || 'N/A'}"
-Then recommend the next component category needed to build a PC (following the strict order: CPU -> Motherboard -> RAM -> GPU -> Storage -> Power Supply -> Cabinet -> Cooling). If all 8 basic parts are selected, output exactly [BUILD_COMPLETE].`;
+Then recommend the next component category needed to build a PC (following the strict order: CPU -> Motherboard -> RAM -> GPU -> Storage -> Power Supply -> Cabinet -> Cooling).
+
+CRITICAL BUDGET INSTRUCTION: You MUST calculate the total cost of all currently selected parts (${activeBuildParts.reduce((s,p) => s + (p.product.price || 0), 0) + product.price}). If the user previously mentioned a budget, subtract this total from their budget to find the REMAINING BUDGET. You MUST ONLY suggest the next component such that its price leaves enough budget for the rest of the unselected components.
+
+If all 8 basic parts are selected, list all the selected components with their prices and the total sum, then output exactly [BUILD_COMPLETE].`;
 
     try {
       const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
@@ -239,7 +256,7 @@ User: ${hiddenPrompt}`;
         name: "Rig AI Custom Build",
         components: activeBuildParts.map(p => ({
            type: mapCategoryToEnum(p.type),
-           product: p.product.id || p.product._id,
+           product: p.product.id || p.product._id || p.product,
            quantity: 1
         })),
         totalPrice: activeBuildParts.reduce((sum, p) => sum + (p.product.price || 0), 0)
@@ -293,7 +310,8 @@ INSTRUCTIONS:
 2. Only recommend products from the catalog. Use exact prices. 
 3. CRITICAL INSTRUCTION: When suggesting a product from the catalog, you MUST append its exact ID in brackets like this: [PRODUCT_CARD: id]. Example: "I recommend the RTX 4090. [PRODUCT_CARD: 64a1b2c...]"
 4. Wait for the user to select a component (via UI button) before recommending the next category.
-5. If the user has finished building, or all parts are selected, output exactly [BUILD_COMPLETE].
+5. BUDGET TRACKING: Analyze the conversation to find the user's total budget. Before suggesting a component, calculate the REMAINING BUDGET (Total Budget - Sum of Selected Parts). You MUST ONLY suggest components whose price allows the remaining categories to also be purchased without exceeding the Total Budget. If you can't find a component that fits, inform the user they need to increase their budget.
+6. If the user has finished building, or all parts are selected, list all selected components and the final total price, then output exactly [BUILD_COMPLETE].
 
 User: ${userText}`;
       
@@ -473,19 +491,20 @@ User: ${userText}`;
                                 <div className="text-[var(--color-primary)] font-black mt-1">₹{p.price?.toLocaleString('en-IN')}</div>
                                 
                                 <div className="flex flex-col gap-2 mt-3">
-                                  {isBuilding && (
-                                    <button 
-                                      onClick={() => handleSelectComponent(p)}
-                                      disabled={activeBuildParts.some(part => part.type === p.category || part.product.id === p.id)}
-                                      className={`w-full text-white font-bold py-2 rounded-md transition-colors text-xs cursor-pointer ${
-                                        activeBuildParts.some(part => part.type === p.category || part.product.id === p.id) 
-                                        ? 'bg-gray-400 cursor-not-allowed' 
-                                        : 'bg-[var(--color-primary)] hover:brightness-110'
-                                      }`}
-                                    >
-                                      {activeBuildParts.some(part => part.type === p.category || part.product.id === p.id) ? 'Category Selected' : 'Select Component'}
-                                    </button>
-                                  )}
+                                  <button 
+                                    onClick={() => {
+                                      if (!isBuilding) setIsBuilding(true);
+                                      handleSelectComponent(p);
+                                    }}
+                                    disabled={activeBuildParts.some(part => part.type === p.category || part.product.id === p.id)}
+                                    className={`w-full text-white font-bold py-2 rounded-md transition-colors text-xs cursor-pointer ${
+                                      activeBuildParts.some(part => part.type === p.category || part.product.id === p.id) 
+                                      ? 'bg-gray-400 cursor-not-allowed' 
+                                      : 'bg-[var(--color-primary)] hover:brightness-110'
+                                    }`}
+                                  >
+                                    {activeBuildParts.some(part => part.type === p.category || part.product.id === p.id) ? 'Category Selected' : 'Add to Build'}
+                                  </button>
                                   <button 
                                     onClick={() => {
                                       setIsOpen(false);
