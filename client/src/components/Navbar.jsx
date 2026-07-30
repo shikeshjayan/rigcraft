@@ -6,6 +6,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import DesktopWindowsOutlinedIcon from '@mui/icons-material/DesktopWindowsOutlined';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
@@ -45,8 +46,8 @@ const Navbar = () => {
     retry: false
   });
 
-  const firstName = isLoggedIn ? (profileData?.data?.firstName || user?.firstName || 'Customer') : 'Customer';
-  const profileText = isLoggedIn ? (profileData?.data?.firstName || user?.firstName || 'Profile') : 'Profile';
+  const firstName = isLoggedIn ? (user?.firstName || profileData?.data?.firstName || 'Customer') : 'Customer';
+  const profileText = isLoggedIn ? (user?.firstName || profileData?.data?.firstName || 'Profile') : 'Profile';
 
   const isHome = location.pathname === '/';
   const isPrebuild = location.pathname === '/prebuild';
@@ -147,16 +148,16 @@ const Navbar = () => {
                   {/* Grid */}
                   <div className="grid grid-cols-5 gap-4 mb-8">
                     {[
-                      { icon: <MemoryIcon sx={{ fontSize: 28, color: '#8B5CF6' }}/>, title: 'CPU', desc: 'Intel & AMD Processors', link: '/components/cpu' },
-                      { icon: <VideogameAssetIcon sx={{ fontSize: 28, color: '#3B82F6' }}/>, title: 'GPU', desc: 'NVIDIA & AMD Cards', link: '/components/gpu' },
+                      { icon: <MemoryIcon sx={{ fontSize: 28, color: '#8B5CF6' }}/>, title: 'CPU', desc: 'Intel & AMD Processors', link: '/components/Processor(CPU)' },
+                      { icon: <VideogameAssetIcon sx={{ fontSize: 28, color: '#3B82F6' }}/>, title: 'GPU', desc: 'NVIDIA & AMD Cards', link: '/components/Graphics card (GPU)' },
                       { icon: <DeveloperBoardIcon sx={{ fontSize: 28, color: '#10B981' }}/>, title: 'Motherboard', desc: 'ATX, mATX, ITX', link: '/components/motherboard' },
-                      { icon: <MemoryIcon sx={{ fontSize: 28, color: '#F43F5E' }}/>, title: 'RAM', desc: 'DDR4 & DDR5 Memory', link: '/components/ram' },
+                      { icon: <MemoryIcon sx={{ fontSize: 28, color: '#F43F5E' }}/>, title: 'RAM', desc: 'DDR4 & DDR5 Memory', link: '/components/Memory(RAM)' },
                       { icon: <SaveIcon sx={{ fontSize: 28, color: '#6366F1' }}/>, title: 'SSD / Storage', desc: 'NVMe, SATA, HDD', link: '/components/storage' },
-                      { icon: <BoltIcon sx={{ fontSize: 28, color: '#F59E0B' }}/>, title: 'Power Supply', desc: 'Modular & Semi-Modular', link: '/components/power-supply' },
-                      { icon: <ComputerIcon sx={{ fontSize: 28, color: '#06B6D4' }}/>, title: 'Cabinet', desc: 'Mid, Full & Mini Tower', link: '/components/cabinet' },
-                      { icon: <AcUnitIcon sx={{ fontSize: 28, color: '#0EA5E9' }}/>, title: 'Cooling', desc: 'Air & Liquid Coolers', link: '/components/cooling' },
-                      { icon: <MouseIcon sx={{ fontSize: 28, color: '#8B5CF6' }}/>, title: 'Peripherals', desc: 'Keyboard, Mouse, Headset', link: '/components/peripherals' },
-                      { icon: <MonitorIcon sx={{ fontSize: 28, color: '#14B8A6' }}/>, title: 'Monitor', desc: '4K, 144Hz, OLED', link: '/components/monitor' },
+                      { icon: <BoltIcon sx={{ fontSize: 28, color: '#F59E0B' }}/>, title: 'Power Supply', desc: 'Modular & Semi-Modular', link: '/components/power supply (PSU)' },
+                      { icon: <ComputerIcon sx={{ fontSize: 28, color: '#06B6D4' }}/>, title: 'Cabinet', desc: 'Mid, Full & Mini Tower', link: '/components/Computer case' },
+                      { icon: <AcUnitIcon sx={{ fontSize: 28, color: '#0EA5E9' }}/>, title: 'Cooling', desc: 'Air & Liquid Coolers', link: '/components/Cooling' },
+                      { icon: <MouseIcon sx={{ fontSize: 28, color: '#8B5CF6' }}/>, title: 'Peripherals', desc: 'Keyboard, Mouse, Headset', link: '/components/Accessories' },
+                      { icon: <MonitorIcon sx={{ fontSize: 28, color: '#14B8A6' }}/>, title: 'Software', desc: 'Windows/Linux', link: '/components/Software' },
                     ].map((item, idx) => (
                       <Link to={item.link} key={idx} className="flex flex-col items-center justify-center p-4 border border-[var(--color-border)] transition-all hover:border-[var(--color-primary)] hover:shadow-md cursor-pointer text-center group/card" style={{ backgroundColor: 'var(--color-bg-secondary)', borderRadius: 'var(--radius-sm)' }}>
                         <div className="mb-2 opacity-80 group-hover/card:opacity-100 group-hover/card:scale-110 transition-transform">{item.icon}</div>
@@ -245,6 +246,7 @@ const Navbar = () => {
                     
                     <ul className="flex flex-col text-[14px] text-[#334155] font-medium pb-2">
                       {isLoggedIn && (
+                        <>
                         <li 
                           onClick={() => navigate('/profile')}
                           className="mx-2 my-0.5 px-3 py-2.5 rounded-sm hover:bg-gradient-to-r hover:from-[#E8F4FF] hover:to-transparent hover:text-[var(--color-primary)] transition-all cursor-pointer flex items-center gap-3 group/item"
@@ -252,6 +254,14 @@ const Navbar = () => {
                           <PersonOutlineOutlinedIcon fontSize="small" className="text-[var(--color-primary)] opacity-80 group-hover/item:opacity-100" />
                           My Profile
                         </li>
+                        <li 
+                          onClick={() => navigate('/profile?tab=builds')}
+                          className="mx-2 my-0.5 px-3 py-2.5 rounded-sm hover:bg-gradient-to-r hover:from-[#E8F4FF] hover:to-transparent hover:text-[var(--color-primary)] transition-all cursor-pointer flex items-center gap-3 group/item"
+                        >
+                          <DesktopWindowsOutlinedIcon fontSize="small" className="text-[var(--color-primary)] opacity-80 group-hover/item:opacity-100" />
+                          Your Build
+                        </li>
+                        </>
                       )}
                       <li 
                         onClick={() => navigate('/orders')}

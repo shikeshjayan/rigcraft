@@ -7,9 +7,7 @@ import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import Card from '../components/Card';
 import SkeletonCard from '../components/SkeletonCard';
 import Filter from '../components/Filter';
-
-// Using allItems as the unified source.
-import { allItems } from '../data/items';
+import apiClient from '../api/client';
 
 const PrebuildCatalog = () => {
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
@@ -17,18 +15,8 @@ const PrebuildCatalog = () => {
   // Unified Filter State
   const initialFilters = {
     priceMax: 500000,
-    brands: [],
     ratings: [],
-    cpu: [],
-    motherboard: [],
-    gpu: [],
-    ram: [],
-    ssd: [],
-    psu: [],
-    cabinet: [],
-    cooling: [],
-    peripherals: [],
-    monitors: []
+    specs: {}
   };
 
   const [filters, setFilters] = useState(initialFilters);
@@ -36,89 +24,168 @@ const PrebuildCatalog = () => {
   // Pagination & Loading State
   const [currentPage, setCurrentPage] = useState(1);
   const [isFiltering, setIsFiltering] = useState(false);
-  const itemsPerPage = 40; // 5 columns * 8 rows
+  const itemsPerPage = 40; 
 
-  // Ensure we filter for prebuilt-like PCs or just use allItems for demo if categories aren't strictly 'prebuilt'
-  const basePCs = useMemo(() => allItems.slice(0, 100), []);
+  const [basePCs, setBasePCs] = useState([]);
+  const [allProductsDict, setAllProductsDict] = useState({});
+
+  useEffect(() => {
+    const fetchPrebuilts = async () => {
+      try {
+        // Fetch prebuilts
+        const { data: pbData } = await apiClient.get('/prebuilt-pcs');
+        if (pbData && pbData.data) {
+          const docs = pbData.data.docs || pbData.data;
+          const pcArray = Array.isArray(docs) ? docs : [];
+          
+          const formatted = pcArray.map(pc => {
+            const priceVal = pc.pricing?.price || pc.priceVal || 0;
+            const mrpVal = pc.pricing?.salePrice || pc.mrpVal || 0;
+            
+            return {
+              ...pc,
+              id: pc._id || pc.id,
+              image: pc.images?.[0]?.url || pc.images?.[0] || pc.image || null,
+              title: pc.name || pc.title,
+              price: priceVal ? `₹${priceVal.toLocaleString('en-IN')}` : pc.price,
+              priceVal: priceVal,
+              mrp: mrpVal ? `₹${mrpVal.toLocaleString('en-IN')}` : pc.mrp,
+              specs: pc.tags || [],
+              category: pc.category,
+            };
+          });
+          setBasePCs(formatted);
+        }
+
+        // Fetch products to map ObjectIDs to names
+        const { data: pData } = await apiClient.get('/products?limit=1000');
+        const pDocs = pData?.data?.docs || pData?.data || pData?.docs || [];
+        const dict = {};
+        if (Array.isArray(pDocs)) {
+          pDocs.forEach(p => {
+             if (p._id || p.id) dict[p._id || p.id] = p.name || p.title;
+          });
+        }
+        setAllProductsDict(dict);
+      } catch (error) {
+        console.error('Failed to fetch data', error);
+      }
+    };
+    fetchPrebuilts();
+  }, []);
 
   const handleClearAll = () => {
     setFilters(initialFilters);
     setCurrentPage(1);
   };
 
-  // Extract a numeric price for filtering
-  const getPriceVal = (priceStr) => {
-    return parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
+  // Generate dynamic filter options based on the actual product details
+  const dynamicFilterOptions = useMemo(() => {
+    const ratings = new Set();
+    const specs = {};
+    
+    basePCs.forEach(p => {
+      // Collect Category
+      if (p.category) {
+        if (!specs['Category']) specs['Category'] = new Set();
+        // Capitalize category name
+        const capCat = p.category.charAt(0).toUpperCase() + p.category.slice(1);
+        specs['Category'].add(capCat);
+      }
+      
+      // Collect Ratings
+      const rating = Math.floor(p.rating?.average || 0);
+      if (rating > 0) ratings.add(rating);
+      
+      // Collect Components dynamically
+      if (p.components && Array.isArray(p.components)) {
+        p.components.forEach(comp => {
+           const type = comp.type;
+           // If comp.product is a string (ObjectID), look it up in the dictionary
+           let val = comp.product?.name;
+           if (!val && typeof comp.product === 'string') {
+             val = allProductsDict[comp.product];
+           }
+           
+           if (type && val) {
+             // Standardize component type name (e.g. "processor" -> "Processor")
+             const formattedType = type.charAt(0).toUpperCase() + type.slice(1);
+             if (!specs[formattedType]) specs[formattedType] = new Set();
+             specs[formattedType].add(String(val));
+           }
+        });
+      }
+    });
+
+    const parsedSpecs = Object.keys(specs).map(key => ({
+      key,
+      options: Array.from(specs[key]).sort()
+    }));
+
+    return {
+      brands: [], // Left empty so 'Brands' header doesn't render if unsupported
+      ratings: Array.from(ratings).sort((a,b) => b - a),
+      specs: parsedSpecs,
+    };
+  }, [basePCs, allProductsDict]);
+
+  const getPriceVal = (pc) => {
+    if (pc.priceVal) return pc.priceVal;
+    if (typeof pc.price === 'number') return pc.price;
+    if (!pc.price) return 0;
+    return parseInt(String(pc.price).replace(/[^0-9]/g, '')) || 0;
   };
 
   // Deep Filtering Logic
   const filteredPCs = useMemo(() => {
     return basePCs.filter(pc => {
       // 1. Price check
-      if (getPriceVal(pc.price) > filters.priceMax) return false;
+      if (getPriceVal(pc) > filters.priceMax) return false;
 
       // 2. Rating check
-      if (filters.ratings.length > 0) {
-        const itemRating = parseFloat(pc.rating) || 0;
+      if (filters.ratings && filters.ratings.length > 0) {
+        const itemRating = parseFloat(pc.rating?.average) || 0;
         const meetsRating = filters.ratings.some(selectedRating => itemRating >= selectedRating);
         if (!meetsRating) return false;
       }
 
-      // Helper function to check if any of the selected filter keywords exist in the item's title or specs
-      const hasKeyword = (selectedOptions, searchTargetStr) => {
-        if (selectedOptions.length === 0) return true; // If no filter selected, pass
-        const target = searchTargetStr.toLowerCase();
-        
-        return selectedOptions.some(option => {
-          const lowerOpt = option.toLowerCase();
+      // 3. Dynamic Specs check
+      if (filters.specs) {
+        const specKeys = Object.keys(filters.specs);
+        for (let i = 0; i < specKeys.length; i++) {
+          const key = specKeys[i];
+          const selectedValues = filters.specs[key];
           
-          // Custom mapping for broad categories since mock data isn't perfect
-          if (lowerOpt.includes('ryzen 3') || lowerOpt.includes('core i3')) {
-            return target.includes('ryzen 3') || target.includes('i3');
-          }
-          if (lowerOpt.includes('ryzen 5') || lowerOpt.includes('core i5')) {
-            return target.includes('ryzen 5') || target.includes('i5');
-          }
-          if (lowerOpt.includes('ryzen 7') || lowerOpt.includes('core i7')) {
-            return target.includes('ryzen 7') || target.includes('i7');
-          }
-          if (lowerOpt.includes('ryzen 9') || lowerOpt.includes('core i9')) {
-            return target.includes('ryzen 9') || target.includes('i9');
-          }
-          if (lowerOpt.includes('rtx 40-series')) {
-            return target.includes('rtx 40');
-          }
-          if (lowerOpt.includes('rtx 30-series')) {
-            return target.includes('rtx 30');
-          }
-          if (lowerOpt.includes('16 gb')) {
-            return target.includes('16gb') || target.includes('16 gb');
-          }
-          if (lowerOpt.includes('32 gb')) {
-            return target.includes('32gb') || target.includes('32 gb');
-          }
-          
-          // Direct fallback match
-          return target.includes(lowerOpt.split(' ')[0]); // Check just the first word for broad matching
-        });
-      };
+          if (selectedValues && selectedValues.length > 0) {
+            // Special handling for Category
+            if (key === 'Category') {
+               const capCat = pc.category ? pc.category.charAt(0).toUpperCase() + pc.category.slice(1) : '';
+               if (!selectedValues.includes(capCat)) return false;
+            } else {
+               // Check inside components
+               let hasMatch = false;
+               if (pc.components && Array.isArray(pc.components)) {
+                 for (const comp of pc.components) {
+                   const type = comp.type;
+                   
+                   let val = comp.product?.name;
+                   if (!val && typeof comp.product === 'string') {
+                     val = allProductsDict[comp.product];
+                   }
 
-      // Combine title and specs into one searchable string
-      const fullTextSearch = (pc.title + ' ' + (pc.specs ? pc.specs.join(' ') : '') + ' ' + (pc.brand || '')).toLowerCase();
-
-      // 3. Check Brands
-      if (filters.brands.length > 0) {
-        const itemBrand = pc.brand ? pc.brand.toLowerCase() : '';
-        const meetsBrand = filters.brands.some(b => itemBrand.includes(b.toLowerCase()) || fullTextSearch.includes(b.toLowerCase()));
-        if (!meetsBrand) return false;
+                   const formattedType = type ? type.charAt(0).toUpperCase() + type.slice(1) : '';
+                   
+                   if (formattedType === key && val && selectedValues.includes(String(val))) {
+                     hasMatch = true;
+                     break;
+                   }
+                 }
+               }
+               if (!hasMatch) return false;
+            }
+          }
+        }
       }
-
-      // 4. Check Smart Filters
-      if (!hasKeyword(filters.cpu, fullTextSearch)) return false;
-      if (!hasKeyword(filters.gpu, fullTextSearch)) return false;
-      if (!hasKeyword(filters.ram, fullTextSearch)) return false;
-      if (!hasKeyword(filters.ssd, fullTextSearch)) return false;
-      // You can add logic for motherboard, psu, etc if mock data supports it.
 
       return true;
     });
@@ -128,16 +195,15 @@ const PrebuildCatalog = () => {
   useEffect(() => {
     setCurrentPage(1);
     
-    // Trigger skeleton loading
     setIsFiltering(true);
     const timer = setTimeout(() => {
       setIsFiltering(false);
-    }, 600);
+    }, 400);
     
     return () => clearTimeout(timer);
   }, [filters]);
 
-  const totalPages = Math.ceil(filteredPCs.length / itemsPerPage);
+  const totalPages = Math.max(1, Math.ceil(filteredPCs.length / itemsPerPage));
   
   const currentItems = useMemo(() => {
     const start = (currentPage - 1) * itemsPerPage;
@@ -171,7 +237,8 @@ const PrebuildCatalog = () => {
           
           <button 
             onClick={() => setFilterDropdownOpen(!filterDropdownOpen)} 
-            className={`flex items-center gap-2 px-4 py-2 border shadow-[0_1px_2px_rgba(0,0,0,0.05)] rounded-full font-medium cursor-pointer transition-colors ${filterDropdownOpen ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'bg-white text-[#0F1111] border-[#D5D9D9] hover:bg-[#F7F7F7]'}`}
+            className={`flex items-center gap-2 px-4 py-2 border shadow-[0_1px_2px_rgba(0,0,0,0.05)] font-medium cursor-pointer transition-colors ${filterDropdownOpen ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'bg-white text-[#0F1111] border-[#D5D9D9] hover:bg-[#F7F7F7]'}`}
+            style={{ borderRadius: 'var(--radius-sm)' }}
           >
             <FilterListIcon sx={{ fontSize: 20 }} /> Filters
           </button>
@@ -217,25 +284,39 @@ const PrebuildCatalog = () => {
                       ))
                     ) : (
                       // Render Real Cards without motion wrapper to prevent flying
-                      currentItems.map((pc) => (
-                        <div key={pc.id} className="block h-full animate-fade-in">
-                          <Link to={`/detail/${pc.id}`} className="block h-full">
-                            <Card 
-                              id={pc.id}
-                              image={pc.image}
-                              title={pc.title}
-                              specs={pc.specs}
-                              description={pc.description}
-                              price={pc.price}
-                              mrp={pc.mrp}
-                              discount={pc.discount}
-                              tag={pc.discount || 'SALE'}
-                              tagColor="#CC0C39"
-                              compact={filterDropdownOpen} 
-                            />
-                          </Link>
-                        </div>
-                      ))
+                      currentItems.map((pc) => {
+                        // Gather a few specs to show on the card tag list
+                        const cardSpecs = pc.specs?.length > 0 ? [...pc.specs] : [];
+                        if (cardSpecs.length === 0 && pc.components) {
+                          pc.components.slice(0, 3).forEach(c => {
+                             let val = c.product?.name;
+                             if (!val && typeof c.product === 'string') {
+                               val = allProductsDict[c.product];
+                             }
+                             if (val) cardSpecs.push(val);
+                          });
+                        }
+                        
+                        return (
+                          <div key={pc.id} className="block h-full animate-fade-in">
+                            <Link to={`/detail/${pc.slug || pc.id}?type=prebuilt`} className="block h-full">
+                              <Card 
+                                id={pc.id}
+                                image={pc.image || 'https://via.placeholder.com/300?text=No+Image'}
+                                title={pc.title}
+                                specs={cardSpecs}
+                                description={pc.shortDescription || pc.description}
+                                price={pc.price}
+                                mrp={pc.mrp}
+                                discount={pc.pricing?.salePrice ? Math.round(((pc.pricing.price - pc.pricing.salePrice) / pc.pricing.price) * 100) + '% OFF' : null}
+                                tagColor="#CC0C39"
+                                compact={filterDropdownOpen} 
+                                category="prebuilt"
+                              />
+                            </Link>
+                          </div>
+                        );
+                      })
                     )}
                   </div>
 
@@ -268,12 +349,12 @@ const PrebuildCatalog = () => {
             </AnimatePresence>
           </motion.div>
 
-          {/* Extracted Filter Sidebar Component */}
           <Filter 
             isOpen={filterDropdownOpen}
             filters={filters}
             setFilters={setFilters}
             onClearAll={handleClearAll}
+            dynamicOptions={dynamicFilterOptions}
           />
 
         </div>

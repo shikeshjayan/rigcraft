@@ -11,7 +11,7 @@ import Detail from './pages/Detail';
 import Wishlist from './pages/Wishlist';
 import Cart from './pages/Cart';
 import Dels from './pages/Dels';
-import AllActiveDeals from './pages/AllActiveDeals';
+import AllDeals from './pages/AllDeals';
 import AllBundleDeals from './pages/AllBundleDeals';
 import Customerlogin from './pages/Customerlogin';
 import CustomerRegister from './pages/CustomerRegister';
@@ -82,7 +82,7 @@ const App = () => {
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/deals" element={<Dels />} />
-                  <Route path="/alldeals" element={<AllActiveDeals />} />
+                  <Route path="/alldeals" element={<AllDeals />} />
                   <Route path="/bundle" element={<AllBundleDeals />} />
                   <Route path="/login" element={<Customerlogin />} />
                   <Route path="/register" element={<CustomerRegister />} />

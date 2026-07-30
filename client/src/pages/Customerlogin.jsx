@@ -309,7 +309,7 @@ const Customerlogin = () => {
                       />
                       <button
                         type="button"
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-400 hover:text-gray-600 z-10"
+                        className="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer text-gray-400 hover:text-gray-600 z-20"
                         onClick={() => setShowPassword(!showPassword)}
                       >
                         {showPassword ? <VisibilityOff fontSize="small" /> : <Visibility fontSize="small" />}
