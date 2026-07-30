@@ -26,6 +26,7 @@ import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { getProfile } from '../api/auth';
+import { getPublicSettings } from '../services/settings.service';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
@@ -48,6 +49,13 @@ const Navbar = () => {
 
   const firstName = isLoggedIn ? (user?.firstName || profileData?.data?.firstName || 'Customer') : 'Customer';
   const profileText = isLoggedIn ? (user?.firstName || profileData?.data?.firstName || 'Profile') : 'Profile';
+
+  const { data: brandData } = useQuery({
+    queryKey: ['publicSettings'],
+    queryFn: getPublicSettings,
+    staleTime: 300000,
+  });
+  const brand = brandData?.general;
 
   const isHome = location.pathname === '/';
   const isPrebuild = location.pathname === '/prebuild';
@@ -114,8 +122,12 @@ const Navbar = () => {
               <MenuIcon sx={{ fontSize: 28 }} />
             </button>
             <Link to="/" className="flex items-center cursor-pointer gap-2 text-2xl font-black tracking-tight hover:opacity-80 transition-opacity" style={{ color: 'var(--color-text)' }}>
+              {brand?.logo?.url ? (
+                <img src={brand.logo.url} alt={brand.storeName || 'RigCraft'} className="w-8 h-8 object-contain" />
+              ) : (
                 <PrecisionManufacturingIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
-              <span style={{ color: 'var(--color-primary)' }}>Rig</span>Craft
+              )}
+              <span style={{ color: 'var(--color-primary)' }}>{(brand?.storeName || 'RigCraft').slice(0, 3)}</span>{(brand?.storeName || 'RigCraft').slice(3)}
             </Link>
           </div>
 
@@ -370,7 +382,7 @@ const Navbar = () => {
           <div className="relative w-[300px] h-full bg-[var(--color-bg-primary)] shadow-2xl flex flex-col overflow-y-auto transform transition-transform">
             <div className="p-4 flex items-center justify-between border-b border-[var(--color-border)]">
               <span className="text-xl font-black" style={{ color: 'var(--color-text)' }}>
-                <span style={{ color: 'var(--color-primary)' }}>Rig</span>Craft
+                <span style={{ color: 'var(--color-primary)' }}>{(brand?.storeName || 'RigCraft').slice(0, 3)}</span>{(brand?.storeName || 'RigCraft').slice(3)}
               </span>
               <button 
                 className="p-2 rounded-md hover:bg-gray-100 transition-colors cursor-pointer"
