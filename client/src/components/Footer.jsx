@@ -99,8 +99,8 @@ const Footer = () => {
             {/* Brand Column */}
             <div className="flex flex-col lg:max-w-[350px]">
               <div className="flex items-center gap-2 mb-6 cursor-pointer">
-                <PrecisionManufacturingIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
-                <span className="text-[24px] font-black tracking-widest uppercase"><span style={{ color: 'var(--color-primary)',fontSize:"24px" }}>Rig</span>Craft</span>
+                <PrecisionManufacturingIcon sx={{ fontSize: 32, color: 'white' }} />
+                <span className="text-[24px] font-black tracking-widest uppercase"><span style={{ color: 'white',fontSize:"24px" }}>Rig</span> Craft</span>
               </div>
               <p className="text-[15px] text-gray-400 leading-relaxed mb-8 font-medium">
                 India's premier PC building platform. Custom gaming PCs, premium components, and expert support — all in one place.
@@ -157,7 +157,7 @@ const Footer = () => {
           {/* Bottom Bar */}
           <div className="flex flex-col md:flex-row justify-between items-center pt-8 border-t border-gray-800 gap-4 text-[13px] text-gray-400 font-medium">
             <div>
-              &copy; {new Date().getFullYear()} PCForge Technologies Pvt Ltd. All rights reserved.
+              &copy; {new Date().getFullYear()} Rig Craft Pvt Ltd. All rights reserved.
             </div>
             <div className="flex flex-wrap justify-center gap-6">
               <Link to="/privacy-policy" className="hover:text-[var(--color-primary)] transition-colors">Privacy Policy</Link>

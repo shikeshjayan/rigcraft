@@ -252,7 +252,7 @@ const Home = () => {
       <FadeUp delay={0.2}><HeroNewArrival /></FadeUp>
 
       {/* ================= REVIEW SECTION ================= */}
-      <FadeUp delay={0.2}><HeroReview /></FadeUp>
+      {/* <FadeUp delay={0.2}><HeroReview /></FadeUp> */}
     </>
   );
 };
