@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { getProfile } from '../api/auth';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/client';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
@@ -12,10 +12,18 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import DesktopWindowsOutlinedIcon from '@mui/icons-material/DesktopWindowsOutlined';
 import CloseIcon from '@mui/icons-material/Close';
+import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import FadeUp from '../components/FadeUp';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import Breadcrumb from '../components/Breadcrumb';
+import Orders from './Orders';
+
+const getTypeName = (type) => {
+  if (typeof type === 'string') return type;
+  if (type && type.name) return type.name;
+  return 'UNKNOWN';
+};
 
 const Profile = () => {
   const { isLoggedIn, user, logout } = useAuth();
@@ -41,13 +49,69 @@ const Profile = () => {
   const email = userData.email || '';
   const mobile = userData.phone || userData.mobile || ''; 
 
-  const [gender, setGender] = useState('Male');
-  const [activeTab, setActiveTab] = useState('profile');
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [isEditingEmail, setIsEditingEmail] = useState(false);
+  const [isEditingPhone, setIsEditingPhone] = useState(false);
+
+  const [personalInfoForm, setPersonalInfoForm] = useState({
+    firstName: '',
+    lastName: '',
+    email: '',
+    phone: ''
+  });
+
+  useEffect(() => {
+    if (userData) {
+      setPersonalInfoForm({
+        firstName: userData.firstName || '',
+        lastName: userData.lastName || '',
+        email: userData.email || '',
+        phone: userData.phone || userData.mobile || ''
+      });
+    }
+  }, [profileData, user]);
+
+  const handleSavePersonalInfo = async (section) => {
+    try {
+      await apiClient.put('/auth/profile', personalInfoForm);
+      if (section === 'name') setIsEditingName(false);
+      if (section === 'email') setIsEditingEmail(false);
+      if (section === 'phone') setIsEditingPhone(false);
+      window.location.reload();
+    } catch (error) {
+      console.error('Failed to update profile', error);
+      alert('Failed to update profile');
+    }
+  };
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const tabParam = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabParam || 'profile');
+  
+  useEffect(() => {
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
 
   // Addresses and Builds State
   const [addresses, setAddresses] = useState([]);
   const [builds, setBuilds] = useState([]);
+  const [draftBuild, setDraftBuild] = useState({});
+
+  useEffect(() => {
+    const fetchDraft = () => {
+      const stored = localStorage.getItem('draftBuild');
+      if (stored) {
+         setDraftBuild(JSON.parse(stored));
+      }
+    };
+    fetchDraft();
+    const interval = setInterval(fetchDraft, 1000);
+    return () => clearInterval(interval);
+  }, []);
   const [selectedBuildPopup, setSelectedBuildPopup] = useState(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, buildId: null, isDraft: false });
   const [showCartToast, setShowCartToast] = useState(false);
   const { addToCart, cartItems } = useCart();
   
@@ -95,6 +159,22 @@ const Profile = () => {
       }
     } catch (error) {
       console.error('Failed to fetch builds', error);
+    }
+  };
+
+  const handleDeleteBuildConfirm = async () => {
+    try {
+      if (deleteConfirmation.isDraft) {
+        localStorage.removeItem('draftBuild');
+        setDraftBuild({});
+      } else {
+        await apiClient.delete(`/builds/${deleteConfirmation.buildId}`);
+        fetchBuilds();
+      }
+      setDeleteConfirmation({ show: false, buildId: null, isDraft: false });
+    } catch (error) {
+      console.error('Failed to delete build', error);
+      alert('Failed to delete build');
     }
   };
 
@@ -199,8 +279,8 @@ const Profile = () => {
                 
                 {/* Orders */}
                 <div 
-                  className="p-4 border-b border-gray-100 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors group"
-                  onClick={() => navigate('/orders')}
+                  className={`p-4 border-b border-gray-100 flex items-center justify-between cursor-pointer transition-colors group ${activeTab === 'orders' ? 'bg-[#F0F7FF]' : 'hover:bg-gray-50'}`}
+                  onClick={() => setActiveTab('orders')}
                 >
                   <div className="flex items-center gap-4">
                     <Inventory2OutlinedIcon sx={{ color: '#2563EB' }} />
@@ -239,6 +319,12 @@ const Profile = () => {
                   </div>
                   <div className="flex flex-col pb-2">
                     <div 
+                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'orders' ? 'bg-[#F0F7FF] text-[#2563EB] border-[#2563EB]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[#2563EB]'}`}
+                      onClick={() => setActiveTab('orders')}
+                    >
+                      Track Order
+                    </div>
+                    <div 
                       className="pl-14 pr-4 py-2.5 text-gray-600 font-bold text-[14px] hover:bg-gray-50 hover:text-[#2563EB] cursor-pointer transition-colors border-l-4 border-transparent"
                       onClick={() => navigate('/wishlist')}
                     >
@@ -273,29 +359,22 @@ const Profile = () => {
                     <div className="mb-10">
                       <div className="flex items-center gap-6 mb-4">
                         <h2 className="text-xl font-bold text-gray-900">Personal Information</h2>
-                        <button className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
+                        {!isEditingName ? (
+                          <button onClick={() => setIsEditingName(true)} className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
+                        ) : (
+                          <div className="flex gap-2">
+                            <button onClick={() => handleSavePersonalInfo('name')} className="text-[14px] font-bold text-green-600 hover:text-green-700">Save</button>
+                            <button onClick={() => { setIsEditingName(false); setPersonalInfoForm(prev => ({...prev, firstName, lastName})); }} className="text-[14px] font-bold text-gray-600 hover:text-gray-700">Cancel</button>
+                          </div>
+                        )}
                       </div>
                       
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mb-4">
                         <div>
-                          <input type="text" value={firstName} readOnly className="w-full bg-gray-50 border border-gray-200 text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium" placeholder="First Name" />
+                          <input type="text" value={isEditingName ? personalInfoForm.firstName : firstName} onChange={(e) => setPersonalInfoForm({...personalInfoForm, firstName: e.target.value})} readOnly={!isEditingName} className={`w-full ${isEditingName ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="First Name" />
                         </div>
                         <div>
-                          <input type="text" value={lastName} readOnly className="w-full bg-gray-50 border border-gray-200 text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium" placeholder="Last Name" />
-                        </div>
-                      </div>
-
-                      <div className="mt-6">
-                        <div className="text-sm text-gray-500 mb-2 ml-1">Your Gender</div>
-                        <div className="flex items-center gap-6 ml-1">
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="gender" value="Male" checked={gender === 'Male'} onChange={(e) => setGender(e.target.value)} className="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                            <span className="text-gray-900 text-sm font-medium">Male</span>
-                          </label>
-                          <label className="flex items-center gap-2 cursor-pointer">
-                            <input type="radio" name="gender" value="Female" checked={gender === 'Female'} onChange={(e) => setGender(e.target.value)} className="w-4 h-4 text-blue-600 focus:ring-blue-500" />
-                            <span className="text-gray-900 text-sm font-medium">Female</span>
-                          </label>
+                          <input type="text" value={isEditingName ? personalInfoForm.lastName : lastName} onChange={(e) => setPersonalInfoForm({...personalInfoForm, lastName: e.target.value})} readOnly={!isEditingName} className={`w-full ${isEditingName ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="Last Name" />
                         </div>
                       </div>
                     </div>
@@ -303,20 +382,34 @@ const Profile = () => {
                     <div className="mb-10">
                       <div className="flex items-center gap-6 mb-4">
                         <h2 className="text-xl font-bold text-gray-900">Email Address</h2>
-                        <button className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
+                        {!isEditingEmail ? (
+                          <button onClick={() => setIsEditingEmail(true)} className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
+                        ) : (
+                          <div className="flex gap-2">
+                            <button onClick={() => handleSavePersonalInfo('email')} className="text-[14px] font-bold text-green-600 hover:text-green-700">Save</button>
+                            <button onClick={() => { setIsEditingEmail(false); setPersonalInfoForm(prev => ({...prev, email})); }} className="text-[14px] font-bold text-gray-600 hover:text-gray-700">Cancel</button>
+                          </div>
+                        )}
                       </div>
                       <div className="max-w-md">
-                        <input type="email" value={email} readOnly className="w-full bg-gray-50 border border-gray-200 text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium" placeholder="Email Address" />
+                        <input type="email" value={isEditingEmail ? personalInfoForm.email : email} onChange={(e) => setPersonalInfoForm({...personalInfoForm, email: e.target.value})} readOnly={!isEditingEmail} className={`w-full ${isEditingEmail ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="Email Address" />
                       </div>
                     </div>
 
                     <div className="mb-12">
                       <div className="flex items-center gap-6 mb-4">
                         <h2 className="text-xl font-bold text-gray-900">Mobile Number</h2>
-                        <button className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
+                        {!isEditingPhone ? (
+                          <button onClick={() => setIsEditingPhone(true)} className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
+                        ) : (
+                          <div className="flex gap-2">
+                            <button onClick={() => handleSavePersonalInfo('phone')} className="text-[14px] font-bold text-green-600 hover:text-green-700">Save</button>
+                            <button onClick={() => { setIsEditingPhone(false); setPersonalInfoForm(prev => ({...prev, phone: mobile})); }} className="text-[14px] font-bold text-gray-600 hover:text-gray-700">Cancel</button>
+                          </div>
+                        )}
                       </div>
                       <div className="max-w-md">
-                        <input type="text" value={mobile} readOnly className="w-full bg-gray-50 border border-gray-200 text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium" placeholder="Mobile Number" />
+                        <input type="text" value={isEditingPhone ? personalInfoForm.phone : mobile} onChange={(e) => setPersonalInfoForm({...personalInfoForm, phone: e.target.value})} readOnly={!isEditingPhone} className={`w-full ${isEditingPhone ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="Mobile Number" />
                       </div>
                     </div>
 
@@ -384,20 +477,23 @@ const Profile = () => {
                       <div className="bg-[#F8FAFC] p-6 border border-gray-200 rounded-sm">
                         <h3 className="font-bold text-[#2563EB] uppercase text-[14px] mb-6">{editingAddressId ? 'Edit Address' : 'Add a new address'}</h3>
                         <form onSubmit={handleSaveAddress} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <input type="text" name="fullName" value={addressForm.fullName} onChange={handleAddressChange} placeholder="Name" required className="w-full bg-white border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium" />
-                          <input type="text" name="phone" value={addressForm.phone} onChange={handleAddressChange} placeholder="10-digit mobile number" required className="w-full bg-white border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium" />
-                          <input type="text" name="postalCode" value={addressForm.postalCode} onChange={handleAddressChange} placeholder="Pincode" required className="w-full bg-white border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium" />
-                          <input type="text" name="city" value={addressForm.city} onChange={handleAddressChange} placeholder="City/District/Town" required className="w-full bg-white border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium" />
-                          <select name="state" value={addressForm.state} onChange={handleAddressChange} required className="w-full bg-white border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium text-gray-700">
+                          <input type="text" name="fullName" value={addressForm.fullName} onChange={handleAddressChange} placeholder="Name" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
+                          <input type="text" name="phone" value={addressForm.phone} onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                            handleAddressChange({ target: { name: 'phone', value: val } });
+                          }} placeholder="10-digit mobile number" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
+                          <input type="text" name="postalCode" value={addressForm.postalCode} onChange={handleAddressChange} placeholder="Pincode" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
+                          <input type="text" name="city" value={addressForm.city} onChange={handleAddressChange} placeholder="City/District/Town" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
+                          <select name="state" value={addressForm.state} onChange={handleAddressChange} required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium">
                             <option value="" disabled>Select State</option>
                             {statesList.map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
-                          <input type="text" name="country" value="India" readOnly className="w-full bg-gray-100 border border-gray-300 px-4 py-3 focus:outline-none rounded-sm font-medium text-gray-500" />
+                          <input type="text" name="country" value="India" readOnly className="w-full bg-gray-100 text-gray-500 border border-gray-300 px-4 py-3 focus:outline-none rounded-sm font-medium" />
                           <div className="md:col-span-2">
-                            <input type="text" name="addressLine1" value={addressForm.addressLine1} onChange={handleAddressChange} placeholder="Address (House No, Building, Street, Area)" required className="w-full bg-white border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium" />
+                            <input type="text" name="addressLine1" value={addressForm.addressLine1} onChange={handleAddressChange} placeholder="Address (House No, Building, Street, Area)" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
                           </div>
                           <div className="md:col-span-2">
-                            <input type="text" name="landmark" value={addressForm.landmark} onChange={handleAddressChange} placeholder="Landmark (Optional)" className="w-full bg-white border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium" />
+                            <input type="text" name="landmark" value={addressForm.landmark} onChange={handleAddressChange} placeholder="Landmark (Optional)" className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
                           </div>
                           
                           <div className="md:col-span-2 flex flex-col gap-3 mt-2">
@@ -434,7 +530,50 @@ const Profile = () => {
                       <h2 className="text-xl font-bold text-gray-900">Your Builds</h2>
                     </div>
 
-                    {builds.length === 0 ? (
+                    {Object.keys(draftBuild).length > 0 && (
+                      <div className="mb-8">
+                        <div className="bg-[#F0F6FF] border border-[#0047AB]/20 p-5 rounded-md shadow-sm mb-4">
+                          <h3 className="font-bold text-[#0047AB] text-lg mb-2">Your Active Draft Build</h3>
+                          <p className="text-sm text-[#565959] mb-4">You have {Object.keys(draftBuild).length} component(s) saved in your active draft. Complete the build in the PC Builder!</p>
+                          
+                          <div className="flex gap-2 overflow-hidden items-center py-3 border-y border-[#0047AB]/10 mb-4">
+                            {Object.entries(draftBuild).map(([type, product], idx) => (
+                              <div key={idx} className="w-12 h-12 bg-white flex items-center justify-center rounded-sm shrink-0 border border-gray-200" title={product.name}>
+                                {product.image || product.images?.[0]?.url ? (
+                                  <img src={product.image || product.images?.[0]?.url} alt={type} className="w-10 h-10 object-contain mix-blend-multiply" />
+                                ) : (
+                                  <span className="text-[10px] text-gray-400 font-bold uppercase">{type.substring(0,3)}</span>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="flex gap-3 mt-2">
+                            <button 
+                              onClick={() => {
+                                const components = Object.entries(draftBuild).map(([type, product]) => ({ type, product }));
+                                setSelectedBuildPopup({
+                                  name: "Active Draft Build",
+                                  components,
+                                  createdAt: new Date().toISOString()
+                                });
+                              }}
+                              className="bg-white text-[var(--color-primary)] border border-[var(--color-primary)] font-bold py-2 px-6 rounded-sm transition-colors hover:bg-[#F0F6FF] text-sm"
+                            >
+                              View Build
+                            </button>
+                            <button 
+                              onClick={() => setDeleteConfirmation({ show: true, buildId: null, isDraft: true })}
+                              className="text-red-500 border border-red-500 font-bold p-2 rounded-sm transition-colors hover:bg-red-50"
+                              title="Delete Draft Build"
+                            >
+                              <DeleteOutlineIcon fontSize="small" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {builds.length === 0 && Object.keys(draftBuild).length === 0 ? (
                       <div className="bg-[#F8FAFC] border border-gray-200 p-12 rounded-sm flex flex-col items-center justify-center text-center">
                         <DesktopWindowsOutlinedIcon sx={{ fontSize: 64, color: '#94A3B8', mb: 2 }} />
                         <h3 className="text-xl font-bold text-gray-900 mb-2">No custom builds yet</h3>
@@ -449,7 +588,7 @@ const Profile = () => {
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {builds.map((build) => {
-                          const buildPrice = build.components?.reduce((sum, comp) => sum + (comp.product?.priceVal || 0), 0) || 0;
+                          const buildPrice = build.components?.reduce((sum, comp) => sum + (comp.product?.priceVal || comp.product?.price || comp.product?.salePrice || 0), 0) || 0;
                           const isAdded = cartItems?.some(item => item.id === build._id);
                           return (
                             <div key={build._id} className="border border-gray-200 p-4 rounded-md shadow-sm bg-white hover:border-gray-300 transition-colors cursor-pointer group flex flex-col relative" onClick={() => setSelectedBuildPopup(build)}>
@@ -474,9 +613,9 @@ const Profile = () => {
                                 {build.components?.slice(0, 5).map((comp, idx) => (
                                   <div key={idx} className="w-10 h-10 bg-gray-50 flex items-center justify-center rounded-sm shrink-0 border border-gray-100">
                                     {comp.product?.image ? (
-                                      <img src={comp.product.image} alt={comp.type} className="w-8 h-8 object-contain mix-blend-multiply" />
+                                      <img src={comp.product.image} alt={getTypeName(comp.type)} className="w-8 h-8 object-contain mix-blend-multiply" />
                                     ) : (
-                                      <span className="text-[8px] text-gray-400 font-bold uppercase">{comp.type.substring(0,3)}</span>
+                                      <span className="text-[8px] text-gray-400 font-bold uppercase">{getTypeName(comp.type).substring(0,3)}</span>
                                     )}
                                   </div>
                                 ))}
@@ -486,14 +625,27 @@ const Profile = () => {
                                   </div>
                                 )}
                               </div>
-                              <div className="mt-4 pt-3 border-t border-gray-100 flex justify-end">
-                                <span className="text-[#2563EB] font-bold text-[13px] group-hover:underline">View Build &rarr;</span>
+                              <div className="mt-4 pt-3 border-t border-gray-100 flex justify-between items-center">
+                                <button 
+                                  onClick={(e) => { e.stopPropagation(); setDeleteConfirmation({ show: true, buildId: build._id, isDraft: false }); }}
+                                  className="text-red-500 p-1.5 rounded-sm hover:bg-red-50 transition-colors"
+                                  title="Delete Build"
+                                >
+                                  <DeleteOutlineIcon fontSize="small" />
+                                </button>
+                                <span className="text-[var(--color-primary)] font-bold text-[13px] group-hover:underline">View Build &rarr;</span>
                               </div>
                             </div>
                           );
                         })}
                       </div>
                     )}
+                  </FadeUp>
+                )}
+
+                {activeTab === 'orders' && (
+                  <FadeUp>
+                    <Orders embedded={true} />
                   </FadeUp>
                 )}
 
@@ -536,21 +688,21 @@ const Profile = () => {
 
               <div className="p-6 overflow-y-auto flex-1 flex flex-col gap-4">
                 {selectedBuildPopup.components?.map((comp, idx) => (
-                  <div key={idx} className="flex gap-4 p-3 border border-gray-100 rounded-md bg-white hover:border-blue-200 transition-colors">
-                    <div className="w-16 h-16 bg-gray-50 flex items-center justify-center rounded-sm shrink-0 border border-gray-50">
-                      {comp.product?.image ? (
-                        <img src={comp.product.image} alt={comp.type} className="w-12 h-12 object-contain mix-blend-multiply" />
-                      ) : (
-                        <span className="text-[10px] text-gray-400 font-bold uppercase">{comp.type}</span>
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">{comp.type}</div>
-                      <div className="text-sm font-bold text-gray-900 truncate">{comp.product?.title || 'Unknown Component'}</div>
-                      <div className="text-xs text-gray-500 mt-1">{comp.product?.brand || 'Generic'}</div>
+                    <div key={idx} className="flex gap-4 p-3 border border-gray-100 rounded-md bg-white hover:border-blue-200 transition-colors">
+                      <div className="w-16 h-16 bg-gray-50 flex items-center justify-center rounded-sm shrink-0 border border-gray-50">
+                        {comp.product?.image ? (
+                          <img src={comp.product.image} alt={getTypeName(comp.type)} className="w-12 h-12 object-contain mix-blend-multiply" />
+                        ) : (
+                          <span className="text-[10px] text-gray-400 font-bold uppercase">{getTypeName(comp.type).substring(0, 3)}</span>
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-[10px] font-bold text-blue-600 uppercase tracking-wider mb-1">{getTypeName(comp.type)}</div>
+                      <div className="text-sm font-bold text-gray-900 truncate">{comp.product?.title || comp.product?.name || 'Unknown Component'}</div>
+                      <div className="text-xs text-gray-500 mt-1">{getTypeName(comp.product?.brand) || 'Generic'}</div>
                     </div>
                     <div className="text-right shrink-0">
-                      <div className="text-sm font-bold text-gray-900">₹{comp.product?.priceVal?.toLocaleString() || 0}</div>
+                      <div className="text-sm font-bold text-gray-900">₹{(comp.product?.priceVal || comp.product?.price || comp.product?.salePrice || 0).toLocaleString()}</div>
                     </div>
                   </div>
                 ))}
@@ -560,16 +712,24 @@ const Profile = () => {
                 <div>
                   <div className="text-xs text-gray-500 font-bold uppercase mb-1">Total Build Price</div>
                   <div className="text-2xl font-black text-[#2563EB]">
-                    ₹{(selectedBuildPopup.components?.reduce((sum, comp) => sum + (comp.product?.priceVal || 0), 0) || 0).toLocaleString()}
+                    ₹{(selectedBuildPopup.components?.reduce((sum, comp) => sum + (comp.product?.priceVal || comp.product?.price || comp.product?.salePrice || 0), 0) || 0).toLocaleString()}
                   </div>
                 </div>
-                <button 
-                  onClick={() => handleAddBuildToCart(selectedBuildPopup)}
-                  disabled={cartItems?.some(item => item.id === selectedBuildPopup._id)}
-                  className={`px-8 py-3 font-bold transition-colors uppercase shadow-md rounded-sm w-full sm:w-auto ${cartItems?.some(item => item.id === selectedBuildPopup._id) ? 'bg-green-500 text-white cursor-not-allowed' : 'bg-[#2563EB] text-white hover:bg-blue-700'}`}
-                >
-                  {cartItems?.some(item => item.id === selectedBuildPopup._id) ? 'Added to Cart' : 'Add Build to Cart'}
-                </button>
+                {selectedBuildPopup._id ? (
+                  <button 
+                    onClick={() => handleAddBuildToCart(selectedBuildPopup)}
+                    className="px-8 py-3 font-bold transition-colors uppercase shadow-md rounded-sm w-full sm:w-auto bg-[#2563EB] text-white hover:bg-blue-700"
+                  >
+                    Add Build to Cart
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => { setSelectedBuildPopup(null); navigate('/pc-builder'); }}
+                    className="px-8 py-3 font-bold transition-colors uppercase shadow-md rounded-sm w-full sm:w-auto bg-[#0047AB] text-white hover:bg-blue-800"
+                  >
+                    Complete in Builder
+                  </button>
+                )}
               </div>
             </motion.div>
           </motion.div>
@@ -589,6 +749,48 @@ const Profile = () => {
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
             </div>
             Build successfully added to your cart!
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {deleteConfirmation.show && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setDeleteConfirmation({ show: false, buildId: null, isDraft: false })}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white max-w-sm w-full p-6 rounded-lg shadow-2xl relative text-center"
+            >
+              <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <DeleteOutlineIcon fontSize="large" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Build</h3>
+              <p className="text-gray-500 mb-6">Are you sure you want to delete this build? This action cannot be undone.</p>
+              
+              <div className="flex gap-3 justify-center">
+                <button 
+                  onClick={() => setDeleteConfirmation({ show: false, buildId: null, isDraft: false })}
+                  className="px-6 py-2.5 font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-sm transition-colors flex-1"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleDeleteBuildConfirm}
+                  className="px-6 py-2.5 font-bold text-white bg-red-500 hover:bg-red-600 rounded-sm transition-colors flex-1"
+                >
+                  Delete
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

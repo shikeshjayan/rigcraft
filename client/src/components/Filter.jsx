@@ -50,7 +50,8 @@ const Filter = ({ isOpen, filters, setFilters, onClearAll, dynamicOptions = { br
                     type="checkbox" 
                     checked={checked}
                     onChange={() => isSpec ? toggleSpecFilter(title, opt) : toggleArrayFilter(title.toLowerCase(), opt)}
-                    className="w-[18px] h-[18px] text-[var(--color-primary)] rounded border-gray-300 focus:ring-[var(--color-primary)] cursor-pointer"
+                    className="w-[18px] h-[18px] text-[var(--color-primary)] border-gray-300 focus:ring-[var(--color-primary)] cursor-pointer"
+                    style={{ borderRadius: 'var(--radius-sm)' }}
                   />
                   <span className="text-[14px] text-[#0F1111] group-hover:text-[var(--color-primary)] transition-colors">{opt}</span>
                 </label>
@@ -66,7 +67,7 @@ const Filter = ({ isOpen, filters, setFilters, onClearAll, dynamicOptions = { br
     <div className="self-stretch flex-shrink-0 z-30">
       <div className="sticky top-[180px]">
         <motion.div 
-          className="bg-white border-[#D5D9D9] shadow-sm rounded-lg overflow-y-auto overflow-x-hidden custom-scrollbar"
+          className="bg-white border-[#D5D9D9] shadow-sm overflow-y-auto overflow-x-hidden custom-scrollbar"
           initial={false}
           animate={{ 
             width: isOpen ? 320 : 0, 
@@ -76,7 +77,8 @@ const Filter = ({ isOpen, filters, setFilters, onClearAll, dynamicOptions = { br
           transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
           style={{ 
             borderWidth: isOpen ? '1px' : '0px',
-            maxHeight: '590px'
+            maxHeight: '590px',
+            borderRadius: 'var(--radius-sm)'
           }}
         >
           <div className="w-[305px]">
@@ -85,7 +87,7 @@ const Filter = ({ isOpen, filters, setFilters, onClearAll, dynamicOptions = { br
                 <h3 className="text-[18px] font-bold text-[#0F1111] mt-[10px]">Filters</h3>
                 <button 
                   onClick={onClearAll}
-                  className="text-[13px] font-bold text-[#007185] mt-[10px] hover:text-[#C7511F] hover:underline cursor-pointer"
+                  className="text-[13px] font-bold text-[#EF4444] mt-[10px] hover:text-[#DC2626] hover:underline cursor-pointer"
                 >
                   Clear All
                 </button>
@@ -121,7 +123,8 @@ const Filter = ({ isOpen, filters, setFilters, onClearAll, dynamicOptions = { br
                             type="checkbox" 
                             checked={(filters.ratings || []).includes(stars)}
                             onChange={() => toggleArrayFilter('ratings', stars)}
-                            className="w-[18px] h-[18px] text-[var(--color-primary)] rounded border-gray-300 focus:ring-[var(--color-primary)] cursor-pointer"
+                            className="w-[18px] h-[18px] text-[var(--color-primary)] border-gray-300 focus:ring-[var(--color-primary)] cursor-pointer"
+                            style={{ borderRadius: 'var(--radius-sm)' }}
                           />
                           <div className="flex text-[#FFA41C]">
                             {[...Array(5)].map((_, i) => (
