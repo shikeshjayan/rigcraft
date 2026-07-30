@@ -16,3 +16,13 @@ export const getPublic = asyncHandler(async (req, res) => {
   const data = await settingsService.getPublic();
   ApiResponse.ok(data).send(res);
 });
+
+export const uploadLogo = asyncHandler(async (req, res) => {
+  const settings = await settingsService.updateLogo(req.file);
+  ApiResponse.ok(settings, 'Logo uploaded').send(res);
+});
+
+export const deleteLogo = asyncHandler(async (req, res) => {
+  const settings = await settingsService.deleteLogo();
+  ApiResponse.ok(settings, 'Logo removed').send(res);
+});

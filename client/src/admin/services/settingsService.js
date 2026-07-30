@@ -16,4 +16,16 @@ export const settingsService = {
     const { data } = await api.put(ENDPOINTS.SETTINGS.UPDATE, settingsData);
     return data.data;
   },
+
+  uploadLogo: async (file) => {
+    const fd = new FormData();
+    fd.append("logo", file);
+    const { data } = await api.post(ENDPOINTS.SETTINGS.LOGO, fd);
+    return data.data;
+  },
+
+  deleteLogo: async () => {
+    const { data } = await api.delete(ENDPOINTS.SETTINGS.LOGO);
+    return data.data;
+  },
 };

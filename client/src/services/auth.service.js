@@ -46,4 +46,9 @@ export const authService = {
     const { data } = await api.post(ENDPOINTS.AUTH.RESET_PASSWORD, resetData);
     return data;
   },
+
+  checkAccount: async (identifier) => {
+    const { data } = await api.post(ENDPOINTS.AUTH.CHECK, { identifier });
+    return data;
+  },
 };

@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Drawer, useMediaQuery, useTheme, Tooltip, IconButton, Badge } from "@mui/material";
+import ConfirmDialog from "../common/ConfirmDialog";
 import {
   Dashboard as DashboardIcon,
   Inventory as InventoryIcon,
@@ -14,18 +15,17 @@ import {
   Settings as SettingsIcon,
   Person as PersonIcon,
   Logout as LogoutIcon,
-  ChevronLeft as ChevronLeftIcon,
-  ChevronRight as ChevronRightIcon,
   ExpandMore as ExpandMoreIcon,
   Campaign as CampaignIcon,
   HeadsetMic as HeadsetMicIcon,
   QuestionAnswer as QuestionAnswerIcon,
   Notifications as NotificationsIcon,
+  ExitToApp as ExitToAppIcon,
 } from "@mui/icons-material";
 import useAuthStore from "../../store/authStore";
 import useNotificationStore from "../../store/notificationStore";
+import useSettingsStore from "../../store/settingsStore";
 import { SIDEBAR_SECTIONS } from "../../constants/sidebar";
-import { settingsService } from "../../services/settingsService";
 
 const iconMap = {
   Dashboard: DashboardIcon,
@@ -102,7 +102,6 @@ const NavItem = ({ item, collapsed, isActive, onNavigate, onClose, isMobile, bad
   if (collapsed) {
     return (
       <div style={{ display: "flex", alignItems: "stretch" }}>
-        {isActive && <div style={{ width: 3, flexShrink: 0, backgroundColor: "var(--color-admin-primary)", borderRadius: "0 2px 2px 0" }} />}
         <div style={{ flex: 1 }}>
           <Tooltip title={item.label} placement="right" arrow>
             {content}
@@ -114,30 +113,25 @@ const NavItem = ({ item, collapsed, isActive, onNavigate, onClose, isMobile, bad
 
   return (
     <div style={{ display: "flex", alignItems: "stretch" }}>
-      {isActive && <div style={{ width: 3, flexShrink: 0, backgroundColor: "var(--color-admin-primary)", borderRadius: "0 2px 2px 0" }} />}
       <div style={{ flex: 1 }}>{content}</div>
     </div>
   );
 };
 
-const Sidebar = ({ open, onClose, collapsed, onToggleCollapse }) => {
+const Sidebar = ({ open, onClose, collapsed }) => {
   const location = useLocation();
   const navigate = useNavigate();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { user, logout } = useAuthStore();
   const notifCount = useNotificationStore((s) => s.unreadCount);
+  const storeName = useSettingsStore((s) => s.storeName);
+  const logo = useSettingsStore((s) => s.logo);
+  const fetchSettings = useSettingsStore((s) => s.fetchSettings);
   const [activeSection, setActiveSection] = useState("Catalog");
-  const [brand, setBrand] = useState({ storeName: "RigCraft", logo: null });
+  const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
-  useEffect(() => {
-    settingsService.get().then((data) => {
-      setBrand({
-        storeName: data.storeName || "RigCraft",
-        logo: data.logo?.url ? data.logo : null,
-      });
-    }).catch(() => {});
-  }, []);
+  useEffect(() => { fetchSettings(); }, [fetchSettings]);
 
   useEffect(() => {
     const path = location.pathname;
@@ -166,10 +160,10 @@ const Sidebar = ({ open, onClose, collapsed, onToggleCollapse }) => {
   const sidebarContent = (
     <div className="flex flex-col h-full transition-all duration-300" style={{ backgroundColor: "var(--color-admin-sidebar)" }}>
       <div className={`flex items-center gap-3 px-6 py-5 ${collapsed ? "justify-center px-0" : ""}`} style={{ borderBottom: "1px solid var(--color-admin-divider)" }}>
-        {brand.logo?.url ? (
+        {logo?.url ? (
           <img
-            src={brand.logo.url}
-            alt={brand.storeName}
+            src={logo.url}
+            alt={storeName}
             className="w-8 h-8 object-contain flex-shrink-0"
             style={{ borderRadius: "var(--radius-admin-button)" }}
           />
@@ -178,15 +172,15 @@ const Sidebar = ({ open, onClose, collapsed, onToggleCollapse }) => {
             className="w-8 h-8 flex items-center justify-center text-white font-extrabold text-sm flex-shrink-0"
             style={{ borderRadius: "var(--radius-admin-button)", background: "linear-gradient(135deg, var(--color-admin-primary) 0%, var(--color-admin-primary-light) 100%)" }}
           >
-            {brand.storeName ? brand.storeName.trim().split(/\s+/).length >= 2
-              ? (brand.storeName.trim().split(/\s+/)[0][0] + brand.storeName.trim().split(/\s+/)[1][0]).toUpperCase()
-              : brand.storeName.slice(0, 2).toUpperCase()
+            {storeName ? storeName.trim().split(/\s+/).length >= 2
+              ? (storeName.trim().split(/\s+/)[0][0] + storeName.trim().split(/\s+/)[1][0]).toUpperCase()
+              : storeName.slice(0, 2).toUpperCase()
               : "RC"}
           </div>
         )}
         {!collapsed && (
           <span className="font-extrabold text-lg" style={{ color: "var(--color-admin-white)" }}>
-            {brand.storeName || "RigCraft"}
+            {storeName || "RigCraft"}
           </span>
         )}
       </div>
@@ -248,10 +242,7 @@ const Sidebar = ({ open, onClose, collapsed, onToggleCollapse }) => {
         />
         <Tooltip title={collapsed ? "Logout" : ""} placement="right" arrow>
           <button
-            onClick={() => {
-              logout();
-              navigate("/admin/login");
-            }}
+            onClick={() => setLogoutDialogOpen(true)}
             className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors
               ${collapsed ? "justify-center px-0" : ""}`}
             style={{
@@ -266,20 +257,38 @@ const Sidebar = ({ open, onClose, collapsed, onToggleCollapse }) => {
           </button>
         </Tooltip>
 
-        {!isMobile && (
-          <IconButton
-            onClick={onToggleCollapse}
-            size="small"
-            sx={{
+        <Tooltip title={collapsed ? "Exit" : ""} placement="right" arrow>
+          <button
+            onClick={() => navigate("/")}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors
+              ${collapsed ? "justify-center px-0" : ""}`}
+            style={{
+              borderRadius: "var(--radius-admin-button)",
               color: "var(--color-admin-sidebar-text)",
-              mt: 1,
-              "&:hover": { backgroundColor: "var(--color-admin-sidebar-hover)" },
             }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = "var(--color-admin-sidebar-hover)"}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
           >
-            {collapsed ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-          </IconButton>
-        )}
+            <ExitToAppIcon fontSize="small" sx={{ transform: "scaleX(-1)" }} />
+            {!collapsed && <span>Exit</span>}
+          </button>
+        </Tooltip>
       </div>
+
+      <ConfirmDialog
+        open={logoutDialogOpen}
+        title="Confirm Logout"
+        message="Are you sure you want to log out?"
+        confirmLabel="Logout"
+        cancelLabel="Cancel"
+        severity="danger"
+        onConfirm={() => {
+          logout();
+          navigate("/login");
+          setLogoutDialogOpen(false);
+        }}
+        onCancel={() => setLogoutDialogOpen(false)}
+      />
     </div>
   );
 

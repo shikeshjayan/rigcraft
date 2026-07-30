@@ -1,4 +1,5 @@
 import settingsRepository from '../repositories/settings.repository.js';
+import * as uploadService from './upload.service.js';
 
 export const get = async () => {
   return settingsRepository.getOrCreate();
@@ -7,6 +8,36 @@ export const get = async () => {
 export const update = async (data) => {
   const settings = await settingsRepository.getOrCreate();
   return settingsRepository.updateById(settings._id, data);
+};
+
+export const updateLogo = async (file) => {
+  const settings = await settingsRepository.getOrCreate();
+
+  if (settings.logo?.publicId) {
+    await uploadService.deleteImage(settings.logo.publicId);
+  }
+
+  const result = await uploadService.uploadImage(file, 'settings');
+
+  return settingsRepository.updateById(settings._id, {
+    logo: {
+      url: result.url,
+      publicId: result.publicId,
+      alt: 'Store Logo',
+    },
+  });
+};
+
+export const deleteLogo = async () => {
+  const settings = await settingsRepository.getOrCreate();
+
+  if (settings.logo?.publicId) {
+    await uploadService.deleteImage(settings.logo.publicId);
+  }
+
+  return settingsRepository.updateById(settings._id, {
+    logo: { url: '', publicId: '', alt: '' },
+  });
 };
 
 export const getPublic = async () => {

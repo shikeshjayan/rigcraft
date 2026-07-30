@@ -19,12 +19,13 @@ axiosInstance.interceptors.response.use(
   (response) => response,
 
   async (error) => {
-    if (error.response?.status === 401) {
+    const publicAuthRoutes = ['/auth/login', '/auth/register', '/auth/check', '/auth/forgot-password', '/auth/reset-password'];
+    const isPublicAuth = publicAuthRoutes.some(route => error.config.url.includes(route));
+
+    if (error.response?.status === 401 && !isPublicAuth) {
       console.error("🔥 401 UNAUTHORIZED CAUGHT BY INTERCEPTOR 🔥");
       console.error("Error Response Data:", error.response.data);
       console.error("Request URL:", error.config.url);
-      
-      alert(`401 Error on ${error.config.url}: ${error.response.data?.message || 'Unknown error'}\n\nCheck console for details before it redirects.`);
 
       localStorage.removeItem("accessToken");
 
