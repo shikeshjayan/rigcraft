@@ -15,6 +15,7 @@ import AllActiveDeals from './pages/AllActiveDeals';
 import AllBundleDeals from './pages/AllBundleDeals';
 import Customerlogin from './pages/Customerlogin';
 import CustomerRegister from './pages/CustomerRegister';
+import ForgotPassword from './pages/ForgotPassword';
 import Profile from './pages/Profile';
 import Orders from './pages/Orders';
 import Warranty from './pages/Warranty';
@@ -85,6 +86,7 @@ const App = () => {
                   <Route path="/bundle" element={<AllBundleDeals />} />
                   <Route path="/login" element={<Customerlogin />} />
                   <Route path="/register" element={<CustomerRegister />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/orders" element={<Orders />} />
                   <Route path="/warranty" element={<Warranty />} />

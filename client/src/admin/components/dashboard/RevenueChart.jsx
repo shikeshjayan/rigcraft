@@ -25,7 +25,7 @@ const CustomTooltip = ({ active, payload, label }) => {
           {label}
         </Typography>
         <Typography variant="body2" sx={{ fontWeight: 600, color: "var(--color-admin-primary)" }}>
-          ${payload[0].value.toLocaleString()}
+          ₹{payload[0].value.toLocaleString()}
         </Typography>
       </Box>
     );
@@ -75,7 +75,7 @@ const RevenueChart = ({ data = [] }) => {
             tick={{ fontSize: 12, fill: "var(--color-admin-muted)" }}
             axisLine={false}
             tickLine={false}
-            tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`}
+            tickFormatter={(v) => `₹${(v / 1000).toFixed(0)}k`}
           />
           <Tooltip content={<CustomTooltip />} />
           <Area
