@@ -70,3 +70,25 @@ export const uploadMultipleImages = (fieldName = "images", maxCount = 10) => {
     });
   };
 };
+
+export const uploadFields = (fieldConfig) => {
+  return (req, res, next) => {
+    const fields = upload.fields(fieldConfig);
+    fields(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json({
+          success: false,
+          message:
+            err.code === "LIMIT_FILE_SIZE"
+              ? "File too large. Max 5MB allowed."
+              : err.message,
+        });
+      }
+      if (err) {
+        return res.status(400).json({ success: false, message: err.message });
+      }
+      parseBodyField(req);
+      next();
+    });
+  };
+};
