@@ -31,6 +31,7 @@ import AdminRoutes from './admin/routes/AdminRoutes';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import Chatbot from './components/Chatbot';
+import BackToTop from './components/BackToTop';
 import ScrollToTop from './components/ScrollToTop';
 import PageTransition from './components/PageTransition';
 
@@ -56,6 +57,7 @@ const PublicLayout = () => {
         </AnimatePresence>
       </div>
       <Footer />
+      <BackToTop />
       <Chatbot />
     </div>
   );
