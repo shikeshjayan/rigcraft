@@ -44,6 +44,7 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
     localStorage.removeItem('token');
     localStorage.removeItem('accessToken');
+    localStorage.removeItem('admin-auth-storage');
   };
 
   return (

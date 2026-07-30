@@ -32,6 +32,8 @@ const useAuthStore = create(
           // ignore
         }
         localStorage.removeItem("accessToken");
+        localStorage.removeItem("rigcraft_auth");
+        localStorage.removeItem("rigcraft_user");
         set({ user: null, isAuthenticated: false });
       },
 

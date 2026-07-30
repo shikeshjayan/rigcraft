@@ -1,9 +1,11 @@
-import React, { useState, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useRef, Fragment } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useMutation } from '@tanstack/react-query';
-import { sendOtp, loginUser, checkAccount } from '../api/auth';
+import { authService } from '../services/auth.service';
+import useAuthStore from '../admin/store/authStore';
 import FadeUp from '../components/FadeUp';
+import DynamicLogo from '../components/DynamicLogo';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 
@@ -13,29 +15,50 @@ const Customerlogin = () => {
   const [error, setError] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const { login } = useAuth();
   const navigate = useNavigate();
   const inputRefs = useRef([]);
 
   const checkMutation = useMutation({
-    mutationFn: checkAccount,
+    mutationFn: authService.checkAccount,
     onSuccess: () => setStep('password'),
     onError: (err) => setError(err?.response?.data?.message || 'No account found with this email.')
   });
 
   const sendOtpMutation = useMutation({
-    mutationFn: sendOtp,
+    mutationFn: (data) => authService.login(data),
     onSuccess: () => setStep('otp'),
     onError: (err) => setError(err?.response?.data?.message || 'No account found with this phone number.')
   });
 
   const loginMutation = useMutation({
-    mutationFn: loginUser,
+    mutationFn: authService.login,
     onSuccess: (data) => {
       if (data && data.success && data.data) {
-        login(data.data.user);
-        navigate('/');
+        const { user, accessToken } = data.data;
+
+        localStorage.setItem("accessToken", accessToken);
+
+        login(user);
+
+        useAuthStore.setState({
+          user: {
+            id: user._id,
+            name: `${user.firstName} ${user.lastName}`,
+            email: user.email,
+            role: user.role,
+            avatar: user.avatar?.url || null,
+          },
+          isAuthenticated: true,
+        });
+
+        if (['admin', 'manager'].includes(user.role)) {
+          navigate('/admin/dashboard');
+        } else {
+          navigate('/');
+        }
       }
     },
     onError: (err) => {
@@ -52,14 +75,15 @@ const Customerlogin = () => {
     }
 
     // Check if it's a mobile number (only digits)
-    const isMobile = /^\d+$/.test(val);
+    const isMobile = /^\+91 \d+$/.test(val);
 
     if (isMobile) {
-      if (!/^\d{10}$/.test(val)) {
+      const phoneDigits = val.replace(/^\+91 /, '');
+      if (!/^\d{10}$/.test(phoneDigits)) {
         setError('Please enter a valid 10-digit mobile number.');
         return;
       }
-      sendOtpMutation.mutate({ phone: val });
+      sendOtpMutation.mutate({ phone: `+91${phoneDigits}` });
     } else {
       if (!val.includes('@')) {
         setError('Please enter a valid email address.');
@@ -72,7 +96,7 @@ const Customerlogin = () => {
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
     if (password.trim() !== '') {
-      loginMutation.mutate({ email: identifier, password });
+      loginMutation.mutate({ email: identifier, password, rememberMe });
     }
   };
 
@@ -101,7 +125,8 @@ const Customerlogin = () => {
     e.preventDefault();
     const otpString = otp.join('');
     if (otpString.length === 6) {
-      loginMutation.mutate({ phone: identifier, otp: otpString });
+      const phoneDigits = identifier.replace(/\D/g, '').replace(/^91/, '');
+      loginMutation.mutate({ phone: `+91${phoneDigits}`, otp: otpString, rememberMe });
     }
   };
 
@@ -111,9 +136,7 @@ const Customerlogin = () => {
         <div className="max-w-md w-full space-y-8 bg-white p-10 shadow-[0_10px_40px_rgba(0,0,0,0.08)]" style={{ borderRadius: 'var(--radius-sm)' }}>
           {/* Logo */}
           <div className="flex justify-center">
-            <h1 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 tracking-tighter cursor-pointer" onClick={() => navigate('/')}>
-              RIGCRAFT
-            </h1>
+            <DynamicLogo />
           </div>
 
           {step === 'login' && (
@@ -142,7 +165,16 @@ const Customerlogin = () => {
                       style={{ borderRadius: 'var(--radius-sm)' }}
                       placeholder="Mobile number or email id"
                       value={identifier}
-                      onChange={(e) => { setIdentifier(e.target.value); setError(''); }}
+                      onChange={(e) => {
+                        const raw = e.target.value;
+                        const stripped = raw.replace(/^\+91\s*/, '');
+                        if (/^\d*$/.test(stripped)) {
+                          setIdentifier(stripped ? `+91 ${stripped}` : '');
+                        } else {
+                          setIdentifier(stripped);
+                        }
+                        setError('');
+                      }}
                     />
                   </div>
                   {error && <p className="mt-2 text-sm text-red-600 font-medium">{error}</p>}
@@ -197,7 +229,7 @@ const Customerlogin = () => {
               <form className="mt-8 space-y-6" onSubmit={handleVerifyOtp}>
                 <div className="flex justify-center items-center gap-2">
                   {otp.map((digit, index) => (
-                    <React.Fragment key={index}>
+                    <Fragment key={index}>
                       <input
                         ref={(el) => (inputRefs.current[index] = el)}
                         type="text"
@@ -205,6 +237,7 @@ const Customerlogin = () => {
                         value={digit}
                         onChange={(e) => handleOtpChange(index, e.target.value)}
                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                        inputMode="numeric"
                         className="w-11 h-12 text-center text-xl font-bold border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors"
                         style={{ borderRadius: 'var(--radius-sm)' }}
                       />
@@ -217,7 +250,7 @@ const Customerlogin = () => {
                   <button
                     type="submit"
                     disabled={loginMutation.isPending}
-                    className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold text-white bg-[var(--color-primary)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-all shadow-md ${loginMutation.isPending ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    className={`group relative cursor-pointer w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold text-white bg-[var(--color-primary)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-all shadow-md ${loginMutation.isPending ? 'opacity-70 cursor-not-allowed' : ''}`}
                     style={{ borderRadius: 'var(--radius-sm)' }}
                   >
                     {loginMutation.isPending ? 'Verifying...' : 'Verify'}
@@ -229,7 +262,7 @@ const Customerlogin = () => {
                   <button
                     type="button"
                     onClick={() => setStep('login')}
-                    className="text-sm font-medium text-blue-600 hover:text-blue-500"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-500 cursor-pointer"
                   >
                     Change mobile number
                   </button>
@@ -246,10 +279,10 @@ const Customerlogin = () => {
                 </h2>
                 <p className="mt-2 text-center text-sm text-gray-600">
                   <span className="font-bold text-black">{identifier}</span>
-                  <button
+                    <button
                     type="button"
                     onClick={() => setStep('login')}
-                    className="ml-2 text-blue-600 hover:text-blue-500 font-medium"
+                    className="ml-2 text-blue-600 hover:text-blue-500 font-medium cursor-pointer"
                   >
                     Change
                   </button>
@@ -268,7 +301,7 @@ const Customerlogin = () => {
                         name="password"
                         type={showPassword ? 'text' : 'password'}
                         required
-                        className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm transition-colors pr-10"
+                         className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors pr-10 [&::-ms-reveal]:hidden [&::-ms-clear]:hidden"
                         style={{ borderRadius: 'var(--radius-sm)' }}
                         placeholder="Password"
                         value={password}
@@ -285,11 +318,26 @@ const Customerlogin = () => {
                   </div>
                 </div>
 
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 text-sm text-gray-600 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={(e) => setRememberMe(e.target.checked)}
+                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                    />
+                    Remember me
+                  </label>
+                  <Link to="/forgot-password" className="text-sm font-medium text-blue-600 hover:text-blue-500">
+                    Forgot password?
+                  </Link>
+                </div>
+
                 <div>
                   <button
                     type="submit"
                     disabled={loginMutation.isPending}
-                    className={`group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold text-white bg-[var(--color-primary)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-all shadow-md ${loginMutation.isPending ? 'opacity-70 cursor-not-allowed' : ''}`}
+                    className={`group relative cursor-pointer w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold text-white bg-[var(--color-primary)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-all shadow-md ${loginMutation.isPending ? 'opacity-70 cursor-not-allowed' : ''}`}
                     style={{ borderRadius: 'var(--radius-sm)' }}
                   >
                     {loginMutation.isPending ? 'Logging in...' : 'Login'}
@@ -300,15 +348,15 @@ const Customerlogin = () => {
             </>
           )}
 
-          <div className="mt-8 text-center text-xs text-gray-500">
+          <div className="mt-8 text-center text-xs text-gray-500 leading-relaxed">
             By continuing, you agree to RigCraft's{' '}
-            <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link to="/terms-of-service" className="font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">
               Conditions of Use
-            </a>{' '}
+            </Link>{' '}
             and{' '}
-            <a href="#" className="font-medium text-blue-600 hover:text-blue-500">
+            <Link to="/privacy-policy" className="font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">
               Privacy Notice
-            </a>.
+            </Link>.
           </div>
         </div>
       </FadeUp>

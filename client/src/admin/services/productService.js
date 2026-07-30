@@ -10,6 +10,14 @@ Object.values(SPEC_TEMPLATES).forEach((templates) => {
   });
 });
 
+const toLocalDatetime = (iso) => {
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return "";
+  const pad = (n) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+};
+
 const normalizeProduct = (p) => ({
   ...p,
   id: p._id,
@@ -22,8 +30,8 @@ const normalizeProduct = (p) => ({
   isActive: p.status === "active",
   regularPrice: p.price ?? p.regularPrice ?? 0,
   salePrice: p.salePrice ?? p.salePrice ?? null,
-  saleStart: p.saleStart || "",
-  saleEnd: p.saleEnd || "",
+  saleStart: toLocalDatetime(p.saleStart),
+  saleEnd: toLocalDatetime(p.saleEnd),
   length: p.dimensions?.length,
   width: p.dimensions?.width,
   height: p.dimensions?.height,

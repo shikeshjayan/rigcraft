@@ -9,6 +9,7 @@ export const ENDPOINTS = {
     CHANGE_PASSWORD: "/auth/password",
     FORGOT_PASSWORD: "/auth/forgot-password",
     RESET_PASSWORD: "/auth/reset-password",
+    CHECK: "/auth/check",
   },
 
   // Deals (public)
@@ -187,6 +188,7 @@ export const ENDPOINTS = {
     GET: "/settings",
     UPDATE: "/settings",
     PUBLIC: "/settings/public",
+    LOGO: "/settings/logo",
   },
 
   // Newsletter

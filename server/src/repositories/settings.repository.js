@@ -62,6 +62,13 @@ const SCHEMA_DEFAULTS = {
   },
   maintenanceMode: false,
   maintenanceMessage: "We'll be back soon!",
+  notification: {
+    orderConfirmation: true,
+    shippingUpdate: true,
+    paymentConfirmation: true,
+    lowStockAlerts: true,
+    newOrderAlerts: true,
+  },
   currency: {
     code: 'INR',
     symbol: '\u20b9',
