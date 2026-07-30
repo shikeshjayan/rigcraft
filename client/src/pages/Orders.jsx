@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
@@ -9,8 +9,7 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import CancelIcon from '@mui/icons-material/Cancel';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
-
-const INITIAL_ORDERS = [];
+import apiClient from '../api/client';
 
 const ORDER_STATUSES = [
   { label: 'In Process', icon: <AutorenewIcon fontSize="small" /> },
@@ -19,19 +18,61 @@ const ORDER_STATUSES = [
   { label: 'Delivered', icon: <CheckCircleIcon fontSize="small" /> }
 ];
 
+const mapBackendStatus = (status) => {
+  switch(status) {
+    case 'pending':
+    case 'confirmed':
+    case 'processing': return 'In Process';
+    case 'shipped': return 'On the way';
+    case 'out_for_delivery': return 'Scheduled for delivery';
+    case 'delivered': return 'Delivered';
+    case 'cancelled': return 'Cancelled';
+    default: return 'In Process';
+  }
+};
+
 const Orders = ({ embedded = false }) => {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState(INITIAL_ORDERS);
+  const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState('All');
+  const [loading, setLoading] = useState(true);
   
   // Modal state
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState(null);
 
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const { data } = await apiClient.get('/orders');
+        if (data.success) {
+          const formattedOrders = data.data.orders.map(order => ({
+            id: order._id,
+            rawStatus: order.orderStatus,
+            status: mapBackendStatus(order.orderStatus),
+            date: new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
+            item: {
+              price: order.total,
+              image: order.items[0]?.item?.image || '/placeholder.png',
+              title: order.items.length > 1 ? `${order.items[0]?.name || 'Item'} + ${order.items.length - 1} more` : order.items[0]?.name || 'Unknown Item',
+              id: order.items[0]?.item?._id || ''
+            }
+          }));
+          setOrders(formattedOrders);
+        }
+      } catch (error) {
+        console.error('Failed to fetch orders', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOrders();
+  }, []);
+
   // Filter Logic
   const filteredOrders = orders.filter(order => {
     if (filter === 'Delivered') return order.status === 'Delivered';
-    if (filter === 'Live') return order.status !== 'Delivered';
+    if (filter === 'Live') return order.status !== 'Delivered' && order.status !== 'Cancelled';
     // Naive month/year filters for demonstration
     if (filter === 'Last 30 Days') {
       const orderDate = new Date(order.date);
@@ -39,8 +80,8 @@ const Orders = ({ embedded = false }) => {
       thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
       return orderDate >= thirtyDaysAgo;
     }
-    if (filter === '2026') return order.date.startsWith('2026');
-    if (filter === '2025') return order.date.startsWith('2025');
+    if (filter === '2026') return order.date.includes('2026');
+    if (filter === '2025') return order.date.includes('2025');
     return true; // 'All'
   });
 
@@ -49,8 +90,13 @@ const Orders = ({ embedded = false }) => {
     setShowCancelModal(true);
   };
 
-  const confirmCancel = () => {
-    setOrders(orders.filter(o => o.id !== orderToCancel.id));
+  const confirmCancel = async () => {
+    try {
+      await apiClient.patch(`/orders/${orderToCancel.id}/cancel`, { reason: 'User cancelled' });
+      setOrders(orders.map(o => o.id === orderToCancel.id ? { ...o, status: 'Cancelled', rawStatus: 'cancelled' } : o));
+    } catch (error) {
+      alert('Failed to cancel order');
+    }
     setShowCancelModal(false);
     setOrderToCancel(null);
   };

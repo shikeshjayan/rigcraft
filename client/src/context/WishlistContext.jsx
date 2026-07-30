@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { useAuth } from './AuthContext';
-import { updateWishlist as apiUpdateWishlist, getProfile } from '../api/auth';
+import { getWishlist, addToWishlistApi, removeFromWishlistApi } from '../api/wishlist';
 
 const WishlistContext = createContext();
 
@@ -11,57 +11,56 @@ export const useWishlist = () => {
 export const WishlistProvider = ({ children }) => {
   const { user } = useAuth();
   
-  const storageKey = user && user.email ? `rigcraft_wishlist_${user.email}` : 'rigcraft_wishlist_guest';
+  const storageKey = 'rigcraft_wishlist_guest';
 
   const [wishlist, setWishlist] = useState([]);
-
-  const loadedKey = useRef(storageKey);
   const isInitialized = useRef(false);
 
-  useEffect(() => {
-    isInitialized.current = false;
+  const fetchWishlist = async () => {
     if (user) {
       try {
-        const stored = localStorage.getItem(storageKey);
-        setWishlist(stored ? JSON.parse(stored) : (user.wishlist || []));
-      } catch {
-        setWishlist(user.wishlist || []);
-      }
-      // Fetch latest wishlist from backend to sync across devices
-      getProfile().then(res => {
-        if (res && res.success && res.data) {
-          setWishlist(res.data.wishlist || []);
+        const data = await getWishlist();
+        if (data.success && data.data?.items) {
+          const formattedItems = data.data.items.filter(itemObj => itemObj.item).map(itemObj => {
+            const product = itemObj.item;
+            return {
+              ...product,
+              id: product._id,
+              itemType: itemObj.itemType
+            };
+          });
+          setWishlist(formattedItems);
+        } else {
+          setWishlist([]);
         }
-        // Wait a tiny bit to ensure state updates before allowing backend pushes
-        setTimeout(() => { isInitialized.current = true; }, 100);
-      }).catch(err => {
-        console.error("Error fetching wishlist:", err);
-        isInitialized.current = true;
-      });
+      } catch (err) {
+        console.error("Error fetching wishlist from backend:", err);
+      }
     } else {
       try {
-        const stored = localStorage.getItem('rigcraft_wishlist_guest');
+        const stored = localStorage.getItem(storageKey);
         setWishlist(stored ? JSON.parse(stored) : []);
       } catch {
         setWishlist([]);
       }
     }
-    loadedKey.current = storageKey;
-  }, [storageKey, user]);
+  };
+
+  useEffect(() => {
+    fetchWishlist().finally(() => {
+      isInitialized.current = true;
+    });
+  }, [user]);
 
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
-  // Sync to local storage and backend when wishlist changes
+  // Sync Guest Wishlist to Local Storage
   useEffect(() => {
-    if (loadedKey.current === storageKey) {
+    if (!user && isInitialized.current) {
       localStorage.setItem(storageKey, JSON.stringify(wishlist));
-      
-      if (user && isInitialized.current) {
-        apiUpdateWishlist(wishlist).catch(console.error);
-      }
     }
-  }, [wishlist, storageKey, user]);
+  }, [wishlist, user]);
 
   const showToastNotification = (msg) => {
     setToastMessage(msg);
@@ -71,17 +70,40 @@ export const WishlistProvider = ({ children }) => {
     }, 2000); // 2 seconds
   };
 
-  const addToWishlist = (item) => {
-    if (!wishlist.find(i => i.id === item.id)) {
-      setWishlist(prev => [...prev, item]);
-      showToastNotification(`Added ${item.title} to wishlist!`);
+  const addToWishlist = async (item) => {
+    const normalizedId = item.id || item._id;
+    
+    if (user) {
+      try {
+        const itemType = (item.pricing || item.category === 'gaming' || item.category === 'streaming' || item.category === 'workstation' || item.category === 'office' || item.category === 'budget') ? 'prebuilt' : 'product';
+        await addToWishlistApi(itemType, normalizedId);
+        await fetchWishlist();
+        showToastNotification(`Added ${item.title || item.name} to wishlist!`);
+      } catch (err) {
+        console.error("Failed to add to wishlist:", err);
+        showToastNotification(err.response?.data?.message || 'Item already in wishlist!');
+      }
     } else {
-      showToastNotification(`${item.title} is already in wishlist!`);
+      if (!wishlist.find(i => i.id === normalizedId)) {
+        setWishlist(prev => [...prev, { ...item, id: normalizedId }]);
+        showToastNotification(`Added ${item.title || item.name} to wishlist!`);
+      } else {
+        showToastNotification(`${item.title || item.name} is already in wishlist!`);
+      }
     }
   };
 
-  const removeFromWishlist = (id) => {
-    setWishlist(prev => prev.filter(item => item.id !== id));
+  const removeFromWishlist = async (id) => {
+    if (user) {
+      try {
+        await removeFromWishlistApi(id);
+        await fetchWishlist();
+      } catch (err) {
+        console.error("Failed to remove from wishlist:", err);
+      }
+    } else {
+      setWishlist(prev => prev.filter(item => item.id !== id && item._id !== id));
+    }
   };
 
   return (

@@ -23,6 +23,11 @@ const supportTicketSchema = new mongoose.Schema(
       index: true,
     },
 
+    name: {
+      type: String,
+      trim: true,
+    },
+
     order: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Order",
