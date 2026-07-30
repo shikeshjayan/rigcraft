@@ -12,7 +12,7 @@ const wishlistItemSchema = new mongoose.Schema(
     item: {
       type: mongoose.Schema.Types.ObjectId,
       required: true,
-      refPath: "itemModel",
+      refPath: "items.itemModel",
     },
 
     itemModel: {
