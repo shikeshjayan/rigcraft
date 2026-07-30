@@ -20,12 +20,13 @@ export const generateTicketNumber = async () => {
   throw ApiError.internal("Failed to generate unique ticket number");
 };
 
-export const createTicket = async (userId, { order, issueType, subject, description }, files = []) => {
+export const createTicket = async (userId, { order, issueType, subject, description, name }, files = []) => {
   const ticketNumber = await generateTicketNumber();
 
   const ticketData = {
     ticketNumber,
     user: userId,
+    name,
     issueType,
     subject,
     description,
