@@ -10,7 +10,7 @@ import AdminButton from "../common/Button";
 const categorySchema = z.object({
   name: z.string().min(1, "Name is required").max(100),
   description: z.string().max(500, "Description must be under 500 characters").optional(),
-  parentId: z.union([z.number(), z.string()]).optional(),
+  parentId: z.union([z.number(), z.string(), z.null()]).optional(),
   isActive: z.boolean().optional(),
   order: z.coerce.number().int().min(0).optional(),
   image: z.any().optional(),

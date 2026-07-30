@@ -21,6 +21,7 @@ import {
   QuestionAnswer as QuestionAnswerIcon,
   Notifications as NotificationsIcon,
   ExitToApp as ExitToAppIcon,
+  PrecisionManufacturing as PrecisionManufacturingIcon,
 } from "@mui/icons-material";
 import useAuthStore from "../../store/authStore";
 import useNotificationStore from "../../store/notificationStore";
@@ -42,6 +43,7 @@ const iconMap = {
   HeadsetMic: HeadsetMicIcon,
   QuestionAnswer: QuestionAnswerIcon,
   Notifications: NotificationsIcon,
+  Person: PersonIcon,
 };
 
 const sectionIconMap = {
@@ -168,15 +170,7 @@ const Sidebar = ({ open, onClose, collapsed }) => {
             style={{ borderRadius: "var(--radius-admin-button)" }}
           />
         ) : (
-          <div
-            className="w-8 h-8 flex items-center justify-center text-white font-extrabold text-sm flex-shrink-0"
-            style={{ borderRadius: "var(--radius-admin-button)", background: "linear-gradient(135deg, var(--color-admin-primary) 0%, var(--color-admin-primary-light) 100%)" }}
-          >
-            {storeName ? storeName.trim().split(/\s+/).length >= 2
-              ? (storeName.trim().split(/\s+/)[0][0] + storeName.trim().split(/\s+/)[1][0]).toUpperCase()
-              : storeName.slice(0, 2).toUpperCase()
-              : "RC"}
-          </div>
+          <PrecisionManufacturingIcon sx={{ fontSize: 32, color: "var(--color-admin-white)" }} />
         )}
         {!collapsed && (
           <span className="font-extrabold text-lg" style={{ color: "var(--color-admin-white)" }}>
