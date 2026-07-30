@@ -65,7 +65,7 @@ const Filter = ({ isOpen, filters, setFilters, onClearAll, dynamicOptions = { br
 
   return (
     <div className="self-stretch flex-shrink-0 z-30">
-      <div className="sticky top-[180px]">
+      <div className="sticky top-[200px]" style={{ marginTop: '10px' }}>
         <motion.div 
           className="bg-white border-[#D5D9D9] shadow-sm overflow-y-auto overflow-x-hidden custom-scrollbar"
           initial={false}

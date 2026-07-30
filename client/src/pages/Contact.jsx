@@ -10,6 +10,7 @@ const Contact = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    subject: '',
     message: '',
     consent: false
   });
@@ -27,22 +28,23 @@ const Contact = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (formData.name && formData.email && formData.message && formData.consent) {
+    if (formData.name && formData.email && formData.subject && formData.message && formData.consent) {
       try {
         setIsSubmitting(true);
-        const res = await apiClient.post('/support/contact', {
+        const res = await apiClient.post('/support', {
           name: formData.name,
-          email: formData.email,
-          message: formData.message
+          subject: formData.subject,
+          issueType: 'other',
+          description: `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
         });
         
         if (res.data.success) {
           setShowPopup(true);
-          setFormData({ name: '', email: '', message: '', consent: false });
+          setFormData({ name: '', email: '', subject: '', message: '', consent: false });
           setTimeout(() => setShowPopup(false), 3000);
         }
       } catch (error) {
-        alert("Failed to send message. Please try again later.");
+        alert(error.response?.data?.message || "Failed to send message. Please ensure you are logged in to raise a support ticket.");
       } finally {
         setIsSubmitting(false);
       }
@@ -186,6 +188,21 @@ const Contact = () => {
                 </div>
 
                 <div className="flex flex-col gap-2">
+                  <label htmlFor="subject" className="text-sm font-semibold text-gray-700">Subject</label>
+                  <input 
+                    type="text" 
+                    id="subject"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    required
+                    placeholder="Enter the subject"
+                    className="w-full px-4 py-3 border border-gray-200 focus:border-[var(--color-primary)] focus:ring-2 focus:ring-[var(--color-primary)]/20 outline-none transition-all bg-gray-50 focus:bg-white text-gray-900 placeholder-gray-400"
+                    style={{ borderRadius: 'var(--radius-sm, 8px)' }}
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
                   <label htmlFor="message" className="text-sm font-semibold text-gray-700">How can we help?</label>
                   <textarea 
                     id="message"
@@ -253,8 +270,8 @@ const Contact = () => {
               <CheckCircleIcon fontSize="large" />
             </div>
             <div>
-              <h4 className="text-gray-900 font-bold text-lg">Message Sent Successfully!</h4>
-              <p className="text-gray-600 mt-1 text-sm">We have received your message and will connect with you shortly.</p>
+              <h4 className="text-gray-900 font-bold text-lg">Ticket Raised Successfully!</h4>
+              <p className="text-gray-600 mt-1 text-sm">Your ticket has been raised and our team will shortly connect with you.</p>
             </div>
           </motion.div>
         )}

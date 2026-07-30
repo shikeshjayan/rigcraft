@@ -116,7 +116,14 @@ const SupportList = () => {
     {
       key: "customer",
       label: "Customer",
-      render: (val) => <span style={{ fontWeight: 500 }}>{val?.name || "Unknown"}</span>,
+      render: (val, row) => {
+        let name = row?.name || val?.name;
+        if (!name && row?.description) {
+          const match = row.description.match(/Name:\s*([^\n]+)/);
+          if (match && match[1]) name = match[1].trim();
+        }
+        return <span style={{ fontWeight: 500 }}>{name || "Unknown"}</span>;
+      },
     },
     {
       key: "subject",
