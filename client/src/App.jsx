@@ -60,8 +60,8 @@ const PublicLayout = () => {
         </AnimatePresence>
       </div>
       <Footer />
-      <BackToTop />
       <Chatbot />
+      <BackToTop />
     </div>
   );
 };

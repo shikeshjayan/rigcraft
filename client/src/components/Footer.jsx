@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { getPublicSettings } from '../services/settings.service';
@@ -12,6 +13,7 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 
 const Footer = () => {
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState('idle'); // 'idle', 'error', 'success'
@@ -119,7 +121,7 @@ const Footer = () => {
             
             {/* Brand Column */}
             <div className="flex flex-col lg:max-w-[350px]">
-              <div className="flex items-center gap-2 mb-6 cursor-pointer">
+              <div className="flex items-center gap-2 mb-6 cursor-default">
                 {brand?.logo?.url ? (
                   <img src={brand.logo.url} alt={brand.storeName || 'RigCraft'} className="w-8 h-8 object-contain brightness-0 invert" />
                 ) : (
@@ -131,20 +133,20 @@ const Footer = () => {
                 {brand?.description || "India's premier PC building platform. Custom gaming PCs, premium components, and expert support — all in one place."}
               </p>
               <div className="flex items-center gap-4">
-                {brand?.social?.twitter && (
-                  <a href={brand.social.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><XIcon /></a>
+                {brandData?.social?.twitter && (
+                  <a href={brandData.social.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><XIcon /></a>
                 )}
-                {brand?.social?.linkedin && (
-                  <a href={brand.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><LinkedInIcon /></a>
+                {brandData?.social?.linkedin && (
+                  <a href={brandData.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><LinkedInIcon /></a>
                 )}
-                {brand?.social?.facebook && (
-                  <a href={brand.social.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><FacebookIcon /></a>
+                {brandData?.social?.facebook && (
+                  <a href={brandData.social.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><FacebookIcon /></a>
                 )}
-                {brand?.social?.youtube && (
-                  <a href={brand.social.youtube} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><YouTubeIcon /></a>
+                {brandData?.social?.youtube && (
+                  <a href={brandData.social.youtube} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><YouTubeIcon /></a>
                 )}
-                {brand?.social?.instagram && (
-                  <a href={brand.social.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-[var(--color-primary)] transition-colors"><InstagramIcon /></a>
+                {brandData?.social?.instagram && (
+                  <a href={brandData.social.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><InstagramIcon /></a>
                 )}
               </div>
             </div>
@@ -153,12 +155,12 @@ const Footer = () => {
             <div className="flex flex-col">
               <h4 className="text-[14px] font-bold tracking-widest text-white mb-6 uppercase">Products</h4>
               <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/builder" className="block w-full">Custom PC Builder</Link></li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/prebuild" className="block w-full">Prebuilt PCs</Link></li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/components" className="block w-full">PC Components</Link></li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Gaming Accessories</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Monitors</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/components/peripherals" className="block w-full">Peripherals</Link></li>
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/builder" className="block w-full">Custom PC Builder</Link></li>
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/prebuild" className="block w-full">Prebuilt PCs</Link></li>
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/components" className="block w-full">PC Components</Link></li>
+                <li className="cursor-pointer hover:text-white transition-colors">Gaming Accessories</li>
+                <li className="cursor-pointer hover:text-white transition-colors">Monitors</li>
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/components/peripherals" className="block w-full">Peripherals</Link></li>
               </ul>
             </div>
 
@@ -166,12 +168,12 @@ const Footer = () => {
             <div className="flex flex-col">
               <h4 className="text-[14px] font-bold tracking-widest text-white mb-6 uppercase">Support</h4>
               <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/about" className="block w-full">About RigCraft</Link></li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Track Order</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/warranty" className="block w-full">Warranty Claims</Link></li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/returns" className="block w-full">Returns & Refunds</Link></li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/contact" className="block w-full">Contact Support</Link></li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/faq" className="block w-full">FAQs</Link></li>
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/about" className="block w-full">About RigCraft</Link></li>
+                <li className="cursor-pointer hover:text-white transition-colors">Track Order</li>
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/warranty" className="block w-full">Warranty Claims</Link></li>
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/returns" className="block w-full">Returns & Refunds</Link></li>
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/contact" className="block w-full">Contact Support</Link></li>
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/faq" className="block w-full">FAQs</Link></li>
               </ul>
             </div>
 
@@ -180,10 +182,13 @@ const Footer = () => {
             <div className="flex flex-col">
               <h4 className="text-[14px] font-bold tracking-widest text-white mb-6 uppercase">Explore</h4>
               <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors"><Link to="/pc-builder-guide" className="block w-full">PC Builder Guide</Link></li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Best Sellers</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">New Arrivals</li>
-                <li className="cursor-pointer hover:text-[var(--color-primary)] transition-colors">Today's Deals</li>
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/pc-builder-guide" className="block w-full">PC Builder Guide</Link></li>
+                <li className="cursor-pointer hover:text-white transition-colors">Best Sellers</li>
+                <li className="cursor-pointer hover:text-white transition-colors">New Arrivals</li>
+                <li className="cursor-pointer hover:text-white transition-colors">Today's Deals</li>
+                {user && ['admin', 'manager'].includes(user.role) && (
+                  <li className="cursor-pointer hover:text-white transition-colors"><Link to="/admin" className="block w-full">Dashboard</Link></li>
+                )}
               </ul>
             </div>
 
@@ -195,8 +200,8 @@ const Footer = () => {
               &copy; {new Date().getFullYear()} {brand?.storeName || 'Rig Craft'} Pvt Ltd. All rights reserved.
             </div>
             <div className="flex flex-wrap justify-center gap-6">
-              <Link to="/privacy-policy" className="hover:text-[var(--color-primary)] transition-colors">Privacy Policy</Link>
-              <Link to="/terms-of-service" className="hover:text-[var(--color-primary)] transition-colors">Terms of Service</Link>
+              <Link to="/privacy-policy" className="hover:text-white transition-colors">Privacy Policy</Link>
+              <Link to="/terms-of-service" className="hover:text-white transition-colors">Terms of Service</Link>
             </div>
           </div>
 

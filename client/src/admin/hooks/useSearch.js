@@ -18,8 +18,8 @@ export const useSearch = (data = [], searchFields = []) => {
   }, [data, debouncedQuery, searchFields]);
 
   return {
-    searchQuery,
-    setSearchQuery,
+    search: searchQuery,
+    setSearch: setSearchQuery,
     filteredData,
     totalResults: filteredData.length,
   };

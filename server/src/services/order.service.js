@@ -309,12 +309,16 @@ export const getOrders = async (userId, query = {}) => {
   const { page = 1, limit = 20 } = query;
   const skip = (page - 1) * limit;
 
-  const orders = await orderRepository.findByUser(userId, {
-    sort: { createdAt: -1 },
-    page,
-    limit,
-  });
-  const total = await orderRepository.countByUser(userId);
+  // We need to fetch from Order model directly to populate, or modify repository.
+  // Using Order model directly here for simplicity since findByUser doesn't populate.
+  const [orders, total] = await Promise.all([
+    Order.find({ user: userId })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(Number(limit))
+      .populate("items.item", "name image images title price"),
+    orderRepository.countByUser(userId)
+  ]);
 
   return {
     orders,
