@@ -72,7 +72,7 @@ export const CartProvider = ({ children }) => {
         updated[existingItemIndex].qty = (updated[existingItemIndex].qty || 1) + 1;
         return updated;
       }
-      return [...prev, { ...item, qty: 1, cartItemId: Date.now().toString() }];
+      return [...prev, { ...item, qty: 1, cartItemId: Date.now().toString() + Math.random().toString() }];
     });
   };
 

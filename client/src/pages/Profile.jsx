@@ -715,12 +715,21 @@ const Profile = () => {
                     ₹{(selectedBuildPopup.components?.reduce((sum, comp) => sum + (comp.product?.priceVal || comp.product?.price || comp.product?.salePrice || 0), 0) || 0).toLocaleString()}
                   </div>
                 </div>
-                <button 
-                  onClick={() => handleAddBuildToCart(selectedBuildPopup)}
-                  className="px-8 py-3 font-bold transition-colors uppercase shadow-md rounded-sm w-full sm:w-auto bg-[#2563EB] text-white hover:bg-blue-700"
-                >
-                  Add Build to Cart
-                </button>
+                {selectedBuildPopup._id ? (
+                  <button 
+                    onClick={() => handleAddBuildToCart(selectedBuildPopup)}
+                    className="px-8 py-3 font-bold transition-colors uppercase shadow-md rounded-sm w-full sm:w-auto bg-[#2563EB] text-white hover:bg-blue-700"
+                  >
+                    Add Build to Cart
+                  </button>
+                ) : (
+                  <button 
+                    onClick={() => { setSelectedBuildPopup(null); navigate('/pc-builder'); }}
+                    className="px-8 py-3 font-bold transition-colors uppercase shadow-md rounded-sm w-full sm:w-auto bg-[#0047AB] text-white hover:bg-blue-800"
+                  >
+                    Complete in Builder
+                  </button>
+                )}
               </div>
             </motion.div>
           </motion.div>
