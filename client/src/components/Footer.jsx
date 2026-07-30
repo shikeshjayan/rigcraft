@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { getPublicSettings } from '../services/settings.service';
@@ -11,6 +12,7 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 
 const Footer = () => {
+  const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState('idle'); // 'idle', 'error', 'success'
@@ -119,20 +121,20 @@ const Footer = () => {
                 {brand?.description || "India's premier PC building platform. Custom gaming PCs, premium components, and expert support — all in one place."}
               </p>
               <div className="flex items-center gap-4">
-                {brand?.social?.twitter && (
-                  <a href={brand.social.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><XIcon /></a>
+                {brandData?.social?.twitter && (
+                  <a href={brandData.social.twitter} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><XIcon /></a>
                 )}
-                {brand?.social?.linkedin && (
-                  <a href={brand.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><LinkedInIcon /></a>
+                {brandData?.social?.linkedin && (
+                  <a href={brandData.social.linkedin} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><LinkedInIcon /></a>
                 )}
-                {brand?.social?.facebook && (
-                  <a href={brand.social.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><FacebookIcon /></a>
+                {brandData?.social?.facebook && (
+                  <a href={brandData.social.facebook} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><FacebookIcon /></a>
                 )}
-                {brand?.social?.youtube && (
-                  <a href={brand.social.youtube} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><YouTubeIcon /></a>
+                {brandData?.social?.youtube && (
+                  <a href={brandData.social.youtube} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><YouTubeIcon /></a>
                 )}
-                {brand?.social?.instagram && (
-                  <a href={brand.social.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><InstagramIcon /></a>
+                {brandData?.social?.instagram && (
+                  <a href={brandData.social.instagram} target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition-colors"><InstagramIcon /></a>
                 )}
               </div>
             </div>
@@ -172,6 +174,9 @@ const Footer = () => {
                 <li className="cursor-pointer hover:text-white transition-colors">Best Sellers</li>
                 <li className="cursor-pointer hover:text-white transition-colors">New Arrivals</li>
                 <li className="cursor-pointer hover:text-white transition-colors">Today's Deals</li>
+                {user && ['admin', 'manager'].includes(user.role) && (
+                  <li className="cursor-pointer hover:text-white transition-colors"><Link to="/admin" className="block w-full">Dashboard</Link></li>
+                )}
               </ul>
             </div>
 
