@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useLocation } from 'react-router-dom';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
@@ -28,11 +28,16 @@ const CATEGORY_MAP = {
 
 const ComponentsCatalog = () => {
   const { category } = useParams();
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const brandParam = searchParams.get('brand');
+  const brandIdParam = searchParams.get('brandId');
+  
   const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
   
   const initialFilters = {
     priceMax: 500000,
-    brands: [],
+    brands: brandParam ? [brandParam.toLowerCase()] : [],
     ratings: [],
     specs: {}
   };
@@ -45,11 +50,14 @@ const ComponentsCatalog = () => {
   const itemsPerPage = 40; 
 
   useEffect(() => {
-    if (category) {
-      setFilters(initialFilters);
-      setCurrentPage(1);
-    }
-  }, [category]);
+    setFilters({
+      priceMax: 500000,
+      brands: brandParam ? [brandParam.toLowerCase()] : [],
+      ratings: [],
+      specs: {}
+    });
+    setCurrentPage(1);
+  }, [category, brandParam]);
 
   const fetchProducts = async () => {
     setIsFiltering(true);
@@ -60,6 +68,15 @@ const ComponentsCatalog = () => {
         page: currentPage,
         limit: itemsPerPage,
       };
+      
+      if (brandIdParam) {
+        params.brand = brandIdParam;
+      }
+      
+      const queryParam = searchParams.get('search');
+      if (queryParam) {
+        params.search = queryParam;
+      }
 
       const res = await productService.list(params);
       
@@ -93,7 +110,7 @@ const ComponentsCatalog = () => {
 
   useEffect(() => {
     fetchProducts();
-  }, [category, currentPage]); 
+  }, [category, currentPage, location.search]); 
 
   const dynamicFilterOptions = useMemo(() => {
     const brands = new Set();
@@ -260,7 +277,7 @@ const ComponentsCatalog = () => {
                         <div key={item._id || item.id} className="block h-full animate-fade-in relative group">
                           <Link to={`/detail/${item.slug}`} className="block h-full">
                             <Card 
-                              id={item.slug}
+ rating={item?.rating} id={item.slug}
                               image={imageUrl}
                               title={item.name}
                               specs={specs.length > 0 ? specs : undefined}

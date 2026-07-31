@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -12,6 +13,7 @@ import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import apiClient from '../api/client';
 
 const ORDER_STATUSES = [
+  { label: 'Order Confirmed', icon: <CheckCircleIcon fontSize="small" /> },
   { label: 'In Process', icon: <AutorenewIcon fontSize="small" /> },
   { label: 'On the way', icon: <LocalShippingIcon fontSize="small" /> },
   { label: 'Scheduled for delivery', icon: <InventoryIcon fontSize="small" /> },
@@ -21,18 +23,19 @@ const ORDER_STATUSES = [
 const mapBackendStatus = (status) => {
   switch(status) {
     case 'pending':
-    case 'confirmed':
+    case 'confirmed': return 'Order Confirmed';
     case 'processing': return 'In Process';
     case 'shipped': return 'On the way';
     case 'out_for_delivery': return 'Scheduled for delivery';
     case 'delivered': return 'Delivered';
     case 'cancelled': return 'Cancelled';
-    default: return 'In Process';
+    default: return 'Order Confirmed';
   }
 };
 
 const Orders = ({ embedded = false }) => {
   const navigate = useNavigate();
+  const { isLoggedIn } = useAuth();
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState('All');
   const [loading, setLoading] = useState(true);
@@ -42,6 +45,10 @@ const Orders = ({ embedded = false }) => {
   const [orderToCancel, setOrderToCancel] = useState(null);
 
   useEffect(() => {
+    if (!isLoggedIn) {
+      setLoading(false);
+      return;
+    }
     const fetchOrders = async () => {
       try {
         const { data } = await apiClient.get('/orders');
@@ -67,7 +74,7 @@ const Orders = ({ embedded = false }) => {
       }
     };
     fetchOrders();
-  }, []);
+  }, [isLoggedIn]);
 
   // Filter Logic
   const filteredOrders = orders.filter(order => {
@@ -105,7 +112,7 @@ const Orders = ({ embedded = false }) => {
     return ORDER_STATUSES.findIndex(s => s.label === status);
   };
 
-  const content = (
+  const content = isLoggedIn ? (
     <FadeUp>
           <div className="flex flex-col lg:flex-row gap-8">
             
@@ -156,7 +163,10 @@ const Orders = ({ embedded = false }) => {
                 <p className="text-[13px] text-gray-700 font-medium mb-4 leading-relaxed">
                   Have an issue with your order? Our support team is available 24/7 to assist you.
                 </p>
-                <button className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-sm hover:bg-blue-700 transition-colors text-[13px] tracking-wide uppercase">
+                <button 
+                  onClick={() => navigate('/contact')}
+                  className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-sm hover:bg-blue-700 transition-colors text-[13px] tracking-wide uppercase"
+                >
                   Contact Us
                 </button>
               </div>
@@ -202,9 +212,9 @@ const Orders = ({ embedded = false }) => {
                           
                           {/* Item Image & Details */}
                           <div className="flex gap-4 flex-1">
-                            <div className="w-24 h-24 flex-shrink-0 bg-white border border-gray-100 rounded-md overflow-hidden p-2">
+                            {/* <div className="w-24 h-24 flex-shrink-0 bg-white border border-gray-100 rounded-md overflow-hidden p-2">
                               <img src={order.item.image} alt={order.item.title} className="w-full h-full object-contain mix-blend-multiply" />
-                            </div>
+                            </div> */}
                             <div className="flex flex-col justify-between py-1">
                               <div>
                                 <h3 className="text-[16px] font-bold text-gray-900 leading-tight mb-1 line-clamp-2">{order.item.title}</h3>
@@ -217,10 +227,14 @@ const Orders = ({ embedded = false }) => {
                                 >
                                   View Item
                                 </button>
-                                {order.status !== 'Delivered' && (
+                                {order.status === 'Delivered' ? (
+                                  <div className="text-[13px] font-bold text-green-600 uppercase tracking-wide flex items-center gap-1 bg-green-50 px-3 py-1 rounded-sm border border-green-200">
+                                    <CheckCircleIcon fontSize="small" /> Product Delivered
+                                  </div>
+                                ) : (
                                   <button 
                                     onClick={() => handleCancelClick(order)}
-                                    className="text-[13px] font-bold text-red-500 hover:text-red-700 transition-colors uppercase tracking-wide flex items-center gap-1"
+                                    className="text-[12px] font-bold text-red-500 border border-gray-300 rounded-sm px-3 py-1.5 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all uppercase tracking-wide flex items-center gap-1 shadow-sm"
                                   >
                                     <CancelIcon fontSize="small" /> Cancel Order
                                   </button>
@@ -272,10 +286,24 @@ const Orders = ({ embedded = false }) => {
             </div>
 
           </div>
-        </FadeUp>
+    </FadeUp>
+  ) : (
+    <FadeUp>
+      <div className="bg-white p-10 mt-8 text-center border border-gray-200 shadow-sm max-w-2xl mx-auto" style={{ borderRadius: 'var(--radius-sm)' }}>
+        <WarningAmberIcon sx={{ fontSize: 64, color: '#CBD5E1' }} className="mb-4" />
+        <h3 className="text-xl font-bold text-gray-900 mb-2">Please Login</h3>
+        <p className="text-gray-500 text-[14px] mb-6">Login and purchase to see your orders.</p>
+        <button 
+          onClick={() => navigate('/login')}
+          className="bg-blue-600 text-white font-bold py-2.5 px-8 rounded-sm hover:bg-blue-700 transition-colors text-[13px] tracking-wide uppercase inline-flex items-center"
+        >
+          Login
+        </button>
+      </div>
+    </FadeUp>
   );
 
-  const modalContent = showCancelModal && (
+  const modalContent = (showCancelModal && (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <FadeUp>
         <div className="bg-white rounded-md p-6 max-w-sm w-full shadow-2xl border-t-4 border-red-500" style={{ borderRadius: 'var(--radius-sm)' }}>
@@ -305,7 +333,7 @@ const Orders = ({ embedded = false }) => {
         </div>
       </FadeUp>
     </div>
-  );
+  ));
 
   if (embedded) {
     return (
