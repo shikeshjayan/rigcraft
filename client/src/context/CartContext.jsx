@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useRef } from 'r
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
 import { getCart, addToCartApi, removeFromCartApi, clearCartApi } from '../api/cart';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const CartContext = createContext();
 
@@ -14,6 +15,7 @@ export const CartProvider = ({ children }) => {
   const storageKey = 'rigcraft_cart_guest';
 
   const [cartItems, setCartItems] = useState([]);
+  const [toastMessage, setToastMessage] = useState(null);
   const isInitialized = useRef(false);
 
   // Fetch Cart from Backend OR Local Storage
@@ -51,6 +53,7 @@ export const CartProvider = ({ children }) => {
   };
 
   useEffect(() => {
+    isInitialized.current = false;
     fetchCart().finally(() => {
       isInitialized.current = true;
     });
@@ -63,16 +66,30 @@ export const CartProvider = ({ children }) => {
     }
   }, [cartItems, user]);
 
+  const showToast = (message) => {
+    setToastMessage(message);
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
   const addToCart = async (item) => {
     const normalizedId = item.id || item._id;
-    const itemType = (item.pricing || item.category === 'gaming' || item.category === 'streaming' || item.category === 'workstation' || item.category === 'office' || item.category === 'budget') ? 'prebuilt' : 'product';
+    let itemType = 'product';
+    if (item.type === 'custom-build' || item.type === 'savedBuild') {
+      itemType = 'savedBuild';
+    } else if (item.type === 'prebuilt' || item.pricing || item.category === 'gaming' || item.category === 'streaming' || item.category === 'workstation' || item.category === 'office' || item.category === 'budget') {
+      itemType = 'prebuilt';
+    }
 
     if (user) {
       try {
         await addToCartApi(itemType, normalizedId, 1);
         await fetchCart();
+        return { success: true };
       } catch (err) {
         console.error("Failed to add to cart:", err);
+        const errorMsg = err.response?.data?.message || err.message || "Failed to add to cart";
+        showToast(errorMsg);
+        return { success: false, message: errorMsg };
       }
     } else {
       setCartItems(prev => {
@@ -116,6 +133,21 @@ export const CartProvider = ({ children }) => {
   return (
     <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart }}>
       {children}
+      <AnimatePresence>
+        {toastMessage && (
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 50 }}
+            className="fixed bottom-8 right-8 bg-red-600 border border-red-700 text-white px-6 py-4 rounded-sm shadow-2xl z-[9999] font-bold flex items-center gap-3"
+          >
+            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </div>
+            {toastMessage}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </CartContext.Provider>
   );
 };

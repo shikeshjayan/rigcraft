@@ -13,6 +13,8 @@ import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import DesktopWindowsOutlinedIcon from '@mui/icons-material/DesktopWindowsOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
+import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import FadeUp from '../components/FadeUp';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
@@ -98,6 +100,8 @@ const Profile = () => {
   const [addresses, setAddresses] = useState([]);
   const [builds, setBuilds] = useState([]);
   const [draftBuild, setDraftBuild] = useState({});
+  const [coupons, setCoupons] = useState([]);
+  const [copiedCode, setCopiedCode] = useState('');
 
   useEffect(() => {
     const fetchDraft = () => {
@@ -162,6 +166,18 @@ const Profile = () => {
     }
   };
 
+  const fetchCoupons = async () => {
+    try {
+      const { data } = await apiClient.get('/coupons/active');
+      if (data.success && data.data && data.data.coupons) {
+        const availableCoupons = data.data.coupons.filter(c => !c.isFirstOrderOnly);
+        setCoupons(availableCoupons);
+      }
+    } catch (error) {
+      console.error('Failed to fetch coupons', error);
+    }
+  };
+
   const handleDeleteBuildConfirm = async () => {
     try {
       if (deleteConfirmation.isDraft) {
@@ -179,7 +195,7 @@ const Profile = () => {
   };
 
   const handleAddBuildToCart = (build) => {
-    const buildPrice = build.components?.reduce((sum, comp) => sum + (comp.product?.priceVal || 0), 0) || 0;
+    const buildPrice = build.components?.reduce((sum, comp) => sum + (comp.product?.priceVal || comp.product?.price || comp.product?.salePrice || 0), 0) || 0;
     
     addToCart({
       id: build._id,
@@ -201,6 +217,7 @@ const Profile = () => {
     if (isLoggedIn) {
       fetchAddresses();
       fetchBuilds();
+      fetchCoupons();
     }
   }, [isLoggedIn]);
 
@@ -329,6 +346,12 @@ const Profile = () => {
                       onClick={() => navigate('/wishlist')}
                     >
                       My Wishlist
+                    </div>
+                    <div 
+                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'coupons' ? 'bg-[#F0F7FF] text-[#2563EB] border-[#2563EB]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[#2563EB]'}`}
+                      onClick={() => setActiveTab('coupons')}
+                    >
+                      Coupons
                     </div>
                     <div 
                       className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'builds' ? 'bg-[#F0F7FF] text-[#2563EB] border-[#2563EB]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[#2563EB]'}`}
@@ -612,9 +635,9 @@ const Profile = () => {
                               <div className="flex gap-2 overflow-hidden items-center py-2 border-t border-gray-100">
                                 {build.components?.slice(0, 5).map((comp, idx) => (
                                   <div key={idx} className="w-10 h-10 bg-gray-50 flex items-center justify-center rounded-sm shrink-0 border border-gray-100">
-                                    {comp.product?.image ? (
-                                      <img src={comp.product.image} alt={getTypeName(comp.type)} className="w-8 h-8 object-contain mix-blend-multiply" />
-                                    ) : (
+                                      {comp.product?.image || comp.product?.images?.[0]?.url ? (
+                                        <img src={comp.product.image || comp.product.images?.[0]?.url} alt={getTypeName(comp.type)} className="w-8 h-8 object-contain mix-blend-multiply" />
+                                      ) : (
                                       <span className="text-[8px] text-gray-400 font-bold uppercase">{getTypeName(comp.type).substring(0,3)}</span>
                                     )}
                                   </div>
@@ -646,6 +669,50 @@ const Profile = () => {
                 {activeTab === 'orders' && (
                   <FadeUp>
                     <Orders embedded={true} />
+                  </FadeUp>
+                )}
+
+                {activeTab === 'coupons' && (
+                  <FadeUp>
+                    <div className="mb-6 flex justify-between items-center">
+                      <h2 className="text-xl font-bold text-gray-900">Available Coupons</h2>
+                    </div>
+                    {coupons.length === 0 ? (
+                      <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                        <ConfirmationNumberOutlinedIcon sx={{ fontSize: 48, color: '#94A3B8', mb: 2 }} />
+                        <h3 className="text-lg font-bold text-gray-700">No Coupons Available</h3>
+                        <p className="text-gray-500 mt-2">There are currently no active coupons available.</p>
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {coupons.map((coupon) => (
+                          <div key={coupon._id} className="border border-blue-100 bg-[#F8FAFC] rounded-lg p-5 shadow-sm relative overflow-hidden group">
+                            <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500 rotate-45 transform translate-x-8 -translate-y-8 group-hover:bg-blue-600 transition-colors"></div>
+                            <ConfirmationNumberOutlinedIcon className="absolute top-2 right-2 text-white z-10 w-4 h-4" />
+                            
+                            <h3 className="text-lg font-black text-gray-900 mb-1">{coupon.name}</h3>
+                            <p className="text-sm text-gray-600 mb-4 h-10">{coupon.description}</p>
+                            
+                            <div className="flex items-center justify-between mt-auto">
+                              <div className="flex items-center bg-white border border-dashed border-gray-300 rounded px-3 py-1.5 cursor-copy group/code" onClick={() => { navigator.clipboard.writeText(coupon.code); setCopiedCode(coupon.code); setTimeout(() => setCopiedCode(''), 2000); }}>
+                                <span className="font-mono font-bold tracking-wider cursor-pointer text-blue-700">{coupon.code}</span>
+                                {copiedCode === coupon.code ? (
+                                  <span className="text-[10px] text-green-600 font-bold ml-2">COPIED</span>
+                                ) : (
+                                  <ContentCopyIcon sx={{ fontSize: 14 }} className="text-gray-400 ml-2 cursor-pointer group-hover/code:text-blue-500" />
+                                )}
+                              </div>
+                              <div className="text-right">
+                                <span className="block text-[10px] font-bold text-gray-500 uppercase">Discount</span>
+                                <span className="font-black text-blue-600 text-lg">
+                                  {coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </FadeUp>
                 )}
 
@@ -690,8 +757,8 @@ const Profile = () => {
                 {selectedBuildPopup.components?.map((comp, idx) => (
                     <div key={idx} className="flex gap-4 p-3 border border-gray-100 rounded-md bg-white hover:border-blue-200 transition-colors">
                       <div className="w-16 h-16 bg-gray-50 flex items-center justify-center rounded-sm shrink-0 border border-gray-50">
-                        {comp.product?.image ? (
-                          <img src={comp.product.image} alt={getTypeName(comp.type)} className="w-12 h-12 object-contain mix-blend-multiply" />
+                        {comp.product?.image || comp.product?.images?.[0]?.url ? (
+                          <img src={comp.product.image || comp.product.images?.[0]?.url} alt={getTypeName(comp.type)} className="w-12 h-12 object-contain mix-blend-multiply" />
                         ) : (
                           <span className="text-[10px] text-gray-400 font-bold uppercase">{getTypeName(comp.type).substring(0, 3)}</span>
                         )}
@@ -724,7 +791,7 @@ const Profile = () => {
                   </button>
                 ) : (
                   <button 
-                    onClick={() => { setSelectedBuildPopup(null); navigate('/pc-builder'); }}
+                    onClick={() => { setSelectedBuildPopup(null); navigate('/builder'); }}
                     className="px-8 py-3 font-bold transition-colors uppercase shadow-md rounded-sm w-full sm:w-auto bg-[#0047AB] text-white hover:bg-blue-800"
                   >
                     Complete in Builder

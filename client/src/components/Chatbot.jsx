@@ -47,6 +47,7 @@ const Chatbot = () => {
   const [catalogData, setCatalogData] = useState(null);
   const [activeBuildParts, setActiveBuildParts] = useState([]);
   const [isBuilding, setIsBuilding] = useState(false);
+  const [showSavePopup, setShowSavePopup] = useState(false);
   
   const idleTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -76,54 +77,53 @@ const Chatbot = () => {
     prevIsLoggedIn.current = isLoggedIn;
   }, [isLoggedIn]);
 
+  const fetchCatalogData = async () => {
+    try {
+      const [productsRes, prebuiltsRes] = await Promise.all([
+        apiClient.get('/products?limit=1000'),
+        apiClient.get('/prebuilt-pcs?limit=1000')
+      ]);
+      
+      const productsArray = productsRes.data?.data?.docs || productsRes.data?.data || [];
+      const prebuiltsArray = prebuiltsRes.data?.data?.docs || prebuiltsRes.data?.data || [];
+      
+      const products = productsArray.map(p => ({
+        id: p._id,
+        type: 'product',
+        name: p.name,
+        category: p.category?.name || 'Unknown',
+        price: p.price,
+        stock: p.stock > 0 ? 'In Stock' : 'Out of Stock',
+        specs: p.specs,
+        slug: p.slug,
+        image: p.images?.[0]?.url || p.images?.[0] || ''
+      }));
+      
+      const prebuilts = prebuiltsArray.map(p => ({
+        id: p._id,
+        type: 'prebuilt',
+        name: p.name,
+        price: p.price,
+        category: p.category?.name || 'Prebuilt',
+        stock: p.stock > 0 ? 'In Stock' : 'Out of Stock',
+        image: p.images?.[0]?.url || p.images?.[0] || ''
+      }));
+
+      const data = { products, prebuilts };
+      setCatalogData(data);
+      return data;
+    } catch (error) {
+      console.error("Failed to fetch catalog for AI", error);
+      const data = { products: [], prebuilts: [] };
+      setCatalogData(data);
+      return data;
+    }
+  };
+
   // Fetch catalog data when chat is opened
   useEffect(() => {
     if (isOpen && !catalogData) {
-      const fetchCatalog = async () => {
-        try {
-          const [productsRes, prebuiltsRes] = await Promise.all([
-            apiClient.get('/products'),
-            apiClient.get('/prebuilt-pcs')
-          ]);
-          
-          // Extract array from paginated response (docs) or direct array
-          const productsArray = productsRes.data?.data?.docs || productsRes.data?.data || [];
-          const prebuiltsArray = prebuiltsRes.data?.data?.docs || prebuiltsRes.data?.data || [];
-          
-          // Map to minimize tokens
-          const products = productsArray.map(p => {
-            return {
-              id: p._id,
-              type: 'product',
-              name: p.name,
-              category: p.category?.name || 'Unknown',
-              price: p.price,
-              stock: p.stock > 0 ? 'In Stock' : 'Out of Stock',
-              specs: p.specs,
-              slug: p.slug,
-              image: p.images?.[0]?.url || p.images?.[0] || ''
-            };
-          });
-          
-          const prebuilts = prebuiltsArray.map(p => {
-            return {
-              id: p._id,
-              type: 'prebuilt',
-              name: p.name,
-              price: p.price,
-              category: p.category?.name || 'Prebuilt',
-              stock: p.stock > 0 ? 'In Stock' : 'Out of Stock',
-              image: p.images?.[0]?.url || p.images?.[0] || ''
-            };
-          });
-
-          setCatalogData({ products, prebuilts });
-        } catch (error) {
-          console.error("Failed to fetch catalog for AI", error);
-          setCatalogData({ products: [], prebuilts: [] });
-        }
-      };
-      fetchCatalog();
+      fetchCatalogData();
     }
   }, [isOpen, catalogData]);
 
@@ -149,14 +149,20 @@ const Chatbot = () => {
 
   // Handle external 'open-rig-ai' trigger from PC Builder Page
   useEffect(() => {
-    const handleRigAiEvent = () => {
+    const handleRigAiEvent = async () => {
       setIsOpen(true);
       setHasGreeted(true); // Skip default greeting
+      
+      let currentCatalog = catalogData;
+      if (!currentCatalog) {
+        setIsTyping(true); // Show typing while loading catalog
+        currentCatalog = await fetchCatalogData();
+      }
       
       // Validate Catalog has all required parts
       const requiredCategories = ['cpu', 'motherboard', 'gpu', 'ram', 'storage', 'psu', 'cabinet', 'cooler'];
       const availableEnums = new Set(
-        catalogData?.products?.map(p => mapCategoryToEnum(p.category)) || []
+        currentCatalog?.products?.map(p => mapCategoryToEnum(p.category)) || []
       );
       
       const missingCategories = requiredCategories.filter(c => !availableEnums.has(c));
@@ -256,20 +262,20 @@ User: ${hiddenPrompt}`;
         name: "Rig AI Custom Build",
         components: activeBuildParts.map(p => ({
            type: mapCategoryToEnum(p.type),
-           product: p.product.id || p.product._id || p.product,
+           product: p.product.id || p.product._id,
            quantity: 1
         })),
         totalPrice: activeBuildParts.reduce((sum, p) => sum + (p.product.price || 0), 0)
       };
       
       await apiClient.post('/builds', payload);
-      alert("PC Build saved to your profile!");
+      setShowSavePopup(true);
+      setTimeout(() => setShowSavePopup(false), 3000);
       setIsBuilding(false);
       setActiveBuildParts([]);
       setMessages(prev => [...prev, { role: 'ai', text: "Success! Your custom PC has been saved to your profile under 'Your Builds'." }]);
     } catch (error) {
-      alert("Failed to save build to profile.");
-      console.error(error);
+      console.error("Failed to save build to profile.", error);
     }
   };
 
@@ -363,7 +369,7 @@ User: ${userText}`;
   };
 
   return (
-    <>
+    <div id="rigcraft-chatbot">
       {/* Floating Chatbot Toggle Button */}
       <AnimatePresence>
         {!isOpen && (
@@ -379,7 +385,7 @@ User: ${userText}`;
                 duration: 0.5
               }
             }}
-            className="fixed bottom-22 right-8 w-16 h-16 bg-[var(--color-primary)]/30 backdrop-blur-sm rounded-full shadow-2xl flex items-center justify-center cursor-pointer hover:scale-105 z-50 overflow-hidden border-2"
+            className="fixed bottom-[210px] right-8 w-16 h-16 bg-[var(--color-primary)]/30 backdrop-blur-sm rounded-full shadow-2xl flex items-center justify-center cursor-pointer hover:scale-105 z-50 overflow-hidden border-2"
           >
             <img 
               src="/chatbot.png" 
@@ -403,7 +409,7 @@ User: ${userText}`;
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-28 right-6 w-[350px] md:w-[400px] h-[550px] bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] z-50 flex flex-col border border-gray-200 overflow-hidden"
+            className="fixed bottom-[140px] right-6 w-[350px] md:w-[400px] h-[550px] bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] z-50 flex flex-col border border-gray-200 overflow-hidden"
           >
             {/* Header */}
             <div className="bg-[var(--color-primary)] p-4 flex justify-between items-center text-white">
@@ -424,7 +430,7 @@ User: ${userText}`;
             </div>
 
             {/* Messages Area */}
-            <div className="flex-1 overflow-y-auto p-4 bg-[#F0F2F5] flex flex-col gap-3">
+            <div className="flex-1 overflow-y-auto custom-scrollbar p-4 bg-[#F0F2F5] flex flex-col gap-3">
               {messages.map((msg, index) => {
                 if (msg.role === 'ai') {
                   const productRegex = /\[PRODUCT_CARD:\s*([^\]]+)\]/g;
@@ -650,7 +656,28 @@ User: ${userText}`;
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+
+      {/* Save Success Popup */}
+      <AnimatePresence>
+        {showSavePopup && (
+          <motion.div
+            initial={{ opacity: 0, y: 50, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 20, scale: 0.9 }}
+            className="fixed bottom-[150px] right-8 z-[200] bg-white rounded-md shadow-2xl border border-green-200 p-4 flex items-center gap-3 pointer-events-none"
+            style={{ borderRadius: 'var(--radius-sm)' }}
+          >
+            <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7"></path></svg>
+            </div>
+            <div>
+              <h4 className="text-[14px] font-bold text-gray-900">Build saved!</h4>
+              <p className="text-[12px] text-gray-500">Added to your profile</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
   );
 };
 

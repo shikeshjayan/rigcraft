@@ -16,6 +16,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 
 const getTypeName = (type) => typeof type === 'string' ? type : type?.name || 'UNKNOWN';
 
@@ -42,6 +43,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   const [showStateDropdown, setShowStateDropdown] = useState(false);
   const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null); // null, or { type: 'single' | 'bulk', id?: string }
@@ -134,7 +136,11 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
           return;
         }
         clearCart();
-        navigate('/orders');
+        setShowSuccessPopup(true);
+        setTimeout(() => {
+          setShowSuccessPopup(false);
+          navigate('/orders');
+        }, 4000);
         return;
       }
 
@@ -322,14 +328,17 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   };
 
   const handleWishlistAddToCart = (wishlistItem) => {
+    const product = wishlistItem.item;
+    const itemType = wishlistItem.itemType || product.type || 'product';
+
     addToCart({
-      id: wishlistItem.product._id,
-      item: wishlistItem.product,
-      itemType: 'product',
-      title: wishlistItem.product.name,
-      price: wishlistItem.product.price,
-      mrp: wishlistItem.product.mrp,
-      image: wishlistItem.product.images?.[0]
+      id: product._id,
+      item: product,
+      type: itemType, // This lets CartContext know the explicit type
+      title: product.name || product.title,
+      price: product.price || product.pricing?.price,
+      mrp: product.mrp || product.pricing?.price,
+      image: product.image || product.images?.[0]?.url || product.images?.[0]
     });
   };
 
@@ -417,8 +426,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
   const checkoutItems = cartItems.filter(item => selectedItemIds.includes(item.cartItemId || item.id));
 
-  const getItemPrice = (item) => parsePrice(item.price || item.pricing?.price || item.pricing?.salePrice);
-  const getItemMrp = (item) => parsePrice(item.mrp || item.pricing?.price || item.price);
+  const getItemPrice = (item) => parsePrice(item.priceVal || item.totalPrice || item.price || item.pricing?.price || item.pricing?.salePrice);
+  const getItemMrp = (item) => parsePrice(item.mrp || item.priceVal || item.totalPrice || item.pricing?.price || item.price);
 
   const totalMRP = checkoutItems.reduce((sum, item) => sum + (getItemMrp(item) * (item.qty || 1)), 0);
   const totalDiscount = checkoutItems.reduce((sum, item) => sum + ((getItemMrp(item) - getItemPrice(item)) * (item.qty || 1)), 0);
@@ -488,7 +497,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                   {cartItems.map((item, index) => {
                     const uniqueId = item.cartItemId || item.id;
 
-                    if (item.type === 'custom-build') {
+                    if (item.type === 'custom-build' || item.itemType === 'savedBuild') {
+                      const components = item.components || item.item?.components || [];
                       return (
                         <div key={uniqueId || index} className="bg-white border-2 border-[#E2E8F0] p-4 rounded-sm relative flex flex-col gap-4 shadow-sm hover:border-[#2563EB] transition-colors">
                           <div className="flex justify-between items-start">
@@ -500,8 +510,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                                 className="w-4 h-4 accent-[#0052FF] cursor-pointer mt-1"
                               />
                               <div>
-                                <h3 className="text-[16px] font-black text-[#0F172A] mb-1 uppercase tracking-tight">{item.title}</h3>
-                                <p className="text-[13px] text-[#64748B] mb-2 font-medium">{item.components?.length || 0} Custom Components Included</p>
+                                <h3 className="text-[16px] font-black text-[#0F172A] mb-1 uppercase tracking-tight">{item.title || item.name || 'Rigcraft AI Custom Build'}</h3>
+                                <p className="text-[13px] text-[#64748B] mb-2 font-medium">{components.length || 0} Custom Components Included</p>
                                 <div className="text-[12px] text-[#0F172A] flex items-center gap-1">
                                   <span className="font-bold">14 days</span> return available
                                 </div>
@@ -511,15 +521,15 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                               <button onClick={() => { setItemToDelete({ type: 'single', id: uniqueId }); setShowDeleteConfirm(true); }} className="text-red-500 hover:text-red-700 cursor-pointer transition-colors">
                                 <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                               </button>
-                              <div className="text-[18px] font-black text-[#2563EB]">{item.price}</div>
+                              <div className="text-[18px] font-black text-[#2563EB]">{formatPrice(getItemPrice(item))}</div>
                             </div>
                           </div>
 
                           <div className="flex gap-2 overflow-x-auto items-center py-3 border-t border-gray-100 mt-2">
-                            {item.components?.map((comp, idx) => (
-                              <div key={idx} className="w-14 h-14 bg-gray-50 flex flex-col items-center justify-center rounded-sm shrink-0 border border-gray-100 p-1 relative group" title={comp.product?.title}>
-                                {comp.product?.image ? (
-                                  <img src={comp.product.image} alt={getTypeName(comp.type)} className="w-full h-full object-contain mix-blend-multiply" />
+                            {components.map((comp, idx) => (
+                              <div key={idx} className="w-14 h-14 bg-gray-50 flex flex-col items-center justify-center rounded-sm shrink-0 border border-gray-100 p-1 relative group" title={comp.product?.title || comp.product?.name}>
+                                {comp.product?.image || comp.product?.images?.[0] ? (
+                                  <img src={comp.product.image || (typeof comp.product.images?.[0] === 'string' ? comp.product.images[0] : comp.product.images?.[0]?.url)} alt={getTypeName(comp.type)} className="w-full h-full object-contain mix-blend-multiply" />
                                 ) : (
                                   <span className="text-[8px] text-gray-400 font-bold uppercase">{getTypeName(comp.type).substring(0, 3)}</span>
                                 )}
@@ -573,7 +583,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                 </div>
 
                 {/* Wishlist Add More Accordion */}
-                <div className="mt-2 bg-white border border-[#E2E8F0] rounded-sm overflow-hidden">
+                {/* <div className="mt-2 bg-white border border-[#E2E8F0] rounded-sm overflow-hidden">
                   <div onClick={toggleWishlistAccordion} className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors">
                     <div className="flex items-center gap-2 font-bold text-[14px] text-[#0F172A]">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
@@ -603,9 +613,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                                   </div>
                                 </div>
                                 <button
-                                  onClick={() => handleWishlistAddToCart({
-                                    product: wishlistItem.item
-                                  })}
+                                  onClick={() => handleWishlistAddToCart(wishlistItem)}
                                   className="bg-white text-[#0052FF] border border-[#0052FF] rounded-sm p-1.5 hover:bg-[#EFF6FF] transition-colors cursor-pointer"
                                   title="Add to Cart"
                                 >
@@ -622,7 +630,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                       </motion.div>
                     )}
                   </AnimatePresence>
-                </div>
+                </div> */}
               </>
             ) : checkoutStep === 'address' && isAddingAddress ? (
               /* Address Form Step */
@@ -1136,6 +1144,27 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                 </button>
               </div>
             </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Order Success Popup */}
+      <AnimatePresence>
+        {showSuccessPopup && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="fixed inset-0 z-[300] flex items-center justify-center pointer-events-none"
+          >
+            <div 
+              className="bg-white px-8 py-6 shadow-2xl flex flex-col items-center gap-3 border border-[#E2E8F0]"
+              style={{ borderRadius: 'var(--radius-sm)' }}
+            >
+              <CheckCircleIcon sx={{ fontSize: 48, color: '#10B981' }} />
+              <h2 className="text-xl font-black text-[#0F172A] tracking-wide">Order Successful!</h2>
+              <p className="text-sm font-bold text-[#64748B]">Redirecting to your orders...</p>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
