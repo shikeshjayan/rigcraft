@@ -50,13 +50,13 @@ const TopProducts = ({ products = [] }) => {
                         width: 36,
                         height: 36,
                         borderRadius: "var(--radius-admin-button)",
-                        backgroundColor: globalIndex + index === 0 ? "var(--color-admin-warning)" : "var(--color-admin-bg-tertiary)",
+                        backgroundColor: "var(--color-admin-bg-tertiary)",
                         display: "flex",
                         alignItems: "center",
                         justifyContent: "center",
                         fontWeight: 700,
                         fontSize: "0.75rem",
-                        color: globalIndex + index === 0 ? "#fff" : "var(--color-admin-text-secondary)",
+                        color: "var(--color-admin-text-secondary)",
                         flexShrink: 0,
                       }}
                     >

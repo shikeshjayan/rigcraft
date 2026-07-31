@@ -12,7 +12,6 @@ import {
   AccordionDetails,
   Chip,
   IconButton,
-  Autocomplete,
 } from "@mui/material";
 import {
   ExpandMore,
@@ -24,7 +23,7 @@ import AdminSelect from "../common/Select";
 import ImageUpload from "../common/ImageUpload";
 import AdminButton from "../common/Button";
 import { CATEGORY_TYPES } from "../../constants/categoryTypes";
-import { SPEC_TEMPLATES } from "../../constants/compatibilityFields";
+import { SPEC_TEMPLATES, COMPATIBILITY_FIELDS } from "../../constants/compatibilityFields";
 
 const productSchema = z.object({
   name: z.string().min(1, "Name is required").max(150),
@@ -150,6 +149,8 @@ const ProductForm = ({
   const specTemplate = SPEC_TEMPLATES[selectedType] || [];
 
   const [tagInput, setTagInput] = useState("");
+  const [newCompatKey, setNewCompatKey] = useState("");
+  const [newCompatValue, setNewCompatValue] = useState("");
 
   const addTag = () => {
     if (tagInput.trim() && !tags.includes(tagInput.trim())) {
@@ -163,6 +164,30 @@ const ProductForm = ({
       "tags",
       tags.filter((t) => t !== tag),
     );
+  };
+
+  const compatibility = watch("compatibility") || {};
+  const compatTemplate = COMPATIBILITY_FIELDS[selectedType] || [];
+  const customCompatKeys = Object.keys(compatibility).filter(
+    (key) => !compatTemplate.some((t) => t.key === key),
+  );
+
+  const removeCompatKey = (key) => {
+    const next = { ...compatibility };
+    delete next[key];
+    setValue("compatibility", next);
+  };
+
+  const addCompatKey = () => {
+    const key = newCompatKey
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "_")
+      .replace(/[^a-z0-9_]/g, "");
+    if (!key) return;
+    setValue(`compatibility.${key}`, newCompatValue.trim());
+    setNewCompatKey("");
+    setNewCompatValue("");
   };
 
   const categoryOptions = categories.map((c) => ({
@@ -651,6 +676,93 @@ const ProductForm = ({
             onClick={() => append({ key: "", value: "", label: "" })}>
             Add Custom Spec
           </AdminButton>
+        </SectionAccordion>
+      )}
+
+      {selectedType && (
+        <SectionAccordion title="Compatibility">
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+            {compatTemplate.map((tpl) => (
+              <Grid container spacing={1} key={tpl.key} sx={{ alignItems: "center" }}>
+                <Grid size={{ xs: 4 }}>
+                  <AdminInput label="Field" value={tpl.label} size="small" disabled />
+                </Grid>
+                <Grid size={{ xs: 8 }}>
+                  {tpl.type === "select" ? (
+                    <Controller
+                      name={`compatibility.${tpl.key}`}
+                      control={control}
+                      render={({ field: f }) => (
+                        <AdminSelect
+                          label="Value"
+                          options={(tpl.options || []).map((o) => ({ value: o, label: o }))}
+                          {...f}
+                        />
+                      )}
+                    />
+                  ) : (
+                    <Controller
+                      name={`compatibility.${tpl.key}`}
+                      control={control}
+                      render={({ field: f }) => (
+                        <AdminInput label="Value" size="small" {...f} value={f.value ?? ""} />
+                      )}
+                    />
+                  )}
+                </Grid>
+              </Grid>
+            ))}
+
+            {customCompatKeys.map((key) => (
+              <Grid container spacing={1} key={key} sx={{ alignItems: "center" }}>
+                <Grid size={{ xs: 4 }}>
+                  <AdminInput label="Key" value={key.replace(/_/g, " ")} size="small" disabled />
+                </Grid>
+                <Grid size={{ xs: 7 }}>
+                  <Controller
+                    name={`compatibility.${key}`}
+                    control={control}
+                    render={({ field: f }) => (
+                      <AdminInput label="Value" size="small" {...f} value={f.value ?? ""} />
+                    )}
+                  />
+                </Grid>
+                <Grid size={{ xs: 1 }} sx={{ display: "flex", alignItems: "center" }}>
+                  <IconButton
+                    onClick={() => removeCompatKey(key)}
+                    size="small"
+                    sx={{ color: "var(--color-admin-danger)" }}>
+                    <DeleteIcon fontSize="small" />
+                  </IconButton>
+                </Grid>
+              </Grid>
+            ))}
+
+            <Grid container spacing={1} sx={{ alignItems: "center" }}>
+              <Grid size={{ xs: 4 }}>
+                <AdminInput
+                  placeholder="New key"
+                  value={newCompatKey}
+                  onChange={(e) => setNewCompatKey(e.target.value)}
+                  size="small"
+                />
+              </Grid>
+              <Grid size={{ xs: 7 }}>
+                <AdminInput
+                  placeholder="Value"
+                  value={newCompatValue}
+                  onChange={(e) => setNewCompatValue(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addCompatKey())}
+                  size="small"
+                />
+              </Grid>
+              <Grid size={{ xs: 1 }} sx={{ display: "flex", alignItems: "center" }}>
+                <AdminButton variant="ghost" size="small" icon={<AddIcon />} type="button" onClick={addCompatKey}>
+                  Add
+                </AdminButton>
+              </Grid>
+            </Grid>
+          </Box>
         </SectionAccordion>
       )}
 

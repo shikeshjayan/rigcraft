@@ -1,44 +1,34 @@
-<!-- gitnexus:start -->
-# GitNexus — Code Intelligence
+# AGENTS.md
 
-This project is indexed by GitNexus as **rigcraft** (3437 symbols, 7799 relationships, 237 execution flows). Use the GitNexus MCP tools to understand code, assess impact, and navigate safely.
+## Session Checkpoint: "Continue"
 
-> Index stale? Run `node .gitnexus/run.cjs analyze` from the project root — it auto-selects an available runner. No `.gitnexus/run.cjs` yet? `npx gitnexus analyze` (npm 11 crash → `npm i -g gitnexus`; #1939).
+Project: RigCraft e-commerce (MERN). Admin panel: `client/src/admin`. Server: `server/src`.
 
-## Always Do
+### Changes completed this session
 
-- **MUST run impact analysis before editing any symbol.** Before modifying a function, class, or method, run `impact({target: "symbolName", direction: "upstream"})` and report the blast radius (direct callers, affected processes, risk level) to the user.
-- **MUST run `detect_changes()` before committing** to verify your changes only affect expected symbols and execution flows. For regression review, compare against the default branch: `detect_changes({scope: "compare", base_ref: "main"})`.
-- **MUST warn the user** if impact analysis returns HIGH or CRITICAL risk before proceeding with edits.
-- When exploring unfamiliar code, use `query({search_query: "concept"})` to find execution flows instead of grepping. It returns process-grouped results ranked by relevance.
-- When you need full context on a specific symbol — callers, callees, which execution flows it participates in — use `context({name: "symbolName"})`.
-- For security review, `explain({target: "fileOrSymbol"})` lists taint findings (source→sink flows; needs `analyze --pdg`).
+1. **Admin topbar avatar** (`client/src/admin/store/authStore.js`, `components/layout/Header.jsx`)
+   - `login` now persists `firstName`/`lastName` alongside `name`; `setUser` passes them through.
+   - Added `version: 1` + `migrate` in zustand `persist` to backfill `firstName`/`lastName` from `name` for stale sessions (storage key `admin-auth-storage`).
+   - Header `<Avatar>` now uses `src={user?.avatar || undefined}`; initials/name fall back to `user.name`.
 
-## Never Do
+2. **Top Products rank badge** (`client/src/admin/components/dashboard/TopProducts.jsx`)
+   - Removed orange `#1` highlight (`--color-admin-warning`); all rank badges now use neutral `--color-admin-bg-tertiary`.
 
-- NEVER edit a function, class, or method without first running `impact` on it.
-- NEVER ignore HIGH or CRITICAL risk warnings from impact analysis.
-- NEVER rename symbols with find-and-replace — use `rename` which understands the call graph.
-- NEVER commit changes without running `detect_changes()` to check affected scope.
+3. **Prebuilt PC image delete on edit** (`client/src/admin/services/prebuiltService.js`, `server/src/services/prebuiltPC.service.js`)
+   - `normalizePrebuilt`: `image` now holds the full first-image object (`p.images?.[0] || null`) instead of just the URL string (needed for `ImageUpload` delete matching).
+   - `adaptPayload`: `image` null → sends `images: []`; string → `images: [{ url }]`.
+   - Server `update`: distinguishes unchanged (`data.images === undefined` → preserve) vs explicit clear (`data.images` array → delete Cloudinary images + set empty).
 
-## Resources
+4. **Prebuilt thumbnails on admin panel** (`client/src/admin/pages/prebuilt/PrebuiltList.jsx`, `PrebuiltDetails.jsx`)
+   - `AdminThumbnail` src now uses `row.image?.url || row.image` (and same for details `item.image`). This fixed a regression from change #3 where the object was passed as `<img src>`.
 
-| Resource | Use for |
-|----------|---------|
-| `gitnexus://repo/rigcraft/context` | Codebase overview, check index freshness |
-| `gitnexus://repo/rigcraft/clusters` | All functional areas |
-| `gitnexus://repo/rigcraft/processes` | All execution flows |
-| `gitnexus://repo/rigcraft/process/{name}` | Step-by-step execution trace |
+### Verification
+- Client: `npx eslint` on edited files passes (a pre-existing `react-hooks/set-state-in-effect` error exists in `PrebuiltList.jsx:50`, unrelated).
+- Server: `npx vitest run` — 11 files / 101 tests pass.
 
-## CLI
+### Lint/build commands
+- Client lint: `npx eslint src/...` (from `client/`)
+- Server tests: `npm test` (from `server/`)
 
-| Task | Read this skill file |
-|------|---------------------|
-| Understand architecture / "How does X work?" | `.claude/skills/gitnexus/gitnexus-exploring/SKILL.md` |
-| Blast radius / "What breaks if I change X?" | `.claude/skills/gitnexus/gitnexus-impact-analysis/SKILL.md` |
-| Trace bugs / "Why is X failing?" | `.claude/skills/gitnexus/gitnexus-debugging/SKILL.md` |
-| Rename / extract / split / refactor | `.claude/skills/gitnexus/gitnexus-refactoring/SKILL.md` |
-| Tools, resources, schema reference | `.claude/skills/gitnexus/gitnexus-guide/SKILL.md` |
-| Index, status, clean, wiki CLI commands | `.claude/skills/gitnexus/gitnexus-cli/SKILL.md` |
-
-<!-- gitnexus:end -->
+### Notes / potential follow-ups
+- `AdminThumbnail` hardening was offered (accept object `src`, extract `.url` internally) but deferred; user chose the two targeted fixes first.

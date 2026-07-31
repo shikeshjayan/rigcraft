@@ -75,8 +75,17 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
 
   const breadcrumbs = getBreadcrumbs(location.pathname);
 
-  const initials = user?.firstName
-    ? `${user.firstName[0]}${user.lastName ? user.lastName[0] : ''}`
+  const displayName =
+    user?.name ||
+    [user?.firstName, user?.lastName].filter(Boolean).join(" ") ||
+    "";
+
+  const initials = displayName
+    ? displayName
+        .trim()
+        .split(/\s+/)
+        .map((part) => part[0])
+        .join("")
         .toUpperCase()
         .slice(0, 2)
     : "U";
@@ -158,6 +167,7 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
           onMouseLeave={(e) => e.currentTarget.style.backgroundColor = "transparent"}
         >
           <Avatar
+            src={user?.avatar || undefined}
             sx={{
               width: 34,
               height: 34,
@@ -170,7 +180,7 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
           </Avatar>
           <div className="hidden sm:block text-left">
             <p className="text-sm font-bold leading-tight" style={{ color: "var(--color-admin-text)" }}>
-              {user?.firstName} {user?.lastName}
+              {displayName}
             </p>
             <p className="text-xs font-medium" style={{ color: "var(--color-admin-text-secondary)" }}>
               {ROLE_LABELS[user?.role] || user?.role}
