@@ -119,7 +119,7 @@ const HeroNewArrival = () => {
               return (
                 <div key={product._id} className="flex-shrink-0 w-[280px] sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex flex-col snap-start">
                   <Card 
-                    id={product._id}
+ rating={product?.rating} id={product._id}
                     image={imageUrl}
                     title={product.name}
                     specs={product.tags || []}
