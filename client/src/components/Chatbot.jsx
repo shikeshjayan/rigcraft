@@ -369,7 +369,7 @@ User: ${userText}`;
   };
 
   return (
-    <>
+    <div id="rigcraft-chatbot">
       {/* Floating Chatbot Toggle Button */}
       <AnimatePresence>
         {!isOpen && (
@@ -677,7 +677,7 @@ User: ${userText}`;
           </motion.div>
         )}
       </AnimatePresence>
-    </>
+    </div>
   );
 };
 
