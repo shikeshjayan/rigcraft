@@ -102,10 +102,10 @@ const PrebuiltList = () => {
         </Box>
       </Box>
     )},
-    { key: "price", label: "Price", render: (val, row) => (
+    { key: "regularPrice", label: "Price", render: (val, row) => (
       <Box>
         <Box sx={{ fontWeight: 500, color: "var(--color-admin-text)" }}>{formatCurrency(val)}</Box>
-        {row.comparePrice && <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)", textDecoration: "line-through" }}>{formatCurrency(row.comparePrice)}</Box>}
+        {row.salePrice && <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)", textDecoration: "line-through" }}>{formatCurrency(row.salePrice)}</Box>}
       </Box>
     )},
     { key: "stock", label: "Stock", align: "center", render: (val) => <Chip label={val} size="small" color={val === 0 ? "error" : val < 5 ? "warning" : "default"} variant="outlined" sx={{ fontSize: "0.75rem" }} /> },

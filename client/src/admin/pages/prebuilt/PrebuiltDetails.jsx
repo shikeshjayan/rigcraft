@@ -59,8 +59,8 @@ const PrebuiltDetails = () => {
         <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Pricing & Stock</Typography>
           <Grid container spacing={2}>
-            <DetailRow label="Price" value={formatCurrency(item.price)} />
-            <DetailRow label="Compare Price" value={item.comparePrice ? formatCurrency(item.comparePrice) : "—"} />
+            <DetailRow label="Price" value={formatCurrency(item.regularPrice)} />
+            <DetailRow label="Sale Price" value={item.salePrice ? formatCurrency(item.salePrice) : "—"} />
             <DetailRow label="Stock" value={item.stock} />
           </Grid>
         </Box>
