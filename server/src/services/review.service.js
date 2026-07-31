@@ -33,9 +33,6 @@ export const createReview = async (userId, data, files) => {
   }
 
   const isPurchased = await verifyPurchase(userId, item, itemType);
-  if (!isPurchased) {
-    throw ApiError.forbidden("You must purchase this item before reviewing");
-  }
 
   const existing = await reviewRepository.findOneByUserAndItem(
     userId,
@@ -68,7 +65,7 @@ export const createReview = async (userId, data, files) => {
     title,
     comment,
     images,
-    isVerifiedPurchase: true,
+    isVerifiedPurchase: isPurchased,
     status: settings.review?.autoApprove ? "approved" : "pending",
   });
 

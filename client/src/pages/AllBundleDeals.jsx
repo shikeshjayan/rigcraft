@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import Card from '../components/Card';
-import { allItems } from '../data/items';
+import apiClient from '../api/client';
 import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 
@@ -9,8 +10,16 @@ const AllBundleDeals = () => {
     window.scrollTo(0, 0);
   }, []);
 
-  // Modify some items to simulate bundles
-  const bundles = allItems.slice(30, 50).map(item => ({...item, title: item.title + ' + Intel Core i7 Combo', brand: 'Combo Deal'})); 
+  const { data: dealsData, isLoading } = useQuery({
+    queryKey: ['allBundleDeals'],
+    queryFn: async () => {
+      const res = await apiClient.get('/deals');
+      return res.data;
+    }
+  });
+
+  const activeDeal = dealsData?.data?.deals?.find(d => d.isActive) || dealsData?.deals?.find(d => d.isActive);
+  const bundles = activeDeal?.prebuiltPCs || [];
 
   return (
     <FadeUp delay={0.1}>
@@ -18,11 +27,38 @@ const AllBundleDeals = () => {
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Bundle Deals' }]} />
         <h1 className="text-[32px] font-extrabold text-[#0F172A] mb-8 uppercase">All Bundle Deals</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {bundles.map(product => (
-            <Card key={product.id} {...product} />
-          ))}
-        </div>
+        {isLoading ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <div key={idx} className="h-64 bg-gray-100 rounded-lg animate-pulse"></div>
+            ))}
+          </div>
+        ) : bundles.length === 0 ? (
+          <div className="py-20 text-center text-gray-500 font-medium">No bundle deals available at the moment.</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {bundles.map(product => (
+              <Card 
+ rating={product?.rating} key={product._id || product.id}
+                id={product._id || product.id}
+                title={product.name || product.title}
+                price={product.pricing?.price || product.price}
+                mrp={product.pricing?.mrp || product.mrp}
+                discount={product.pricing?.discount || product.discount}
+                image={product.images?.[0]?.url || product.image || '/fallback.png'}
+                description={product.shortDescription || product.description}
+                category={
+                  (product.category && product.category.name) || 
+                  (typeof product.category === 'string' && product.category.length !== 24 ? product.category : null) || 
+                  (typeof product.brand === 'string' && product.brand.length !== 24 ? product.brand : null) || 
+                  'FEATURED BUNDLE'
+                }
+                tag="BUNDLE"
+                tagColor="bg-[#3B82F6]"
+              />
+            ))}
+          </div>
+        )}
       </div>
     </div>
     </FadeUp>

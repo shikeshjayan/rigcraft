@@ -158,8 +158,6 @@ const Footer = () => {
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/builder" className="block w-full">Custom PC Builder</Link></li>
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/prebuild" className="block w-full">Prebuilt PCs</Link></li>
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/components" className="block w-full">PC Components</Link></li>
-                <li className="cursor-pointer hover:text-white transition-colors">Gaming Accessories</li>
-                <li className="cursor-pointer hover:text-white transition-colors">Monitors</li>
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/components/peripherals" className="block w-full">Peripherals</Link></li>
               </ul>
             </div>
@@ -169,7 +167,7 @@ const Footer = () => {
               <h4 className="text-[14px] font-bold tracking-widest text-white mb-6 uppercase">Support</h4>
               <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/about" className="block w-full">About RigCraft</Link></li>
-                <li className="cursor-pointer hover:text-white transition-colors">Track Order</li>
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/orders" className="block w-full">Track Order</Link></li>
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/warranty" className="block w-full">Warranty Claims</Link></li>
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/returns" className="block w-full">Returns & Refunds</Link></li>
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/contact" className="block w-full">Contact Support</Link></li>
@@ -183,9 +181,9 @@ const Footer = () => {
               <h4 className="text-[14px] font-bold tracking-widest text-white mb-6 uppercase">Explore</h4>
               <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/pc-builder-guide" className="block w-full">PC Builder Guide</Link></li>
-                <li className="cursor-pointer hover:text-white transition-colors">Best Sellers</li>
+                {/* <li className="cursor-pointer hover:text-white transition-colors">Best Sellers</li>
                 <li className="cursor-pointer hover:text-white transition-colors">New Arrivals</li>
-                <li className="cursor-pointer hover:text-white transition-colors">Today's Deals</li>
+                <li className="cursor-pointer hover:text-white transition-colors">Today's Deals</li> */}
                 {user && ['admin', 'manager'].includes(user.role) && (
                   <li className="cursor-pointer hover:text-white transition-colors"><Link to="/admin" className="block w-full">Dashboard</Link></li>
                 )}
