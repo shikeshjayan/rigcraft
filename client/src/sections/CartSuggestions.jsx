@@ -45,7 +45,7 @@ const CartSuggestions = () => {
             return (
               <Link to={`/detail/${item._id || item.id}`} key={item._id || item.id} className="block h-full">
                 <Card 
-                  id={item._id || item.id}
+ rating={item?.rating} id={item._id || item.id}
                   image={imgSource}
                   title={item.name || item.title}
                   description={item.description}

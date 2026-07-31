@@ -60,20 +60,23 @@ const HomePrebuildSection = () => {
             const specs = pc.specs || pc.tags || [];
             
             return (
-              <Card 
-                key={id}
-                id={id}
-                image={image}
-                title={title}
-                specs={specs}
-                description={pc.description}
-                price={price}
-                mrp={mrp}
-                discount={pc.discount}
-                tag={pc.tag}
-                tagColor={pc.tagColor}
-                category="prebuilt"
-              />
+              <div key={id} className="transform hover:-translate-y-2 transition-transform duration-300">
+                <Card 
+                  rating={pc?.rating}
+                  key={id}
+                  id={id}
+                  image={image}
+                  title={title}
+                  specs={specs}
+                  description={pc.description}
+                  price={price}
+                  mrp={mrp}
+                  discount={pc.discount}
+                  tag={pc.tag}
+                  tagColor={pc.tagColor}
+                  category="prebuilt"
+                />
+              </div>
             );
           })}
         </div>

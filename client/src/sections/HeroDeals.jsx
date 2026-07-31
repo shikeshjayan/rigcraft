@@ -86,7 +86,7 @@ const HeroDeals = () => {
 
               return (
                 <Card 
-                  key={product._id}
+ rating={product?.rating} key={product._id}
                   id={product._id}
                   image={product.images?.[0]?.url}
                   title={product.name}
