@@ -116,10 +116,10 @@ const ProductForm = ({
       categoryType: "",
       description: "",
       shortDescription: "",
-regularPrice: 0,
-       salePrice: null,
-       saleStart: "",
-       saleEnd: "",
+      regularPrice: 0,
+      salePrice: null,
+      saleStart: "",
+      saleEnd: "",
       stock: 0,
       lowStockThreshold: 5,
       weight: 0,
@@ -327,35 +327,35 @@ regularPrice: 0,
       </SectionAccordion>
 
       <SectionAccordion title="Pricing">
-<Grid container spacing={2}>
-           <Grid size={{ xs: 12, sm: 6 }}>
-             <Controller
-               name="regularPrice"
-               control={control}
-               render={({ field }) => (
-                 <AdminInput
-                   label="Regular Price ($)"
-                   type="number"
-                   error={!!errors.regularPrice}
-                   helperText={errors.regularPrice?.message}
-                   {...field}
-                 />
-               )}
-             />
-           </Grid>
-           <Grid size={{ xs: 12, sm: 6 }}>
-             <Controller
-               name="salePrice"
-               control={control}
-               render={({ field }) => (
-                 <AdminInput
-                   label="Sale Price ($)"
-                   type="number"
-                   {...field}
-                   value={field.value ?? ""}
-                 />
-               )}
-             />
+        <Grid container spacing={2}>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Controller
+              name="regularPrice"
+              control={control}
+              render={({ field }) => (
+                <AdminInput
+                  label="Regular Price (₹)"
+                  type="number"
+                  error={!!errors.regularPrice}
+                  helperText={errors.regularPrice?.message}
+                  {...field}
+                />
+              )}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Controller
+              name="salePrice"
+              control={control}
+              render={({ field }) => (
+                <AdminInput
+                  label="Sale Price (₹)"
+                  type="number"
+                  {...field}
+                  value={field.value ?? ""}
+                />
+              )}
+            />
           </Grid>
           <Grid size={{ xs: 12, sm: 6 }}>
             <Controller
