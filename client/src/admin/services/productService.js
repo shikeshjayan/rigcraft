@@ -18,14 +18,22 @@ const toLocalDatetime = (iso) => {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
 };
 
+const getRefId = (ref) => {
+  if (!ref) return "";
+  if (typeof ref === "string") return ref;
+  if (ref._id) return ref._id.toString();
+  return "";
+};
+
 const normalizeProduct = (p) => ({
   ...p,
   id: p._id,
   _id: undefined,
-  _id: undefined,
   __v: undefined,
-  brandId: p.brand?.toString ? p.brand.toString() : p.brand,
-  categoryId: p.category?.toString ? p.category.toString() : p.category,
+  brandId: getRefId(p.brand),
+  categoryId: getRefId(p.category),
+  brandName: p.brand?.name || "",
+  categoryName: p.category?.name || "",
   categoryType: p.categoryType || p.productType,
   isActive: p.status === "active",
   regularPrice: p.price ?? p.regularPrice ?? 0,
@@ -76,8 +84,9 @@ const adaptParams = (params) => {
   if (p.categoryType) { p.productType = CATEGORY_TO_PRODUCT_TYPE[p.categoryType] || "component"; }
   if (p.brandId) { p.brand = p.brandId; delete p.brandId; }
   if (p.isActive === "true") { p.status = "active"; delete p.isActive; }
-  else if (p.isActive === "false") { p.status = "draft"; delete p.isActive; }
+  else if (p.isActive === "false") { p.status = "inactive"; delete p.isActive; }
   else delete p.isActive;
+  if (p.isFeatured === "" || p.isFeatured === undefined) delete p.isFeatured;
   return p;
 };
 

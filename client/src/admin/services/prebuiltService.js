@@ -3,7 +3,7 @@ import { ENDPOINTS } from "../../shared/api/endpoints";
 
 const HARDWARE_SLOTS = [
   { key: "processor", label: "Processor (CPU)", categoryType: "processor", required: true },
-  { key: "graphics_card", label: "Graphics Card (GPU)", categoryType: "graphics_card", required: true },
+  { key: "graphics_card", label: "Graphics Card (GPU)", categoryType: "graphics_card", required: false },
   { key: "memory", label: "Memory (RAM)", categoryType: "memory", required: true },
   { key: "storage", label: "Storage", categoryType: "storage", required: false },
   { key: "motherboard", label: "Motherboard", categoryType: "motherboard", required: true },
@@ -54,7 +54,7 @@ const normalizePrebuilt = (p) => ({
   warrantyDuration: p.warranty?.duration ?? 0,
   warrantyUnit: p.warranty?.unit || "month",
   warrantyType: p.warranty?.type || "manufacturer",
-  image: p.images?.[0]?.url || null,
+  image: p.images?.[0] || null,
   images: p.images || [],
   components: Array.isArray(p.components)
     ? Object.fromEntries(p.components.map((c) => {
@@ -132,10 +132,12 @@ const adaptPayload = (data) => {
       .filter(([, v]) => v)
       .map(([slot, productId]) => ({ type: SLOT_TO_COMPONENT_TYPE[slot] || slot, product: productId }));
   }
-  if (p.image) {
-    if (typeof p.image === "string") p.images = [{ url: p.image }];
-    delete p.image;
+  if (!p.image) {
+    p.images = [];
+  } else if (typeof p.image === "string") {
+    p.images = [{ url: p.image }];
   }
+  delete p.image;
   delete p.id;
   delete p._id;
   return p;

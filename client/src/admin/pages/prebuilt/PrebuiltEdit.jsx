@@ -20,7 +20,7 @@ const PrebuiltEdit = () => {
   useEffect(() => {
     prebuiltService.getById(id)
       .then(setItem)
-      .catch(() => { toast("Not found", "error"); navigate("/admin/prebuilt"); })
+      .catch(() => { toast("Prebuilt PC not found", "error"); navigate("/admin/prebuilt"); })
       .finally(() => setLoading(false));
   }, [id, navigate, toast]);
 

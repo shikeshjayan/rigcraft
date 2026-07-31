@@ -32,8 +32,9 @@ export const list = async (query) => {
   if (brand) filter.brand = brand;
   if (productType) filter.productType = productType;
   if (categoryType) filter.categoryType = categoryType;
-  if (status) filter.status = status;
-  if (isFeatured !== undefined) filter.isFeatured = isFeatured === "true";
+  if (status === "inactive") filter.status = { $ne: "active" };
+  else if (status) filter.status = status;
+  if (isFeatured === "true" || isFeatured === "false") filter.isFeatured = isFeatured === "true";
 
   const settings = await getSettings();
   if (settings?.inventory?.hideOutOfStock && !query.status) {
