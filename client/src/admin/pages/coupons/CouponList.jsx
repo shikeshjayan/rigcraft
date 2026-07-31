@@ -79,7 +79,7 @@ const CouponList = () => {
     { key: "code", label: "Code", render: (val) => <Chip label={val} size="small" sx={{ fontFamily: "var(--font-admin-mono)", fontWeight: 700, borderRadius: "var(--radius-admin-badge)", backgroundColor: "var(--color-admin-bg-tertiary)", letterSpacing: "0.05em" }} /> },
     { key: "type", label: "Type", render: (val) => val === "percentage" ? "Percentage" : val === "fixed" ? "Fixed Amount" : "Free Shipping" },
     { key: "value", label: "Value", render: (val, row) => row.type === "percentage" ? `${val}%` : row.type === "fixed" ? `$${val}` : "—" },
-    { key: "minOrder", label: "Min Order", render: (val) => val ? `$${val}` : "—" },
+    { key: "minOrder", label: "Min Order", render: (val) => val ? `₹${val}` : "—" },
     { key: "usage", label: "Usage", render: (_, row) => `${row.usedCount} / ${row.maxUses}` },
     { key: "isActive", label: "Status", render: (val) => <StatusBadge status={val ? "active" : "inactive"} /> },
     { key: "expiresAt", label: "Expires", render: (val) => formatDate(val) },

@@ -119,12 +119,12 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, sm: 4 }}>
                 <Controller name="regularPrice" control={control} render={({ field }) => (
-                  <AdminInput label="Regular Price ($)" type="number" error={!!errors.regularPrice} helperText={errors.regularPrice?.message} {...field} />
+                  <AdminInput label="Regular Price (₹)" type="number" error={!!errors.regularPrice} helperText={errors.regularPrice?.message} {...field} />
                 )} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
                 <Controller name="salePrice" control={control} render={({ field }) => (
-                  <AdminInput label="Sale Price ($)" type="number" {...field} value={field.value ?? ""} />
+                  <AdminInput label="Sale Price (₹)" type="number" {...field} value={field.value ?? ""} />
                 )} />
               </Grid>
               <Grid size={{ xs: 12, sm: 4 }}>
