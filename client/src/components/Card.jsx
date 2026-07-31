@@ -68,7 +68,7 @@ const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp,
       }}
     >
       {/* Image Container */}
-      <div className="relative w-full aspect-square bg-white flex items-center justify-center p-6 border-b border-gray-100 overflow-hidden">
+      <div className="relative w-full aspect-square bg-white flex items-center justify-center border-b border-gray-100 overflow-hidden">
         {/* Top Right Tag */}
         {/* {tag && (
           <div 
