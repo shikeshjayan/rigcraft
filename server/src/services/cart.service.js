@@ -100,15 +100,33 @@ const getOrCreateCart = async (userId) => {
 
 const saveAndPopulate = async (cart) => {
   await cart.save({ validateBeforeSave: false });
-  await cart.populate("items.item");
-  await cart.populate("coupon");
+  await cart.populate([
+    {
+      path: "items.item",
+      populate: {
+        path: "components.product",
+        model: "Product",
+        strictPopulate: false
+      }
+    },
+    { path: "coupon" }
+  ]);
   return cart;
 };
 
 export const getCart = async (userId) => {
   const cart = await getOrCreateCart(userId);
-  await cart.populate("items.item");
-  await cart.populate("coupon");
+  await cart.populate([
+    {
+      path: "items.item",
+      populate: {
+        path: "components.product",
+        model: "Product",
+        strictPopulate: false
+      }
+    },
+    { path: "coupon" }
+  ]);
   return cart;
 };
 
@@ -322,7 +340,16 @@ export const removeCoupon = async (userId) => {
 
 export const validateStock = async (userId) => {
   const cart = await getOrCreateCart(userId);
-  await cart.populate("items.item");
+  await cart.populate([
+    {
+      path: "items.item",
+      populate: {
+        path: "components.product",
+        model: "Product",
+        strictPopulate: false
+      }
+    }
+  ]);
 
   const settings = await getSettings();
   if (settings?.inventory?.allowBackorders === true) {

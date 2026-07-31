@@ -236,7 +236,7 @@ const AllDeals = () => {
                           <div key={item._id || item.id} className="block h-full animate-fade-in relative group">
                             <Link to={`/detail/${item.slug}`} className="block h-full">
                               <Card 
-                                id={item.slug}
+ rating={item?.rating} id={item.slug}
                                 image={imageUrl}
                                 title={item.name}
                                 specs={specs.length > 0 ? specs : undefined}
