@@ -1,11 +1,33 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Card from '../components/Card';
-import { allItems } from '../data/items';
 import { Link } from 'react-router-dom';
+import apiClient from '../api/client';
 
 const CartSuggestions = () => {
-  // Grab 8 items for a 4x2 grid
-  const suggestions = allItems.slice(2, 10);
+  const [suggestions, setSuggestions] = useState([]);
+
+  useEffect(() => {
+    const fetchSuggestions = async () => {
+      try {
+        const { data } = await apiClient.get('/products?limit=8');
+        if (data.success && data.data?.products) {
+          setSuggestions(data.data.products.slice(0, 8));
+        }
+      } catch (err) {
+        console.error('Failed to fetch suggestions', err);
+      }
+    };
+    fetchSuggestions();
+  }, []);
+
+  if (suggestions.length === 0) return null;
+
+  const formatPrice = (val) => {
+    if (typeof val === 'number') {
+      return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
+    }
+    return val;
+  };
 
   return (
     <section className="w-full py-16" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
@@ -16,24 +38,28 @@ const CartSuggestions = () => {
         </h2>
 
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 lg:gap-4">
-          {suggestions.map(item => (
-            <Link to={`/detail/${item.id}`} key={item.id} className="block h-full">
-              <Card 
-                id={item.id}
-                image={item.image}
-                title={item.title}
-                specs={item.specs}
-                description={item.description}
-                price={item.price}
-                mrp={item.mrp}
-                discount={item.discount}
-                tag="SUGGESTED"
-                tagColor="#14b8a6"
-                buttonText="Add to cart"
-                compact={true}
-              />
-            </Link>
-          ))}
+          {suggestions.map(item => {
+            const imgSource = item.image || (typeof item.images?.[0] === 'string' ? item.images[0] : item.images?.[0]?.url) || '/placeholder.png';
+            const price = item.price || item.pricing?.price || item.pricing?.salePrice;
+            const mrp = item.mrp || item.pricing?.price || item.price;
+            return (
+              <Link to={`/detail/${item._id || item.id}`} key={item._id || item.id} className="block h-full">
+                <Card 
+                  id={item._id || item.id}
+                  image={imgSource}
+                  title={item.name || item.title}
+                  description={item.description}
+                  price={formatPrice(price)}
+                  mrp={mrp > price ? formatPrice(mrp) : undefined}
+                  discount={item.discount}
+                  tag="SUGGESTED"
+                  tagColor="var(--color-primary)"
+                  buttonText="Add to cart"
+                  compact={true}
+                />
+              </Link>
+            );
+          })}
         </div>
 
       </div>
