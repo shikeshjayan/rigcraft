@@ -16,6 +16,8 @@ const useAuthStore = create(
         set({
           user: {
             id: user._id,
+            firstName: user.firstName,
+            lastName: user.lastName,
             name: `${user.firstName} ${user.lastName}`,
             email: user.email,
             role: user.role,
@@ -41,6 +43,8 @@ const useAuthStore = create(
         const normalized = {
           ...userData,
           id: userData.id || userData._id,
+          firstName: userData.firstName,
+          lastName: userData.lastName,
           name: userData.name || [userData.firstName, userData.lastName].filter(Boolean).join(' ') || '',
           avatar: typeof userData.avatar === 'object' && userData.avatar ? userData.avatar.url : (userData.avatar || null),
         };
@@ -49,6 +53,16 @@ const useAuthStore = create(
     }),
     {
       name: "admin-auth-storage",
+      version: 1,
+      migrate: (persistedState) => {
+        const user = persistedState?.user;
+        if (user && !user.firstName) {
+          const parts = (user.name || "").trim().split(/\s+/);
+          user.firstName = user.firstName || parts[0] || "";
+          user.lastName = user.lastName || parts.slice(1).join(" ") || "";
+        }
+        return persistedState;
+      },
     }
   )
 );

@@ -8,14 +8,7 @@ import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
 import StatusBadge from "../../components/common/StatusBadge";
-import { extractError } from "../../utils/extractError";
-
-const PRIORITY_COLOR = {
-  low: "default",
-  medium: "info",
-  high: "warning",
-  urgent: "error",
-};
+import { extractError, humanizeField } from "../../utils/extractError";
 
 const STATUS_COLOR = {
   open: "info",
@@ -62,7 +55,7 @@ const SupportDetails = () => {
     try {
       const updated = await supportService.updateStatus(id, status);
       setTicket(updated);
-      toast(`Status changed to ${status}`);
+      toast(`Status changed to ${humanizeField(status)}`);
     } catch (err) {
       toast(extractError(err, "Failed to update status"), "error");
     }
@@ -72,7 +65,7 @@ const SupportDetails = () => {
     try {
       const updated = await supportService.updatePriority(id, priority);
       setTicket(updated);
-      toast(`Priority changed to ${priority}`);
+      toast(`Priority changed to ${humanizeField(priority)}`);
     } catch (err) {
       toast(extractError(err, "Failed to update priority"), "error");
     }

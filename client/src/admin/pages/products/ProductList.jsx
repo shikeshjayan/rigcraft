@@ -129,6 +129,12 @@ const ProductList = () => {
         </Box>
       </Box>
     )},
+    { key: "brandName", label: "Brand", render: (val) => (
+      <Box sx={{ fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val || "—"}</Box>
+    )},
+    { key: "categoryName", label: "Category", render: (val) => (
+      <Box sx={{ fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val || "—"}</Box>
+    )},
     { key: "categoryType", label: "Type", render: (val) => {
       const typeDef = CATEGORY_TYPES.find(c => c.value === val);
       const color = typeDef ? (CATEGORY_TYPE_COLORS[val] || "var(--color-admin-primary)") : "var(--color-admin-muted)";

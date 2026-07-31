@@ -28,7 +28,7 @@ const PrebuiltDetails = () => {
   useEffect(() => {
     prebuiltService.getById(id)
       .then(setItem)
-      .catch(() => { toast("Not found", "error"); navigate("/admin/prebuilt"); })
+      .catch(() => { toast("Prebuilt PC not found", "error"); navigate("/admin/prebuilt"); })
       .finally(() => setLoading(false));
   }, [id, navigate, toast]);
 
@@ -40,7 +40,7 @@ const PrebuiltDetails = () => {
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/prebuilt")} />
-            <AdminThumbnail src={item.image} alt={item.name} size={48} sx={{ borderRadius: "var(--radius-admin-badge)" }} />
+            <AdminThumbnail src={item.image?.url || item.image} alt={item.name} size={48} sx={{ borderRadius: "var(--radius-admin-badge)" }} />
             <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)" }} />
             <Box>
               <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>{item.name}</Typography>

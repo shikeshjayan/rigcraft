@@ -89,7 +89,7 @@ const PrebuiltList = () => {
   const columns = [
     { key: "name", label: "Name", render: (val, row) => (
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-        <AdminThumbnail src={row.image} alt={val} size={36}
+        <AdminThumbnail src={row.image?.url || row.image} alt={val} size={36}
           fallback={
             <Box sx={{ width: 36, height: 36, borderRadius: "var(--radius-admin-badge)", backgroundColor: "var(--color-admin-bg-tertiary)", border: "1px solid var(--color-admin-border)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.625rem", fontWeight: 700, color: "var(--color-admin-muted)", textTransform: "uppercase", flexShrink: 0 }}>
               {val.charAt(0)}{val.charAt(1)}
