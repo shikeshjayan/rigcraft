@@ -77,6 +77,24 @@ const SupportDetails = () => {
   const messages = ticket.messages || [];
   const hasMessages = messages.length > 0;
 
+  const getCustomerName = () => {
+    let name = ticket?.name || ticket.customer?.name;
+    if (!name && ticket.description) {
+      const match = ticket.description.match(/Name:\s*([^\n]+)/);
+      if (match && match[1]) name = match[1].trim();
+    }
+    return name || "Unknown";
+  };
+
+  const getCustomerEmail = () => {
+    let email = ticket.customer?.email;
+    if (!email && ticket.description) {
+      const match = ticket.description.match(/Email:\s*([^\n]+)/);
+      if (match && match[1]) email = match[1].trim();
+    }
+    return email || "";
+  };
+
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
@@ -85,7 +103,7 @@ const SupportDetails = () => {
         <Box sx={{ flex: 1 }}>
           <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>{ticket.subject}</Typography>
           <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>
-            {ticket.customer?.name} &middot; {formatDateTime(ticket.createdAt)}
+            {getCustomerName()} &middot; {formatDateTime(ticket.createdAt)}
           </Typography>
         </Box>
         <StatusBadge status={ticket.status} colorMap={STATUS_COLOR} />
@@ -163,8 +181,8 @@ const SupportDetails = () => {
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
               <Box>
                 <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", mb: 0.5 }}>Customer</Typography>
-                <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)" }}>{ticket.customer?.name || "Unknown"}</Typography>
-                <Typography variant="caption" sx={{ color: "var(--color-admin-muted)" }}>{ticket.customer?.email}</Typography>
+                <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)" }}>{getCustomerName()}</Typography>
+                <Typography variant="caption" sx={{ color: "var(--color-admin-muted)" }}>{getCustomerEmail()}</Typography>
               </Box>
 
               <Box>

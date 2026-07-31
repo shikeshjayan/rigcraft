@@ -1,6 +1,6 @@
 import { Router } from "express";
 import * as couponController from "../controllers/coupon.controller.js";
-import { protect, authorize } from "../middlewares/auth.js";
+import { protect, authorize, optionalProtect } from "../middlewares/auth.js";
 import validate from "../middlewares/validate.js";
 import {
   createCouponSchema,
@@ -16,6 +16,8 @@ router.post(
   validate(createCouponSchema),
   couponController.createCoupon
 );
+
+router.get("/active", optionalProtect, couponController.getActiveCoupons);
 
 router.get(
   "/",

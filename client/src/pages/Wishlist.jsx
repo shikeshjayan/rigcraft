@@ -55,8 +55,8 @@ const Wishlist = () => {
                 {/* Product Image */}
                 <div className="w-full aspect-[3/4] bg-[#F5F6F6] overflow-hidden">
                   <img 
-                    src={item.image} 
-                    alt={item.title} 
+                    src={item.image || (typeof item.images?.[0] === 'string' ? item.images[0] : item.images?.[0]?.url) || '/placeholder.png'} 
+                    alt={item.title || item.name} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                 </div>
@@ -67,12 +67,12 @@ const Wishlist = () => {
                     to={`/detail/${item.id}`}
                     className="text-[14px] text-[#282C3F] hover:text-[var(--color-primary)] font-normal truncate mb-2 transition-colors cursor-pointer block"
                   >
-                    {item.title}
+                    {item.title || item.name}
                   </Link>
 
                   <div className="flex items-baseline gap-2 mb-4">
-                    <span className="text-[14px] font-[800] text-[#282C3F]">Rs.{item.price.replace('₹', '')}</span>
-                    <span className="text-[12px] text-[#7E818C] line-through">{item.mrp || 'Rs.0'}</span>
+                    <span className="text-[14px] font-[800] text-[#282C3F]">Rs.{String(item.price || item.pricing?.price || item.pricing?.salePrice || 0).replace('₹', '')}</span>
+                    <span className="text-[12px] text-[#7E818C] line-through">{item.mrp || item.pricing?.price || 'Rs.0'}</span>
                     <span className="text-[12px] text-[#FF905A] font-bold">({item.discount || '0% OFF'})</span>
                   </div>
                 </div>
