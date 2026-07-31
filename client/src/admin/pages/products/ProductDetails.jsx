@@ -58,6 +58,12 @@ const ProductDetails = () => {
         {type && (
           <Chip label={type.label} size="small" sx={{ backgroundColor: `${CATEGORY_TYPE_COLORS[product.categoryType]}15`, color: CATEGORY_TYPE_COLORS[product.categoryType], fontWeight: 500 }} />
         )}
+        {product.brandName && (
+          <Chip label={product.brandName} size="small" variant="outlined" sx={{ fontWeight: 500 }} />
+        )}
+        {product.categoryName && (
+          <Chip label={product.categoryName} size="small" variant="outlined" sx={{ fontWeight: 500 }} />
+        )}
         <StatusBadge status={product.isActive ? "active" : "inactive"} />
         {product.isFeatured && <Chip label="Featured" size="small" color="primary" variant="outlined" />}
       </Box>
@@ -78,6 +84,8 @@ const ProductDetails = () => {
           <Grid container spacing={2}>
             <DetailRow label="Regular Price" value={formatCurrency(product.price)} />
             <DetailRow label="Sale Price" value={product.salePrice ? formatCurrency(product.salePrice) : "—"} />
+            <DetailRow label="Currency" value={product.currency || "INR"} />
+            <DetailRow label="Sale Period" value={product.saleStart ? `${formatDate(product.saleStart)} → ${product.saleEnd ? formatDate(product.saleEnd) : "Open ended"}` : "—"} />
             <DetailRow label="Stock" value={product.stock} />
             <DetailRow label="Low Stock Threshold" value={product.lowStockThreshold} />
           </Grid>
@@ -106,9 +114,67 @@ const ProductDetails = () => {
           </Box>
         )}
 
+        {(product.weight != null || product.length != null || product.width != null || product.height != null) && (
+          <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Measurements</Typography>
+            <Grid container spacing={2}>
+              <DetailRow label="Weight" value={product.weight != null ? `${product.weight} kg` : "—"} />
+              <DetailRow label="Length" value={product.length != null ? `${product.length} cm` : "—"} />
+              <DetailRow label="Width" value={product.width != null ? `${product.width} cm` : "—"} />
+              <DetailRow label="Height" value={product.height != null ? `${product.height} cm` : "—"} />
+            </Grid>
+          </Box>
+        )}
+
+        {product.warrantyDuration != null && (
+          <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Warranty</Typography>
+            <Grid container spacing={2}>
+              <DetailRow label="Duration" value={`${product.warrantyDuration} ${product.warrantyUnit || "month"}${product.warrantyDuration === 1 ? "" : "s"}`} />
+              <DetailRow label="Type" value={product.warrantyType || "—"} />
+            </Grid>
+          </Box>
+        )}
+
+        {product.compatibility && Object.keys(product.compatibility).length > 0 && (
+          <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Compatibility</Typography>
+            <Grid container spacing={1}>
+              {Object.entries(product.compatibility).map(([key, value]) => (
+                <Grid key={key} size={{ xs: 6, sm: 4, md: 3 }}>
+                  <Box sx={{ p: 1.5, backgroundColor: "var(--color-admin-bg-tertiary)", borderRadius: "var(--radius-admin-badge)" }}>
+                    <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", textTransform: "capitalize" }}>{key.replace(/_/g, " ")}</Typography>
+                    <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500 }}>{String(value)}</Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+        )}
+
+        {(product.metaTitle || product.metaDescription) && (
+          <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>SEO</Typography>
+            <Grid container spacing={2}>
+              <DetailRow label="Meta Title" value={product.metaTitle} />
+              <DetailRow label="Meta Description" value={product.metaDescription} />
+            </Grid>
+          </Box>
+        )}
+
+        <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+          <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Analytics</Typography>
+          <Grid container spacing={2}>
+            <DetailRow label="Views" value={product.viewCount ?? 0} />
+            <DetailRow label="Units Sold" value={product.soldCount ?? 0} />
+            <DetailRow label="Rating" value={product.rating?.average != null ? `${product.rating.average} / 5 (${product.rating.count ?? 0} reviews)` : "—"} />
+          </Grid>
+        </Box>
+
         <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
           <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Details</Typography>
           <Grid container spacing={2}>
+            <DetailRow label="Slug" value={product.slug} />
             <DetailRow label="Created" value={formatDate(product.createdAt)} />
             <DetailRow label="Updated" value={formatDate(product.updatedAt)} />
             {product.tags?.length > 0 && (

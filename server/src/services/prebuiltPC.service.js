@@ -11,7 +11,6 @@ const FOLDER = "prebuilt-pcs";
 const REQUIRED_COMPONENT_TYPES = [
   COMPONENT_TYPES.CPU,
   COMPONENT_TYPES.MOTHERBOARD,
-  COMPONENT_TYPES.GPU,
   COMPONENT_TYPES.RAM,
   COMPONENT_TYPES.PSU,
   COMPONENT_TYPES.CABINET,
@@ -175,8 +174,19 @@ export const update = async (id, data, files) => {
       alt: data.name || prebuilt.name,
       isPrimary: i === 0,
     }));
-  } else {
+  } else if (data.images === undefined) {
     delete data.images;
+  } else {
+    for (const img of prebuilt.images || []) {
+      if (img.publicId) {
+        try {
+          await uploadService.deleteImage(img.publicId);
+        } catch {
+          // Cloudinary cleanup is best-effort
+        }
+      }
+    }
+    data.images = Array.isArray(data.images) ? data.images : [];
   }
 
   const updated = await prebuiltPCRepository.updateById(id, data);
