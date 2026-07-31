@@ -60,7 +60,6 @@ export const COUPON_STATUS_COLOR = {
 };
 
 export const ROLES = {
-  SUPER_ADMIN: "super_admin",
   ADMIN: "admin",
   MANAGER: "manager",
 };

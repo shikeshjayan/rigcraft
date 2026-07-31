@@ -33,7 +33,6 @@ const ROUTE_TITLES = {
 };
 
 const ROLE_LABELS = {
-  super_admin: "Super Admin",
   admin: "Admin",
   manager: "Manager",
 };
