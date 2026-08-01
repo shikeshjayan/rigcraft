@@ -301,7 +301,7 @@ const PrebuildCatalog = () => {
                           <div key={pc.id} className="block h-full animate-fade-in">
                             <Link to={`/detail/${pc.slug || pc.id}?type=prebuilt`} className="block h-full">
                               <Card 
-                                id={pc.id}
+ rating={pc?.rating} id={pc.id}
                                 image={pc.image || 'https://via.placeholder.com/300?text=No+Image'}
                                 title={pc.title}
                                 specs={cardSpecs}

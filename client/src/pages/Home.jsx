@@ -7,6 +7,7 @@ import StarOutlineOutlinedIcon from '@mui/icons-material/StarOutlineOutlined';
 import HeroOffer from '../sections/HeroOffer';
 import HeroDeals from '../sections/HeroDeals';
 import HeroToday from '../sections/HeroToday';
+import HeroBrands from '../sections/HeroBrands';
 import HeroNewArrival from '../sections/HeroNewArrival';
 import HeroReview from '../sections/HeroReview';
 import WhyChooseUs from '../sections/WhyChooseUs';
@@ -247,6 +248,9 @@ const Home = () => {
       
       {/* ================= TODAY'S DEALS SECTION ================= */}
       <FadeUp delay={0.2}><HeroToday /></FadeUp>
+
+      {/* ================= BRANDS SECTION ================= */}
+      <FadeUp delay={0.2}><HeroBrands /></FadeUp>
 
       {/* ================= NEW ARRIVALS SECTION ================= */}
       <FadeUp delay={0.2}><HeroNewArrival /></FadeUp>
