@@ -12,7 +12,7 @@ graphify-out
 API.md
 
 .agents/
-
+.opencodeignore
 # Test infrastructure
 client/src/tests/
 server/src/tests/

@@ -51,4 +51,9 @@ export const authService = {
     const { data } = await api.post(ENDPOINTS.AUTH.CHECK, { identifier });
     return data;
   },
+
+  googleLogin: async (credential) => {
+    const { data } = await api.post(ENDPOINTS.AUTH.GOOGLE, { credential });
+    return data;
+  },
 };
