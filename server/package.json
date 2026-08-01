@@ -11,12 +11,15 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node seed/seed.js",
-    "migrate:category-type": "node src/scripts/migrate-category-type.js"
+    "migrate:category-type": "node src/scripts/migrate-category-type.js",
+    "migrate:review-type": "node src/scripts/migrate-review-type.js",
+    "migrate:review-user": "node src/scripts/migrate-review-user.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "bcryptjs": "^3.0.3",
     "cloudinary": "^2.10.0",
     "compression": "^1.8.1",

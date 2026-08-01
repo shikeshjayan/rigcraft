@@ -95,7 +95,7 @@ const FilterBar = ({ filters = {}, onChange, options = [] }) => {
           {activeFilters.length > 1 && (
             <Chip
               label="Clear all"
-              onDelete={() =>
+              onClick={() =>
                 onChange(
                   Object.fromEntries(Object.keys(filters).map((k) => [k, ""])),
                 )
