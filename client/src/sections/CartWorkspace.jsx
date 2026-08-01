@@ -20,7 +20,7 @@ import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 const getTypeName = (type) => typeof type === 'string' ? type : type?.name || 'UNKNOWN';
 
 const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
-  const { cartItems, removeFromCart, clearCart } = useCart();
+  const { cartItems, isLoading, removeFromCart, clearCart } = useCart();
   const { isLoggedIn } = useAuth();
 
   // Track selected items by cartItemId (or id for legacy items)
@@ -322,14 +322,15 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   };
 
   const handleWishlistAddToCart = (wishlistItem) => {
+    const product = wishlistItem.item || wishlistItem.product;
     addToCart({
-      id: wishlistItem.product._id,
-      item: wishlistItem.product,
-      itemType: 'product',
-      title: wishlistItem.product.name,
-      price: wishlistItem.product.price,
-      mrp: wishlistItem.product.mrp,
-      image: wishlistItem.product.images?.[0]
+      id: product?._id,
+      item: product,
+      itemType: wishlistItem.itemType || 'product',
+      title: product?.name || product?.title,
+      price: product?.price || product?.salePrice,
+      mrp: product?.mrp || product?.price,
+      image: product?.images?.[0]
     });
   };
 
@@ -443,6 +444,13 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   const formatPrice = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   if (cartItems.length === 0 && checkoutStep === 'bag') {
+    if (isLoading) {
+      return (
+        <section className="w-full py-20 min-h-[50vh] flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-[var(--color-primary)] border-t-transparent" />
+        </section>
+      );
+    }
     return (
       <section className="w-full py-20 min-h-[50vh] flex flex-col items-center justify-center text-center px-4" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
         <h1 className="text-[28px] md:text-[36px] font-extrabold text-[#0F172A] mb-4">Hey, it feel so dark!</h1>

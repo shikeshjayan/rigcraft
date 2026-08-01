@@ -6,13 +6,16 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 
-const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp, discount, compact = false, category = '' }) => {
+const Card = ({ id, apiId, image, title, specs, price, tag, tagColor, description, mrp, discount, compact = false, category = '', itemType }) => {
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+
+  const wishlistId = apiId || id;
+  const type = (itemType === 'prebuilt' || category === 'prebuilt') ? 'prebuilt' : 'product';
   
-  const isWishlisted = wishlist.some(item => item.id === id);
+  const isWishlisted = wishlist.some(item => item.id === wishlistId);
 
   const handleWishlistClick = (e) => {
     e.preventDefault(); 
@@ -24,15 +27,16 @@ const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp,
     }
 
     if (isWishlisted) {
-      removeFromWishlist(id);
+      removeFromWishlist(wishlistId);
     } else {
       addToWishlist({
-        id,
+        id: wishlistId,
         image,
         title,
         price,
         mrp: mrp || '',
-        discount: discount || ''
+        discount: discount || '',
+        itemType: type
       });
     }
   };

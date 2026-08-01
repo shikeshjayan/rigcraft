@@ -6,7 +6,7 @@ import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 
 const Wishlist = () => {
-  const { wishlist, removeFromWishlist } = useWishlist();
+  const { wishlist, isLoading, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
 
   useEffect(() => {
@@ -22,11 +22,15 @@ const Wishlist = () => {
         <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Wishlist' }]} />
         <div className="mb-10 flex items-baseline gap-2">
           <h1 className="text-[20px] font-[800] text-[#282C3F]">My Wishlist</h1>
-          <span className="text-[20px] font-normal text-[#282C3F]">{wishlist.length} items</span>
+          <span className="text-[20px] font-normal text-[#282C3F]">{isLoading ? '' : `${wishlist.length} items`}</span>
         </div>
 
         {/* Wishlist Grid */}
-        {wishlist.length === 0 ? (
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-10 w-10 border-4 border-[var(--color-primary)] border-t-transparent" />
+          </div>
+        ) : wishlist.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 text-center">
             <h2 className="text-[24px] font-bold text-[#282C3F] mb-4">Your wishlist is empty</h2>
             <p className="text-[#696E79] mb-8">Save items that you like in your wishlist. Review them anytime and easily move them to the bag.</p>
