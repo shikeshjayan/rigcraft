@@ -237,6 +237,7 @@ const AllDeals = () => {
                             <Link to={`/detail/${item.slug}`} className="block h-full">
                               <Card 
                                 id={item.slug}
+                                apiId={item._id || item.id}
                                 image={imageUrl}
                                 title={item.name}
                                 specs={specs.length > 0 ? specs : undefined}
