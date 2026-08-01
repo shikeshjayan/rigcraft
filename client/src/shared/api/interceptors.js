@@ -19,7 +19,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
 
   async (error) => {
-    const publicAuthRoutes = ['/auth/login', '/auth/register', '/auth/check', '/auth/forgot-password', '/auth/reset-password'];
+    const publicAuthRoutes = ['/auth/login', '/auth/register', '/auth/check', '/auth/forgot-password', '/auth/reset-password', '/auth/google'];
     const isPublicAuth = publicAuthRoutes.some(route => error.config.url.includes(route));
 
     if (error.response?.status === 401 && !isPublicAuth) {

@@ -2,8 +2,9 @@ import { useState, useRef, Fragment } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useMutation } from '@tanstack/react-query';
+import { GoogleLogin } from '@react-oauth/google';
 import { authService } from '../services/auth.service';
-import useAuthStore from '../admin/store/authStore';
+import handleAuthSuccess from '../utils/authSuccess';
 import FadeUp from '../components/FadeUp';
 import DynamicLogo from '../components/DynamicLogo';
 import Visibility from '@mui/icons-material/Visibility';
@@ -38,31 +39,24 @@ const Customerlogin = () => {
     onSuccess: (data) => {
       if (data && data.success && data.data) {
         const { user, accessToken } = data.data;
-
-        localStorage.setItem("accessToken", accessToken);
-
-        login(user);
-
-        useAuthStore.setState({
-          user: {
-            id: user._id,
-            name: `${user.firstName} ${user.lastName}`,
-            email: user.email,
-            role: user.role,
-            avatar: user.avatar?.url || null,
-          },
-          isAuthenticated: true,
-        });
-
-        if (['admin', 'manager'].includes(user.role)) {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/');
-        }
+        handleAuthSuccess(user, accessToken, navigate, login);
       }
     },
     onError: (err) => {
       setError(err?.response?.data?.message || 'Invalid credentials. Please try again.');
+    }
+  });
+
+  const googleLoginMutation = useMutation({
+    mutationFn: authService.googleLogin,
+    onSuccess: (data) => {
+      if (data && data.success && data.data) {
+        const { user, accessToken } = data.data;
+        handleAuthSuccess(user, accessToken, navigate, login);
+      }
+    },
+    onError: (err) => {
+      setError(err?.response?.data?.message || 'Google sign-in failed. Please try again.');
     }
   });
 
@@ -191,6 +185,28 @@ const Customerlogin = () => {
                   </button>
                 </div>
               </form>
+
+              <div className="mt-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">or continue with</span>
+                  </div>
+                </div>
+
+                <div className="mt-4">
+                  <GoogleLogin
+                    onSuccess={({ credential }) => googleLoginMutation.mutate(credential)}
+                    onError={() => setError('Google sign-in failed. Please try again.')}
+                    width="100%"
+                    shape="rectangular"
+                    text="continue_with"
+                    theme="outline"
+                  />
+                </div>
+              </div>
 
               <div className="mt-6 text-center">
                 <div className="relative">
