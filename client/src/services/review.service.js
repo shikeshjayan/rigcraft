@@ -17,8 +17,28 @@ export const reviewService = {
     return data;
   },
 
+  getTestimonials: async () => {
+    const { data } = await api.get(ENDPOINTS.REVIEW.TESTIMONIALS);
+    return data;
+  },
+
   create: async (reviewData) => {
-    const { data } = await api.post(ENDPOINTS.REVIEW.CREATE, reviewData);
+    const { data } = await api.post(ENDPOINTS.REVIEW.CREATE_PRODUCT, reviewData);
+    return data;
+  },
+
+  createTestimonial: async (reviewData) => {
+    const { data } = await api.post(ENDPOINTS.REVIEW.CREATE_TESTIMONIAL, reviewData);
+    return data;
+  },
+
+  toggleHelpful: async (id) => {
+    const { data } = await api.patch(ENDPOINTS.REVIEW.HELPFUL(id));
+    return data;
+  },
+
+  report: async (id, payload) => {
+    const { data } = await api.post(ENDPOINTS.REVIEW.REPORT(id), payload);
     return data;
   },
 

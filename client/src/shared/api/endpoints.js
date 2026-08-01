@@ -126,6 +126,11 @@ export const ENDPOINTS = {
   REVIEW: {
     LIST: "/reviews",
     CREATE: "/reviews",
+    CREATE_PRODUCT: "/reviews/product",
+    CREATE_TESTIMONIAL: "/reviews/testimonial",
+    TESTIMONIALS: "/reviews/testimonials",
+    HELPFUL: (id) => `/reviews/${id}/helpful`,
+    REPORT: (id) => `/reviews/${id}/report`,
     DETAILS: (id) => `/reviews/${id}`,
     UPDATE: (id) => `/reviews/${id}`,
     DELETE: (id) => `/reviews/${id}`,
@@ -161,6 +166,11 @@ export const ENDPOINTS = {
     LIST: "/admin/reviews",
     DETAILS: (id) => `/admin/reviews/${id}`,
     UPDATE_STATUS: (id) => `/admin/reviews/${id}/status`,
+    FEATURE: (id) => `/admin/reviews/${id}/feature`,
+    REPLY: (id) => `/admin/reviews/${id}/reply`,
+    DISMISS_REPORTS: (id) => `/admin/reviews/${id}/dismiss-reports`,
+    CLEAR_SPAM: (id) => `/admin/reviews/${id}/clear-spam`,
+    STATS: "/admin/reviews/stats",
     DELETE: (id) => `/admin/reviews/${id}`,
   },
 

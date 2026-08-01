@@ -49,6 +49,25 @@ export const getPrebuiltReviews = asyncHandler(async (req, res) => {
   ApiResponse.ok(result, "Reviews fetched successfully").send(res);
 });
 
+export const getTestimonials = asyncHandler(async (req, res) => {
+  const result = await reviewService.getTestimonials();
+  ApiResponse.ok(result, "Testimonials fetched successfully").send(res);
+});
+
+export const toggleHelpful = asyncHandler(async (req, res) => {
+  const review = await reviewService.toggleHelpful(req.params.id, req.user._id);
+  ApiResponse.ok(review, "Helpful vote updated").send(res);
+});
+
+export const reportReview = asyncHandler(async (req, res) => {
+  const review = await reviewService.reportReview(
+    req.params.id,
+    req.user._id,
+    req.body
+  );
+  ApiResponse.ok(review, "Review reported successfully").send(res);
+});
+
 export const adminGetAllReviews = asyncHandler(async (req, res) => {
   const result = await reviewService.adminGetAllReviews(req.query);
   ApiResponse.ok(result, "All reviews fetched successfully").send(res);
@@ -67,6 +86,35 @@ export const adminUpdateStatus = asyncHandler(async (req, res) => {
       ? "Review rejected"
       : "Review status updated";
   ApiResponse.ok(review, msg).send(res);
+});
+
+export const adminToggleFeatured = asyncHandler(async (req, res) => {
+  const review = await reviewService.adminToggleFeatured(req.params.id, req.body);
+  ApiResponse.ok(review, "Featured status updated").send(res);
+});
+
+export const adminReply = asyncHandler(async (req, res) => {
+  const review = await reviewService.adminReply(
+    req.params.id,
+    req.user._id,
+    req.body.text
+  );
+  ApiResponse.ok(review, "Reply saved").send(res);
+});
+
+export const dismissReports = asyncHandler(async (req, res) => {
+  const review = await reviewService.dismissReports(req.params.id);
+  ApiResponse.ok(review, "Reports dismissed").send(res);
+});
+
+export const adminClearSpam = asyncHandler(async (req, res) => {
+  const review = await reviewService.clearSpamFlag(req.params.id);
+  ApiResponse.ok(review, "Spam flag cleared").send(res);
+});
+
+export const getReviewStats = asyncHandler(async (req, res) => {
+  const result = await reviewService.getReviewStats();
+  ApiResponse.ok(result, "Review stats fetched successfully").send(res);
 });
 
 export const adminDeleteReview = asyncHandler(async (req, res) => {
