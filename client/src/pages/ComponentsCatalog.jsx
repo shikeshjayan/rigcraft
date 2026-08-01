@@ -60,6 +60,7 @@ const ComponentsCatalog = () => {
                 className="block h-full"
               >
                 <Card 
+                  rating={item?.rating} 
                   id={item.id}
                   image={item.image}
                   title={item.title}

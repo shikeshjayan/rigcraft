@@ -82,7 +82,7 @@ export const CartProvider = ({ children }) => {
     let itemType = 'product';
     if (item.type === 'custom-build') itemType = 'savedBuild';
     else if (item.type === 'PC' || item.type === 'prebuilt') itemType = 'prebuilt';
-    else if (item.pricing && typeof item.pricing === 'object') itemType = 'prebuilt';
+    else if ((item.pricing && typeof item.pricing === 'object') || ['gaming', 'streaming', 'workstation', 'office', 'budget', 'prebuilt'].includes(item.category)) itemType = 'prebuilt';
     if (item.itemType) itemType = item.itemType;
 
     if (user) {

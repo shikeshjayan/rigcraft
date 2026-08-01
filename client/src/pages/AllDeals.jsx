@@ -238,6 +238,7 @@ const AllDeals = () => {
                               <Card 
                                 id={item.slug}
                                 apiId={item._id || item.id}
+                                rating={item?.rating}
                                 image={imageUrl}
                                 title={item.name}
                                 specs={specs.length > 0 ? specs : undefined}

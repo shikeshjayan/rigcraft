@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import { useMutation } from '@tanstack/react-query';
+import apiClient from '../api/client';
 import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 import BuildIcon from '@mui/icons-material/Build';
@@ -14,15 +16,42 @@ const Warranty = () => {
     details: ''
   });
   const [submitted, setSubmitted] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+
+  const submitClaim = useMutation({
+    mutationFn: (data) => apiClient.post('/support', data),
+    onSuccess: () => {
+      setSubmitted(true);
+      setErrorMsg('');
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({ orderId: '', email: '', issue: '', details: '' });
+      }, 4000);
+    },
+    onError: (error) => {
+      setErrorMsg(error.response?.data?.message || 'Failed to submit claim. Please try again.');
+    }
+  });
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Normally handle API call here
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({ orderId: '', email: '', issue: '', details: '' });
-    }, 4000);
+    
+    // Check if orderId is valid object id, otherwise append it
+    let finalOrder = undefined;
+    const isObjectId = /^[a-fA-F0-9]{24}$/.test(formData.orderId);
+    if (isObjectId) {
+      finalOrder = formData.orderId;
+    }
+
+    const description = `Email: ${formData.email}\n${!isObjectId ? `Order ID: ${formData.orderId}\n` : ''}Details: ${formData.details}`;
+
+    submitClaim.mutate({
+      issueType: 'warranty',
+      subject: `Warranty Claim: ${formData.issue}`,
+      description: description,
+      order: finalOrder,
+      name: formData.email.split('@')[0]
+    });
   };
 
   const handleChange = (e) => {
@@ -186,11 +215,17 @@ const Warranty = () => {
                       ></textarea>
                     </div>
 
+                    {errorMsg && (
+                      <div className="bg-red-50 text-red-600 text-sm p-3 rounded-md border border-red-200">
+                        {errorMsg}
+                      </div>
+                    )}
                     <button 
                       type="submit" 
-                      className="w-full bg-blue-600 text-white font-bold uppercase tracking-widest text-[14px] py-3.5 rounded-sm hover:bg-blue-700 transition-colors mt-2 flex items-center justify-center gap-2"
+                      disabled={submitClaim.isPending}
+                      className="w-full bg-blue-600 text-white font-bold uppercase tracking-widest text-[14px] py-3.5 rounded-sm hover:bg-blue-700 transition-colors mt-2 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
                     >
-                      <BuildIcon fontSize="small" /> Submit Claim
+                      <BuildIcon fontSize="small" /> {submitClaim.isPending ? 'Submitting...' : 'Submit Claim'}
                     </button>
                     
                   </form>

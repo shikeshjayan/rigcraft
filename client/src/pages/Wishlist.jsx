@@ -1,17 +1,57 @@
-import React, { useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
 import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
+import LoginPrompt from '../components/LoginPrompt';
+import { motion, AnimatePresence } from 'framer-motion';
+import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutlined';
 
 const Wishlist = () => {
   const { wishlist, isLoading, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
+  const { isLoggedIn } = useAuth();
+  
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [loginMessage, setLoginMessage] = useState("");
+  const [flyingItem, setFlyingItem] = useState(null);
+  const [showCartToast, setShowCartToast] = useState(false);
+  const [toastMessage, setToastMessage] = useState("");
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const handleAddToCart = (e, item) => {
+    if (!isLoggedIn) {
+      setLoginMessage("You need to log in to your account to add items to the cart.");
+      setShowLoginPrompt(true);
+      return;
+    }
+
+    const rect = document.getElementById(`wishlist-img-${item.id}`)?.getBoundingClientRect();
+    if (rect) {
+      setFlyingItem({
+        image: item.image || (typeof item.images?.[0] === 'string' ? item.images[0] : item.images?.[0]?.url) || '/placeholder.png',
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+        height: rect.height
+      });
+      setTimeout(() => setFlyingItem(null), 800);
+    }
+
+    addToCart(item);
+    
+    // Remove from wishlist after successfully adding to cart
+    removeFromWishlist(item.id || item._id);
+
+    setToastMessage(`${item.title || item.name} is added to cart`);
+    setShowCartToast(true);
+    setTimeout(() => setShowCartToast(false), 4000);
+  };
 
   return (
     <FadeUp delay={0.1}>
@@ -59,6 +99,7 @@ const Wishlist = () => {
                 {/* Product Image */}
                 <div className="w-full aspect-[3/4] bg-[#F5F6F6] overflow-hidden">
                   <img 
+                    id={`wishlist-img-${item.id}`}
                     src={item.image || (typeof item.images?.[0] === 'string' ? item.images[0] : item.images?.[0]?.url) || '/placeholder.png'} 
                     alt={item.title || item.name} 
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
@@ -84,10 +125,7 @@ const Wishlist = () => {
                 {/* Move to Bag Button */}
                 <div className="w-full border-t border-[#EAEAEC] mt-auto">
                   <button 
-                    onClick={() => {
-                      addToCart(item);
-                      alert('Added to cart!');
-                    }}
+                    onClick={(e) => handleAddToCart(e, item)}
                     className="w-full py-3.5 text-[14px] font-[700] text-white bg-[var(--color-primary)] tracking-wide hover:opacity-90 transition-opacity cursor-pointer"
                   >
                     ADD TO CART
@@ -98,6 +136,54 @@ const Wishlist = () => {
           </div>
         )}
       </div>
+
+      {/* Toast Notification for Cart */}
+      {showCartToast && (
+        <div className="fixed bottom-4 right-4 bg-[#0047AB] text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in flex items-center gap-2">
+          <CheckCircleOutlineIcon /> {toastMessage}
+        </div>
+      )}
+
+      {/* Flying Cart Animation */}
+      <AnimatePresence>
+        {flyingItem && (
+          <motion.img
+            src={flyingItem.image}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              zIndex: 9999,
+              pointerEvents: 'none',
+              objectFit: 'contain'
+            }}
+            initial={{ 
+              x: flyingItem.x, 
+              y: flyingItem.y, 
+              width: flyingItem.width, 
+              height: flyingItem.height, 
+              opacity: 1, 
+              scale: 1,
+            }}
+            animate={{ 
+              x: document.getElementById('cart-icon-header')?.getBoundingClientRect().left || window.innerWidth - 100, 
+              y: document.getElementById('cart-icon-header')?.getBoundingClientRect().top || 20, 
+              width: 40, 
+              height: 40,
+              opacity: [1, 1, 0.8, 0],
+              scale: [1, 0.8, 0.5, 0.2]
+            }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+          />
+        )}
+      </AnimatePresence>
+
+      <LoginPrompt 
+        isOpen={showLoginPrompt}
+        onClose={() => setShowLoginPrompt(false)}
+        message={loginMessage}
+      />
     </div>
     </FadeUp>
   );
