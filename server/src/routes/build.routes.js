@@ -22,6 +22,10 @@ router.get("/admin/issues", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.MANA
 
 router.post("/admin/settings", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER), validate(updateBuildSettingsSchema), buildController.updateBuildSettings);
 
+router.get("/settings", buildController.getBuildSettings);
+
+router.get("/admin/settings", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER), buildController.getBuildSettings);
+
 router.get("/", protect, buildController.getUserBuilds);
 
 router.get("/:id", protect, buildController.getBuild);

@@ -9,6 +9,28 @@ const getCompatibilityValue = (product, key) => {
   return comp.get(key);
 };
 
+const hasIntegratedGraphics = (product) => {
+  if (!product || !product.specifications) return false;
+  const specs =
+    product.specifications instanceof Map
+      ? product.specifications
+      : new Map(Object.entries(product.specifications));
+  const value = String(specs.get("integrated_graphics") ?? "").trim().toLowerCase();
+  if (!value) return false;
+  const noneList = [
+    "none",
+    "no",
+    "n/a",
+    "na",
+    "-",
+    "nil",
+    "no igpu",
+    "not applicable",
+    "no igpu present",
+  ];
+  return !noneList.includes(value);
+};
+
 const checkCpuMotherboard = (cpu, motherboard) => {
   const issues = [];
   const cpuSocket = getCompatibilityValue(cpu, COMPATIBILITY_KEYS.SOCKET);
@@ -25,24 +47,41 @@ const checkCpuMotherboard = (cpu, motherboard) => {
 
 const checkRamMotherboard = (ram, motherboard) => {
   const issues = [];
-  const ramType = getCompatibilityValue(ram, COMPATIBILITY_KEYS.MEMORY_TYPE);
   const mbType = getCompatibilityValue(motherboard, COMPATIBILITY_KEYS.MEMORY_TYPE);
   const maxMemory = getCompatibilityValue(motherboard, COMPATIBILITY_KEYS.MAX_MEMORY);
   const maxSlots = getCompatibilityValue(motherboard, COMPATIBILITY_KEYS.MAX_MEMORY_SLOTS);
 
-  if (ramType && mbType && ramType !== mbType) {
+  const entries = Array.isArray(ram)
+    ? ram
+    : [{ product: ram, quantity: 1 }];
+
+  for (const entry of entries) {
+    const ramType = getCompatibilityValue(entry.product, COMPATIBILITY_KEYS.MEMORY_TYPE);
+    if (ramType && mbType && ramType !== mbType) {
+      issues.push(
+        `RAM type (${ramType}) does not match motherboard memory type (${mbType})`
+      );
+    }
+  }
+
+  let totalSticks = 0;
+  let totalCapacity = 0;
+  for (const entry of entries) {
+    const qty = entry.quantity || 1;
+    totalSticks += qty;
+    totalCapacity += (entry.product.price || 0) * qty;
+  }
+
+  if (maxMemory && totalCapacity > maxMemory) {
     issues.push(
-      `RAM type (${ramType}) does not match motherboard memory type (${mbType})`
+      `RAM capacity exceeds motherboard maximum (${maxMemory}GB)`
     );
   }
 
-  if (maxMemory) {
-    const ramCapacity = ram.price || 0;
-    if (ramCapacity > maxMemory) {
-      issues.push(
-        `RAM capacity exceeds motherboard maximum (${maxMemory}GB)`
-      );
-    }
+  if (maxSlots && totalSticks > maxSlots) {
+    issues.push(
+      `Selected ${totalSticks} RAM sticks exceed motherboard memory slots (${maxSlots})`
+    );
   }
 
   return issues;
@@ -122,10 +161,12 @@ const calculatePower = (components) => {
   let totalPower = 0;
 
   for (const component of components) {
-    const tdp = getCompatibilityValue(component, COMPATIBILITY_KEYS.TDP);
-    const wattage = getCompatibilityValue(component, COMPATIBILITY_KEYS.PSU_WATTAGE);
+    const product = component.product || component;
+    const qty = component.quantity || 1;
+    const tdp = getCompatibilityValue(product, COMPATIBILITY_KEYS.TDP);
+    const wattage = getCompatibilityValue(product, COMPATIBILITY_KEYS.PSU_WATTAGE);
     const value = tdp || wattage || 0;
-    totalPower += Number(value);
+    totalPower += Number(value) * qty;
   }
 
   return totalPower * 1.2;
@@ -136,10 +177,12 @@ const calculatePrice = (components) => {
   let totalSalePrice = 0;
 
   for (const component of components) {
-    const price = component.price || 0;
-    const salePrice = component.salePrice || price;
-    totalPrice += price;
-    totalSalePrice += salePrice;
+    const product = component.product || component;
+    const qty = component.quantity || 1;
+    const price = product.price || 0;
+    const salePrice = product.salePrice || price;
+    totalPrice += price * qty;
+    totalSalePrice += salePrice * qty;
   }
 
   return { totalPrice, totalSalePrice };
@@ -149,28 +192,66 @@ const validateBuild = (components) => {
   const issues = [];
 
   const byType = {};
+  const byTypeEntries = {};
   for (const comp of components) {
     const type = comp.type || comp._doc?.type;
-    byType[type] = comp.product || comp._doc?.product;
+    const product = comp.product || comp._doc?.product;
+    const quantity = comp.quantity || 1;
+    if (type === "ram" || type === "storage") {
+      if (!byTypeEntries[type]) byTypeEntries[type] = [];
+      byTypeEntries[type].push({ product, quantity });
+    } else {
+      byType[type] = product;
+    }
   }
 
   const cpu = byType.cpu;
   const motherboard = byType.motherboard;
   const gpu = byType.gpu;
-  const ram = byType.ram;
-  const storage = byType.storage;
+  const ram = byTypeEntries.ram;
+  const storage = byTypeEntries.storage;
   const psu = byType.psu;
   const cabinet = byType.cabinet;
   const cooler = byType.cooler;
 
-  const hasRequired = ["cpu", "motherboard", "gpu", "ram", "psu", "cabinet"];
-  const missing = hasRequired.filter((t) => !byType[t]);
+  const cpuNeedsGpu = !hasIntegratedGraphics(cpu);
+
+  const hasRequired = ["cpu", "motherboard", "ram", "psu", "cabinet"];
+  const missing = hasRequired.filter((t) => {
+    if (t === "ram") return !ram || ram.length === 0;
+    return !byType[t];
+  });
+
+  const required = [...hasRequired];
+  const optional = ["gpu", "cooler"];
+
+  if (cpuNeedsGpu) {
+    if (!gpu) {
+      missing.push("gpu");
+      issues.push("Your selected CPU has no integrated graphics. Please add a dedicated GPU.");
+    }
+    if (!required.includes("gpu")) required.push("gpu");
+    const gpuIdx = optional.indexOf("gpu");
+    if (gpuIdx > -1) optional.splice(gpuIdx, 1);
+  }
+
+  if (gpu) {
+    if (!cooler) {
+      missing.push("cooler");
+      issues.push("A GPU was selected. Please add a CPU cooler.");
+    }
+    if (!required.includes("cooler")) required.push("cooler");
+    const coolerIdx = optional.indexOf("cooler");
+    if (coolerIdx > -1) optional.splice(coolerIdx, 1);
+  }
 
   if (missing.length > 0) {
     return {
       status: "incomplete",
-      issues: [`Missing required components: ${missing.join(", ")}`],
+      issues: [`Missing required components: ${missing.join(", ")}`, ...issues],
       missing,
+      required,
+      optional,
     };
   }
 
@@ -195,12 +276,8 @@ const validateBuild = (components) => {
   }
 
   if (storage && motherboard) {
-    if (Array.isArray(storage)) {
-      for (const s of storage) {
-        issues.push(...checkStorageMotherboard(s, motherboard));
-      }
-    } else {
-      issues.push(...checkStorageMotherboard(storage, motherboard));
+    for (const s of storage) {
+      issues.push(...checkStorageMotherboard(s.product, motherboard));
     }
   }
 
@@ -210,7 +287,7 @@ const validateBuild = (components) => {
 
   const status = issues.length === 0 ? "compatible" : "incompatible";
 
-  return { status, issues, missing: [] };
+  return { status, issues, missing: [], required, optional };
 };
 
 const validate = (build) => {
@@ -219,24 +296,27 @@ const validate = (build) => {
       status: "incomplete",
       issues: ["No components in build"],
       missing: [],
+      required: ["cpu", "motherboard", "ram", "psu", "cabinet"],
+      optional: ["gpu", "cooler"],
       totalPrice: 0,
       totalSalePrice: 0,
       estimatedPower: 0,
     };
   }
 
-  const products = build.components
-    .filter((c) => c.product && typeof c.product === "object")
-    .map((c) => c.product);
+  const components = build.components
+    .filter((c) => c.product && typeof c.product === "object");
 
-  const { totalPrice, totalSalePrice } = calculatePrice(products);
-  const estimatedPower = calculatePower(products);
-  const { status, issues, missing } = validateBuild(build.components);
+  const { totalPrice, totalSalePrice } = calculatePrice(components);
+  const estimatedPower = calculatePower(components);
+  const { status, issues, missing, required, optional } = validateBuild(build.components);
 
   return {
     status,
     issues,
     missing,
+    required,
+    optional,
     totalPrice,
     totalSalePrice,
     estimatedPower: Math.round(estimatedPower),
