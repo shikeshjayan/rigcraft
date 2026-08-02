@@ -1,40 +1,32 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Card from '../components/Card';
 import { Link } from 'react-router-dom';
 import apiClient from '../api/client';
+import { useCart } from '../context/CartContext';
+import { normalizeBuilderProduct, normalizeCategory, getRawCategory } from '../utils/builderProducts';
 
 const BuilderAccessories = () => {
   const [accessories, setAccessories] = useState([]);
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const fetchAccessories = async () => {
       try {
-        const { data } = await apiClient.get('/products?limit=50');
+        const { data } = await apiClient.get('/products?limit=1000');
         if (data && data.data) {
           const docs = data.data.docs || data.data;
           const pcArray = Array.isArray(docs) ? docs : [];
-          
+
           // Keep only accessories
-          const accessoryItems = pcArray.filter(p => {
-             const type = (p.categoryType || p.productType || '').toLowerCase();
-             return type === 'accessory' || type === 'accessories';
-          });
-          
-          const formatted = accessoryItems.slice(0, 4).map(p => {
-            const priceVal = p.pricing?.price || p.priceVal || p.price || 0;
-            const mrpVal = p.pricing?.salePrice || p.mrpVal || p.mrp || 0;
-            return {
-              ...p,
-              id: p._id || p.id,
-              image: p.images?.[0]?.url || p.images?.[0] || p.image || null,
-              title: p.name || p.title,
-              price: priceVal ? `₹${priceVal.toLocaleString()}` : p.price,
-              priceVal: priceVal,
-              mrp: mrpVal ? `₹${mrpVal.toLocaleString()}` : p.mrp,
-              specs: p.specifications ? Object.entries(p.specifications).map(([k, v]) => `${k}: ${v}`) : []
-            };
-          });
-          setAccessories(formatted);
+          const accessoryItems = pcArray
+            .filter(p => {
+              const type = (p.categoryType || p.productType || '').toLowerCase();
+              return type === 'accessory' || type === 'accessories' || normalizeCategory(getRawCategory(p)) === 'accessory';
+            })
+            .slice(0, 4)
+            .map(p => normalizeBuilderProduct(p));
+
+          setAccessories(accessoryItems);
         }
       } catch (error) {
         console.error('Failed to fetch accessories', error);
@@ -42,6 +34,11 @@ const BuilderAccessories = () => {
     };
     fetchAccessories();
   }, []);
+
+  const handleAddToCart = (item) => {
+    addToCart(item);
+  };
+
   return (
     <section className="w-full py-16" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
@@ -62,9 +59,11 @@ const BuilderAccessories = () => {
                 price={item.price}
                 mrp={item.mrp}
                 discount={item.discount}
+                category={item.category}
                 tag="ACCESSORY"
                 tagColor="var(--color-primary)"
                 buttonText="Add to Cart"
+                onButtonClick={() => handleAddToCart(item)}
               />
             </Link>
           ))}

@@ -92,6 +92,7 @@ export const ENDPOINTS = {
     VALIDATE: (id) => `/builds/${id}/validate`,
     DUPLICATE: (id) => `/builds/${id}/duplicate`,
     ADD_TO_CART: (id) => `/builds/${id}/add-to-cart`,
+    SETTINGS: "/builds/settings",
   },
 
   // PC Builder (admin)
@@ -100,6 +101,7 @@ export const ENDPOINTS = {
     ANALYTICS: "/builds/admin/analytics",
     ISSUES: "/builds/admin/issues",
     SETTINGS: "/builds/admin/settings",
+    SETTINGS_GET: "/builds/admin/settings",
   },
 
   // Cart
