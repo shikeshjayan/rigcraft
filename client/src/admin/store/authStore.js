@@ -11,8 +11,7 @@ const useAuthStore = create(
 
       login: async (credentials) => {
         const { data } = await api.post(ENDPOINTS.AUTH.LOGIN, credentials);
-        const { user, accessToken } = data.data;
-        localStorage.setItem("accessToken", accessToken);
+        const { user } = data.data;
         set({
           user: {
             id: user._id,
@@ -22,6 +21,7 @@ const useAuthStore = create(
             email: user.email,
             role: user.role,
             avatar: user.avatar?.url || null,
+            phone: user.phone || "",
           },
           isAuthenticated: true,
         });
@@ -33,7 +33,6 @@ const useAuthStore = create(
         } catch {
           // ignore
         }
-        localStorage.removeItem("accessToken");
         localStorage.removeItem("rigcraft_auth");
         localStorage.removeItem("rigcraft_user");
         set({ user: null, isAuthenticated: false });

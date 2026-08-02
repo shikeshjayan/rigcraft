@@ -43,16 +43,15 @@ export const supportService = {
 
   getById: async (id) => {
     const { data } = await api.get(ENDPOINTS.ADMIN_SUPPORT.DETAILS(id));
-    return normalizeTicket(data.data);
+    const { ticket, messages } = data.data || {};
+    return { ...normalizeTicket(ticket), messages: messages || [] };
   },
 
   reply: async (id, message, attachments = []) => {
     const formData = new FormData();
     formData.append("message", message);
     attachments.forEach((file) => formData.append("attachments", file));
-    const { data } = await api.post(ENDPOINTS.ADMIN_SUPPORT.REPLY(id), formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const { data } = await api.post(ENDPOINTS.ADMIN_SUPPORT.REPLY(id), formData);
     return data.data;
   },
 

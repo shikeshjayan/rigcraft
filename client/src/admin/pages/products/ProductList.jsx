@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Chip } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon, Visibility } from "@mui/icons-material";
@@ -17,7 +17,7 @@ import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
-import { extractError } from "../../utils/extractError";
+import { useAdminList, useAdminMutation } from "../../hooks";
 
 const ProductList = () => {
   const navigate = useNavigate();
@@ -26,55 +26,44 @@ const ProductList = () => {
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
 
-  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
-
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState({ categoryType: "", isActive: "", isFeatured: "" });
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const fetchProducts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await productService.list({ page, pageSize, search, ...filters });
-      setProducts(result.data);
-      setTotal(result.total);
-    } catch (err) {
-      toast(extractError(err, "Failed to load products"), "error");
-    } finally {
-      setLoading(false);
+  const {
+    data: products,
+    total,
+    loading,
+    refetch,
+  } = useAdminList("productList", productService, { page, pageSize, search, ...filters });
+
+  const deleteMutation = useAdminMutation(
+    (id) => productService.delete(id),
+    { queryKey: "productList", successMessage: "Product deleted" }
+  );
+
+  const bulkDeleteMutation = useAdminMutation(
+    (ids) => Promise.all(ids.map((id) => productService.delete(id))),
+    {
+      queryKey: "productList",
+      skipSuccessToast: true,
+      onSuccess: (_, ids) => {
+        toast(`${ids.length} products deleted`);
+        setSelected([]);
+      },
     }
-  }, [page, pageSize, search, filters, toast]);
+  );
 
-  useEffect(() => { fetchProducts(); }, [fetchProducts]);
+  const handleDelete = (id) => setDeleteTarget(id);
 
-  const handleDelete = async (id) => {
-    setDeleteTarget(id);
-  };
-
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (!deleteTarget) return;
-    try {
-      await productService.delete(deleteTarget);
-      toast("Product deleted successfully");
-      setDeleteTarget(null);
-      fetchProducts();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete product"), "error");
-    }
+    deleteMutation.mutate(deleteTarget);
+    setDeleteTarget(null);
   };
 
-  const handleBulkDelete = async () => {
-    try {
-      await Promise.all(selected.map((id) => productService.delete(id)));
-      toast(`${selected.length} products deleted`);
-      setSelected([]);
-      fetchProducts();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete products"), "error");
-    }
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate(selected);
   };
 
   const filterOptions = [
@@ -142,19 +131,19 @@ const ProductList = () => {
         <Chip label={typeDef.label} size="small" sx={{ backgroundColor: `${color}15`, color: color, fontWeight: 500, fontSize: "0.7rem" }} />
       ) : val;
     }},
-{ key: "price", label: "Regular Price", render: (val, row) => (
-       <Box>
-         <Box sx={{ fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{formatCurrency(val)}</Box>
-         {row.salePrice && (
-           <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)", textDecoration: "line-through" }}>{formatCurrency(row.salePrice)}</Box>
-         )}
-       </Box>
-     )},
+    { key: "price", label: "Regular Price", render: (val, row) => (
+      <Box>
+        <Box sx={{ fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{formatCurrency(val)}</Box>
+        {row.salePrice && (
+          <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)", textDecoration: "line-through" }}>{formatCurrency(row.salePrice)}</Box>
+        )}
+      </Box>
+    )},
     { key: "stock", label: "Stock", align: "center", render: (val) => (
       <Chip label={val} size="small" color={val === 0 ? "error" : val < 10 ? "warning" : "default"} variant="outlined" sx={{ fontSize: "0.75rem" }} />
     )},
     { key: "isActive", label: "Status", render: (val) => <StatusBadge status={val ? "active" : "inactive"} /> },
-    { key: "createdAt", label: "Created", render: (val) => formatDate(val) },
+    { key: "createdAt", label: "Created", render: (val) => val ? formatDate(val) : "—" },
     { key: "actions", label: "", render: (_, row) => (
       <TableActions
         actions={[
@@ -174,7 +163,7 @@ const ProductList = () => {
         onSearchChange={setSearch}
         addPath="/admin/products/new"
         addLabel="New Product"
-        onRefresh={fetchProducts}
+        onRefresh={refetch}
       />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
       <DataTable

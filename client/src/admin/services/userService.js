@@ -8,8 +8,6 @@ const normalizeUser = (u) => ({
   __v: undefined,
   name: u.name || `${u.firstName || ""} ${u.lastName || ""}`.trim() || "Unknown",
   status: u.isBlocked ? "blocked" : "active",
-  firstName: undefined,
-  lastName: undefined,
 });
 
 const normalizeList = (res) => {

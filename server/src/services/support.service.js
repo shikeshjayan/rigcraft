@@ -3,10 +3,28 @@ import supportTicketRepository from "../repositories/support.repository.js";
 import supportMessageRepository from "../repositories/support-message.repository.js";
 import ApiError from "../utils/ApiError.js";
 import SupportTicket from "../models/support-ticket.model.js";
+import User from "../models/user.model.js";
+import Order from "../models/order.model.js";
+import * as uploadService from "./upload.service.js";
 import { TICKET_STATUS, TICKET_PRIORITY } from "../constants/support.constants.js";
+import { USER_ROLES } from "../constants/constants.js";
 
 const TICKET_PREFIX = "SUP";
 const TICKET_NUMBER_RETRIES = 5;
+
+const uploadAttachments = async (files) => {
+  if (!files || files.length === 0) return [];
+
+  const uploaded = await uploadService.uploadMultipleImages(files, "support");
+
+  return uploaded.map((uploadedItem, i) => ({
+    url: uploadedItem?.url,
+    publicId: uploadedItem?.publicId || null,
+    originalName: files[i]?.originalname,
+    mimeType: files[i]?.mimetype,
+    size: files[i]?.size,
+  }));
+};
 
 export const generateTicketNumber = async () => {
   for (let attempt = 0; attempt < TICKET_NUMBER_RETRIES; attempt++) {
@@ -22,6 +40,14 @@ export const generateTicketNumber = async () => {
 
 export const createTicket = async (userId, { order, issueType, subject, description, name }, files = []) => {
   const ticketNumber = await generateTicketNumber();
+
+  if (order) {
+    const existingOrder = await Order.findById(order);
+    if (!existingOrder) throw ApiError.notFound("Order not found");
+    if (existingOrder.user.toString() !== userId.toString()) {
+      throw ApiError.forbidden("You can only create a ticket for your own orders");
+    }
+  }
 
   const ticketData = {
     ticketNumber,
@@ -39,13 +65,7 @@ export const createTicket = async (userId, { order, issueType, subject, descript
 
   const ticket = await supportTicketRepository.create(ticketData);
 
-  const attachments = files.map((f) => ({
-    url: f.path || f.url,
-    publicId: f.filename || f.publicId,
-    originalName: f.originalname,
-    mimeType: f.mimetype,
-    size: f.size,
-  }));
+  const attachments = await uploadAttachments(files);
 
   await supportMessageRepository.create({
     ticket: ticket._id,
@@ -68,7 +88,7 @@ export const getMyTickets = async (userId, query = {}) => {
       .skip(skip)
       .limit(Number(limit))
       .populate("order", "orderNumber total orderStatus")
-      .populate("assignedTo", "name email"),
+      .populate("assignedTo", "firstName lastName email"),
     SupportTicket.countDocuments({ user: userId }),
   ]);
 
@@ -86,7 +106,7 @@ export const getMyTickets = async (userId, query = {}) => {
 export const getMyTicket = async (ticketId, userId) => {
   const ticket = await SupportTicket.findById(ticketId)
     .populate("order", "orderNumber total orderStatus createdAt")
-    .populate("assignedTo", "name email");
+    .populate("assignedTo", "firstName lastName email");
 
   if (!ticket) throw ApiError.notFound("Ticket not found");
   if (ticket.user.toString() !== userId.toString()) {
@@ -108,13 +128,7 @@ export const sendMessage = async (ticketId, userId, userRole, { message }, files
     throw ApiError.forbidden("You can only reply to your own tickets");
   }
 
-  const attachments = files.map((f) => ({
-    url: f.path || f.url,
-    publicId: f.filename || f.publicId,
-    originalName: f.originalname,
-    mimeType: f.mimetype,
-    size: f.size,
-  }));
+  const attachments = await uploadAttachments(files);
 
   const msg = await supportMessageRepository.create({
     ticket: ticketId,
@@ -126,7 +140,7 @@ export const sendMessage = async (ticketId, userId, userRole, { message }, files
 
   const populated = await supportMessageRepository.model
     .findById(msg._id)
-    .populate("sender", "name email avatar role");
+    .populate("sender", "firstName lastName email avatar role");
 
   ticket.lastMessageAt = new Date();
 
@@ -188,9 +202,9 @@ export const adminGetAllTickets = async (query = {}) => {
       .sort(sort)
       .skip(skip)
       .limit(Number(limit))
-      .populate("user", "name email avatar")
+      .populate("user", "firstName lastName email avatar")
       .populate("order", "orderNumber total orderStatus")
-      .populate("assignedTo", "name email"),
+      .populate("assignedTo", "firstName lastName email"),
     SupportTicket.countDocuments(filter),
   ]);
 
@@ -207,9 +221,9 @@ export const adminGetAllTickets = async (query = {}) => {
 
 export const adminGetTicket = async (ticketId) => {
   const ticket = await SupportTicket.findById(ticketId)
-    .populate("user", "name email phone avatar")
+    .populate("user", "firstName lastName email phone avatar")
     .populate("order", "orderNumber total orderStatus paymentMethod createdAt items")
-    .populate("assignedTo", "name email role");
+    .populate("assignedTo", "firstName lastName email role");
 
   if (!ticket) throw ApiError.notFound("Ticket not found");
 
@@ -246,6 +260,13 @@ export const adminUpdateStatus = async (ticketId, status, user) => {
 
 export const adminAssignTicket = async (ticketId, assignedToId) => {
   const ticket = await supportTicketRepository.findById(ticketId);
+
+  const assignee = await User.findById(assignedToId);
+  if (!assignee) throw ApiError.notFound("User not found");
+  if (![USER_ROLES.ADMIN, USER_ROLES.MANAGER].includes(assignee.role)) {
+    throw ApiError.badRequest("Can only assign a ticket to an admin or manager");
+  }
+
   ticket.assignedTo = assignedToId;
   await ticket.save({ validateBeforeSave: false });
   return ticket;
