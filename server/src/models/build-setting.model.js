@@ -6,6 +6,23 @@ const buildSettingSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    assemblyFeeEnabled: {
+      type: Boolean,
+      default: false,
+    },
+    assemblyFeeType: {
+      type: String,
+      enum: ["percent", "fixed"],
+      default: "percent",
+    },
+    assemblyFeeValue: {
+      type: Number,
+      default: 0.5,
+    },
+    requireCompleteBuild: {
+      type: Boolean,
+      default: true,
+    },
   },
   {
     timestamps: true,
