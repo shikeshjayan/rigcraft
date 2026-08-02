@@ -29,7 +29,7 @@ const DynamicLogo = ({ className = '', onClick }) => {
   return (
     <h1
       onClick={handleClick}
-      className={`text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 tracking-tighter cursor-pointer ${className}`}
+      className={`text-4xl font-black text-[var(--color-primary)] tracking-tighter cursor-pointer ${className}`}
     >
       {storeName.toUpperCase()}
     </h1>

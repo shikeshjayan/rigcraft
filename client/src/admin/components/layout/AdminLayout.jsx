@@ -1,14 +1,25 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, Navigate, useLocation } from "react-router-dom";
 import Sidebar from "./Sidebar";
 import Header from "./Header";
 import useAuthStore from "../../store/authStore";
+import useNotificationStore from "../../store/notificationStore";
+import { connectSocket } from "../../../shared/socket";
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { isAuthenticated, user } = useAuthStore();
+  const fetchUnreadCount = useNotificationStore((s) => s.fetchUnreadCount);
   const location = useLocation();
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const sock = connectSocket();
+    const handleNotif = () => fetchUnreadCount();
+    sock.on("notification:new", handleNotif);
+    return () => sock.off("notification:new", handleNotif);
+  }, [isAuthenticated, fetchUnreadCount]);
 
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;

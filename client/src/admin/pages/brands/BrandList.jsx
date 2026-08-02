@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
@@ -11,11 +11,12 @@ import AdminThumbnail from "../../components/common/AdminThumbnail";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { brandService } from "../../services/brandService";
-import { extractError } from "../../utils/extractError";
-import { formatDate } from "../../utils/formatDate";
+import { sanitizeUrl } from "../../../utils/sanitizeUrl";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
+import { useAdminList, useAdminMutation } from "../../hooks";
+import { formatDate } from "../../utils/formatDate";
 
 const BrandList = () => {
   const navigate = useNavigate();
@@ -24,53 +25,44 @@ const BrandList = () => {
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
 
-  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
-
-  const [brands, setBrands] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState({ isActive: "" });
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const fetchBrands = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await brandService.list({ page, pageSize, search, ...filters });
-      setBrands(result.data);
-      setTotal(result.total);
-    } catch (err) {
-      toast(extractError(err, "Failed to load brands"), "error");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize, search, filters, toast]);
+  const {
+    data: brands,
+    total,
+    loading,
+    refetch,
+  } = useAdminList("brandList", brandService, { page, pageSize, search, ...filters });
 
-  useEffect(() => { fetchBrands(); }, [fetchBrands]);
+  const deleteMutation = useAdminMutation(
+    (id) => brandService.delete(id),
+    { queryKey: "brandList", successMessage: "Brand deleted" }
+  );
+
+  const bulkDeleteMutation = useAdminMutation(
+    (ids) => Promise.all(ids.map((id) => brandService.delete(id))),
+    {
+      queryKey: "brandList",
+      skipSuccessToast: true,
+      onSuccess: (_, ids) => {
+        toast(`${ids.length} brands deleted`);
+        setSelected([]);
+      },
+    }
+  );
 
   const handleDelete = (id) => setDeleteTarget(id);
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (!deleteTarget) return;
-    try {
-      await brandService.delete(deleteTarget);
-      toast("Brand deleted successfully");
-      setDeleteTarget(null);
-      fetchBrands();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete brand"), "error");
-    }
+    deleteMutation.mutate(deleteTarget);
+    setDeleteTarget(null);
   };
 
-  const handleBulkDelete = async () => {
-    try {
-      await Promise.all(selected.map((id) => brandService.delete(id)));
-      toast(`${selected.length} brands deleted`);
-      setSelected([]);
-      fetchBrands();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete brands"), "error");
-    }
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate(selected);
   };
 
   const filterOptions = [
@@ -105,14 +97,14 @@ const BrandList = () => {
             </Box>
           }
         />
-    <Box>
+        <Box>
           <Box sx={{ fontWeight: 500, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val}</Box>
           <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)" }}>{row.slug}</Box>
         </Box>
       </Box>
     )},
     { key: "website", label: "Website", render: (val) => val ? (
-      <Box component="a" href={val} target="_blank" rel="noopener" sx={{ color: "var(--color-admin-primary)", fontSize: "0.8125rem", textDecoration: "none", "&:hover": { textDecoration: "underline" } }}>
+      <Box component="a" href={sanitizeUrl(val)} target="_blank" rel="noopener" sx={{ color: "var(--color-admin-primary)", fontSize: "0.8125rem", textDecoration: "none", "&:hover": { textDecoration: "underline" } }}>
         {val.replace(/^https?:\/\//, "")}
       </Box>
     ) : <Box sx={{ color: "var(--color-admin-muted)" }}>—</Box>},
@@ -137,7 +129,7 @@ const BrandList = () => {
         onSearchChange={setSearch}
         addPath="/admin/brands/new"
         addLabel="New Brand"
-        onRefresh={fetchBrands}
+        onRefresh={refetch}
       />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
       <DataTable

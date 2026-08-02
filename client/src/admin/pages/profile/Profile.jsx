@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Box, Typography, Grid, Avatar } from "@mui/material";
 import AdminInput from "../../components/common/Input";
 import AdminButton from "../../components/common/Button";
@@ -7,6 +7,11 @@ import { useToast } from "../../components/common/Toast";
 import useAuthStore from "../../store/authStore";
 import { authService } from "../../../services/auth.service";
 import { extractError } from "../../utils/extractError";
+
+const formatPhoneForDisplay = (val) => {
+  const digits = (val || "").replace(/[^0-9]/g, "").replace(/^91/, "");
+  return digits ? `+91 ${digits}` : "";
+};
 
 const Profile = () => {
   const { user, setUser } = useAuthStore();
@@ -18,9 +23,26 @@ const Profile = () => {
   const [name, setName] = useState(
     user?.name || [user?.firstName, user?.lastName].filter(Boolean).join(' ') || ''
   );
+  const [phone, setPhone] = useState(formatPhoneForDisplay(user?.phone));
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    authService
+      .getProfile()
+      .then((res) => {
+        if (!active || !res?.data) return;
+        const fresh = res.data;
+        const fullName = fresh.name || [fresh.firstName, fresh.lastName].filter(Boolean).join(' ') || "";
+        setUser({ ...useAuthStore.getState().user, ...fresh, name: fullName, phone: fresh.phone || "" });
+        setName(fullName);
+        setPhone(formatPhoneForDisplay(fresh.phone));
+      })
+      .catch(() => {});
+    return () => { active = false; };
+  }, [setUser]);
 
   const splitName = (fullName) => {
     const parts = (fullName || "").trim().split(/\s+/);
@@ -30,11 +52,20 @@ const Profile = () => {
     };
   };
 
+  const handlePhoneChange = (e) => {
+    const digits = e.target.value.replace(/[^0-9]/g, "").replace(/^91/, "");
+    setPhone(digits ? `+91 ${digits}` : "");
+  };
+
   const handleSaveProfile = async () => {
+    if (phone && !/^\+91\d{10}$/.test(phone.replace(/\s/g, ""))) {
+      toast("Please enter a valid mobile number", "error");
+      return;
+    }
     setSaving(true);
     try {
       const { firstName, lastName } = splitName(name);
-      const payload = { firstName, lastName };
+      const payload = { firstName, lastName, phone: phone.replace(/\s/g, "") };
       if (avatar.length > 0) {
         const fd = new FormData();
         fd.append("avatar", avatar[0]);
@@ -104,6 +135,10 @@ const Profile = () => {
               <Grid size={{ xs: 12, sm: 6 }}>
                 <AdminInput label="Email" value={user?.email} disabled />
               </Grid>
+              <Grid size={{ xs: 12, sm: 6 }}>
+                <AdminInput label="Phone Number" value={phone} onChange={handlePhoneChange} placeholder="+91 98765 43210" />
+              </Grid>
+              <Grid size={{ xs: 12, sm: 6 }} />
               <Grid size={{ xs: 12 }}>
                 <AdminButton variant="primary" onClick={handleSaveProfile} loading={saving}>Save Profile</AdminButton>
               </Grid>

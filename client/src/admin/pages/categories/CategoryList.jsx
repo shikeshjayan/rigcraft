@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Box, Chip } from "@mui/material";
-import { Edit as EditIcon, Delete as DeleteIcon, Visibility, VisibilityOff } from "@mui/icons-material";
+import { Box } from "@mui/material";
+import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import DataTable from "../../components/tables/DataTable";
 import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
@@ -11,11 +11,10 @@ import AdminThumbnail from "../../components/common/AdminThumbnail";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { categoryService } from "../../services/categoryService";
-import { extractError } from "../../utils/extractError";
-import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
+import { useAdminList, useAdminMutation } from "../../hooks";
 
 const CategoryList = () => {
   const navigate = useNavigate();
@@ -24,53 +23,44 @@ const CategoryList = () => {
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
 
-  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
-
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState({ isActive: "" });
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const fetchCategories = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await categoryService.list({ page, pageSize, search, ...filters });
-      setCategories(result.data);
-      setTotal(result.total);
-      } catch (err) {
-        toast(extractError(err, "Failed to load categories"), "error");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize, search, filters, toast]);
+  const {
+    data: categories,
+    total,
+    loading,
+    refetch,
+  } = useAdminList("categoryList", categoryService, { page, pageSize, search, ...filters });
 
-  useEffect(() => { fetchCategories(); }, [fetchCategories]);
+  const deleteMutation = useAdminMutation(
+    (id) => categoryService.delete(id),
+    { queryKey: "categoryList", successMessage: "Category deleted" }
+  );
+
+  const bulkDeleteMutation = useAdminMutation(
+    (ids) => Promise.all(ids.map((id) => categoryService.delete(id))),
+    {
+      queryKey: "categoryList",
+      skipSuccessToast: true,
+      onSuccess: (_, ids) => {
+        toast(`${ids.length} categories deleted`);
+        setSelected([]);
+      },
+    }
+  );
 
   const handleDelete = (id) => setDeleteTarget(id);
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (!deleteTarget) return;
-    try {
-      await categoryService.delete(deleteTarget);
-      toast("Category deleted successfully");
-      setDeleteTarget(null);
-      fetchCategories();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete category"), "error");
-    }
+    deleteMutation.mutate(deleteTarget);
+    setDeleteTarget(null);
   };
 
-  const handleBulkDelete = async () => {
-    try {
-      await Promise.all(selected.map((id) => categoryService.delete(id)));
-      toast(`${selected.length} categories deleted`);
-      setSelected([]);
-      fetchCategories();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete categories"), "error");
-    }
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate(selected);
   };
 
   const filterOptions = [
@@ -116,7 +106,7 @@ const CategoryList = () => {
     { key: "productCount", label: "Products", align: "center" },
     { key: "isActive", label: "Status", render: (val) => <StatusBadge status={val ? "active" : "inactive"} /> },
     { key: "order", label: "Order", align: "center" },
-    { key: "createdAt", label: "Created", render: (val) => formatDate(val) },
+    { key: "createdAt", label: "Created", render: (val) => val ? new Date(val).toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" }) : "—" },
     { key: "actions", label: "", render: (_, row) => (
       <TableActions
         actions={[
@@ -135,7 +125,7 @@ const CategoryList = () => {
         onSearchChange={setSearch}
         addPath="/admin/categories/new"
         addLabel="New Category"
-        onRefresh={fetchCategories}
+        onRefresh={refetch}
       />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
       <DataTable

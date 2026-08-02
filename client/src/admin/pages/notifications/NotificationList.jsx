@@ -1,16 +1,16 @@
-import { useState, useEffect, useCallback } from "react";
+import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Chip, IconButton, Tooltip } from "@mui/material";
 import { MarkEmailRead as MarkReadIcon, DoneAll as MarkAllReadIcon } from "@mui/icons-material";
 import DataTable from "../../components/tables/DataTable";
 import TableToolbar from "../../components/tables/TableToolbar";
-import { useToast } from "../../components/common/Toast";
 import { notificationService } from "../../services/notificationService";
 import useNotificationStore from "../../store/notificationStore";
-import { extractError } from "../../utils/extractError";
+
 import { formatDateTime } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useViewportRows } from "../../hooks/useViewportRows";
+import { useAdminList, useAdminMutation } from "../../hooks";
 
 const TYPE_COLORS = {
   order: "primary",
@@ -26,57 +26,39 @@ const TYPE_COLORS = {
 
 const NotificationList = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { maxRows, containerRef } = useViewportRows();
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
 
-  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
-
-  const [notifications, setNotifications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
-  const [unreadCount, setUnreadCount] = useState(0);
-
+  const unreadCount = useNotificationStore((s) => s.unreadCount);
   const fetchUnreadCount = useNotificationStore((s) => s.fetchUnreadCount);
 
-  const fetchNotifications = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await notificationService.list({ page, pageSize });
-      setNotifications(result.data);
-      setTotal(result.total);
-      setUnreadCount(result.unreadCount ?? 0);
-      fetchUnreadCount();
-    } catch (err) {
-      toast(extractError(err, "Failed to load notifications"), "error");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize, toast, fetchUnreadCount]);
+  const {
+    data: notifications,
+    total,
+    loading,
+    refetch,
+  } = useAdminList("notificationList", notificationService, { page, pageSize });
 
-  useEffect(() => { fetchNotifications(); }, [fetchNotifications]);
+  useEffect(() => {
+    fetchUnreadCount();
+  }, [notifications, fetchUnreadCount]);
 
-  const handleMarkAsRead = async (id) => {
-    try {
-      await notificationService.markAsRead(id);
-      setNotifications((prev) => prev.map((n) => n.id === id ? { ...n, isRead: true } : n));
-      setUnreadCount((prev) => Math.max(0, prev - 1));
-      fetchUnreadCount();
-    } catch (err) {
-      toast(extractError(err, "Failed to mark as read"), "error");
-    }
+  const markAsReadMutation = useAdminMutation(
+    (id) => notificationService.markAsRead(id),
+    { queryKey: "notificationList", skipSuccessToast: true, onSuccess: () => fetchUnreadCount() }
+  );
+
+  const handleMarkAsRead = (id) => {
+    markAsReadMutation.mutate(id);
   };
 
-  const handleMarkAllAsRead = async () => {
-    try {
-      await notificationService.markAllAsRead();
-      setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
-      setUnreadCount(0);
-      fetchUnreadCount();
-      toast("All notifications marked as read");
-    } catch (err) {
-      toast(extractError(err, "Failed to mark all as read"), "error");
-    }
+  const markAllAsReadMutation = useAdminMutation(
+    () => notificationService.markAllAsRead(),
+    { queryKey: "notificationList", successMessage: "All notifications marked as read", onSuccess: () => fetchUnreadCount() }
+  );
+
+  const handleMarkAllAsRead = () => {
+    markAllAsReadMutation.mutate();
   };
 
   const columns = [
@@ -123,7 +105,7 @@ const NotificationList = () => {
     <Box ref={containerRef}>
       <TableToolbar
         title="Notifications"
-        onRefresh={fetchNotifications}
+        onRefresh={refetch}
         actions={
           unreadCount > 0 ? (
             <button

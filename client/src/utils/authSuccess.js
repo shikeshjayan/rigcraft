@@ -1,8 +1,6 @@
 import useAuthStore from '../admin/store/authStore';
 
-export const handleAuthSuccess = (user, accessToken, navigate, login) => {
-  localStorage.setItem("accessToken", accessToken);
-
+export const handleAuthSuccess = (user, navigate, login) => {
   if (!user) return;
 
   login(user);
@@ -10,10 +8,13 @@ export const handleAuthSuccess = (user, accessToken, navigate, login) => {
   useAuthStore.setState({
     user: {
       id: user._id,
+      firstName: user.firstName,
+      lastName: user.lastName,
       name: `${user.firstName} ${user.lastName}`,
       email: user.email,
       role: user.role,
       avatar: user.avatar?.url || null,
+      phone: user.phone || "",
     },
     isAuthenticated: true,
   });

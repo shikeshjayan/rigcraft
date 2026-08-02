@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Chip } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon, Visibility } from "@mui/icons-material";
@@ -16,7 +16,7 @@ import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
-import { extractError } from "../../utils/extractError";
+import { useAdminList, useAdminMutation } from "../../hooks";
 
 const PrebuiltList = () => {
   const navigate = useNavigate();
@@ -25,53 +25,44 @@ const PrebuiltList = () => {
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
 
-  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
-
-  const [items, setItems] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
+  const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState({ isActive: "" });
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [selected, setSelected] = useState([]);
 
-  const fetchItems = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await prebuiltService.list({ page, pageSize, search, ...filters });
-      setItems(result.data);
-      setTotal(result.total);
-    } catch (err) {
-      toast(extractError(err, "Failed to load prebuilt PCs"), "error");
-    } finally {
-      setLoading(false);
+  const {
+    data: items,
+    total,
+    loading,
+    refetch,
+  } = useAdminList("prebuiltList", prebuiltService, { page, pageSize, search, ...filters });
+
+  const deleteMutation = useAdminMutation(
+    (id) => prebuiltService.delete(id),
+    { queryKey: "prebuiltList", successMessage: "Prebuilt PC deleted" }
+  );
+
+  const bulkDeleteMutation = useAdminMutation(
+    (ids) => Promise.all(ids.map((id) => prebuiltService.delete(id))),
+    {
+      queryKey: "prebuiltList",
+      skipSuccessToast: true,
+      onSuccess: (_, ids) => {
+        toast(`${ids.length} prebuilt PCs deleted`);
+        setSelected([]);
+      },
     }
-  }, [page, pageSize, search, filters, toast]);
-
-  useEffect(() => { fetchItems(); }, [fetchItems]);
+  );
 
   const handleDelete = (id) => setDeleteTarget(id);
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (!deleteTarget) return;
-    try {
-      await prebuiltService.delete(deleteTarget);
-      toast("Prebuilt PC deleted");
-      setDeleteTarget(null);
-      fetchItems();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete prebuilt PC"), "error");
-    }
+    deleteMutation.mutate(deleteTarget);
+    setDeleteTarget(null);
   };
 
-  const handleBulkDelete = async () => {
-    try {
-      await Promise.all(selected.map((id) => prebuiltService.delete(id)));
-      toast(`${selected.length} prebuilt PCs deleted`);
-      setSelected([]);
-      fetchItems();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete prebuilt PCs"), "error");
-    }
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate(selected);
   };
 
   const filterOptions = [
@@ -111,7 +102,7 @@ const PrebuiltList = () => {
     { key: "stock", label: "Stock", align: "center", render: (val) => <Chip label={val} size="small" color={val === 0 ? "error" : val < 5 ? "warning" : "default"} variant="outlined" sx={{ fontSize: "0.75rem" }} /> },
     { key: "isFeatured", label: "Featured", render: (val) => val ? <Chip label="Featured" size="small" color="primary" variant="outlined" sx={{ fontSize: "0.7rem" }} /> : "—" },
     { key: "isActive", label: "Status", render: (val) => <StatusBadge status={val ? "active" : "inactive"} /> },
-    { key: "createdAt", label: "Created", render: (val) => formatDate(val) },
+    { key: "createdAt", label: "Created", render: (val) => val ? formatDate(val) : "—" },
     { key: "actions", label: "", render: (_, row) => (
       <TableActions
         actions={[
@@ -131,7 +122,7 @@ const PrebuiltList = () => {
         onSearchChange={setSearch}
         addPath="/admin/prebuilt/new"
         addLabel="New Prebuilt"
-        onRefresh={fetchItems}
+        onRefresh={refetch}
       />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
       <DataTable

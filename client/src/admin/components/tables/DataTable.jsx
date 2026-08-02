@@ -27,6 +27,9 @@ const DataTable = ({
     return <EmptyState title="No data found" description="No records match your current filters." />;
   }
 
+  const maxPage = Math.max(0, Math.ceil(total / pageSize) - 1);
+  const displayPage = Number.isFinite(page) ? Math.min(Math.max(0, Math.floor(page)), maxPage) : 0;
+
   return (
     <Paper
       elevation={0}
@@ -117,7 +120,7 @@ const DataTable = ({
         <TablePagination
           component="div"
           count={total}
-          page={page}
+          page={displayPage}
           onPageChange={onPageChange}
           rowsPerPage={pageSize}
           onRowsPerPageChange={(e) => onPageSizeChange(parseInt(e.target.value, 10))}

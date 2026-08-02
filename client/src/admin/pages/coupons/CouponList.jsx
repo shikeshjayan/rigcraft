@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Chip } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
@@ -10,11 +10,11 @@ import StatusBadge from "../../components/common/StatusBadge";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { couponService } from "../../services/couponService";
-import { extractError } from "../../utils/extractError";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
+import { useAdminList, useAdminMutation } from "../../hooks";
 
 const CouponList = () => {
   const navigate = useNavigate();
@@ -23,52 +23,44 @@ const CouponList = () => {
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
 
-  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
-  const [coupons, setCoupons] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
+  const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState({ isActive: "" });
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [selected, setSelected] = useState([]);
 
-  const fetchCoupons = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await couponService.list({ page, pageSize, search, ...filters });
-      setCoupons(result.data);
-      setTotal(result.total);
-    } catch (err) {
-      toast(extractError(err, "Failed to load coupons"), "error");
-    } finally {
-      setLoading(false);
+  const {
+    data: coupons,
+    total,
+    loading,
+    refetch,
+  } = useAdminList("couponList", couponService, { page, pageSize, search, ...filters });
+
+  const deleteMutation = useAdminMutation(
+    (id) => couponService.delete(id),
+    { queryKey: "couponList", successMessage: "Coupon deleted" }
+  );
+
+  const bulkDeleteMutation = useAdminMutation(
+    (ids) => Promise.all(ids.map((id) => couponService.delete(id))),
+    {
+      queryKey: "couponList",
+      skipSuccessToast: true,
+      onSuccess: (_, ids) => {
+        toast(`${ids.length} coupons deleted`);
+        setSelected([]);
+      },
     }
-  }, [page, pageSize, search, filters, toast]);
-
-  useEffect(() => { fetchCoupons(); }, [fetchCoupons]);
+  );
 
   const handleDelete = (id) => setDeleteTarget(id);
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (!deleteTarget) return;
-    try {
-      await couponService.delete(deleteTarget);
-      toast("Coupon deleted");
-      setDeleteTarget(null);
-      fetchCoupons();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete coupon"), "error");
-    }
+    deleteMutation.mutate(deleteTarget);
+    setDeleteTarget(null);
   };
 
-  const handleBulkDelete = async () => {
-    try {
-      await Promise.all(selected.map((id) => couponService.delete(id)));
-      toast(`${selected.length} coupons deleted`);
-      setSelected([]);
-      fetchCoupons();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete coupons"), "error");
-    }
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate(selected);
   };
 
   const filterOptions = [
@@ -82,7 +74,7 @@ const CouponList = () => {
     { key: "minOrder", label: "Min Order", render: (val) => val ? `₹${val}` : "—" },
     { key: "usage", label: "Usage", render: (_, row) => `${row.usedCount} / ${row.maxUses}` },
     { key: "isActive", label: "Status", render: (val) => <StatusBadge status={val ? "active" : "inactive"} /> },
-    { key: "expiresAt", label: "Expires", render: (val) => formatDate(val) },
+    { key: "expiresAt", label: "Expires", render: (val) => val ? formatDate(val) : "—" },
     { key: "actions", label: "", render: (_, row) => (
       <TableActions
         actions={[
@@ -101,7 +93,7 @@ const CouponList = () => {
         onSearchChange={setSearch}
         addPath="/admin/coupons/new"
         addLabel="New Coupon"
-        onRefresh={fetchCoupons}
+        onRefresh={refetch}
       />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
       <DataTable
