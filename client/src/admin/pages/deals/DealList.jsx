@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Chip } from "@mui/material";
 import {
@@ -15,11 +15,11 @@ import StatusBadge from "../../components/common/StatusBadge";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { dealService } from "../../services/dealService";
-import { extractError } from "../../utils/extractError";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
+import { useAdminList, useAdminMutation } from "../../hooks";
 
 const DEAL_STATUS_COLOR = {
   active: "success",
@@ -32,60 +32,44 @@ const DealList = () => {
   const { toast } = useToast();
   const { maxRows, containerRef } = useViewportRows();
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
-  const { searchQuery: search, setSearchQuery: setSearch } = useSearch();
+  const { search, setSearch } = useSearch();
 
-  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
-
-  const [deals, setDeals] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState({ status: "" });
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [refreshKey, setRefreshKey] = useState(0);
 
-  const refetch = () => setRefreshKey((k) => k + 1);
+  const {
+    data: deals,
+    total,
+    loading,
+    refetch,
+  } = useAdminList("dealList", dealService, { page, pageSize, search, status: filters.status });
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      setLoading(true);
-      try {
-        const result = await dealService.list({ page, pageSize, search, status: filters.status });
-        if (!cancelled) {
-          setDeals(result.data);
-          setTotal(result.total);
-        }
-      } catch (err) {
-        if (!cancelled) toast(extractError(err, "Failed to load deals"), "error");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => { cancelled = true; };
-  }, [page, pageSize, search, filters.status, toast, refreshKey]);
+  const deleteMutation = useAdminMutation(
+    (id) => dealService.delete(id),
+    { queryKey: "dealList", successMessage: "Deal deleted" }
+  );
+
+  const toggleMutation = useAdminMutation(
+    (id) => dealService.toggleStatus(id),
+    {
+      queryKey: "dealList",
+      skipSuccessToast: true,
+      onSuccess: (updated) => {
+        toast(`Deal ${updated.isActive ? "activated" : "deactivated"}`);
+      },
+    }
+  );
 
   const handleDelete = (id) => setDeleteTarget(id);
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (!deleteTarget) return;
-    try {
-      await dealService.delete(deleteTarget);
-      toast("Deal deleted");
-      setDeleteTarget(null);
-      refetch();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete deal"), "error");
-    }
+    deleteMutation.mutate(deleteTarget);
+    setDeleteTarget(null);
   };
 
-  const handleToggleStatus = async (id) => {
-    try {
-      const updated = await dealService.toggleStatus(id);
-      toast(`Deal ${updated.isActive ? "activated" : "deactivated"}`);
-      refetch();
-    } catch (err) {
-      toast(extractError(err, "Failed to toggle status"), "error");
-    }
+  const handleToggleStatus = (id) => {
+    toggleMutation.mutate(id);
   };
 
   const getDealStatus = (deal) => {

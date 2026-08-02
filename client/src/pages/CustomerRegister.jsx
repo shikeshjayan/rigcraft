@@ -17,7 +17,8 @@ const CustomerRegister = () => {
     email: '',
     phone: '',
     password: '',
-    confirmPassword: ''
+    confirmPassword: '',
+    consent: false
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -29,8 +30,8 @@ const CustomerRegister = () => {
     mutationFn: authService.register,
     onSuccess: (data) => {
       if (data && data.success && data.data) {
-        const { user, accessToken } = data.data;
-        handleAuthSuccess(user, accessToken, navigate, login);
+         const { user } = data.data;
+        handleAuthSuccess(user, navigate, login);
       }
     }
   });
@@ -39,8 +40,8 @@ const CustomerRegister = () => {
     mutationFn: authService.googleLogin,
     onSuccess: (data) => {
       if (data && data.success && data.data) {
-        const { user, accessToken } = data.data;
-        handleAuthSuccess(user, accessToken, navigate, login);
+         const { user } = data.data;
+        handleAuthSuccess(user, navigate, login);
       }
     },
     onError: (err) => {
@@ -60,8 +61,9 @@ const CustomerRegister = () => {
       registerMutation.reset();
       return;
     }
-    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
-    setErrors(prev => ({ ...prev, [e.target.name]: '' }));
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
+    setErrors(prev => ({ ...prev, [name]: '' }));
     registerMutation.reset();
   };
 
@@ -98,6 +100,10 @@ const CustomerRegister = () => {
       newErrors.confirmPassword = 'Passwords do not match.';
     }
 
+    if (!formData.consent) {
+      newErrors.consent = 'Please agree to the Terms & Conditions and Privacy Policy.';
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -130,15 +136,25 @@ const CustomerRegister = () => {
             </h2>
           </div>
 
-          <div className="mt-6">
-            <GoogleLogin
-              onSuccess={({ credential }) => googleLoginMutation.mutate(credential)}
-              onError={() => setErrors((prev) => ({ ...prev, google: 'Google sign-in failed. Please try again.' }))}
-              width="100%"
-              shape="rectangular"
-              text="signup_with"
-              theme="outline"
-            />
+          <div className="relative mt-6">
+            <div className={formData.consent ? '' : 'pointer-events-none'}>
+              <GoogleLogin
+                onSuccess={({ credential }) => googleLoginMutation.mutate(credential)}
+                onError={() => setErrors((prev) => ({ ...prev, google: 'Google sign-in failed. Please try again.' }))}
+                width="100%"
+                shape="rectangular"
+                text="signup_with"
+                theme="outline"
+              />
+            </div>
+            {!formData.consent && (
+              <button
+                type="button"
+                aria-label="Agree to terms first"
+                onClick={() => setErrors((prev) => ({ ...prev, google: 'Please agree to the Terms & Conditions and Privacy Policy before continuing.' }))}
+                className="absolute inset-0 w-full cursor-pointer bg-transparent"
+              />
+            )}
             {errors.google && (
               <p className="mt-2 text-center text-sm text-red-600 font-medium">{errors.google}</p>
             )}
@@ -274,22 +290,31 @@ const CustomerRegister = () => {
             <div>
               <button
                 type="submit"
-                disabled={registerMutation.isPending}
-                className={`group relative cursor-pointer w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold text-white bg-[var(--color-primary)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-all shadow-md ${registerMutation.isPending ? 'opacity-70 cursor-not-allowed' : ''}`}
+                disabled={registerMutation.isPending || !formData.consent}
+                className={`group relative cursor-pointer w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold text-white bg-[var(--color-primary)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-all shadow-md ${registerMutation.isPending || !formData.consent ? 'opacity-70 cursor-not-allowed' : ''}`}
                 style={{ borderRadius: 'var(--radius-sm)' }}
               >
                 {registerMutation.isPending ? 'Creating Account...' : 'Create Account'}
               </button>
             </div>
-            <div className="mt-4 text-center text-xs text-gray-500 leading-relaxed">
-              By creating an account, you agree to RigCraft's{' '}
-              <Link to="/terms-of-service" className="font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">
-                Conditions of Use
-              </Link>{' '}
-              and{' '}
-              <Link to="/privacy-policy" className="font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">
-                Privacy Notice
-              </Link>.
+            <div>
+              <div className="flex items-start gap-2">
+                <input
+                  id="consent"
+                  name="consent"
+                  type="checkbox"
+                  checked={formData.consent}
+                  onChange={handleChange}
+                  className="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                />
+                <label htmlFor="consent" className="text-xs text-gray-600 leading-relaxed cursor-pointer">
+                  I agree to RigCraft's{' '}
+                  <Link to="/terms-of-service" className="font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">Conditions of Use</Link>{' '}
+                  and{' '}
+                  <Link to="/privacy-policy" className="font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">Privacy Notice</Link>.
+                </label>
+              </div>
+              {errors.consent && <p className="mt-1 text-xs text-red-600 font-medium">{errors.consent}</p>}
             </div>
             
             <div className="text-center mt-4">

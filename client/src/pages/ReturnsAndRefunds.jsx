@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 import CurrencyExchangeIcon from '@mui/icons-material/CurrencyExchange';
@@ -157,9 +158,9 @@ const ReturnsAndRefunds = () => {
                 <p className="text-sm text-gray-600 font-medium mb-6">
                   Have your Order ID ready and contact our support team to get your RMA number.
                 </p>
-                <button className="bg-blue-600 text-white font-bold py-3 px-8 rounded-sm hover:bg-blue-700 transition-colors uppercase tracking-wide text-[13px]">
+                <Link to="/contact?type=return" className="inline-block bg-blue-600 text-white font-bold py-3 px-8 rounded-sm hover:bg-blue-700 transition-colors uppercase tracking-wide text-[13px]">
                   Contact Support
-                </button>
+                </Link>
               </div>
             </div>
 

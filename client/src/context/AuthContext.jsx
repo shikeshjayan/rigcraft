@@ -42,8 +42,8 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setIsLoggedIn(false);
     setUser(null);
-    localStorage.removeItem('token');
-    localStorage.removeItem('accessToken');
+    localStorage.removeItem('rigcraft_auth');
+    localStorage.removeItem('rigcraft_user');
     localStorage.removeItem('admin-auth-storage');
     localStorage.removeItem('rigcraft_cart_guest');
     localStorage.removeItem('rigcraft_wishlist_guest');

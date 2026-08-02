@@ -1,17 +1,15 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box, Chip, Dialog, DialogTitle, DialogContent, DialogActions,
-  TextField, MenuItem, Typography, Tabs, Tab,
+  TextField, MenuItem, Tabs, Tab,
 } from "@mui/material";
-import { Add as AddIcon } from "@mui/icons-material";
 import DataTable from "../../components/tables/DataTable";
 import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import StatusBadge from "../../components/common/StatusBadge";
 import AdminThumbnail from "../../components/common/AdminThumbnail";
 import AdminButton from "../../components/common/Button";
-import { useToast } from "../../components/common/Toast";
 import { userService } from "../../services/userService";
 import { USER_STATUS_COLOR } from "../../constants/status";
 import { formatCurrency } from "../../utils/formatCurrency";
@@ -19,21 +17,21 @@ import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
-import { extractError } from "../../utils/extractError";
+import { useAdminList, useAdminMutation } from "../../hooks";
 
-const ROLES = ["customer", "admin", "manager"];
+import useAuthStore from "../../store/authStore";
+
+const ALL_ROLES = ["customer", "admin", "manager"];
 
 const UserList = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { maxRows, containerRef } = useViewportRows();
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
+  const currentUser = useAuthStore((state) => state.user);
+  const isCurrentUser = (role) => currentUser?.role === role;
+  const ROLES = isCurrentUser("manager") ? ALL_ROLES.filter((r) => r !== "admin") : ALL_ROLES;
 
-  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
-  const [users, setUsers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState({ role: "", status: "" });
 
   const [createOpen, setCreateOpen] = useState(false);
@@ -44,20 +42,17 @@ const UserList = () => {
   const ROLE_FILTER = ["", "customer", "admin", "manager"];
   const [roleTab, setRoleTab] = useState(0);
 
-  const fetchUsers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await userService.list({ page, pageSize, search, ...filters });
-      setUsers(result.data);
-      setTotal(result.total);
-    } catch (err) {
-      toast(extractError(err, "Failed to load users"), "error");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize, search, filters, toast]);
+  const {
+    data: users,
+    total,
+    loading,
+    refetch,
+  } = useAdminList("userList", userService, { page, pageSize, search, ...filters });
 
-  useEffect(() => { fetchUsers(); }, [fetchUsers]);
+  const createMutation = useAdminMutation(
+    (userData) => userService.create(userData),
+    { queryKey: "userList", successMessage: "User created" }
+  );
 
   const handleTabChange = (_, v) => {
     setRoleTab(v);
@@ -106,13 +101,11 @@ const UserList = () => {
   const handleCreate = async () => {
     setCreating(true);
     try {
-      await userService.create(form);
-      toast("User created successfully");
+      await createMutation.mutateAsync(form);
       setCreateOpen(false);
       setForm({ firstName: "", lastName: "", email: "", password: "", phone: "", role: "customer" });
-      fetchUsers();
-    } catch (err) {
-      toast(extractError(err, "Failed to create user"), "error");
+    } catch {
+      // error handled by useAdminMutation
     } finally {
       setCreating(false);
     }
@@ -124,9 +117,8 @@ const UserList = () => {
         title="Users"
         searchValue={search}
         onSearchChange={setSearch}
-        onRefresh={fetchUsers}
-        onAdd={() => setCreateOpen(true)}
-        addLabel="New User"
+        onRefresh={refetch}
+        {...(isCurrentUser("manager") ? {} : { onAdd: () => setCreateOpen(true), addLabel: "New User" })}
       />
       <Box sx={{ px: 3 }}>
         <Tabs

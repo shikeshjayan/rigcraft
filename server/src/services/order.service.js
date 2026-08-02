@@ -409,7 +409,7 @@ export const adminGetAllOrders = async (query = {}) => {
       .sort(sort)
       .skip(skip)
       .limit(Number(limit))
-      .populate("user", "name email"),
+      .populate("user", "firstName lastName email"),
     Order.countDocuments(filter),
   ]);
 

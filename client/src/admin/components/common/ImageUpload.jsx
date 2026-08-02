@@ -1,9 +1,17 @@
-import { useRef } from "react";
+import { useRef, useEffect } from "react";
 import { Box, Typography, IconButton } from "@mui/material";
 import { CloudUpload as UploadIcon, Close as CloseIcon } from "@mui/icons-material";
 
 const ImageUpload = ({ images = [], onChange, maxFiles = 5, multiple = true }) => {
   const inputRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      images.forEach((img) => {
+        if (img?.preview) URL.revokeObjectURL(img.preview);
+      });
+    };
+  }, [images]);
 
   const handleSelect = () => {
     inputRef.current?.click();
@@ -29,6 +37,11 @@ const ImageUpload = ({ images = [], onChange, maxFiles = 5, multiple = true }) =
       const identifier = img?.id || img?.url || img?.publicId;
       if (identifier !== undefined) return identifier !== id;
       return img !== id;
+    });
+    images.forEach((img) => {
+      if ((img?.id || img?.url || img?.publicId) === id && img?.preview) {
+        URL.revokeObjectURL(img.preview);
+      }
     });
     onChange(updated);
   };
