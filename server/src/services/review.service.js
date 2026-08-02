@@ -34,7 +34,13 @@ export const createReview = async (userId, data, files) => {
     throw ApiError.forbidden("Reviews are currently disabled");
   }
 
-  const isPurchased = await verifyPurchase(userId, item, itemType);
+  let itemType, item, itemModel, isVerifiedPurchase;
+  if (!isWebsite) {
+    itemType = data.itemType;
+    item = data.item;
+    if (!itemType || !item) {
+      throw ApiError.badRequest("item and itemType are required");
+    }
 
     const isPurchased = await verifyPurchase(userId, item, itemType);
     if (!isPurchased) {
@@ -77,7 +83,7 @@ export const createReview = async (userId, data, files) => {
     title,
     comment,
     images,
-    isVerifiedPurchase: isPurchased,
+    isVerifiedPurchase: !!isVerifiedPurchase,
     status: settings.review?.autoApprove ? "approved" : "pending",
   };
 

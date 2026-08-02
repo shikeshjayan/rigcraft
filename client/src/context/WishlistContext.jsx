@@ -41,12 +41,7 @@ export const WishlistProvider = ({ children }) => {
     }
   });
 
-  useEffect(() => {
-    isInitialized.current = false;
-    fetchWishlist().finally(() => {
-      isInitialized.current = true;
-    });
-  }, [user]);
+  const wishlist = user ? (serverItems ?? []) : guestWishlist;
 
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
@@ -83,9 +78,7 @@ export const WishlistProvider = ({ children }) => {
 
     if (user) {
       try {
-        const itemType = (item.pricing || item.category === 'prebuilt' || item.category === 'gaming' || item.category === 'streaming' || item.category === 'workstation' || item.category === 'office' || item.category === 'budget') ? 'prebuilt' : 'product';
-        await addToWishlistApi(itemType, normalizedId);
-        await fetchWishlist();
+        await addMutation.mutateAsync({ itemType, itemId: normalizedId });
         showToastNotification(`Added ${item.title || item.name} to wishlist!`);
       } catch (err) {
         console.error("Failed to add to wishlist:", err);

@@ -328,17 +328,18 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   };
 
   const handleWishlistAddToCart = (wishlistItem) => {
-    const product = wishlistItem.item;
-    const itemType = wishlistItem.itemType || product.type || 'product';
+    const product = wishlistItem.item || wishlistItem.product;
+    const itemType = wishlistItem.itemType || product?.type || 'product';
 
     addToCart({
-      id: product._id,
+      id: product?._id,
       item: product,
-      type: itemType, // This lets CartContext know the explicit type
-      title: product.name || product.title,
-      price: product.price || product.pricing?.price,
-      mrp: product.mrp || product.pricing?.price,
-      image: product.image || product.images?.[0]?.url || product.images?.[0]
+      type: itemType,
+      itemType,
+      title: product?.name || product?.title,
+      price: product?.price || product?.pricing?.price || product?.salePrice,
+      mrp: product?.mrp || product?.pricing?.price,
+      image: product?.image || product?.images?.[0]?.url || product?.images?.[0]
     });
   };
 
