@@ -10,6 +10,10 @@ export const login = asyncHandler(async (req, res) => {
   await authService.login(req.body, res);
 });
 
+export const googleLogin = asyncHandler(async (req, res) => {
+  await authService.googleLogin(req.body.credential, res);
+});
+
 export const checkAccount = asyncHandler(async (req, res) => {
   await authService.checkAccount(req.body.identifier);
   ApiResponse.ok(null, 'Account exists').send(res);

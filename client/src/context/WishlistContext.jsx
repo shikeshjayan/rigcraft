@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './AuthContext';
 import { getWishlist, addToWishlistApi, removeFromWishlistApi } from '../api/wishlist';
 
@@ -10,41 +11,35 @@ export const useWishlist = () => {
 
 export const WishlistProvider = ({ children }) => {
   const { user } = useAuth();
-  
+  const queryClient = useQueryClient();
+
   const storageKey = 'rigcraft_wishlist_guest';
 
-  const [wishlist, setWishlist] = useState([]);
-  const isInitialized = useRef(false);
+  const { data: serverItems, isLoading } = useQuery({
+    queryKey: ['wishlist', user?._id],
+    queryFn: async () => {
+      const data = await getWishlist();
+      if (!(data.success && data.data?.items)) return [];
+      return data.data.items.filter(itemObj => itemObj.item).map(itemObj => {
+        const product = itemObj.item;
+        return {
+          ...product,
+          id: product._id,
+          itemType: itemObj.itemType
+        };
+      });
+    },
+    enabled: !!user,
+    retry: false,
+  });
 
-  const fetchWishlist = async () => {
-    if (user) {
-      try {
-        const data = await getWishlist();
-        if (data.success && data.data?.items) {
-          const formattedItems = data.data.items.filter(itemObj => itemObj.item).map(itemObj => {
-            const product = itemObj.item;
-            return {
-              ...product,
-              id: product._id,
-              itemType: itemObj.itemType
-            };
-          });
-          setWishlist(formattedItems);
-        } else {
-          setWishlist([]);
-        }
-      } catch (err) {
-        console.error("Error fetching wishlist from backend:", err);
-      }
-    } else {
-      try {
-        const stored = localStorage.getItem(storageKey);
-        setWishlist(stored ? JSON.parse(stored) : []);
-      } catch {
-        setWishlist([]);
-      }
+  const [guestWishlist, setGuestWishlist] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(storageKey)) || [];
+    } catch {
+      return [];
     }
-  };
+  });
 
   useEffect(() => {
     isInitialized.current = false;
@@ -56,12 +51,11 @@ export const WishlistProvider = ({ children }) => {
   const [toastMessage, setToastMessage] = useState('');
   const [showToast, setShowToast] = useState(false);
 
-  // Sync Guest Wishlist to Local Storage
   useEffect(() => {
-    if (!user && isInitialized.current) {
-      localStorage.setItem(storageKey, JSON.stringify(wishlist));
+    if (!user) {
+      localStorage.setItem(storageKey, JSON.stringify(guestWishlist));
     }
-  }, [wishlist, user]);
+  }, [guestWishlist, user]);
 
   const showToastNotification = (msg) => {
     setToastMessage(msg);
@@ -71,9 +65,22 @@ export const WishlistProvider = ({ children }) => {
     }, 2000); // 2 seconds
   };
 
+  const invalidateWishlist = () => queryClient.invalidateQueries({ queryKey: ['wishlist', user?._id] });
+
+  const addMutation = useMutation({
+    mutationFn: ({ itemType, itemId }) => addToWishlistApi(itemType, itemId),
+    onSuccess: invalidateWishlist,
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: removeFromWishlistApi,
+    onSuccess: invalidateWishlist,
+  });
+
   const addToWishlist = async (item) => {
     const normalizedId = item.id || item._id;
-    
+    const itemType = (item.itemType === 'prebuilt' || (item.pricing && typeof item.pricing === 'object')) ? 'prebuilt' : 'product';
+
     if (user) {
       try {
         const itemType = (item.pricing || item.category === 'prebuilt' || item.category === 'gaming' || item.category === 'streaming' || item.category === 'workstation' || item.category === 'office' || item.category === 'budget') ? 'prebuilt' : 'product';
@@ -85,8 +92,8 @@ export const WishlistProvider = ({ children }) => {
         showToastNotification(err.response?.data?.message || 'Item already in wishlist!');
       }
     } else {
-      if (!wishlist.find(i => i.id === normalizedId)) {
-        setWishlist(prev => [...prev, { ...item, id: normalizedId }]);
+      if (!guestWishlist.find(i => i.id === normalizedId)) {
+        setGuestWishlist(prev => [...prev, { ...item, id: normalizedId }]);
         showToastNotification(`Added ${item.title || item.name} to wishlist!`);
       } else {
         showToastNotification(`${item.title || item.name} is already in wishlist!`);
@@ -97,18 +104,17 @@ export const WishlistProvider = ({ children }) => {
   const removeFromWishlist = async (id) => {
     if (user) {
       try {
-        await removeFromWishlistApi(id);
-        await fetchWishlist();
+        await removeMutation.mutateAsync(id);
       } catch (err) {
         console.error("Failed to remove from wishlist:", err);
       }
     } else {
-      setWishlist(prev => prev.filter(item => item.id !== id && item._id !== id));
+      setGuestWishlist(prev => prev.filter(item => item.id !== id && item._id !== id));
     }
   };
 
   return (
-    <WishlistContext.Provider value={{ wishlist, addToWishlist, removeFromWishlist }}>
+    <WishlistContext.Provider value={{ wishlist, isLoading, addToWishlist, removeFromWishlist }}>
       {children}
       {/* Toast Notification Popup */}
       <div 

@@ -25,10 +25,10 @@ const Card = ({ id, image, title, specs, price, tag, tagColor, description, mrp,
     }
 
     if (isWishlisted) {
-      removeFromWishlist(id);
+      removeFromWishlist(wishlistId);
     } else {
       addToWishlist({
-        id,
+        id: wishlistId,
         image,
         title,
         price,

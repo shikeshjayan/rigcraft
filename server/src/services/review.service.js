@@ -4,6 +4,7 @@ import prebuiltPCRepository from "../repositories/prebuiltPC.repository.js";
 import Order from "../models/order.model.js";
 import { getSettings } from "../models/settings.model.js";
 import * as uploadService from "./upload.service.js";
+import { moderateReview } from "./moderation.service.js";
 import ApiError from "../utils/ApiError.js";
 
 const FOLDER = "reviews";
@@ -24,7 +25,8 @@ const verifyPurchase = async (userId, itemId, itemType) => {
 };
 
 export const createReview = async (userId, data, files) => {
-  const { itemType, item, rating, title, comment } = data;
+  const { reviewType = "product", rating, title, comment } = data;
+  const isWebsite = reviewType === "website";
 
   const settings = await getSettings();
 
@@ -34,13 +36,22 @@ export const createReview = async (userId, data, files) => {
 
   const isPurchased = await verifyPurchase(userId, item, itemType);
 
-  const existing = await reviewRepository.findOneByUserAndItem(
-    userId,
-    item,
-    itemType
-  );
-  if (existing) {
-    throw ApiError.conflict("You have already reviewed this item");
+    const isPurchased = await verifyPurchase(userId, item, itemType);
+    if (!isPurchased) {
+      throw ApiError.forbidden("You must purchase this item before reviewing");
+    }
+
+    const existing = await reviewRepository.findOneByUserAndItem(
+      userId,
+      item,
+      itemType
+    );
+    if (existing) {
+      throw ApiError.conflict("You have already reviewed this item");
+    }
+
+    itemModel = ITEM_MODEL_MAP[itemType];
+    isVerifiedPurchase = true;
   }
 
   let images = [];
@@ -54,22 +65,44 @@ export const createReview = async (userId, data, files) => {
     images = uploaded.map((img) => ({ ...img, alt: title || "Review image" }));
   }
 
-  const itemModel = ITEM_MODEL_MAP[itemType];
+  const moderation = await moderateReview({
+    title: title || "",
+    comment: comment || "",
+  });
 
-  const review = await reviewRepository.create({
+  const createData = {
+    reviewType,
     user: userId,
-    itemType,
-    item,
-    itemModel,
     rating,
     title,
     comment,
     images,
     isVerifiedPurchase: isPurchased,
     status: settings.review?.autoApprove ? "approved" : "pending",
-  });
+  };
 
-  await recalculateRating(item, itemType);
+  if (isWebsite) {
+    createData.displayOrder = data.displayOrder || 0;
+  } else {
+    createData.itemType = itemType;
+    createData.item = item;
+    createData.itemModel = itemModel;
+  }
+
+  if (moderation.status === "rejected") {
+    createData.status = "rejected";
+  }
+  if (moderation.spamFlagged) {
+    createData.spamFlagged = true;
+    createData.spamScore = moderation.spamScore;
+    createData.spamReason = moderation.spamReason;
+  }
+
+  const review = await reviewRepository.create(createData);
+
+  if (!isWebsite) {
+    await recalculateRating(item, itemType);
+  }
 
   return review;
 };
@@ -104,8 +137,25 @@ export const updateReview = async (reviewId, userId, data, files) => {
     }));
   }
 
+  if (updateData.comment !== undefined) {
+    const moderation = await moderateReview({
+      title: updateData.title ?? review.title ?? "",
+      comment: updateData.comment,
+    });
+    if (moderation.status === "rejected") {
+      updateData.status = "rejected";
+    }
+    if (moderation.spamFlagged) {
+      updateData.spamFlagged = true;
+      updateData.spamScore = moderation.spamScore;
+      updateData.spamReason = moderation.spamReason;
+    }
+  }
+
   const updated = await reviewRepository.updateById(reviewId, updateData);
-  await recalculateRating(review.item, review.itemType);
+  if (review.reviewType === "product") {
+    await recalculateRating(review.item, review.itemType);
+  }
 
   return updated;
 };
@@ -129,7 +179,43 @@ export const deleteReview = async (reviewId, userId) => {
   }
 
   await reviewRepository.deleteById(reviewId);
-  await recalculateRating(review.item, review.itemType);
+  if (review.reviewType === "product") {
+    await recalculateRating(review.item, review.itemType);
+  }
+};
+
+export const toggleHelpful = async (reviewId, userId) => {
+  const review = await reviewRepository.findById(reviewId);
+
+  const hasVoted = (review.helpfulVotes || []).some(
+    (id) => id.toString() === userId.toString()
+  );
+
+  if (hasVoted) {
+    return reviewRepository.removeHelpfulVote(reviewId, userId);
+  }
+  return reviewRepository.addHelpfulVote(reviewId, userId);
+};
+
+export const reportReview = async (reviewId, userId, { reason, note }) => {
+  const review = await reviewRepository.findById(reviewId);
+
+  if (review.user.toString() === userId.toString()) {
+    throw ApiError.forbidden("You cannot report your own review");
+  }
+
+  const alreadyReported = (review.reports || []).some(
+    (r) => r.user.toString() === userId.toString()
+  );
+  if (alreadyReported) {
+    throw ApiError.conflict("You have already reported this review");
+  }
+
+  return reviewRepository.addReport(reviewId, { user: userId, reason, note });
+};
+
+export const getTestimonials = async () => {
+  return reviewRepository.findTestimonials();
 };
 
 export const getProductReviews = async (itemId, itemType, query) => {
@@ -173,7 +259,18 @@ export const adminGetUserReviews = async (userId, query) => {
 };
 
 export const adminGetAllReviews = async (query) => {
-  const { page = 1, limit = 20, sort, search, status, rating } = query;
+  const {
+    page = 1,
+    limit = 20,
+    sort,
+    search,
+    status,
+    rating,
+    reviewType,
+    featured,
+    reported,
+    spamFlagged,
+  } = query;
 
   const sortOptions = {};
   if (sort === "newest") sortOptions.createdAt = -1;
@@ -187,6 +284,12 @@ export const adminGetAllReviews = async (query) => {
     extraFilter.status = status;
   }
   if (rating) extraFilter.rating = Number(rating);
+  if (["product", "website"].includes(reviewType)) {
+    extraFilter.reviewType = reviewType;
+  }
+  if (featured === "true") extraFilter.featured = true;
+  if (reported === "true") extraFilter["reports.0"] = { $exists: true };
+  if (spamFlagged === "true") extraFilter.spamFlagged = true;
   if (search) {
     extraFilter.$or = [
       { title: { $regex: search, $options: "i" } },
@@ -210,9 +313,58 @@ export const adminGetReview = async (reviewId) => {
 
 export const adminUpdateStatus = async (reviewId, status) => {
   const review = await reviewRepository.findById(reviewId);
-  const updated = await reviewRepository.updateById(reviewId, { status });
-  await recalculateRating(review.item, review.itemType);
-  return updated;
+  if (!review) throw ApiError.notFound("Review not found");
+  await reviewRepository.updateById(reviewId, { status });
+  if (review.reviewType === "product") {
+    await recalculateRating(review.item, review.itemType);
+  }
+  return reviewRepository.findWithUser(reviewId);
+};
+
+export const adminToggleFeatured = async (reviewId, { featured, displayOrder }) => {
+  const review = await reviewRepository.findById(reviewId);
+  if (review.reviewType !== "website") {
+    throw ApiError.badRequest("Only website testimonials can be featured");
+  }
+
+  const updateData = {};
+  if (featured !== undefined) updateData.featured = !!featured;
+  if (displayOrder !== undefined) updateData.displayOrder = Number(displayOrder);
+
+  await reviewRepository.updateById(reviewId, updateData);
+  return reviewRepository.findWithUser(reviewId);
+};
+
+export const adminReply = async (reviewId, adminId, text) => {
+  await reviewRepository.findById(reviewId);
+
+  if (!text) {
+    await reviewRepository.updateById(reviewId, {
+      adminReply: { text: "", admin: null, repliedAt: null },
+    });
+  } else {
+    await reviewRepository.updateById(reviewId, {
+      adminReply: { text, admin: adminId, repliedAt: new Date() },
+    });
+  }
+
+  return reviewRepository.findWithUser(reviewId);
+};
+
+export const dismissReports = async (reviewId) => {
+  await reviewRepository.findById(reviewId);
+  await reviewRepository.clearReports(reviewId);
+  return reviewRepository.findWithUser(reviewId);
+};
+
+export const clearSpamFlag = async (reviewId) => {
+  await reviewRepository.findById(reviewId);
+  await reviewRepository.clearSpamFlag(reviewId);
+  return reviewRepository.findWithUser(reviewId);
+};
+
+export const getReviewStats = async () => {
+  return reviewRepository.getReviewStats();
 };
 
 export const adminDeleteReview = async (reviewId) => {
@@ -229,7 +381,9 @@ export const adminDeleteReview = async (reviewId) => {
   }
 
   await reviewRepository.deleteById(reviewId);
-  await recalculateRating(review.item, review.itemType);
+  if (review.reviewType === "product") {
+    await recalculateRating(review.item, review.itemType);
+  }
 };
 
 const recalculateRating = async (itemId, itemType) => {

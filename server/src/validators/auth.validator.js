@@ -88,6 +88,10 @@ export const loginSchema = z
     path: ["otp"],
   });
 
+export const googleLoginSchema = z.object({
+  credential: z.string().min(1, 'Google credential is required'),
+});
+
 export const forgotPasswordSchema = z.object({
   email: z.string().email("Invalid email address").trim().toLowerCase(),
 });
