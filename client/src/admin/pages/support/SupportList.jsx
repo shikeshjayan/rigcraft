@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Chip } from "@mui/material";
 import { Visibility as ViewIcon, Delete as DeleteIcon } from "@mui/icons-material";
@@ -15,6 +15,8 @@ import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
 import { useAdminList, useAdminMutation } from "../../hooks";
+import { connectSocket } from "../../../shared/socket";
+import { ISSUE_TYPE_LABELS } from "../../../utils/supportLabels";
 
 const STATUS_COLOR = {
   open: "info",
@@ -33,7 +35,7 @@ const SupportList = () => {
 
   const [selected, setSelected] = useState([]);
   const [deleteTarget, setDeleteTarget] = useState(null);
-  const [filters, setFilters] = useState({ status: "", priority: "" });
+  const [filters, setFilters] = useState({ status: "", priority: "", issueType: "" });
 
   const {
     data: tickets,
@@ -41,6 +43,19 @@ const SupportList = () => {
     loading,
     refetch,
   } = useAdminList("supportList", supportService, { page, pageSize, search, ...filters });
+
+  useEffect(() => {
+    const sock = connectSocket();
+    const handleUpdate = () => refetch();
+    sock.on("support:new-message", handleUpdate);
+    sock.on("support:ticket-updated", handleUpdate);
+    sock.on("notification:new", handleUpdate);
+    return () => {
+      sock.off("support:new-message", handleUpdate);
+      sock.off("support:ticket-updated", handleUpdate);
+      sock.off("notification:new", handleUpdate);
+    };
+  }, [refetch]);
 
   const deleteMutation = useAdminMutation(
     (id) => supportService.delete(id),
@@ -93,6 +108,14 @@ const SupportList = () => {
         { value: "medium", label: "Medium" },
         { value: "high", label: "High" },
         { value: "urgent", label: "Urgent" },
+      ],
+    },
+    {
+      key: "issueType",
+      label: "Issue Type",
+      options: [
+        { value: "", label: "All" },
+        ...Object.entries(ISSUE_TYPE_LABELS).map(([value, label]) => ({ value, label })),
       ],
     },
   ];

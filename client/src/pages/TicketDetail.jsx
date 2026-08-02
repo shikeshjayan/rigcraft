@@ -1,8 +1,9 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { connectSocket, joinSupportRoom, leaveSupportRoom } from '../shared/socket';
 import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
@@ -81,6 +82,32 @@ const TicketDetail = () => {
     queryClient.invalidateQueries({ queryKey: ['myTicket', id] });
     queryClient.invalidateQueries({ queryKey: ['myTickets'] });
   };
+
+  useEffect(() => {
+    if (!isLoggedIn || !id) return;
+    const sock = connectSocket();
+    const handleNewMessage = (message) => {
+      queryClient.setQueryData(['myTicket', id], (old) => {
+        if (!old) return old;
+        if (old.messages?.some((m) => m._id === message._id)) return old;
+        return { ...old, messages: [...old.messages, message] };
+      });
+      queryClient.invalidateQueries({ queryKey: ['myTickets'] });
+    };
+    const handleTicketUpdate = (ticket) => {
+      queryClient.setQueryData(['myTicket', id], (old) =>
+        old ? { ...old, ticket: { ...old.ticket, ...ticket } } : old
+      );
+    };
+    joinSupportRoom(id);
+    sock.on('support:new-message', handleNewMessage);
+    sock.on('support:ticket-updated', handleTicketUpdate);
+    return () => {
+      sock.off('support:new-message', handleNewMessage);
+      sock.off('support:ticket-updated', handleTicketUpdate);
+      leaveSupportRoom(id);
+    };
+  }, [id, isLoggedIn, queryClient]);
 
   const sendReply = useMutation({
     mutationFn: async ({ message, files }) => {

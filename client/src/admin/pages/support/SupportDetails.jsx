@@ -9,6 +9,7 @@ import AdminButton from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
 import StatusBadge from "../../components/common/StatusBadge";
 import { extractError, humanizeField } from "../../utils/extractError";
+import { connectSocket, joinSupportRoom, leaveSupportRoom } from "../../../shared/socket";
 
 const STATUS_COLOR = {
   open: "info",
@@ -48,6 +49,7 @@ const SupportDetails = () => {
   const [sending, setSending] = useState(false);
   const [replyText, setReplyText] = useState("");
   const [replyFiles, setReplyFiles] = useState([]);
+  const [cancelling, setCancelling] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -56,6 +58,54 @@ const SupportDetails = () => {
       .catch((err) => { toast(extractError(err, "Ticket not found"), "error"); navigate("/admin/support"); })
       .finally(() => setLoading(false));
   }, [id, navigate, toast]);
+
+  useEffect(() => {
+    if (!id) return;
+    const sock = connectSocket();
+    const handleNewMessage = (message) => {
+      if (!message) return;
+      const msgTicketId = (message.ticket?._id || message.ticket)?.toString();
+      if (msgTicketId && msgTicketId !== id) return;
+      setTicket((prev) => {
+        if (!prev) return prev;
+        if (prev.messages?.some((m) => m._id === message._id)) return prev;
+        return { ...prev, messages: [...(prev.messages || []), message] };
+      });
+    };
+    const handleTicketUpdate = (updated) => {
+      if (!updated) return;
+      const updatedId = (updated._id || updated.id)?.toString();
+      if (updatedId && updatedId !== id) return;
+      setTicket((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          status: updated.status ?? prev.status,
+          priority: updated.priority ?? prev.priority,
+          lastMessageAt: updated.lastMessageAt ?? prev.lastMessageAt,
+          closedAt: updated.closedAt ?? prev.closedAt,
+          assignedTo: updated.assignedTo ?? prev.assignedTo,
+          order: updated.order ?? prev.order,
+          messages: prev.messages,
+        };
+      });
+    };
+    const handleReadStatus = ({ ticketId }) => {
+      if (ticketId && ticketId.toString() === id) {
+        setTicket((prev) => (prev ? { ...prev, isRead: true } : prev));
+      }
+    };
+    joinSupportRoom(id);
+    sock.on("support:new-message", handleNewMessage);
+    sock.on("support:ticket-updated", handleTicketUpdate);
+    sock.on("support:read-status", handleReadStatus);
+    return () => {
+      sock.off("support:new-message", handleNewMessage);
+      sock.off("support:ticket-updated", handleTicketUpdate);
+      sock.off("support:read-status", handleReadStatus);
+      leaveSupportRoom(id);
+    };
+  }, [id]);
 
   const handleReply = async () => {
     if (!replyText.trim()) return;
@@ -100,6 +150,23 @@ const SupportDetails = () => {
       toast(`Priority changed to ${humanizeField(priority)}`);
     } catch (err) {
       toast(extractError(err, "Failed to update priority"), "error");
+    }
+  };
+
+  const handleCancelOrder = async () => {
+    if (!ticket?.order?._id) return;
+    setCancelling(true);
+    try {
+      await supportService.cancelOrder(ticket.order._id);
+      setTicket((prev) => ({
+        ...prev,
+        order: { ...prev.order, orderStatus: "cancelled" },
+      }));
+      toast("Order cancelled");
+    } catch (err) {
+      toast(extractError(err, "Failed to cancel order"), "error");
+    } finally {
+      setCancelling(false);
     }
   };
 
@@ -327,6 +394,30 @@ const SupportDetails = () => {
                 <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", mb: 0.5 }}>Created</Typography>
                 <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>{formatDateTime(ticket.createdAt)}</Typography>
               </Box>
+
+              {ticket.order && typeof ticket.order === "object" && ticket.order._id && (
+                <Box sx={{ p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)", backgroundColor: "var(--color-admin-bg-tertiary)" }}>
+                  <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", mb: 0.5 }}>Related Order</Typography>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)", overflowWrap: "break-word" }}>
+                    {ticket.order.orderNumber ? `#${ticket.order.orderNumber}` : ticket.order._id}
+                  </Typography>
+                  <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", textTransform: "capitalize" }}>
+                    {ticket.order.orderStatus || "—"}
+                  </Typography>
+                  {(ticket.order.orderStatus === "pending" || ticket.order.orderStatus === "confirmed") && (
+                    <AdminButton
+                      variant="danger"
+                      size="small"
+                      fullWidth
+                      loading={cancelling}
+                      onClick={handleCancelOrder}
+                      sx={{ mt: 1 }}
+                    >
+                      Cancel Order
+                    </AdminButton>
+                  )}
+                </Box>
+              )}
 
               <Box>
                 <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", mb: 0.5 }}>Last Updated</Typography>
