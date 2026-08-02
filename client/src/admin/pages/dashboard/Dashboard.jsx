@@ -25,7 +25,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [statsData, sales, orders, lowStock, top, breakdown] = await Promise.all([
+        const results = await Promise.allSettled([
           dashboardService.getStats(),
           dashboardService.getSalesData("yearly"),
           dashboardService.getRecentOrders(5),
@@ -33,12 +33,23 @@ const Dashboard = () => {
           dashboardService.getTopProducts(5),
           dashboardService.getOrderBreakdown(),
         ]);
-        setStats(statsData);
-        setSalesData(sales);
-        setRecentOrders(orders);
-        setLowStockProducts(lowStock);
-        setTopProducts(top);
-        setOrderBreakdown(breakdown);
+
+        const getValue = (i) => (results[i]?.status === "fulfilled" ? results[i].value : []);
+        const getObject = (i) => (results[i]?.status === "fulfilled" ? results[i].value : null);
+
+        setStats(getObject(0));
+        setSalesData(getValue(1));
+        setRecentOrders(getValue(2));
+        setLowStockProducts(getValue(3));
+        setTopProducts(getValue(4));
+        setOrderBreakdown(getValue(5));
+
+        const failed = results.filter((r) => r.status === "rejected");
+        if (failed.length > 0 && failed.length < results.length) {
+          toast("Some dashboard sections could not be loaded.", "warning");
+        } else if (failed.length === results.length) {
+          toast(extractError(failed[0].reason, "Failed to load dashboard data"), "error");
+        }
       } catch (err) {
         toast(extractError(err, "Failed to load dashboard data"), "error");
       } finally {

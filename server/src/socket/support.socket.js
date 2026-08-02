@@ -1,9 +1,20 @@
 import supportMessageRepository from "../repositories/support-message.repository.js";
+import SupportTicket from "../models/support-ticket.model.js";
 
 export const registerSupportHandlers = (io, socket) => {
-  socket.on("support:join", (ticketId) => {
-    const room = `support:${ticketId}`;
-    socket.join(room);
+  socket.on("support:join", async (ticketId) => {
+    try {
+      if (socket.userRole !== "admin" && socket.userRole !== "manager") {
+        const ticket = await SupportTicket.findById(ticketId);
+        if (!ticket || ticket.user.toString() !== socket.userId.toString()) {
+          socket.emit("error", { message: "You do not have access to this ticket" });
+          return;
+        }
+      }
+      socket.join(`support:${ticketId}`);
+    } catch (err) {
+      socket.emit("error", { message: "Failed to join ticket room" });
+    }
   });
 
   socket.on("support:leave", (ticketId) => {

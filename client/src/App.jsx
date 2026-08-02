@@ -18,10 +18,13 @@ import CustomerRegister from './pages/CustomerRegister';
 import ForgotPassword from './pages/ForgotPassword';
 import Profile from './pages/Profile';
 import Orders from './pages/Orders';
+import MyTickets from './pages/MyTickets';
+import TicketDetail from './pages/TicketDetail';
 import Warranty from './pages/Warranty';
 import ReturnsAndRefunds from './pages/ReturnsAndRefunds';
 import PcBuilderGuide from './pages/PcBuilderGuide';
 import Faq from './pages/Faq';
+import HelpCenter from './pages/HelpCenter';
 import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
 import About from './pages/About';
@@ -95,11 +98,14 @@ const App = () => {
                   <Route path="/forgot-password" element={<ForgotPassword />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/orders" element={<Orders />} />
+                  <Route path="/my-tickets" element={<MyTickets />} />
+                  <Route path="/my-tickets/:id" element={<TicketDetail />} />
                   <Route path="/warranty" element={<Warranty />} />
                   <Route path="/returns" element={<ReturnsAndRefunds />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/pc-builder-guide" element={<PcBuilderGuide />} />
                   <Route path="/faq" element={<Faq />} />
+                  <Route path="/help" element={<HelpCenter />} />
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/terms-of-service" element={<Terms />} />
                   <Route path="/about" element={<About />} />

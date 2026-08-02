@@ -34,19 +34,25 @@ const saveLocally = async (file, folder) => {
 };
 
 const uploadToCloudinary = async (file, folder) => {
-  const result = await new Promise((resolve, reject) => {
-    const stream = cloudinary.uploader.upload_stream(
-      {
-        folder: `rigcraft/${folder}`,
-        transformation: { quality: "auto", fetch_format: "auto" },
-      },
-      (error, result) => {
-        if (error) reject(error);
-        else resolve(result);
-      }
-    );
-    stream.end(file.buffer);
-  });
+  const isImage = (file.mimetype || "").startsWith("image/");
+  const ext = path.extname(file.originalname) || (isImage ? ".jpg" : "");
+  const publicId = `${crypto.randomUUID()}${ext}`;
+  const dataUri = `data:${file.mimetype || "application/octet-stream"};base64,${file.buffer.toString("base64")}`;
+
+  const options = {
+    folder: `rigcraft/${folder}`,
+    public_id: publicId,
+    resource_type: isImage ? "image" : "raw",
+  };
+  if (isImage) {
+    options.transformation = { quality: "auto", fetch_format: "auto" };
+  }
+
+  const result = await cloudinary.uploader.upload(dataUri, options);
+
+  console.log(
+    `[upload] ${folder}/${file.originalname} -> ${result.resource_type} bytes=${result.bytes} url=${result.secure_url}`
+  );
 
   return {
     url: result.secure_url,
@@ -80,6 +86,10 @@ export const deleteImage = async (publicId) => {
 
   try {
     await cloudinary.uploader.destroy(publicId);
+  } catch {
+  }
+  try {
+    await cloudinary.uploader.destroy(publicId, { resource_type: "raw" });
   } catch {
   }
 };

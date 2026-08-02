@@ -3,6 +3,14 @@ import multer from "multer";
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
 const MAX_SIZE = 5 * 1024 * 1024;
 
+export const SUPPORT_ALLOWED_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "image/gif",
+  "application/pdf",
+];
+
 const storage = multer.memoryStorage();
 
 const fileFilter = (req, file, cb) => {
@@ -81,6 +89,44 @@ export const uploadFields = (fieldConfig) => {
           message:
             err.code === "LIMIT_FILE_SIZE"
               ? "File too large. Max 5MB allowed."
+              : err.message,
+        });
+      }
+      if (err) {
+        return res.status(400).json({ success: false, message: err.message });
+      }
+      parseBodyField(req);
+      next();
+    });
+  };
+};
+
+export const uploadAnyFiles = (
+  fieldName = "attachments",
+  maxCount = 5,
+  { allowedTypes = SUPPORT_ALLOWED_TYPES, maxSize = 10 * 1024 * 1024 } = {}
+) => {
+  const anyUpload = multer({
+    storage,
+    fileFilter: (req, file, cb) => {
+      if (allowedTypes.includes(file.mimetype)) {
+        cb(null, true);
+      } else {
+        cb(new Error("Only image and PDF files are allowed"), false);
+      }
+    },
+    limits: { fileSize: maxSize },
+  });
+
+  return (req, res, next) => {
+    const array = anyUpload.array(fieldName, maxCount);
+    array(req, res, (err) => {
+      if (err instanceof multer.MulterError) {
+        return res.status(400).json({
+          success: false,
+          message:
+            err.code === "LIMIT_FILE_SIZE"
+              ? "File too large. Max 10MB allowed."
               : err.message,
         });
       }

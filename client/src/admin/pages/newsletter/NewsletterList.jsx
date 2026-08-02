@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { Box, Dialog, DialogTitle, DialogContent, DialogActions, TextField, MenuItem } from "@mui/material";
 import { Delete as DeleteIcon, Edit as EditIcon, Download as DownloadIcon } from "@mui/icons-material";
 import DataTable from "../../components/tables/DataTable";
@@ -9,11 +9,12 @@ import StatusBadge from "../../components/common/StatusBadge";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { newsletterService } from "../../services/newsletterService";
-import { extractError } from "../../utils/extractError";
+
 import { formatDateTime } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
+import { useAdminList, useAdminMutation } from "../../hooks";
 
 const NEWSLETTER_STATUS_COLOR = {
   active: "success",
@@ -25,57 +26,53 @@ const NewsletterList = () => {
   const { maxRows, containerRef } = useViewportRows();
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
 
-  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
-
-  const [subscribers, setSubscribers] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState({ status: "" });
-  const [search, setSearch] = useState("");
+  const { search, setSearch } = useSearch();
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [selected, setSelected] = useState([]);
 
   const [editTarget, setEditTarget] = useState(null);
   const [editForm, setEditForm] = useState({ status: "active", notes: "" });
 
-  const fetchSubscribers = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await newsletterService.list({ page, pageSize, search, ...filters });
-      setSubscribers(result.data);
-      setTotal(result.total);
-    } catch (err) {
-      toast(extractError(err, "Failed to load subscribers"), "error");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize, search, filters, toast]);
+  const {
+    data: subscribers,
+    total,
+    loading,
+    refetch,
+  } = useAdminList("newsletterList", newsletterService, { page, pageSize, search, ...filters });
 
-  useEffect(() => { fetchSubscribers(); }, [fetchSubscribers]);
+  const deleteMutation = useAdminMutation(
+    (id) => newsletterService.delete(id),
+    { queryKey: "newsletterList", successMessage: "Subscriber deleted" }
+  );
+
+  const bulkDeleteMutation = useAdminMutation(
+    (ids) => Promise.all(ids.map((id) => newsletterService.delete(id))),
+    {
+      queryKey: "newsletterList",
+      skipSuccessToast: true,
+      onSuccess: (_, ids) => {
+        toast(`${ids.length} subscribers deleted`);
+        setSelected([]);
+      },
+    }
+  );
+
+  const editMutation = useAdminMutation(
+    ({ id, payload }) => newsletterService.update(id, payload),
+    { queryKey: "newsletterList", successMessage: "Subscriber updated" }
+  );
 
   const handleDelete = (id) => setDeleteTarget(id);
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (!deleteTarget) return;
-    try {
-      await newsletterService.delete(deleteTarget);
-      toast("Subscriber deleted");
-      setDeleteTarget(null);
-      fetchSubscribers();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete subscriber"), "error");
-    }
+    deleteMutation.mutate(deleteTarget);
+    setDeleteTarget(null);
   };
 
-  const handleBulkDelete = async () => {
-    try {
-      await Promise.all(selected.map((id) => newsletterService.delete(id)));
-      toast(`${selected.length} subscribers deleted`);
-      setSelected([]);
-      fetchSubscribers();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete subscribers"), "error");
-    }
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate(selected);
   };
 
   const handleEdit = (subscriber) => {
@@ -83,16 +80,10 @@ const NewsletterList = () => {
     setEditForm({ status: subscriber.status || "active", notes: subscriber.notes || "" });
   };
 
-  const handleEditSave = async () => {
+  const handleEditSave = () => {
     if (!editTarget) return;
-    try {
-      await newsletterService.update(editTarget.id, editForm);
-      toast("Subscriber updated");
-      setEditTarget(null);
-      fetchSubscribers();
-    } catch (err) {
-      toast(extractError(err, "Failed to update subscriber"), "error");
-    }
+    editMutation.mutate({ id: editTarget.id, payload: editForm });
+    setEditTarget(null);
   };
 
   const handleExport = async () => {
@@ -127,7 +118,7 @@ const NewsletterList = () => {
       URL.revokeObjectURL(url);
       toast("Export complete");
     } catch (err) {
-      toast(extractError(err, "Failed to export"), "error");
+      toast(err?.response?.data?.message || "Failed to export", "error");
     }
   };
 
@@ -177,7 +168,7 @@ const NewsletterList = () => {
         title="Newsletter Subscribers"
         searchValue={search}
         onSearchChange={setSearch}
-        onRefresh={fetchSubscribers}
+        onRefresh={refetch}
         actions={
           <button
             onClick={handleExport}

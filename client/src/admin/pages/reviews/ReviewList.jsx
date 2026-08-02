@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Box, Rating, Switch, Tabs, Tab } from "@mui/material";
 import {
@@ -11,6 +11,7 @@ import {
   Cancel as CancelIcon,
   FormatQuote as FormatQuoteIcon,
 } from "@mui/icons-material";
+import { useQuery } from "@tanstack/react-query";
 import DataTable from "../../components/tables/DataTable";
 import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
@@ -19,12 +20,12 @@ import StatusBadge from "../../components/common/StatusBadge";
 import AdminThumbnail from "../../components/common/AdminThumbnail";
 import { useToast } from "../../components/common/Toast";
 import { reviewService } from "../../services/reviewService";
-import { REVIEW_STATUS, REVIEW_STATUS_COLOR } from "../../constants/status";
+import { REVIEW_STATUS_COLOR } from "../../constants/status";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
-import { extractError } from "../../utils/extractError";
+import { useAdminList, useAdminMutation } from "../../hooks";
 
 const TABS = [
   { value: "all", label: "All", reviewType: "" },
@@ -40,16 +41,30 @@ const ReviewList = () => {
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
 
-  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
-  const [stats, setStats] = useState(null);
   const [filters, setFilters] = useState({ status: "", rating: "", featured: "", reported: "", spamFlagged: "" });
 
   const tabParam = searchParams.get("tab");
   const activeTab = TABS.some((t) => t.value === tabParam) ? tabParam : "all";
   const activeTabConfig = TABS.find((t) => t.value === activeTab) || TABS[0];
+
+  const {
+    data: reviews,
+    total,
+    loading,
+    refetch,
+  } = useAdminList("reviewList", reviewService, {
+    page,
+    pageSize,
+    search,
+    reviewType: activeTabConfig.reviewType,
+    ...filters,
+  });
+
+  const { data: stats } = useQuery({
+    queryKey: ["reviewStats"],
+    queryFn: () => reviewService.stats(),
+    staleTime: 60 * 1000,
+  });
 
   const handleTabChange = (_, value) => {
     const next = new URLSearchParams(searchParams);
@@ -60,40 +75,19 @@ const ReviewList = () => {
     if (value === "product") setFilters((prev) => ({ ...prev, featured: "" }));
   };
 
-  const fetchReviews = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await reviewService.list({ page, pageSize, search, reviewType: activeTabConfig.reviewType, ...filters });
-      setReviews(result.data);
-      setTotal(result.total);
-    } catch (err) {
-      toast(extractError(err, "Failed to load reviews"), "error");
-    } finally {
-      setLoading(false);
+  const featuredMutation = useAdminMutation(
+    ({ row, checked }) => reviewService.toggleFeatured(row.id, { featured: checked }),
+    {
+      queryKey: "reviewList",
+      skipSuccessToast: true,
+      onSuccess: (updated, { checked }) => {
+        toast(checked ? "Testimonial featured" : "Testimonial unfeatured");
+      },
     }
-  }, [page, pageSize, search, activeTabConfig, filters, toast]);
+  );
 
-  useEffect(() => { fetchReviews(); }, [fetchReviews]);
-
-  const fetchStats = useCallback(async () => {
-    try {
-      const result = await reviewService.stats();
-      setStats(result);
-    } catch {
-      setStats(null);
-    }
-  }, []);
-
-  useEffect(() => { fetchStats(); }, [fetchStats]);
-
-  const handleToggleFeatured = async (row, checked) => {
-    try {
-      const updated = await reviewService.toggleFeatured(row.id, { featured: checked });
-      setReviews((prev) => prev.map((r) => (r.id === row.id ? updated : r)));
-      toast(checked ? "Testimonial featured" : "Testimonial unfeatured");
-    } catch (err) {
-      toast(extractError(err, "Failed to update featured status"), "error");
-    }
+  const handleToggleFeatured = (row, checked) => {
+    featuredMutation.mutate({ row, checked });
   };
 
   const filterOptions = [
@@ -243,7 +237,7 @@ const ReviewList = () => {
           <StatCard compact title="Spam Flagged" value={stats.flagged ?? 0} icon={ReportIcon} subtitle="auto-detected" />
         </Box>
       )}
-      <TableToolbar title="Reviews" searchValue={search} onSearchChange={setSearch} onRefresh={fetchReviews} />
+      <TableToolbar title="Reviews" searchValue={search} onSearchChange={setSearch} onRefresh={refetch} />
       <Box sx={{ px: 3 }}>
         <Tabs
           value={activeTab}

@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import { Edit as EditIcon, Delete as DeleteIcon } from "@mui/icons-material";
@@ -9,10 +9,10 @@ import StatusBadge from "../../components/common/StatusBadge";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { faqService } from "../../services/faqService";
-import { extractError } from "../../utils/extractError";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
+import { useAdminList, useAdminMutation } from "../../hooks";
 
 const FaqList = () => {
   const navigate = useNavigate();
@@ -21,52 +21,43 @@ const FaqList = () => {
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
 
-  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
-
-  const [faqs, setFaqs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
-  const [deleteTarget, setDeleteTarget] = useState(null);
   const [selected, setSelected] = useState([]);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const fetchFaqs = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await faqService.list({ page, pageSize, search });
-      setFaqs(result.data);
-      setTotal(result.total);
-    } catch (err) {
-      toast(extractError(err, "Failed to load FAQs"), "error");
-    } finally {
-      setLoading(false);
+  const {
+    data: faqs,
+    total,
+    loading,
+    refetch,
+  } = useAdminList("faqList", faqService, { page, pageSize, search });
+
+  const deleteMutation = useAdminMutation(
+    (id) => faqService.delete(id),
+    { queryKey: "faqList", successMessage: "FAQ deleted" }
+  );
+
+  const bulkDeleteMutation = useAdminMutation(
+    (ids) => Promise.all(ids.map((id) => faqService.delete(id))),
+    {
+      queryKey: "faqList",
+      skipSuccessToast: true,
+      onSuccess: (_, ids) => {
+        toast(`${ids.length} FAQs deleted`);
+        setSelected([]);
+      },
     }
-  }, [page, pageSize, search, toast]);
-
-  useEffect(() => { fetchFaqs(); }, [fetchFaqs]);
+  );
 
   const handleDelete = (id) => setDeleteTarget(id);
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (!deleteTarget) return;
-    try {
-      await faqService.delete(deleteTarget);
-      toast("FAQ deleted");
-      setDeleteTarget(null);
-      fetchFaqs();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete FAQ"), "error");
-    }
+    deleteMutation.mutate(deleteTarget);
+    setDeleteTarget(null);
   };
 
-  const handleBulkDelete = async () => {
-    try {
-      await Promise.all(selected.map((id) => faqService.delete(id)));
-      toast(`${selected.length} FAQs deleted`);
-      setSelected([]);
-      fetchFaqs();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete FAQs"), "error");
-    }
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate(selected);
   };
 
   const columns = [
@@ -104,7 +95,7 @@ const FaqList = () => {
         onSearchChange={setSearch}
         addPath="/admin/faqs/new"
         addLabel="New FAQ"
-        onRefresh={fetchFaqs}
+        onRefresh={refetch}
       />
       <DataTable
         columns={columns}

@@ -1,48 +1,33 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Chip } from "@mui/material";
-import { Visibility } from "@mui/icons-material";
 import DataTable from "../../components/tables/DataTable";
 import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
 import StatusBadge from "../../components/common/StatusBadge";
-import { useToast } from "../../components/common/Toast";
 import { orderService } from "../../services/orderService";
-import { extractError } from "../../utils/extractError";
 import { ORDER_STATUS, ORDER_STATUS_COLOR } from "../../constants/status";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
+import { useAdminList } from "../../hooks";
 
 const OrderList = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { maxRows, containerRef } = useViewportRows();
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
 
-  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
   const [filters, setFilters] = useState({ status: "" });
 
-  const fetchOrders = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await orderService.list({ page, pageSize, search, ...filters });
-      setOrders(result.data);
-      setTotal(result.total);
-    } catch (err) {
-      toast(extractError(err, "Failed to load orders"), "error");
-    } finally {
-      setLoading(false);
-    }
-  }, [page, pageSize, search, filters, toast]);
-
-  useEffect(() => { fetchOrders(); }, [fetchOrders]);
+  const {
+    data: orders,
+    total,
+    loading,
+    refetch,
+  } = useAdminList("orderList", orderService, { page, pageSize, search, ...filters });
 
   const filterOptions = [
     {
@@ -78,7 +63,7 @@ const OrderList = () => {
 
   return (
     <Box ref={containerRef}>
-      <TableToolbar title="Orders" searchValue={search} onSearchChange={setSearch} onRefresh={fetchOrders} />
+      <TableToolbar title="Orders" searchValue={search} onSearchChange={setSearch} onRefresh={refetch} />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
       <DataTable columns={columns} rows={orders} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/orders/${row.id}`)} rowsPerPageOptions={[10, 25, 50, 100]} />
     </Box>

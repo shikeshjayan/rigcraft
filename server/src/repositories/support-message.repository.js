@@ -8,7 +8,7 @@ class SupportMessageRepository extends BaseRepository {
 
   async findByTicket(ticketId, options = {}) {
     const { sort = { createdAt: 1 } } = options;
-    return this.model.find({ ticket: ticketId }).sort(sort).populate("sender", "name email avatar role");
+    return this.model.find({ ticket: ticketId }).sort(sort).populate("sender", "firstName lastName email avatar role");
   }
 
   async markAsRead(ticketId, notBySenderId) {

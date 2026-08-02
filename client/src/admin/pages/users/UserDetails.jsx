@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Box, Typography, Grid, Chip, TextField, MenuItem, IconButton, Tabs, Tab, Rating, Tooltip,
@@ -30,8 +30,14 @@ import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { USER_STATUS_COLOR } from "../../constants/status";
 import { extractError } from "../../utils/extractError";
 import { reviewService } from "../../services/reviewService";
+import useAuthStore from "../../store/authStore";
 
-const ROLES = ["customer", "admin", "manager"];
+const ALL_ROLES = ["customer", "admin", "manager"];
+
+const formatPhoneForDisplay = (val) => {
+  const digits = (val || "").replace(/[^0-9]/g, "").replace(/^91/, "");
+  return digits ? `+91 ${digits}` : "";
+};
 
 const TABS = [
   { label: "Overview", icon: <PeopleIcon /> },
@@ -66,6 +72,9 @@ const UserDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const currentUser = useAuthStore((state) => state.user);
+  const isManager = currentUser?.role === "manager";
+  const ROLES = isManager ? ALL_ROLES.filter((r) => r !== "admin") : ALL_ROLES;
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState(0);
@@ -92,11 +101,14 @@ const UserDetails = () => {
 
   useEffect(() => {
     userService.getById(id)
-      .then((u) => { setUser(u); setForm({ name: u.name, email: u.email, phone: u.phone || "", role: u.role }); })
+      .then((u) => { setUser(u); setForm({ firstName: u.firstName || "", lastName: u.lastName || "", email: u.email, phone: formatPhoneForDisplay(u.phone), role: u.role }); })
       .catch((err) => { toast(extractError(err, "User not found"), "error"); navigate("/admin/users"); })
       .finally(() => setLoading(false));
   }, [id, navigate, toast]);
 
+  // Lazy-load tab data on demand; synchronous loading flags guard against
+  // duplicate fetches when StrictMode re-invokes effects.
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     if (tab === 1 && !ordersLoaded && !ordersLoading) {
       setOrdersLoading(true);
@@ -118,12 +130,22 @@ const UserDetails = () => {
       setBuildsLoading(true);
       userService.getBuilds(id).then((r) => { setBuilds(r.docs || []); setBuildsLoaded(true); }).catch((err) => { toast(extractError(err, "Failed to load builds"), "error"); setBuildsLoaded(true); }).finally(() => setBuildsLoading(false));
     }
-  }, [tab, id, ordersLoaded, ordersLoading, reviewsLoaded, reviewsLoading, addressesLoaded, addressesLoading, wishlistLoaded, wishlistLoading, buildsLoaded, buildsLoading]);
+  }, [tab, id, toast, ordersLoaded, ordersLoading, reviewsLoaded, reviewsLoading, addressesLoaded, addressesLoading, wishlistLoaded, wishlistLoading, buildsLoaded, buildsLoading]);
+  /* eslint-enable react-hooks/set-state-in-effect */
 
   const handleSave = async () => {
+    const phone = (form.phone || "").replace(/\s/g, "");
+    if (phone && !/^\+91\d{10}$/.test(phone)) {
+      toast("Please enter a valid mobile number", "error");
+      return;
+    }
+    if (!form.firstName?.trim() || !form.lastName?.trim()) {
+      toast("First name and last name are required", "error");
+      return;
+    }
     setSaving(true);
     try {
-      const updated = await userService.update(id, form);
+      const updated = await userService.update(id, { ...form, phone });
       setUser(updated);
       setEditing(false);
       toast("User updated");
@@ -132,6 +154,11 @@ const UserDetails = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handlePhoneChange = (e) => {
+    const digits = e.target.value.replace(/[^0-9]/g, "").replace(/^91/, "");
+    setForm({ ...form, phone: digits ? `+91 ${digits}` : "" });
   };
 
   const handleBlockToggle = async () => {
@@ -201,12 +228,14 @@ const UserDetails = () => {
             <Chip label={user.role} size="small" variant="outlined" sx={{ textTransform: "capitalize", borderRadius: "var(--radius-admin-badge)", fontSize: "0.7rem" }} />
             <StatusBadge status={user.status} colorMap={USER_STATUS_COLOR} />
           </Box>
-          <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>{user.email} {user.phone && `· ${user.phone}`}</Typography>
+          <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>{user.email} {user.phone && `· ${formatPhoneForDisplay(user.phone)}`}</Typography>
         </Box>
-        <IconButton onClick={() => { setEditing(!editing); if (!editing) setForm({ name: user.name, email: user.email, phone: user.phone || "", role: user.role }); }}
+        {!isManager && (
+        <IconButton onClick={() => { setEditing(!editing); if (!editing) setForm({ firstName: user.firstName || "", lastName: user.lastName || "", email: user.email, phone: formatPhoneForDisplay(user.phone), role: user.role }); }}
           sx={{ color: editing ? "var(--color-admin-primary)" : "var(--color-admin-muted)" }}>
           {editing ? <CloseIcon /> : <EditIcon />}
         </IconButton>
+        )}
       </Box>
 
       {/* Tabs */}
@@ -222,9 +251,12 @@ const UserDetails = () => {
           <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)", mb: 3, maxWidth: 520 }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Edit Account</Typography>
             <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-              <TextField label="Full Name" size="small" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+              <Box sx={{ display: "flex", gap: 2 }}>
+                <TextField label="First Name" size="small" fullWidth value={form.firstName || ""} onChange={(e) => setForm({ ...form, firstName: e.target.value })} />
+                <TextField label="Last Name" size="small" fullWidth value={form.lastName || ""} onChange={(e) => setForm({ ...form, lastName: e.target.value })} />
+              </Box>
               <TextField label="Email" size="small" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
-              <TextField label="Phone" size="small" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+              <TextField label="Phone" size="small" value={form.phone || ""} onChange={handlePhoneChange} />
               <TextField label="Role" size="small" select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>
                 {ROLES.map((r) => <MenuItem key={r} value={r}>{r.charAt(0).toUpperCase() + r.slice(1)}</MenuItem>)}
               </TextField>
@@ -244,7 +276,7 @@ const UserDetails = () => {
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", mb: 0.5 }}>Phone</Typography>
-                <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500 }}>{user.phone || "—"}</Typography>
+                <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500 }}>{user.phone ? formatPhoneForDisplay(user.phone) : "—"}</Typography>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", mb: 0.5 }}>Email Verified</Typography>
@@ -443,11 +475,13 @@ const UserDetails = () => {
         )}
       </TabPanel>
 
-      {/* Admin Actions */}
+      {/* Admin Actions — visible only to admins (block/delete are admin-only operations) */}
+      {!isManager && (
       <Box sx={{ mt: 4, pt: 3, borderTop: "1px solid var(--color-admin-border)" }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Admin Actions</Typography>
         <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
           <AdminButton variant={isBlocked ? "success" : "warning"} size="small" icon={<BlockIcon />} onClick={() => setConfirmAction(isBlocked ? "unblock" : "block")}>
+
             {isBlocked ? "Unblock" : "Block"}
           </AdminButton>
           <AdminButton variant="danger" size="small" icon={<DeleteIcon />} onClick={() => setConfirmAction("delete")}>
@@ -455,6 +489,7 @@ const UserDetails = () => {
           </AdminButton>
         </Box>
       </Box>
+      )}
 
       <ConfirmDialog
         open={!!confirmAction}
