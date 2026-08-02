@@ -74,7 +74,7 @@ export const WishlistProvider = ({ children }) => {
 
   const addToWishlist = async (item) => {
     const normalizedId = item.id || item._id;
-    const itemType = (item.itemType === 'prebuilt' || (item.pricing && typeof item.pricing === 'object') || ['gaming', 'streaming', 'workstation', 'office', 'budget', 'prebuilt'].includes(item.category)) ? 'prebuilt' : 'product';
+    const itemType = (item.itemType === 'prebuilt' || (item.pricing && typeof item.pricing === 'object')) ? 'prebuilt' : 'product';
 
     if (user) {
       try {
