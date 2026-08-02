@@ -29,7 +29,7 @@ const normalizeList = (res) => {
 };
 
 export const supportService = {
-  list: async ({ page = 0, pageSize = 10, search = "", status = "", priority = "" } = {}) => {
+  list: async ({ page = 0, pageSize = 10, search = "", status = "", priority = "", issueType = "" } = {}) => {
     const params = {
       page: page + 1,
       limit: pageSize,
@@ -37,6 +37,7 @@ export const supportService = {
     if (search) params.search = search.trim();
     if (status) params.status = status;
     if (priority) params.priority = priority;
+    if (issueType) params.issueType = issueType;
     const { data } = await api.get(ENDPOINTS.ADMIN_SUPPORT.LIST, { params });
     return normalizeList(data.data);
   },
@@ -68,6 +69,11 @@ export const supportService = {
   updatePriority: async (id, priority) => {
     const { data } = await api.put(ENDPOINTS.ADMIN_SUPPORT.PRIORITY(id), { priority });
     return normalizeTicket(data.data);
+  },
+
+  cancelOrder: async (orderId) => {
+    const { data } = await api.patch(ENDPOINTS.ADMIN_ORDER.UPDATE_STATUS(orderId), { orderStatus: "cancelled" });
+    return data.data;
   },
 
   delete: async (id) => {

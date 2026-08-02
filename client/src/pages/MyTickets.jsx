@@ -8,6 +8,7 @@ import Breadcrumb from '../components/Breadcrumb';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import { issueTypeLabel } from '../utils/supportLabels';
 
 const STATUS_LABELS = {
   open: 'Open',
@@ -24,8 +25,6 @@ const STATUS_STYLES = {
   resolved: 'bg-green-50 text-green-700 border-green-200',
   closed: 'bg-gray-100 text-gray-600 border-gray-200'
 };
-
-const capitalize = (str) => (str ? str.charAt(0).toUpperCase() + str.slice(1) : str);
 
 const formatDate = (date) =>
   new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
@@ -118,7 +117,7 @@ const MyTickets = () => {
                   <div className="min-w-0">
                     <h3 className="text-[15px] font-bold text-gray-900 mb-1 truncate">{ticket.subject}</h3>
                     <div className="flex gap-4 text-[12px] text-gray-500 font-medium">
-                      <span>{capitalize(ticket.issueType)}</span>
+                      <span>{issueTypeLabel(ticket.issueType)}</span>
                       {ticket.order?.orderNumber && <span>Order #{ticket.order.orderNumber}</span>}
                     </div>
                   </div>
