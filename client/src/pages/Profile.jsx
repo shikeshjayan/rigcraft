@@ -611,7 +611,7 @@ const Profile = () => {
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {builds.map((build) => {
-                          const buildPrice = build.components?.reduce((sum, comp) => sum + (comp.product?.priceVal || comp.product?.price || comp.product?.salePrice || 0), 0) || 0;
+                          const buildPrice = build.totalPrice || build.totalSalePrice || build.components?.reduce((sum, comp) => sum + (comp.product?.priceVal || comp.product?.price || comp.product?.salePrice || 0), 0) || 0;
                           const isAdded = cartItems?.some(item => item.id === build._id);
                           return (
                             <div key={build._id} className="border border-gray-200 p-4 rounded-md shadow-sm bg-white hover:border-gray-300 transition-colors cursor-pointer group flex flex-col relative" onClick={() => setSelectedBuildPopup(build)}>
@@ -791,7 +791,7 @@ const Profile = () => {
                   </button>
                 ) : (
                   <button 
-                    onClick={() => { setSelectedBuildPopup(null); navigate('/builder'); }}
+                    onClick={() => { setSelectedBuildPopup(null); navigate('/builder', { state: { draftBuild } }); }}
                     className="px-8 py-3 font-bold transition-colors uppercase shadow-md rounded-sm w-full sm:w-auto bg-[#0047AB] text-white hover:bg-blue-800"
                   >
                     Complete in Builder

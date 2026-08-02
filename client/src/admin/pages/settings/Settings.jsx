@@ -3,8 +3,10 @@ import { Box, Typography, Grid, Tabs, Tab, Switch as MuiSwitch, IconButton } fro
 import { Delete as DeleteIcon, CloudUpload as CloudUploadIcon } from "@mui/icons-material";
 import AdminInput from "../../components/common/Input";
 import AdminButton from "../../components/common/Button";
+import AdminSelect from "../../components/common/Select";
 import { useToast } from "../../components/common/Toast";
 import { settingsService } from "../../services/settingsService";
+import { buildService } from "../../services/buildService";
 import useSettingsStore from "../../store/settingsStore";
 import { extractError } from "../../utils/extractError";
 
@@ -18,6 +20,16 @@ const SectionHeader = ({ title, subtitle }) => (
   <Box sx={{ mb: 2 }}>
     <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "var(--color-admin-text)" }}>{title}</Typography>
     {subtitle && <Typography variant="caption" sx={{ color: "var(--color-admin-muted)" }}>{subtitle}</Typography>}
+  </Box>
+);
+
+const SwitchField = ({ label, caption, checked, onChange }) => (
+  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+    <Box>
+      <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)" }}>{label}</Typography>
+      {caption && <Typography variant="caption" sx={{ color: "var(--color-admin-muted)" }}>{caption}</Typography>}
+    </Box>
+    <MuiSwitch checked={checked} onChange={onChange} />
   </Box>
 );
 
@@ -57,6 +69,14 @@ const mergeDefaults = (defaults, data) => {
   return merged;
 };
 
+const defaultBuilderSettings = {
+  enabled: true,
+  assemblyFeeEnabled: false,
+  assemblyFeeType: "percent",
+  assemblyFeeValue: 0.5,
+  requireCompleteBuild: true,
+};
+
 const Settings = () => {
   const { toast } = useToast();
   const [tab, setTab] = useState(0);
@@ -64,6 +84,9 @@ const Settings = () => {
   const [loading, setLoading] = useState(true);
   const [logoUploading, setLogoUploading] = useState(false);
   const [settings, setSettings] = useState(defaultSettings);
+  const [builderSettings, setBuilderSettings] = useState(defaultBuilderSettings);
+  const [builderSaving, setBuilderSaving] = useState(false);
+  const [builderLoading, setBuilderLoading] = useState(true);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -78,6 +101,21 @@ const Settings = () => {
       }
     };
     fetchSettings();
+  }, []);
+
+  useEffect(() => {
+    const fetchBuilderSettings = async () => {
+      try {
+        const data = await buildService.getSettings();
+        setBuilderSettings({ ...defaultBuilderSettings, ...data });
+      } catch (err) {
+        toast(extractError(err, "Failed to load builder settings"), "error");
+      } finally {
+        setBuilderLoading(false);
+      }
+    };
+    fetchBuilderSettings();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleChange = (field, value) => {
@@ -101,6 +139,22 @@ const Settings = () => {
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleBuilderSave = async () => {
+    setBuilderSaving(true);
+    try {
+      await buildService.updateSettings(builderSettings);
+      toast("Builder settings saved");
+    } catch (err) {
+      toast(extractError(err, "Failed to save builder settings"), "error");
+    } finally {
+      setBuilderSaving(false);
+    }
+  };
+
+  const handleBuilderNestedChange = (field, value) => {
+    setBuilderSettings(prev => ({ ...prev, [field]: value }));
   };
 
   const handleLogoUpload = async (e) => {
@@ -142,16 +196,6 @@ const Settings = () => {
     );
   }
 
-  const SwitchField = ({ label, caption, checked, onChange }) => (
-    <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
-      <Box>
-        <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)" }}>{label}</Typography>
-        {caption && <Typography variant="caption" sx={{ color: "var(--color-admin-muted)" }}>{caption}</Typography>}
-      </Box>
-      <MuiSwitch checked={checked} onChange={onChange} />
-    </Box>
-  );
-
   return (
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
@@ -167,6 +211,7 @@ const Settings = () => {
         <Tab label="Store" />
         <Tab label="Shipping" />
         <Tab label="Notifications" />
+        <Tab label="PC Builder" />
       </Tabs>
 
       {/* ── General Tab ── */}
@@ -445,6 +490,73 @@ const Settings = () => {
             <AdminButton variant="primary" onClick={handleSave} loading={saving}>Save Settings</AdminButton>
           </Grid>
         </Grid>
+      </TabPanel>
+
+      {/* ── PC Builder Tab ── */}
+      <TabPanel value={tab} index={4}>
+        {builderLoading ? (
+          <Box sx={{ p: 4, display: "flex", justifyContent: "center" }}>
+            <div className="animate-spin w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full" />
+          </Box>
+        ) : (
+          <Grid container spacing={3} maxWidth={600}>
+            <Grid size={{ xs: 12 }}>
+              <SectionHeader title="Assembly Fee" subtitle="Extra charge applied when a customer selects 'Completely Assembled' in the PC Builder" />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <SwitchField
+                label="Charge Assembly Fee"
+                caption="Add an assembly fee to assembled custom builds"
+                checked={builderSettings.assemblyFeeEnabled}
+                onChange={(e) => handleBuilderNestedChange("assemblyFeeEnabled", e.target.checked)}
+              />
+            </Grid>
+            {builderSettings.assemblyFeeEnabled && (
+              <>
+                <Grid size={{ xs: 6 }}>
+                  <AdminSelect
+                    label="Fee Type"
+                    options={[
+                      { value: "percent", label: "Percentage (%)" },
+                      { value: "fixed", label: "Fixed amount (₹)" },
+                    ]}
+                    value={builderSettings.assemblyFeeType}
+                    onChange={(e) => handleBuilderNestedChange("assemblyFeeType", e.target.value)}
+                  />
+                </Grid>
+                <Grid size={{ xs: 6 }}>
+                  <AdminInput
+                    label={builderSettings.assemblyFeeType === "percent" ? "Fee (%)" : "Fee (₹)"}
+                    type="number"
+                    value={builderSettings.assemblyFeeValue}
+                    onChange={(e) => handleBuilderNestedChange("assemblyFeeValue", Number(e.target.value))}
+                    inputProps={{ min: 0, step: builderSettings.assemblyFeeType === "percent" ? 0.01 : 1 }}
+                    helperText={builderSettings.assemblyFeeType === "percent" ? "Percent of component price" : "Flat fee in rupees"}
+                  />
+                </Grid>
+              </>
+            )}
+
+            <Grid size={{ xs: 12 }}>
+              <Box sx={{ height: 1, backgroundColor: "var(--color-admin-border)", my: 1 }} />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <SectionHeader title="Build Validation" subtitle="Rules applied when customers save a custom build" />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <SwitchField
+                label="Require Complete Build"
+                caption="Block saving builds that are missing required components (CPU, Motherboard, RAM, PSU, Case — GPU only when your CPU needs it)"
+                checked={builderSettings.requireCompleteBuild}
+                onChange={(e) => handleBuilderNestedChange("requireCompleteBuild", e.target.checked)}
+              />
+            </Grid>
+
+            <Grid size={{ xs: 12, mt: 2 }}>
+              <AdminButton variant="primary" onClick={handleBuilderSave} loading={builderSaving}>Save Builder Settings</AdminButton>
+            </Grid>
+          </Grid>
+        )}
       </TabPanel>
     </Box>
   );
