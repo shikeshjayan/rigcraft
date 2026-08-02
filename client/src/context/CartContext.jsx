@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './AuthContext';
 import { getCart, addToCartApi, removeFromCartApi, clearCartApi } from '../api/cart';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -9,8 +9,8 @@ const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
-  const { isLoggedIn, user } = useAuth();
-  const navigate = useNavigate();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
 
   const storageKey = 'rigcraft_cart_guest';
 
@@ -18,39 +18,13 @@ export const CartProvider = ({ children }) => {
   const [toastMessage, setToastMessage] = useState(null);
   const isInitialized = useRef(false);
 
-  // Fetch Cart from Backend OR Local Storage
-  const fetchCart = async () => {
-    if (user) {
-      try {
-        const data = await getCart();
-        if (data.success && data.data?.items) {
-          // Format backend populated items to the cartItems array expected by frontend
-          const formattedItems = data.data.items.filter(itemObj => itemObj.item).map(itemObj => {
-            const product = itemObj.item;
-            return {
-              ...product,
-              id: product._id,
-              cartItemId: itemObj._id || product._id,
-              qty: itemObj.quantity || 1,
-              itemType: itemObj.itemType
-            };
-          });
-          setCartItems(formattedItems);
-        } else {
-          setCartItems([]);
-        }
-      } catch (err) {
-        console.error("Error fetching cart from backend:", err);
-      }
-    } else {
-      try {
-        const stored = localStorage.getItem(storageKey);
-        setCartItems(stored ? JSON.parse(stored) : []);
-      } catch {
-        setCartItems([]);
-      }
+  const [guestCart, setGuestCart] = useState(() => {
+    try {
+      return JSON.parse(localStorage.getItem(storageKey)) || [];
+    } catch {
+      return [];
     }
-  };
+  });
 
   useEffect(() => {
     isInitialized.current = false;
@@ -59,12 +33,28 @@ export const CartProvider = ({ children }) => {
     });
   }, [user]);
 
-  // Sync Guest Cart to Local Storage
   useEffect(() => {
-    if (!user && isInitialized.current) {
-      localStorage.setItem(storageKey, JSON.stringify(cartItems));
+    if (!user) {
+      localStorage.setItem(storageKey, JSON.stringify(guestCart));
     }
-  }, [cartItems, user]);
+  }, [guestCart, user]);
+
+  const invalidateCart = () => queryClient.invalidateQueries({ queryKey: ['cart', user?._id] });
+
+  const addMutation = useMutation({
+    mutationFn: ({ itemType, itemId, quantity }) => addToCartApi(itemType, itemId, quantity),
+    onSuccess: invalidateCart,
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: removeFromCartApi,
+    onSuccess: invalidateCart,
+  });
+
+  const clearMutation = useMutation({
+    mutationFn: clearCartApi,
+    onSuccess: invalidateCart,
+  });
 
   const showToast = (message) => {
     setToastMessage(message);
@@ -92,7 +82,7 @@ export const CartProvider = ({ children }) => {
         return { success: false, message: errorMsg };
       }
     } else {
-      setCartItems(prev => {
+      setGuestCart(prev => {
         const existingItemIndex = prev.findIndex(i => i.id === normalizedId);
         if (existingItemIndex > -1) {
           const updated = [...prev];
@@ -101,37 +91,42 @@ export const CartProvider = ({ children }) => {
         }
         return [...prev, { ...item, id: normalizedId, qty: 1, cartItemId: Date.now().toString() + Math.random().toString(), itemType }];
       });
+      showToastNotification(`Added ${item.title || item.name || 'item'} to cart!`);
     }
   };
 
   const removeFromCart = async (id) => {
     if (user) {
       try {
-        await removeFromCartApi(id);
-        await fetchCart();
+        await removeMutation.mutateAsync(id);
+        showToastNotification('Removed from cart.');
       } catch (err) {
         console.error("Failed to remove from cart:", err);
+        showToastNotification(err.response?.data?.message || 'Failed to remove item from cart.');
       }
     } else {
-      setCartItems(prev => prev.filter(item => item.id !== id && item.cartItemId !== id && item._id !== id));
+      setGuestCart(prev => prev.filter(item => item.id !== id && item.cartItemId !== id && item._id !== id));
+      showToastNotification('Removed from cart.');
     }
   };
 
   const clearCart = async () => {
     if (user) {
       try {
-        await clearCartApi();
-        await fetchCart();
+        await clearMutation.mutateAsync();
+        showToastNotification('Cart cleared.');
       } catch (err) {
         console.error("Failed to clear cart:", err);
+        showToastNotification(err.response?.data?.message || 'Failed to clear cart.');
       }
     } else {
-      setCartItems([]);
+      setGuestCart([]);
+      showToastNotification('Cart cleared.');
     }
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, clearCart }}>
+    <CartContext.Provider value={{ cartItems, isLoading, addToCart, removeFromCart, clearCart }}>
       {children}
       <AnimatePresence>
         {toastMessage && (

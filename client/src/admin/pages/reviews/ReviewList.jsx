@@ -1,10 +1,20 @@
 import { useState, useEffect, useCallback } from "react";
-import { useNavigate } from "react-router-dom";
-import { Box, Rating } from "@mui/material";
-import { Image as ImageIcon } from "@mui/icons-material";
+import { useNavigate, useSearchParams } from "react-router-dom";
+import { Box, Rating, Switch, Tabs, Tab } from "@mui/material";
+import {
+  Image as ImageIcon,
+  Star as StarIcon,
+  Report as ReportIcon,
+  Flag as FlagIcon,
+  HourglassTop as HourglassTopIcon,
+  CheckCircle as CheckCircleIcon,
+  Cancel as CancelIcon,
+  FormatQuote as FormatQuoteIcon,
+} from "@mui/icons-material";
 import DataTable from "../../components/tables/DataTable";
 import TableToolbar from "../../components/tables/TableToolbar";
 import FilterBar from "../../components/tables/FilterBar";
+import StatCard from "../../components/dashboard/StatCard";
 import StatusBadge from "../../components/common/StatusBadge";
 import AdminThumbnail from "../../components/common/AdminThumbnail";
 import { useToast } from "../../components/common/Toast";
@@ -16,8 +26,15 @@ import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
 import { extractError } from "../../utils/extractError";
 
+const TABS = [
+  { value: "all", label: "All", reviewType: "" },
+  { value: "product", label: "Product Reviews", reviewType: "product" },
+  { value: "website", label: "Testimonials", reviewType: "website" },
+];
+
 const ReviewList = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { toast } = useToast();
   const { maxRows, containerRef } = useViewportRows();
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
@@ -27,12 +44,26 @@ const ReviewList = () => {
   const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [total, setTotal] = useState(0);
-  const [filters, setFilters] = useState({ status: "", rating: "" });
+  const [stats, setStats] = useState(null);
+  const [filters, setFilters] = useState({ status: "", rating: "", featured: "", reported: "", spamFlagged: "" });
+
+  const tabParam = searchParams.get("tab");
+  const activeTab = TABS.some((t) => t.value === tabParam) ? tabParam : "all";
+  const activeTabConfig = TABS.find((t) => t.value === activeTab) || TABS[0];
+
+  const handleTabChange = (_, value) => {
+    const next = new URLSearchParams(searchParams);
+    if (value === "all") next.delete("tab");
+    else next.set("tab", value);
+    setSearchParams(next, { replace: true });
+    setPage(0);
+    if (value === "product") setFilters((prev) => ({ ...prev, featured: "" }));
+  };
 
   const fetchReviews = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await reviewService.list({ page, pageSize, search, ...filters });
+      const result = await reviewService.list({ page, pageSize, search, reviewType: activeTabConfig.reviewType, ...filters });
       setReviews(result.data);
       setTotal(result.total);
     } catch (err) {
@@ -40,9 +71,30 @@ const ReviewList = () => {
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, search, filters, toast]);
+  }, [page, pageSize, search, activeTabConfig, filters, toast]);
 
   useEffect(() => { fetchReviews(); }, [fetchReviews]);
+
+  const fetchStats = useCallback(async () => {
+    try {
+      const result = await reviewService.stats();
+      setStats(result);
+    } catch {
+      setStats(null);
+    }
+  }, []);
+
+  useEffect(() => { fetchStats(); }, [fetchStats]);
+
+  const handleToggleFeatured = async (row, checked) => {
+    try {
+      const updated = await reviewService.toggleFeatured(row.id, { featured: checked });
+      setReviews((prev) => prev.map((r) => (r.id === row.id ? updated : r)));
+      toast(checked ? "Testimonial featured" : "Testimonial unfeatured");
+    } catch (err) {
+      toast(extractError(err, "Failed to update featured status"), "error");
+    }
+  };
 
   const filterOptions = [
     {
@@ -67,18 +119,54 @@ const ReviewList = () => {
         { value: "1", label: "1 Star" },
       ],
     },
+    ...(activeTab !== "product"
+      ? [{
+          key: "featured",
+          label: "Featured",
+          options: [
+            { value: "", label: "All" },
+            { value: "true", label: "Featured" },
+          ],
+        }]
+      : []),
+    {
+      key: "reported",
+      label: "Reported",
+      options: [
+        { value: "", label: "All" },
+        { value: "true", label: "Reported" },
+      ],
+    },
+    {
+      key: "spamFlagged",
+      label: "Spam Flag",
+      options: [
+        { value: "", label: "All" },
+        { value: "true", label: "Flagged" },
+      ],
+    },
   ];
 
-  const columns = [
+  const baseColumns = [
+    { key: "type", label: "Type", render: (val) => (
+      <StatusBadge label={val === "website" ? "Testimonial" : "Product"} color={val === "website" ? "primary" : "muted"} />
+    )},
     { key: "product", label: "Product", render: (val, row) => (
       <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-        <AdminThumbnail src={row.productImage || val.image || val.images?.[0]?.url} alt={val.name} size={32} />
-        <Box sx={{ fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val.name}</Box>
+        {val ? (
+          <>
+            <AdminThumbnail src={row.productImage || val.image || val.images?.[0]?.url} alt={val.name} size={32} />
+            <Box sx={{ fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val.name}</Box>
+          </>
+        ) : (
+          <Box sx={{ fontSize: "0.875rem", color: "var(--color-admin-muted)" }}>Website testimonial</Box>
+        )}
       </Box>
     )},
     { key: "customer", label: "Customer", render: (val) => <Box sx={{ fontSize: "0.875rem" }}>{val.name}</Box> },
     { key: "rating", label: "Rating", render: (val) => <Rating value={val} readOnly size="small" /> },
-    { key: "title", label: "Title", render: (val) => <Box sx={{ fontSize: "0.8125rem", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{val}</Box> },
+    { key: "title", label: "Title", render: (val) => <Box sx={{ fontSize: "0.8125rem", maxWidth: 200, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{val || "—"}</Box> },
+    { key: "helpfulCount", label: "Helpful", render: (val) => <Box sx={{ fontSize: "0.875rem", color: "var(--color-admin-text-secondary)" }}>{val || 0}</Box> },
     { key: "images", label: "Images", render: (val, row) => {
       const images = row.images || val;
       if (!images?.length) return null;
@@ -102,15 +190,75 @@ const ReviewList = () => {
         </Box>
       );
     }},
+    { key: "featured", label: "Featured", render: (val, row) =>
+      row.type === "website" ? (
+        <Switch
+          checked={!!val}
+          size="small"
+          onChange={(e) => {
+            e.stopPropagation();
+            handleToggleFeatured(row, e.target.checked);
+          }}
+          onClick={(e) => e.stopPropagation()}
+          sx={{
+            "& .MuiSwitch-switchBase.Mui-checked": { color: "var(--color-admin-primary)" },
+            "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "var(--color-admin-primary)" },
+          }}
+        />
+      ) : (
+        <Box sx={{ fontSize: "0.875rem", color: "var(--color-admin-muted)" }}>—</Box>
+      )
+    },
+    { key: "flags", label: "Flags", render: (_, row) => (
+      <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
+        {row.reports?.length > 0 && (
+          <StatusBadge label={`${row.reports.length} Report${row.reports.length > 1 ? "s" : ""}`} color="warning" />
+        )}
+        {row.spamFlagged && <StatusBadge label="Spam" color="error" />}
+        {!row.reports?.length && !row.spamFlagged && (
+          <Box sx={{ fontSize: "0.875rem", color: "var(--color-admin-muted)" }}>—</Box>
+        )}
+      </Box>
+    )},
     { key: "status", label: "Status", render: (val) => <StatusBadge status={val} colorMap={REVIEW_STATUS_COLOR} /> },
     { key: "createdAt", label: "Date", render: (val) => formatDate(val) },
   ];
 
+  const columns = baseColumns.filter((col) => {
+    if (activeTab === "product") return col.key !== "type" && col.key !== "featured";
+    if (activeTab === "website") return col.key !== "type" && col.key !== "product";
+    return true;
+  });
+
   return (
     <Box ref={containerRef}>
+      {stats && (
+        <Box sx={{ display: "grid", gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", lg: "repeat(4, 1fr)", xl: "repeat(7, 1fr)" }, gap: 2, px: 3, pt: 3 }}>
+          <StatCard compact title="Avg Rating" value={stats.avgRating ? `${Number(stats.avgRating).toFixed(1)} ★` : "—"} icon={StarIcon} subtitle="across all reviews" />
+          <StatCard compact title="Pending" value={stats.totals?.pending ?? 0} icon={HourglassTopIcon} subtitle="awaiting moderation" />
+          <StatCard compact title="Approved" value={stats.totals?.approved ?? 0} icon={CheckCircleIcon} subtitle="live on site" />
+          <StatCard compact title="Rejected" value={stats.totals?.rejected ?? 0} icon={CancelIcon} subtitle="hidden from site" />
+          <StatCard compact title="Testimonials" value={stats.byType?.website ?? 0} icon={FormatQuoteIcon} subtitle="website reviews" />
+          <StatCard compact title="Reported" value={stats.reported ?? 0} icon={FlagIcon} subtitle="needs attention" />
+          <StatCard compact title="Spam Flagged" value={stats.flagged ?? 0} icon={ReportIcon} subtitle="auto-detected" />
+        </Box>
+      )}
       <TableToolbar title="Reviews" searchValue={search} onSearchChange={setSearch} onRefresh={fetchReviews} />
+      <Box sx={{ px: 3 }}>
+        <Tabs
+          value={activeTab}
+          onChange={handleTabChange}
+          sx={{
+            minHeight: 40,
+            "& .MuiTab-root": { textTransform: "none", fontWeight: 600, fontSize: "0.8125rem", minHeight: 40, py: 0.75, color: "var(--color-admin-text-secondary)", "&.Mui-selected": { color: "var(--color-admin-primary) !important" } },
+            "& .MuiTabs-indicator": { backgroundColor: "var(--color-admin-primary)" },
+          }}
+        >
+          {TABS.map((t) => <Tab key={t.value} value={t.value} label={t.label} />)}
+        </Tabs>
+      </Box>
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
-      <DataTable columns={columns} rows={reviews} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/reviews/${row.id}`)} rowsPerPageOptions={[10, 25, 50, 100]} />
+      <DataTable columns={columns} rows={reviews} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/reviews/${row.id}?tab=${activeTab}`)} rowsPerPageOptions={[10, 25, 50, 100]} />
     </Box>
   );
 };
