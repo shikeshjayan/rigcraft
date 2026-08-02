@@ -42,6 +42,7 @@ import supportRoutes, { adminSupportRoutes } from "./routes/support.routes.js";
 import faqRoutes, { adminFaqRoutes } from "./routes/faq.routes.js";
 import newsletterRoutes from "./routes/newsletter.routes.js";
 import notificationRoutes, { adminNotificationRoutes } from "./routes/notification.routes.js";
+import searchRoutes, { adminSearchRoutes } from "./routes/search.routes.js";
 import errorHandler from "./middlewares/error.js";
 import maintenanceMode from "./middlewares/maintenanceMode.js";
 
@@ -112,6 +113,9 @@ app.use("/api/v1/support", supportRoutes);
 app.use("/api/v1/admin/support", adminSupportRoutes);
 app.use("/api/v1/faqs", faqRoutes);
 app.use("/api/v1/admin/faqs", adminFaqRoutes);
+
+app.use("/api/v1/search", searchRoutes);
+app.use("/api/v1/admin/search", adminSearchRoutes);
 
 app.use(errorHandler);
 

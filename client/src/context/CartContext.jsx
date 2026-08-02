@@ -2,7 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './AuthContext';
 import { getCart, addToCartApi, removeFromCartApi, clearCartApi } from '../api/cart';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const CartContext = createContext();
 
@@ -14,9 +13,25 @@ export const CartProvider = ({ children }) => {
 
   const storageKey = 'rigcraft_cart_guest';
 
-  const [cartItems, setCartItems] = useState([]);
-  const [toastMessage, setToastMessage] = useState(null);
-  const isInitialized = useRef(false);
+  const { data: serverItems, isLoading } = useQuery({
+    queryKey: ['cart', user?._id],
+    queryFn: async () => {
+      const data = await getCart();
+      if (!(data.success && data.data?.items)) return [];
+      return data.data.items.filter(itemObj => itemObj.item).map(itemObj => {
+        const product = itemObj.item;
+        return {
+          ...product,
+          id: product._id,
+          cartItemId: itemObj._id || product._id,
+          qty: itemObj.quantity || 1,
+          itemType: itemObj.itemType
+        };
+      });
+    },
+    enabled: !!user,
+    retry: false,
+  });
 
   const [guestCart, setGuestCart] = useState(() => {
     try {
@@ -26,12 +41,18 @@ export const CartProvider = ({ children }) => {
     }
   });
 
-  useEffect(() => {
-    isInitialized.current = false;
-    fetchCart().finally(() => {
-      isInitialized.current = true;
-    });
-  }, [user]);
+  const cartItems = user ? (serverItems ?? []) : guestCart;
+
+  const [toastMessage, setToastMessage] = useState('');
+  const [showToast, setShowToast] = useState(false);
+
+  const showToastNotification = (msg) => {
+    setToastMessage(msg);
+    setShowToast(true);
+    setTimeout(() => {
+      setShowToast(false);
+    }, 2000);
+  };
 
   useEffect(() => {
     if (!user) {
@@ -56,30 +77,38 @@ export const CartProvider = ({ children }) => {
     onSuccess: invalidateCart,
   });
 
-  const showToast = (message) => {
-    setToastMessage(message);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
+  const invalidateCart = () => queryClient.invalidateQueries({ queryKey: ['cart', user?._id] });
+
+  const addMutation = useMutation({
+    mutationFn: ({ itemType, itemId, quantity }) => addToCartApi(itemType, itemId, quantity),
+    onSuccess: invalidateCart,
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: removeFromCartApi,
+    onSuccess: invalidateCart,
+  });
+
+  const clearMutation = useMutation({
+    mutationFn: clearCartApi,
+    onSuccess: invalidateCart,
+  });
 
   const addToCart = async (item) => {
     const normalizedId = item.id || item._id;
     let itemType = 'product';
-    if (item.type === 'custom-build' || item.type === 'savedBuild') {
-      itemType = 'savedBuild';
-    } else if (item.type === 'prebuilt' || item.pricing || item.category === 'gaming' || item.category === 'streaming' || item.category === 'workstation' || item.category === 'office' || item.category === 'budget') {
-      itemType = 'prebuilt';
-    }
+    if (item.type === 'custom-build') itemType = 'savedBuild';
+    else if (item.type === 'PC' || item.type === 'prebuilt') itemType = 'prebuilt';
+    else if ((item.pricing && typeof item.pricing === 'object') || ['gaming', 'streaming', 'workstation', 'office', 'budget', 'prebuilt'].includes(item.category)) itemType = 'prebuilt';
+    if (item.itemType) itemType = item.itemType;
 
     if (user) {
       try {
-        await addToCartApi(itemType, normalizedId, 1);
-        await fetchCart();
-        return { success: true };
+        await addMutation.mutateAsync({ itemType, itemId: normalizedId, quantity: 1 });
+        showToastNotification(`Added ${item.title || item.name || 'item'} to cart!`);
       } catch (err) {
         console.error("Failed to add to cart:", err);
-        const errorMsg = err.response?.data?.message || err.message || "Failed to add to cart";
-        showToast(errorMsg);
-        return { success: false, message: errorMsg };
+        showToastNotification(err.response?.data?.message || 'Failed to add item to cart.');
       }
     } else {
       setGuestCart(prev => {
@@ -128,21 +157,16 @@ export const CartProvider = ({ children }) => {
   return (
     <CartContext.Provider value={{ cartItems, isLoading, addToCart, removeFromCart, clearCart }}>
       {children}
-      <AnimatePresence>
-        {toastMessage && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-8 right-8 bg-red-600 border border-red-700 text-white px-6 py-4 rounded-sm shadow-2xl z-[9999] font-bold flex items-center gap-3"
-          >
-            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-            </div>
-            {toastMessage}
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Toast Notification Popup */}
+      <div 
+        className={`fixed bottom-10 left-1/2 -translate-x-1/2 z-[100] px-6 py-3 rounded-full text-white font-bold shadow-lg flex items-center gap-2 transition-all duration-300 pointer-events-none ${showToast ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-10 scale-95'}`}
+        style={{ backgroundColor: 'var(--color-primary, #06B6D4)' }}
+      >
+        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+        </svg>
+        {toastMessage}
+      </div>
     </CartContext.Provider>
   );
 };

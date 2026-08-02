@@ -273,4 +273,10 @@ export const ENDPOINTS = {
     UPDATE: (id) => `/admin/faqs/${id}`,
     DELETE: (id) => `/admin/faqs/${id}`,
   },
+
+  // Search
+  SEARCH: {
+    PUBLIC: "/search",
+    ADMIN: "/admin/search",
+  },
 };
