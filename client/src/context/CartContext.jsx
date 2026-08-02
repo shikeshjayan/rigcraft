@@ -77,6 +77,23 @@ export const CartProvider = ({ children }) => {
     onSuccess: invalidateCart,
   });
 
+  const invalidateCart = () => queryClient.invalidateQueries({ queryKey: ['cart', user?._id] });
+
+  const addMutation = useMutation({
+    mutationFn: ({ itemType, itemId, quantity }) => addToCartApi(itemType, itemId, quantity),
+    onSuccess: invalidateCart,
+  });
+
+  const removeMutation = useMutation({
+    mutationFn: removeFromCartApi,
+    onSuccess: invalidateCart,
+  });
+
+  const clearMutation = useMutation({
+    mutationFn: clearCartApi,
+    onSuccess: invalidateCart,
+  });
+
   const addToCart = async (item) => {
     const normalizedId = item.id || item._id;
     let itemType = 'product';
