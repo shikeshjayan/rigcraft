@@ -26,6 +26,7 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 import Terms from './pages/Terms';
 import About from './pages/About';
 import Contact from './pages/Contact';
+import Error from './pages/Error';
 import { WishlistProvider } from './context/WishlistContext';
 import AdminRoutes from './admin/routes/AdminRoutes';
 import { AuthProvider } from './context/AuthContext';
@@ -102,6 +103,7 @@ const App = () => {
                   <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                   <Route path="/terms-of-service" element={<Terms />} />
                   <Route path="/about" element={<About />} />
+                  <Route path="*" element={<Error />} />
                 </Route>
               </Routes>
             </WishlistProvider>

@@ -127,7 +127,7 @@ const HeroToday = () => {
 
               return (
                 <Card 
-                  key={product._id}
+ rating={product?.rating} key={product._id}
                   id={product._id}
                   image={imageUrl}
                   title={product.name}

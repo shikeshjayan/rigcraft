@@ -4,6 +4,7 @@ import SavedBuild from "../models/saved-build.model.js";
 const COMPONENT_POPULATE = [
   {
     path: "components.product",
+    model: "Product",
     select:
       "name slug price salePrice images compatibility specifications brand weight",
     populate: { path: "brand", select: "name slug" },

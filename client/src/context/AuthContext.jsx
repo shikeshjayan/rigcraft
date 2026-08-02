@@ -45,6 +45,10 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('accessToken');
     localStorage.removeItem('admin-auth-storage');
+    localStorage.removeItem('rigcraft_cart_guest');
+    localStorage.removeItem('rigcraft_wishlist_guest');
+    // Force reload to a fresh start
+    window.location.href = '/';
   };
 
   return (
