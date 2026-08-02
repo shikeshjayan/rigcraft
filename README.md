@@ -1,205 +1,207 @@
-# RigCraft
+<div align="center">
+  <h1>🚀 Rigcraft - The Ultimate Custom PC Builder & eCommerce Platform</h1>
+  <p>
+    <strong>A next-generation platform for building custom PCs, exploring prebuilt rigs, and purchasing PC components.</strong>
+  </p>
+  
+  [![Live Demo](https://img.shields.io/badge/Live_Demo-rigcraft--chi.vercel.app-0052FF?style=for-the-badge)](https://rigcraft-chi.vercel.app/)
+  [![Built with React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
+  [![Node.js](https://img.shields.io/badge/Node.js-Backend-339933?style=for-the-badge&logo=node.js)](https://nodejs.org/)
+  [![MongoDB](https://img.shields.io/badge/MongoDB-Database-47A248?style=for-the-badge&logo=mongodb)](https://mongodb.com/)
+</div>
 
-RigCraft is a full-stack PC e-commerce platform that lets users browse computer components
-and pre-built PCs, assemble their own rig with a PC builder, and complete purchases with
-Razorpay payments. It includes a full admin/manager dashboard, coupons, deals, support
-tickets, reviews, notifications (REST + real-time via Socket.IO), newsletters, and more.
+<br />
 
-## Features
+## 🌟 Overview
 
-- **Product catalog** — components, pre-built PCs, and accessories with categories, brands, filters, search, and featured/related items
-- **PC Builder** — pick components by slot (CPU, motherboard, GPU, RAM, storage, PSU, cabinet, cooler, OS) with compatibility validation and saved builds
-- **Shopping** — cart with coupons, wishlist, checkout (Razorpay + Cash on Delivery), order tracking and cancellation
-- **Reviews** — verified user reviews on products and pre-built PCs with moderation
-- **Support** — user-facing tickets and an admin queue with real-time messaging via Socket.IO
-- **Notifications** — per-user and role-scoped admin notifications, REST + Socket.IO push
-- **Storefront tools** — deals/banners, FAQ, newsletter (CSV export), site settings, maintenance mode
-- **Admin dashboard** — stats, sales charts, recent orders, top/low-stock products, order breakdown
-- **Auth** — email or phone login, password and phone-OTP login, remember-me with refresh tokens, forgot/reset password, role-based access control (`customer`, `manager`, `admin`)
+**Rigcraft** is a comprehensive full-stack eCommerce application specifically tailored for PC enthusiasts. It bridges the gap between buying individual components and purchasing fully assembled systems by providing an interactive, intelligent **Custom PC Builder**, alongside a traditional storefront for components and accessories.
 
-## Tech Stack
+### 🔗 Live Preview
+👉 **[Experience Rigcraft Live](https://rigcraft-chi.vercel.app/)**
 
-### Server (`server/`)
+---
 
-- **Node.js + Express 4** — REST API under `/api/v1`
-- **MongoDB + Mongoose** — data layer (with `mongoose-paginate-v2`)
-- **JWT + httpOnly cookies** — authentication & refresh tokens
-- **Zod** — request validation
-- **Socket.IO** — real-time support chat & notifications
-- **Cloudinary** — image storage & CDN
-- **Razorpay** — payment gateway
-- **Nodemailer** — transactional email (OTP, password reset)
-- **express-rate-limit, helmet, cors, hpp, morgan** — security & logging
-- **Vitest + supertest** — testing
+## ✨ Core Features
 
-### Client (`client/`)
+### 🛠️ Intelligent Custom PC Builder
+- Step-by-step interactive builder guiding users through compatible parts (CPU, GPU, Motherboard, RAM, etc.).
+- Real-time compatibility checks (socket types, form factors, wattage).
+- Instant total price calculation and wattage estimation.
+- **AI Chatbot Assistant:** Integrated AI to help users pick parts, understand specs, and resolve compatibility issues.
 
-- **React 19 + Vite** — SPA
-- **React Router 7** — routing
-- **MUI (Material UI) + Tailwind CSS** — UI
-- **React Query + Axios** — data fetching & caching
-- **Zustand** — state management
-- **react-hook-form + zod** — forms
-- **Recharts** — admin dashboard charts
-- **Google Generative AI** — optional AI assistant (`VITE_GEMINI_API_KEY`)
+### 🛒 Robust eCommerce Storefront
+- **Prebuilt PCs:** Browse expertly assembled systems for gaming, workstations, and office use.
+- **Component Catalog:** Filter components by brand, price, rating, and detailed technical specifications.
+- **Deals & Bundles:** Dedicated sections for active discounts, hot deals, and combo bundles with live countdown timers.
+- **Cart & Wishlist System:** Persistent cart/wishlist for both guest users (localStorage) and authenticated users (MongoDB).
+- **Checkout & Payments:** Secure payment integration flow.
 
-## Repository Structure
+### 👤 User Management & Dashboards
+- Secure JWT-based Authentication (Login, Register, Password Reset).
+- **Customer Dashboard:** Track order history, manage saved PC builds, and request warranty support.
+- **Support & Warranty:** Submit support tickets or RMA claims directly from the dashboard.
 
-```
-├── server/                  # Express + MongoDB backend
-│   ├── src/
-│   │   ├── config/          # DB, Cloudinary, Razorpay config
-│   │   ├── constants/       # Enums (roles, statuses, types)
-│   │   ├── controllers/     # HTTP handlers
-│   │   ├── middlewares/     # Auth, upload, validation, error, maintenance
-│   │   ├── models/          # Mongoose models
-│   │   ├── repositories/    # Data access layer
-│   │   ├── routes/          # Express routers
-│   │   ├── schemas/         # Mongoose schemas
-│   │   ├── scripts/         # One-off migration scripts
-│   │   ├── services/        # Business logic
-│   │   ├── socket/          # Socket.IO handlers & emitters
-│   │   ├── tests/           # Vitest integration tests
-│   │   ├── uploads/         # Local upload dir (dev)
-│   │   ├── utils/           # ApiError, ApiResponse, asyncHandler
-│   │   └── app.js           # Express app
-│   ├── seed/                # Seed data & seeder
-│   └── api/                 # Vercel serverless adapter
-├── client/                  # React + Vite frontend
-│   └── src/
-│       ├── pages/           # Storefront pages
-│       ├── admin/           # Admin dashboard
-│       ├── services/        # API service modules
-│       ├── shared/          # Axios instance, endpoints, UI kit
-│       └── store/           # Zustand stores
-├── API.md                   # REST + WebSocket API reference
-└── DESIGN.md                # Design system reference
-```
+### 👑 Admin Portal
+- Comprehensive dashboard to manage Products, Prebuilt PCs, Orders, Users, and Support Tickets.
+- Dynamic Deal Management (set active sales, coupons, and promotional banners).
 
-## Getting Started
+---
+
+## 💻 Tech Stack
+
+### Frontend
+- **React.js (Vite)** - Fast, modern UI library
+- **Tailwind CSS** - Utility-first styling for beautiful, responsive design
+- **Framer Motion** - Smooth page transitions and micro-interactions
+- **React Router v6** - Client-side routing and protected routes
+- **TanStack Query (React Query)** - Powerful asynchronous state management and caching
+- **Material UI Icons** - Standardized iconography
+
+### Backend
+- **Node.js & Express.js** - Scalable, event-driven server environment
+- **MongoDB & Mongoose** - Flexible NoSQL database and ODM for complex product schemas
+- **JSON Web Tokens (JWT)** - Secure, stateless authentication
+- **Multer** - File and image upload handling
+- **Stripe/Razorpay** - (Configurable) Payment gateway integration
+
+---
+
+## 🚀 Local Setup & Installation
+
+Follow these instructions to run Rigcraft on your local machine.
 
 ### Prerequisites
+- Node.js (v16 or higher)
+- MongoDB (Local instance or MongoDB Atlas cluster)
 
-- **Node.js** ≥ 18
-- **MongoDB** (local or Atlas)
-- **Cloudinary** account (for image uploads)
-- **Razorpay** account (for payments)
+### 1. Clone the Repository
+\`\`\`bash
+git clone https://github.com/yourusername/rigcraft.git
+cd rigcraft
+\`\`\`
 
-### 1. Server
-
-```bash
+### 2. Setup the Backend
+\`\`\`bash
 cd server
 npm install
-cp .env.example .env   # then fill in the values below
-npm run dev            # starts on http://localhost:5000
-```
+\`\`\`
+Create a `.env` file in the `server` directory:
+\`\`\`env
+PORT=5000
+MONGODB_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+JWT_EXPIRE=30d
+NODE_ENV=development
+# Add other keys (Cloudinary, Stripe, etc.) as required
+\`\`\`
+Start the backend server:
+\`\`\`bash
+npm run dev
+\`\`\`
 
-### 2. Client
-
-```bash
+### 3. Setup the Frontend
+Open a new terminal window:
+\`\`\`bash
 cd client
 npm install
-# create a .env file with the variables listed below (reuse an existing one if present)
-npm run dev            # starts on http://localhost:5173
-```
+\`\`\`
+Create a `.env` file in the `client` directory:
+\`\`\`env
+VITE_API_URL=http://localhost:5000/api/v1
+\`\`\`
+Start the Vite development server:
+\`\`\`bash
+npm run dev
+\`\`\`
 
-The Vite dev server proxies `/uploads` requests to `http://localhost:5000`.
+The app will be running at `http://localhost:5173`.
 
-### Environment Variables
+---
 
-#### `server/.env`
+## 📚 API Documentation (v1)
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `MONGO_URI` | Yes | MongoDB connection string |
-| `JWT_SECRET` | Yes | Secret for access tokens |
-| `JWT_EXPIRES_IN` | No | Access token lifetime (default `7d`) |
-| `JWT_REFRESH_SECRET` | Yes | Secret for refresh tokens (used with remember-me) |
-| `CLOUDINARY_CLOUD_NAME` | Yes | Cloudinary cloud name |
-| `CLOUDINARY_API_KEY` | Yes | Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | Yes | Cloudinary API secret |
-| `RAZORPAY_KEY_ID` | No* | Razorpay key ID |
-| `RAZORPAY_KEY_SECRET` | No* | Razorpay key secret |
-| `RAZORPAY_WEBHOOK_SECRET` | No | Razorpay webhook signing secret |
-| `EMAIL_HOST` | No* | SMTP host for transactional email |
-| `EMAIL_PORT` | No | SMTP port |
-| `EMAIL_USER` | No | SMTP username |
-| `EMAIL_PASS` | No | SMTP password |
-| `EMAIL_FROM` | No | From address for outgoing email |
-| `CLIENT_URL` | Yes | Frontend URL (used in password-reset links) |
-| `CORS_ORIGIN` | No | Allowed CORS origin (defaults to `http://localhost:5173`) |
-| `SERVER_ORIGIN` | No | Public server origin used to build absolute image URLs |
-| `PORT` | No | Server port (default `5000`) |
-| `NODE_ENV` | No | `development` or `production` |
+The backend exposes a RESTful API located at `/api/v1`. Below are the primary resource endpoints.
 
-> \* Marked optional only because the store can run without them; **payments and email
-> require their respective credentials**. For development, password-reset and OTP emails
-> are also printed to the server console.
+### 🔐 Authentication (`/auth`)
+- `POST /auth/register` - Register a new customer/admin
+- `POST /auth/login` - Authenticate user & receive JWT
+- `GET /auth/me` - Get current logged-in user profile
+- `POST /auth/forgot-password` - Initiate password reset
 
-#### `client/.env`
+### 📦 Products & Components (`/products`)
+- `GET /products` - Fetch paginated, filterable components
+- `GET /products/:id` - Get detailed product specifications
+- `POST /products` - (Admin) Create a new component
+- `PUT /products/:id` - (Admin) Update a component
+- `DELETE /products/:id` - (Admin) Delete a component
 
-| Variable | Description |
-|----------|-------------|
-| `VITE_API_URL` | API base URL (default `http://localhost:5000/api/v1`) |
-| `VITE_API_BASE_URL` | Fallback API base URL |
-| `VITE_GEMINI_API_KEY` | Optional Google Gemini key for the AI assistant |
+### 🖥️ Prebuilt PCs (`/prebuilt-pcs`)
+- `GET /prebuilt-pcs` - List all prebuilt systems
+- `GET /prebuilt-pcs/:id` - Get prebuilt PC details
 
-### Seed Database
+### 🛠️ Custom Builds (`/builds`)
+- `POST /builds` - Save a custom PC build configuration
+- `GET /builds/my-builds` - Fetch all saved builds for the logged-in user
+- `DELETE /builds/:id` - Delete a saved build
 
-Populate the database with sample categories, brands, products, pre-built PCs, coupons,
-deals, FAQs, newsletter subscribers, and mock orders/reviews:
+### 🛒 Cart & Checkout (`/cart` & `/orders`)
+- `GET /cart` - Retrieve current user's cart
+- `POST /cart/add` - Add item (component or prebuilt) to cart
+- `DELETE /cart/remove/:itemId` - Remove item from cart
+- `POST /orders` - Create a new order (Checkout)
+- `GET /orders/myorders` - List user's order history
 
-```bash
-cd server
-npm run seed
-```
+### 🏷️ Deals & Promotions (`/deals` & `/coupons`)
+- `GET /deals` - Fetch active deals, bundles, and discounts
+- `POST /coupons/validate` - Validate a discount code during checkout
 
-The seeder creates these login accounts:
+### 🎧 Support & Warranty (`/support`)
+- `POST /support` - Submit a new support/warranty ticket
+- `GET /support/my-tickets` - View user's submitted tickets
+- `PUT /support/:id/status` - (Admin) Update ticket status
 
-| Role | Email | Password |
-|------|-------|----------|
-| Admin | `admin@rigcraft.com` | `Admin@123` |
-| Manager | `manager@rigcraft.com` | `Manager@123` |
-| Customer | (random `customer-N@rigcraft.com`) | `Customer@123` |
+---
 
-## Scripts
+## 📁 Project Structure
 
-### Server
+\`\`\`
+rigcraft/
+├── client/                 # React Frontend (Vite)
+│   ├── src/
+│   │   ├── admin/          # Admin Dashboard Panels
+│   │   ├── api/            # Axios API Client configurations
+│   │   ├── components/     # Reusable UI components (Cards, Navbar, Chatbot)
+│   │   ├── context/        # React Context (Auth, Cart, Wishlist)
+│   │   ├── pages/          # Full page views (Home, PCBuilder, Deals, Error)
+│   │   ├── sections/       # Page-specific block sections (DealsHero, Catalog)
+│   │   ├── services/       # Abstracted API calls
+│   │   └── App.jsx         # Main Router & Layout wrapper
+│   └── tailwind.config.js  # Tailwind theme definitions
+│
+├── server/                 # Node.js/Express Backend
+│   ├── src/
+│   │   ├── controllers/    # Business logic & request handling
+│   │   ├── models/         # Mongoose Schemas (User, Product, Order)
+│   │   ├── routes/         # Express Route definitions
+│   │   ├── middleware/     # Auth, Error handling, File uploads
+│   │   └── config/         # Database & environment configurations
+│   └── index.js            # Server entry point
+└── README.md
+\`\`\`
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start with nodemon |
-| `npm start` | Start the production server |
-| `npm run seed` | Seed the database |
-| `npm test` | Run Vitest integration tests |
-| `npm run test:coverage` | Run tests with coverage |
-| `npm run migrate:category-type` | Run the category-type migration script |
+---
 
-### Client
+## 🚀 Future Roadmap
+- [ ] **Social Sharing:** Allow users to generate unique links to share their custom PC builds.
+- [ ] **Advanced AI:** Deeper integration with AI to automatically build PCs based on a user's target framerate and budget.
+- [ ] **Benchmark Estimates:** Display estimated FPS in popular games based on the selected CPU & GPU combo.
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start the Vite dev server |
-| `npm run build` | Build for production |
-| `npm run preview` | Preview the production build |
-| `npm run lint` | Run ESLint |
-| `npm test` | Run Vitest tests |
+---
 
-## API Documentation
+## 📜 License
+This project is proprietary. All rights reserved by **Rigcraft**.
 
-Full endpoint reference — REST routes, request/response bodies, auth requirements, and
-WebSocket events — is in **[API.md](./API.md)**.
-
-## Deployment
-
-- **Server**: deployable on **Vercel** (see `server/vercel.json` + `server/api/index.js`).
-  Set the environment variables above in the Vercel dashboard. In production, the
-  `uploads` directory resolves to `/tmp/uploads` (ephemeral — uploads should use
-  Cloudinary for persistence).
-- **Client**: static build (`npm run build`) deployable to Vercel, Netlify, or any static
-  host. Configure `VITE_API_URL` to point at your deployed server.
-
-## Testing
-
-Integration tests live in `server/src/tests/` and client tests in `client/src/tests/`.
-Both projects use **Vitest** and can be run with `npm test`.
+<div align="center">
+  <p>Built for PC Enthusiasts.</p>
+  <p>Developed by Team D Penoft PIP-04</p>
+</div>

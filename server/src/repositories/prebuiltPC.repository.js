@@ -5,6 +5,7 @@ import ApiError from "../utils/ApiError.js";
 const COMPONENT_POPULATE = [
   {
     path: "components.product",
+    model: "Product",
     select: "name slug price salePrice images specifications brand",
     populate: { path: "brand", select: "name slug" },
   },

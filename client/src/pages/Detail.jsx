@@ -4,6 +4,10 @@ import apiClient from '../api/client';
 import FadeUp from '../components/FadeUp';
 import { allItems } from '../data/items';
 import { useCart } from '../context/CartContext';
+import { useAuth } from '../context/AuthContext';
+import LoginPrompt from '../components/LoginPrompt';
+import ProductReviews from '../components/ProductReviews';
+import { motion, AnimatePresence } from 'framer-motion';
 
 // Icons
 import AddIcon from '@mui/icons-material/Add';
@@ -27,20 +31,64 @@ const Detail = () => {
   const [error, setError] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
   const [showAddedToast, setShowAddedToast] = useState(false);
+  const [showCartToast, setShowCartToast] = useState(false);
+  
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [loginMessage, setLoginMessage] = useState("");
+  const [flyingItem, setFlyingItem] = useState(null);
+  const [isHammering, setIsHammering] = useState(false);
 
   const navigate = useNavigate();
   const { addToCart } = useCart();
+  const { isLoggedIn } = useAuth();
 
   const handleBuyNow = () => {
+    if (!isLoggedIn) {
+      setLoginMessage("You need to log in to your account to buy this item.");
+      setShowLoginPrompt(true);
+      return;
+    }
     addToCart(pc);
     navigate('/cart?step=address');
   };
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e) => {
+    if (!isLoggedIn) {
+      setLoginMessage("You need to log in to your account to add items to the cart.");
+      setShowLoginPrompt(true);
+      return;
+    }
+
+    // Trigger flying animation
+    const rect = document.getElementById('main-product-image')?.getBoundingClientRect();
+    if (rect) {
+      setFlyingItem({
+        image: pc.images && pc.images.length > 0 ? pc.images[activeImage].url : '/fallback.png',
+        x: rect.left,
+        y: rect.top,
+        width: rect.width,
+        height: rect.height
+      });
+      
+      setTimeout(() => {
+        setFlyingItem(null);
+      }, 800);
+    }
+
     addToCart(pc);
+    setShowCartToast(true);
+    setTimeout(() => setShowCartToast(false), 4000);
   };
 
   const handleAddToBuild = () => {
+    if (!isLoggedIn) {
+      setLoginMessage("You need to log in to your account to add items to your build.");
+      setShowLoginPrompt(true);
+      return;
+    }
+    
+    setIsHammering(true);
+    setTimeout(() => setIsHammering(false), 600);
     let draftBuild = JSON.parse(localStorage.getItem('draftBuild')) || {};
     
     let dbCategory = 'misc';
@@ -136,9 +184,16 @@ const Detail = () => {
   const title = pc.name;
   const description = pc.description || pc.shortDescription || `Experience incredible performance with the ${title}.`;
   
-  // Format price
-  const formattedPrice = pc.price ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(pc.price) : '₹0';
-  const mrpPrice = pc.salePrice || pc.price ? pc.price * 1.2 : pc.price; // mock MRP
+  // Format price (handle both Product and Prebuilt PC schemas)
+  // Ensure we check all possible paths robustly
+  const pcPrice = Number(pc.pricing?.price) || Number(pc.price) || Number(pc.priceVal) || 0;
+  const pcSalePrice = Number(pc.pricing?.salePrice) || Number(pc.salePrice) || 0;
+  
+  const actualPrice = pcPrice;
+  const actualSalePrice = pcSalePrice;
+  
+  const formattedPrice = actualPrice ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(actualPrice) : '₹0';
+  const mrpPrice = actualSalePrice ? (actualPrice || actualSalePrice * 1.2) : (actualPrice * 1.2); // mock MRP if no real MRP exists
   const formattedMrp = new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(mrpPrice);
   
   // Images
@@ -146,8 +201,8 @@ const Detail = () => {
   const currentImage = images[activeImage] || images[0];
 
   // Rating
-  const ratingAvg = pc.rating?.average || 4.5;
-  const reviewsCount = pc.rating?.count || Math.floor(Math.random() * 500) + 10;
+  const ratingAvg = pc.rating?.average ?? 0;
+  const reviewsCount = pc.rating?.count ?? 0;
   
   // Specs extraction safely
   const specifications = pc.specifications || {};
@@ -177,8 +232,8 @@ const Detail = () => {
           <div className="w-full lg:w-[60%] flex flex-col">
             
             {/* Image Gallery */}
-            <div className="w-full h-[400px] lg:h-[500px] bg-[#E5E7EB] rounded-sm mb-4 flex items-center justify-center p-8">
-              <img src={currentImage} alt={title} className="max-h-full max-w-full object-contain mix-blend-multiply" />
+            <div className="w-full h-[400px] lg:h-[500px] bg-[#E5E7EB] rounded-sm mb-4 flex items-center justify-center p-8 relative">
+              <img id="main-product-image" src={currentImage} alt={title} className="max-h-full max-w-full object-contain mix-blend-multiply" />
             </div>
             
             {/* Thumbnails */}
@@ -303,18 +358,18 @@ const Detail = () => {
             <div className="sticky top-[120px] bg-white border border-[#E7E7E7] shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-5 rounded-md flex flex-col mb-6">
               
               <div className="flex items-center gap-3 mb-1">
-                {pc.salePrice && pc.salePrice < pc.price && (
+                {actualSalePrice > 0 && actualSalePrice < actualPrice && (
                   <span className="bg-[#CC0C39] text-white text-[11px] font-bold px-1.5 py-0.5 rounded-sm uppercase tracking-wider">
-                    - {Math.round((1 - pc.salePrice/pc.price)*100)}% EXCLUSIVE
+                    - {Math.round((1 - actualSalePrice/actualPrice)*100)}% EXCLUSIVE
                   </span>
                 )}
-                {pc.salePrice && (
+                {actualSalePrice > 0 && (
                   <span className="text-[14px] text-[#565959] line-through">{formattedMrp}</span>
                 )}
               </div>
               
               <div className="text-[36px] font-bold text-[#0047AB] mb-1 leading-none tracking-tight">
-                {pc.salePrice ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(pc.salePrice) : formattedPrice}
+                {actualSalePrice > 0 ? new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(actualSalePrice) : formattedPrice}
               </div>
               <div className="text-[13px] text-[#565959] mb-4 pb-4 border-b border-[#E7E7E7]">
                 Financing available at checkout
@@ -344,8 +399,14 @@ const Detail = () => {
                   Add to Cart
                 </button>
                 {!isPrebuilt && (
-                  <button onClick={handleAddToBuild} className="w-full bg-[#1F2937] text-white font-bold py-3 rounded-sm hover:bg-[#111827] transition-colors flex justify-center items-center gap-2 cursor-pointer mt-2">
-                    <ConstructionIcon sx={{ fontSize: 18 }} /> Add to Active Build
+                  <button onClick={handleAddToBuild} className="w-full bg-[#1F2937] text-white font-bold py-3 rounded-sm hover:bg-[#111827] transition-colors flex justify-center items-center gap-2 cursor-pointer mt-2 overflow-hidden">
+                    <motion.div 
+                      animate={isHammering ? { rotate: [0, -45, 10, -45, 10, 0] } : {}} 
+                      transition={{ duration: 0.5, ease: "easeInOut" }}
+                    >
+                      <ConstructionIcon sx={{ fontSize: 18 }} />
+                    </motion.div>
+                    Add to Active Build
                   </button>
                 )}
               </div>
@@ -354,13 +415,65 @@ const Detail = () => {
           </div>
 
         </div>
+        
+        {/* Reviews Section */}
+        <ProductReviews itemId={pc._id} itemType={typeParam === 'prebuilt' ? 'prebuilt' : 'product'} />
+
       </div>
-      {/* Toast Notification */}
+      {/* Toast Notification for Build */}
       {showAddedToast && (
         <div className="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in flex items-center gap-2">
           <CheckCircleOutlineIcon /> Component added to your Active Build!
         </div>
       )}
+      
+      {/* Toast Notification for Cart */}
+      {showCartToast && (
+        <div className="fixed bottom-4 right-4 bg-[#0047AB] text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in flex items-center gap-2">
+          <CheckCircleOutlineIcon /> {title} is added to cart
+        </div>
+      )}
+
+      {/* Flying Cart Animation */}
+      <AnimatePresence>
+        {flyingItem && (
+          <motion.img
+            src={flyingItem.image}
+            style={{
+              position: 'fixed',
+              top: 0,
+              left: 0,
+              zIndex: 9999,
+              pointerEvents: 'none',
+              objectFit: 'contain'
+            }}
+            initial={{ 
+              x: flyingItem.x, 
+              y: flyingItem.y, 
+              width: flyingItem.width, 
+              height: flyingItem.height, 
+              opacity: 1, 
+              scale: 1,
+            }}
+            animate={{ 
+              x: document.getElementById('cart-icon-header')?.getBoundingClientRect().left || window.innerWidth - 100, 
+              y: document.getElementById('cart-icon-header')?.getBoundingClientRect().top || 20, 
+              width: 40, 
+              height: 40,
+              opacity: [1, 1, 0.8, 0],
+              scale: [1, 0.8, 0.5, 0.2]
+            }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.8, ease: "easeInOut" }}
+          />
+        )}
+      </AnimatePresence>
+
+      <LoginPrompt 
+        isOpen={showLoginPrompt}
+        onClose={() => setShowLoginPrompt(false)}
+        message={loginMessage}
+      />
     </div>
     </FadeUp>
   );
