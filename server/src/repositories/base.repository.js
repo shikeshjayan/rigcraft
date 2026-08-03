@@ -16,8 +16,14 @@ class BaseRepository {
   }
 
   async findAll(filter = {}, options = {}) {
-    const { sort = { createdAt: -1 }, select, populate } = options;
-    return this.model.find(filter).select(select).populate(populate).sort(sort);
+    const { sort = { createdAt: -1 }, select, populate, skip, limit } = options;
+    return this.model
+      .find(filter)
+      .select(select)
+      .populate(populate)
+      .sort(sort)
+      .skip(skip)
+      .limit(limit);
   }
 
   async create(data) {

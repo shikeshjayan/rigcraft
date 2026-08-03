@@ -39,27 +39,32 @@ export const getCoupons = async (query = {}) => {
     search,
   } = query;
 
+  const pageNum = Math.max(1, Number(page) || 1);
+  const limitNum = Math.max(1, Math.min(100, Number(limit) || 20));
+  const skip = (pageNum - 1) * limitNum;
+
   const filter = {};
 
   if (isActive !== undefined) filter.isActive = isActive === "true";
   if (discountType) filter.discountType = discountType;
   if (search) {
+    const regex = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
     filter.$or = [
-      { code: { $regex: search, $options: "i" } },
-      { name: { $regex: search, $options: "i" } },
+      { code: { $regex: regex, $options: "i" } },
+      { name: { $regex: regex, $options: "i" } },
     ];
   }
 
-  const coupons = await couponRepository.findAll(filter, { sort });
+  const coupons = await couponRepository.findAll(filter, { sort, skip, limit: limitNum });
   const total = await couponRepository.count(filter);
 
   return {
     coupons,
     pagination: {
-      page: Number(page),
-      limit: Number(limit),
+      page: pageNum,
+      limit: limitNum,
       total,
-      pages: Math.ceil(total / Number(limit)),
+      pages: Math.ceil(total / limitNum),
     },
   };
 };
