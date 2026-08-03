@@ -38,6 +38,7 @@ export const createDealSchema = z
             enabled: z.boolean().optional().default(false),
             title: z.string().max(200).trim().optional().default(""),
             description: z.string().max(500).trim().optional().default(""),
+            banner: imageObject,
           })
           .optional()
           .default({}),
@@ -76,6 +77,7 @@ export const updateDealSchema = z.object({
           enabled: z.boolean().optional(),
           title: z.string().max(200).trim().optional(),
           description: z.string().max(500).trim().optional(),
+          banner: imageObject,
         })
         .optional(),
     })
@@ -84,4 +86,10 @@ export const updateDealSchema = z.object({
   buttonLink: z.string().max(500).trim().optional(),
   displayOrder: z.number().int().min(0).optional(),
   isActive: z.boolean().optional(),
+}).refine((data) => {
+  if (data.startDate === undefined || data.endDate === undefined) return true;
+  return data.startDate < data.endDate;
+}, {
+  message: "Start date must be before end date",
+  path: ["endDate"],
 });

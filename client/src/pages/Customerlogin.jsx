@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { useMutation } from '@tanstack/react-query';
 import { GoogleLogin } from '@react-oauth/google';
 import { authService } from '../services/auth.service';
+import { isGoogleOAuthEnabled } from '../utils/googleOAuth';
 import handleAuthSuccess from '../utils/authSuccess';
 import FadeUp from '../components/FadeUp';
 import DynamicLogo from '../components/DynamicLogo';
@@ -139,13 +140,14 @@ const Customerlogin = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
-      <FadeUp>
-        <div className="max-w-md w-full space-y-8 bg-white p-10 shadow-[0_10px_40px_rgba(0,0,0,0.08)]" style={{ borderRadius: 'var(--radius-sm)' }}>
+      <FadeUp className="w-full">
+        <div className="max-w-md w-full mx-auto min-h-[680px] flex flex-col space-y-8 bg-white p-10 shadow-[0_10px_40px_rgba(0,0,0,0.08)]" style={{ borderRadius: 'var(--radius-sm)' }}>
           {/* Logo */}
           <div className="flex justify-center">
             <DynamicLogo />
           </div>
 
+          <div className="flex-1 flex flex-col justify-center">
           {step === 'login' && (
             <>
               <div>
@@ -209,7 +211,7 @@ const Customerlogin = () => {
                 <div>
                   <button
                     type="submit"
-                    disabled={checkMutation.isPending || sendOtpMutation.isPending || !consent}
+                    disabled={checkMutation.isPending || sendOtpMutation.isPending}
                     className={`group relative cursor-pointer w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold text-white bg-[var(--color-primary)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-all shadow-md ${(checkMutation.isPending || sendOtpMutation.isPending) ? 'opacity-70 cursor-not-allowed' : ''}`}
                     style={{ borderRadius: 'var(--radius-sm)' }}
                   >
@@ -230,14 +232,20 @@ const Customerlogin = () => {
 
                 <div className="relative mt-4">
                   <div className={consent ? '' : 'pointer-events-none'}>
-                    <GoogleLogin
-                      onSuccess={({ credential }) => googleLoginMutation.mutate(credential)}
-                      onError={() => setError('Google sign-in failed. Please try again.')}
-                      width="100%"
-                      shape="rectangular"
-                      text="continue_with"
-                      theme="outline"
-                    />
+                    {isGoogleOAuthEnabled() ? (
+                      <GoogleLogin
+                        onSuccess={({ credential }) => googleLoginMutation.mutate(credential)}
+                        onError={() => setError('Google sign-in failed. Please try again.')}
+                        width="100%"
+                        shape="rectangular"
+                        text="continue_with"
+                        theme="outline"
+                      />
+                    ) : (
+                      <p className="text-center text-sm text-gray-500">
+                        Google sign-in is unavailable right now. Please use your mobile number or email instead.
+                      </p>
+                    )}
                   </div>
                   {!consent && (
                     <button
@@ -405,6 +413,7 @@ const Customerlogin = () => {
               </form>
             </>
           )}
+          </div>
         </div>
       </FadeUp>
     </div>

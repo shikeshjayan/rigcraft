@@ -102,7 +102,7 @@ const dealSchema = new mongoose.Schema(
 );
 
 dealSchema.pre("save", function () {
-  if (this.isNew || this.isModified("title")) {
+  if ((this.isNew || this.isModified("title")) && !this.slug) {
     this.slug = slugify(this.title, { lower: true, strict: true });
   }
 });

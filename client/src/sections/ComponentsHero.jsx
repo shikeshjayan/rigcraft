@@ -3,29 +3,17 @@ import { motion } from 'framer-motion';
 import MemoryIcon from '@mui/icons-material/Memory';
 import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
 import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
-import StorageIcon from '@mui/icons-material/Storage';
-import PowerIcon from '@mui/icons-material/Power';
 import SettingsInputComponentIcon from '@mui/icons-material/SettingsInputComponent';
-
-const CATEGORY_DETAILS = {
-  cpu: { title: "PROCESSORS (CPUs)", desc: "Power your next build with top-tier processors.", icon: MemoryIcon },
-  gpu: { title: "GRAPHICS CARDS", desc: "Experience lifelike visuals with next-gen GPUs.", icon: VideogameAssetIcon },
-  motherboard: { title: "MOTHERBOARDS", desc: "The foundation of your ultimate gaming rig.", icon: DeveloperBoardIcon },
-  ram: { title: "MEMORY (RAM)", desc: "Multitask flawlessly with high-speed memory.", icon: MemoryIcon },
-  storage: { title: "STORAGE (SSDs/HDDs)", desc: "Lightning-fast load times and massive capacity.", icon: StorageIcon },
-  psu: { title: "POWER SUPPLIES", desc: "Reliable and efficient power for your system.", icon: PowerIcon },
-  case: { title: "PC CASES", desc: "Showcase your build in style with premium cases.", icon: SettingsInputComponentIcon },
-  cooling: { title: "COOLING SOLUTIONS", desc: "Keep temperatures low and performance high.", icon: SettingsInputComponentIcon },
-};
+import { getCategory } from '../constants/categories';
 
 const ComponentsHero = ({ category }) => {
   if (category) {
-    const details = CATEGORY_DETAILS[category.toLowerCase()] || { 
-      title: category.toUpperCase().replace('-', ' '), 
+    const details = getCategory(category) || { 
+      title: decodeURIComponent(category).toUpperCase().replace('-', ' '), 
       desc: "Browse premium hardware for your custom build.", 
       icon: SettingsInputComponentIcon 
     };
-    const IconComponent = details.icon;
+    const IconComponent = details.icon || SettingsInputComponentIcon;
     
     return (
       <section className="relative w-full overflow-hidden flex items-center justify-center py-8" style={{ backgroundColor: 'var(--color-bg-primary)', minHeight: '160px' }}>

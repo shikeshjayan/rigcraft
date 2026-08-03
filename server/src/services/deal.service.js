@@ -8,32 +8,42 @@ const FOLDER = "deals";
 const generateSlug = (name) =>
   slugify(name, { lower: true, strict: true });
 
+const escapeRegex = (value) =>
+  String(value).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 export const getAll = async (query = {}) => {
   const { page = 1, limit = 20, isActive, search } = query;
+
+  const pageNum = Math.max(1, Number(page) || 1);
+  const limitNum = Math.max(1, Math.min(100, Number(limit) || 20));
+  const skip = (pageNum - 1) * limitNum;
 
   const filter = {};
 
   if (isActive !== undefined) filter.isActive = isActive === "true";
   if (search) {
+    const regex = escapeRegex(search);
     filter.$or = [
-      { title: { $regex: search, $options: "i" } },
-      { description: { $regex: search, $options: "i" } },
+      { title: { $regex: regex, $options: "i" } },
+      { description: { $regex: regex, $options: "i" } },
     ];
   }
 
   const deals = await dealRepository.findAll(filter, {
     populate: "products prebuiltPCs",
     sort: { displayOrder: 1, createdAt: -1 },
+    skip,
+    limit: limitNum,
   });
   const total = await dealRepository.count(filter);
 
   return {
     deals,
     pagination: {
-      page: Number(page),
-      limit: Number(limit),
+      page: pageNum,
+      limit: limitNum,
       total,
-      pages: Math.ceil(total / Number(limit)),
+      pages: Math.ceil(total / limitNum),
     },
   };
 };

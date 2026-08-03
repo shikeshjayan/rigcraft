@@ -10,21 +10,7 @@ import SkeletonCard from '../components/SkeletonCard';
 import Filter from '../components/Filter';
 import { productService } from '../services/product.service';
 import apiClient from '../api/client';
-
-const CATEGORY_MAP = {
-  "processor(cpu)": "processor",
-  "graphics card (gpu)": "graphics_card",
-  "memory(ram)": "memory",
-  "motherboard": "motherboard",
-  "storage": "storage",
-  "power supply (psu)": "power_supply",
-  "computer case": "case",
-  "cooling": "cooling",
-  "accessories": "accessories",
-  "acessories": "accessories",
-  "software": "software",
-  "networking": "networking"
-};
+import { getCategoryType } from '../constants/categories';
 
 const ComponentsCatalog = () => {
   const { category } = useParams();
@@ -62,7 +48,7 @@ const ComponentsCatalog = () => {
   const fetchProducts = async () => {
     setIsFiltering(true);
     try {
-      const categoryType = CATEGORY_MAP[category?.toLowerCase()];
+      const categoryType = getCategoryType(category) || undefined;
       const params = {
         categoryType,
         page: currentPage,
