@@ -55,6 +55,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
   useEffect(() => {
     const fetchCoupons = async () => {
+      if (!isLoggedIn) return;
       try {
         const { data } = await apiClient.get('/coupons/active');
         if (data.success && data.data?.coupons) {
@@ -654,14 +655,20 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Mobile No*</label>
-                    <input type="text" placeholder="Phone (e.g. 9876543210)" value={addressForm.phone} onChange={e => setAddressForm({ ...addressForm, phone: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Phone (e.g. 9876543210)" value={addressForm.phone} onChange={e => {
+                      const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                      setAddressForm({ ...addressForm, phone: val });
+                    }} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Alternate Phone</label>
-                    <input type="text" placeholder="Alternate Phone (e.g. 9988776655)" value={addressForm.alternatePhone} onChange={e => setAddressForm({ ...addressForm, alternatePhone: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Alternate Phone (e.g. 9988776655)" value={addressForm.alternatePhone} onChange={e => {
+                      const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                      setAddressForm({ ...addressForm, alternatePhone: val });
+                    }} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Pin Code*</label>
