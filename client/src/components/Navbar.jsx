@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import SearchIcon from '@mui/icons-material/Search';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
@@ -14,6 +14,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getProfile } from '../api/auth';
 import { getPublicSettings } from '../services/settings.service';
 import { useSearch } from '../hooks/useSearch';
+import apiClient from '../api/client';
 import SearchBar from './Navbar/SearchBar';
 import MegaMenu from './Navbar/MegaMenu';
 import ProfileMenu from './Navbar/ProfileMenu';
@@ -100,6 +101,35 @@ const Navbar = () => {
 
   const formatCount = (n) => (n > 99 ? '99+' : n);
 
+  const { data: promotionsData } = useQuery({
+    queryKey: ['promotions'],
+    queryFn: async () => {
+      const res = await apiClient.get('/deals/promotions');
+      return res.data;
+    },
+    staleTime: 300000,
+  });
+
+  const announcements = (promotionsData?.data || [])
+    .flatMap((deal) =>
+      (deal.promotion?.topBar || [])
+        .filter((t) => t.enabled && t.text)
+        .map((t) => t.text)
+    );
+
+  const [announcementIndex, setAnnouncementIndex] = useState(0);
+
+  useEffect(() => {
+    if (announcements.length <= 1) return;
+    const id = setInterval(() => {
+      setAnnouncementIndex((i) => (i + 1) % announcements.length);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [announcements.length]);
+
+  const currentAnnouncement =
+    announcements.length > 0 ? announcements[announcementIndex % announcements.length] : null;
+
   const navLinkClass = (active) =>
     `transition-colors cursor-pointer flex items-center h-full ${active ? 'underline decoration-2 underline-offset-8' : 'hover:text-[var(--color-primary)]'}`;
   const navLinkStyle = (active) => ({
@@ -116,7 +146,7 @@ const Navbar = () => {
         className="sticky top-0 z-50 flex flex-col w-full"
       >
         {/* Announcement Top Bar */}
-        {bannerVisible && (
+        {bannerVisible && currentAnnouncement && (
           <div
             className="text-center py-2 px-10 text-sm font-medium z-20 relative"
             style={{
@@ -125,7 +155,18 @@ const Navbar = () => {
               borderBottom: '1px solid var(--color-border)',
             }}
           >
-            Limited Time: Get free assembly on all custom builds!
+            <AnimatePresence mode="wait">
+              <motion.span
+                key={announcementIndex}
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.35 }}
+                className="inline-block"
+              >
+                {currentAnnouncement}
+              </motion.span>
+            </AnimatePresence>
             <button
               type="button"
               onClick={dismissBanner}

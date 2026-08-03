@@ -68,6 +68,10 @@ export const getActiveForHomepage = async () => {
   return dealRepository.findActiveForHomepage();
 };
 
+export const getPromotions = async () => {
+  return dealRepository.findPromotions();
+};
+
 export const create = async (data, files) => {
   const slug = generateSlug(data.title);
   const existing = await dealRepository.findOne({ slug });
@@ -131,6 +135,11 @@ export const remove = async (id) => {
   }
   if (deal.mobileBanner?.publicId) {
     await uploadService.deleteImage(deal.mobileBanner.publicId);
+  }
+  for (const offer of deal.promotion?.homeOffer || []) {
+    if (offer.banner?.publicId) {
+      await uploadService.deleteImage(offer.banner.publicId);
+    }
   }
 
   return dealRepository.deleteById(id);

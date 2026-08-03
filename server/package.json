@@ -13,7 +13,8 @@
     "seed": "node seed/seed.js",
     "migrate:category-type": "node src/scripts/migrate-category-type.js",
     "migrate:review-type": "node src/scripts/migrate-review-type.js",
-    "migrate:review-user": "node src/scripts/migrate-review-user.js"
+    "migrate:review-user": "node src/scripts/migrate-review-user.js",
+    "migrate:deal-promotion": "node src/scripts/migrate-deal-promotion.js"
   },
   "keywords": [],
   "author": "",

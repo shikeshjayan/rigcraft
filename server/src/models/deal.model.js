@@ -60,20 +60,24 @@ const dealSchema = new mongoose.Schema(
     ],
 
     promotion: {
-      topBar: {
-        enabled: { type: Boolean, default: false },
-        text: { type: String, trim: true, maxlength: 200 },
-      },
-      homeOffer: {
-        enabled: { type: Boolean, default: false },
-        title: { type: String, trim: true, maxlength: 200 },
-        description: { type: String, trim: true, maxlength: 500 },
-        banner: {
-          url: { type: String, trim: true },
-          publicId: { type: String, trim: true },
-          alt: { type: String, trim: true },
+      topBar: [
+        {
+          enabled: { type: Boolean, default: false },
+          text: { type: String, trim: true, maxlength: 200 },
         },
-      },
+      ],
+      homeOffer: [
+        {
+          enabled: { type: Boolean, default: false },
+          title: { type: String, trim: true, maxlength: 200 },
+          description: { type: String, trim: true, maxlength: 500 },
+          banner: {
+            url: { type: String, trim: true },
+            publicId: { type: String, trim: true },
+            alt: { type: String, trim: true },
+          },
+        },
+      ],
     },
 
     buttonText: {
@@ -97,6 +101,11 @@ const dealSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+
+    isFeatured: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true },
 );
@@ -108,6 +117,7 @@ dealSchema.pre("save", function () {
 });
 
 dealSchema.index({ isActive: 1, endDate: 1 });
+dealSchema.index({ isFeatured: 1, isActive: 1, endDate: 1 });
 dealSchema.index({ startDate: 1, endDate: 1 });
 dealSchema.index({ displayOrder: 1 });
 

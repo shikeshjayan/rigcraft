@@ -120,7 +120,12 @@ const DealList = () => {
       label: "Title",
       render: (val, row) => (
         <Box>
-          <Box sx={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val}</Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box sx={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--color-admin-text)" }}>{val}</Box>
+            {row.isFeatured && (
+              <Chip label="Main" size="small" sx={{ fontWeight: 700, minWidth: 44, height: 20, backgroundColor: "var(--color-admin-primary)", color: "var(--color-admin-white)" }} />
+            )}
+          </Box>
           {row.slug && <Box sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)", fontFamily: "var(--font-admin-mono)" }}>{row.slug}</Box>}
         </Box>
       ),

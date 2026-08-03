@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import { useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -100,7 +100,7 @@ const HeroNewArrival = () => {
         >
           {isLoading ? (
             Array.from({ length: 4 }).map((_, idx) => (
-              <div key={idx} className="flex-shrink-0 w-[280px] sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex flex-col snap-start">
+              <div key={idx} className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex flex-col snap-start">
                 <SkeletonCard />
               </div>
             ))
@@ -117,7 +117,7 @@ const HeroNewArrival = () => {
               const imageUrl = product.images?.[0]?.url || 'https://via.placeholder.com/300?text=No+Image';
 
               return (
-                <div key={product._id} className="flex-shrink-0 w-[280px] sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex flex-col snap-start">
+                <div key={product._id} className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex flex-col snap-start">
                   <Card 
  rating={product?.rating} id={product._id}
                     image={imageUrl}

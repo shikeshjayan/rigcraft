@@ -17,6 +17,30 @@ const normalizeList = (res) => {
   };
 };
 
+const extractFile = (banner) => {
+  if (!banner || typeof banner !== "object") return null;
+  return banner.file instanceof File ? banner.file : null;
+};
+
+const sendWithImages = async (endpoint, payload, method) => {
+  const body = { ...payload };
+
+  const desktopFile = extractFile(body.desktopBanner);
+  const mobileFile = extractFile(body.mobileBanner);
+
+  if (desktopFile) delete body.desktopBanner;
+  if (mobileFile) delete body.mobileBanner;
+
+  const fd = new FormData();
+  if (desktopFile) fd.append("desktopBanner", desktopFile);
+  if (mobileFile) fd.append("mobileBanner", mobileFile);
+  fd.append("body", JSON.stringify(body));
+
+  const fn = method === "put" ? api.put : api.post;
+  const { data } = await fn(endpoint, fd);
+  return data;
+};
+
 export const dealService = {
   list: async ({ page = 0, pageSize = 10, search = "", status = "" } = {}) => {
     const params = { page: page + 1, limit: pageSize };
@@ -32,20 +56,33 @@ export const dealService = {
     return normalizeDeal(data.data);
   },
 
+  uploadImage: async (file) => {
+    const fd = new FormData();
+    fd.append("image", file);
+    const { data } = await api.post(ENDPOINTS.UPLOAD.IMAGE, fd);
+    return data?.data ?? data;
+  },
+
   create: async (dealData) => {
     const payload = { ...dealData };
     delete payload.id;
     delete payload._id;
-    const { data } = await api.post(ENDPOINTS.ADMIN_DEAL.CREATE, payload);
-    return normalizeDeal(data.data);
+    const hasFiles = extractFile(payload.desktopBanner) || extractFile(payload.mobileBanner);
+    const res = hasFiles
+      ? await sendWithImages(ENDPOINTS.ADMIN_DEAL.CREATE, payload, "post")
+      : await api.post(ENDPOINTS.ADMIN_DEAL.CREATE, payload);
+    return normalizeDeal(res.data);
   },
 
   update: async (id, dealData) => {
     const payload = { ...dealData };
     delete payload.id;
     delete payload._id;
-    const { data } = await api.put(ENDPOINTS.ADMIN_DEAL.UPDATE(id), payload);
-    return normalizeDeal(data.data);
+    const hasFiles = extractFile(payload.desktopBanner) || extractFile(payload.mobileBanner);
+    const res = hasFiles
+      ? await sendWithImages(ENDPOINTS.ADMIN_DEAL.UPDATE(id), payload, "put")
+      : await api.put(ENDPOINTS.ADMIN_DEAL.UPDATE(id), payload);
+    return normalizeDeal(res.data);
   },
 
   toggleStatus: async (id) => {

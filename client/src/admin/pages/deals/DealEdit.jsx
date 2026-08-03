@@ -9,6 +9,16 @@ import AdminButton from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
 import { extractError } from "../../utils/extractError";
 
+const processHomeOfferBanners = async (promotion) => {
+  const offers = Array.isArray(promotion?.homeOffer) ? promotion.homeOffer : [];
+  const processed = await Promise.all(offers.map(async (offer) => {
+    if (!offer?.banner?.file) return offer;
+    const result = await dealService.uploadImage(offer.banner.file);
+    return { ...offer, banner: { ...result, alt: offer.title || "Home offer" } };
+  }));
+  return { ...promotion, homeOffer: processed };
+};
+
 const DealEdit = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -37,16 +47,21 @@ const DealEdit = () => {
       endDate: deal.endDate ? new Date(deal.endDate).toISOString().slice(0, 16) : "",
       products: Array.isArray(deal.products) ? deal.products : [],
       prebuiltPCs: Array.isArray(deal.prebuiltPCs) ? deal.prebuiltPCs : [],
+      desktopBanner: deal.desktopBanner || null,
+      mobileBanner: deal.mobileBanner || null,
+      isFeatured: deal.isFeatured ?? false,
       promotion: {
-        topBar: {
-          enabled: deal.promotion?.topBar?.enabled ?? false,
-          text: deal.promotion?.topBar?.text || "",
-        },
-        homeOffer: {
-          enabled: deal.promotion?.homeOffer?.enabled ?? false,
-          title: deal.promotion?.homeOffer?.title || "",
-          description: deal.promotion?.homeOffer?.description || "",
-        },
+        topBar: Array.isArray(deal.promotion?.topBar)
+          ? deal.promotion.topBar.map((t) => ({ enabled: t.enabled ?? false, text: t.text || "" }))
+          : [],
+        homeOffer: Array.isArray(deal.promotion?.homeOffer)
+          ? deal.promotion.homeOffer.map((o) => ({
+              enabled: o.enabled ?? false,
+              title: o.title || "",
+              description: o.description || "",
+              banner: o.banner || null,
+            }))
+          : [],
       },
     };
   }, [deal]);
@@ -54,12 +69,14 @@ const DealEdit = () => {
   const handleSubmit = async (data) => {
     setSaving(true);
     try {
+      const promotion = await processHomeOfferBanners(data.promotion);
       const payload = {
         ...data,
         startDate: new Date(data.startDate).toISOString(),
         endDate: new Date(data.endDate).toISOString(),
         products: (data.products || []).map((p) => p.id || p._id),
         prebuiltPCs: (data.prebuiltPCs || []).map((p) => p.id || p._id),
+        promotion,
       };
 
       await dealService.update(id, payload);
