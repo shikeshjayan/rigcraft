@@ -742,23 +742,6 @@ const Navbar = () => {
                   </span>
                 )}
               </Link>
-              
-              {isLoggedIn && (
-                <>
-                  <Link to="/orders" onClick={() => handleMobileNavClick('/orders')} className="flex items-center gap-3 text-[16px] font-bold p-3 rounded-md hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer text-[var(--color-text)]">
-                    <Inventory2OutlinedIcon />
-                    Orders
-                  </Link>
-                  <Link to="/profile?tab=coupons" onClick={() => handleMobileNavClick('/profile?tab=coupons')} className="flex items-center gap-3 text-[16px] font-bold p-3 rounded-md hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer text-[var(--color-text)]">
-                    <ConfirmationNumberOutlinedIcon />
-                    Coupons
-                  </Link>
-                  <Link to="/profile?tab=addresses" onClick={() => handleMobileNavClick('/profile?tab=addresses')} className="flex items-center gap-3 text-[16px] font-bold p-3 rounded-md hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer text-[var(--color-text)]">
-                    <LocationOnOutlinedIcon />
-                    Saved Addresses
-                  </Link>
-                </>
-              )}
               <Link to="/cart" onClick={() => handleMobileNavClick('/cart')} className="flex items-center justify-between text-[16px] font-bold p-3 rounded-md hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer text-[var(--color-text)]">
                 <div className="flex items-center gap-3">
                   <ShoppingCartOutlinedIcon />
@@ -780,9 +763,10 @@ const Navbar = () => {
                   </div>
                   <button 
                     onClick={handleLogoutClick}
-                    className="w-full py-3 rounded-md border-2 border-red-500 text-red-500 font-bold hover:bg-red-500 hover:text-white transition-colors cursor-pointer flex items-center justify-center gap-2"
+                    className="w-full flex items-center justify-center gap-2 bg-red-600 text-white font-bold py-3 rounded-sm cursor-pointer hover:bg-red-700 transition-colors shadow-md"
                   >
-                    <LogoutOutlinedIcon fontSize="small" /> Logout
+                    <LogoutOutlinedIcon fontSize="small" />
+                    LOGOUT
                   </button>
                 </div>
               ) : (
