@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Card from '../components/Card';
-import { Link } from 'react-router-dom';
 import apiClient from '../api/client';
 
 const CartSuggestions = () => {
@@ -43,21 +42,22 @@ const CartSuggestions = () => {
             const price = item.price || item.pricing?.price || item.pricing?.salePrice;
             const mrp = item.mrp || item.pricing?.price || item.price;
             return (
-              <Link to={`/detail/${item._id || item.id}`} key={item._id || item.id} className="block h-full">
-                <Card 
- rating={item?.rating} id={item._id || item.id}
-                  image={imgSource}
-                  title={item.name || item.title}
-                  description={item.description}
-                  price={formatPrice(price)}
-                  mrp={mrp > price ? formatPrice(mrp) : undefined}
-                  discount={item.discount}
-                  tag="SUGGESTED"
-                  tagColor="var(--color-primary)"
-                  buttonText="Add to cart"
-                  compact={true}
-                />
-              </Link>
+              <Card
+                key={item._id || item.id}
+                id={item._id || item.id}
+                rating={item?.rating}
+                image={imgSource}
+                title={item.name || item.title}
+                description={item.description}
+                price={formatPrice(price)}
+                mrp={mrp > price ? formatPrice(mrp) : undefined}
+                discount={item.discount}
+                tag="SUGGESTED"
+                tagColor="var(--color-primary)"
+                buttonText="Add to cart"
+                compact={true}
+                stock={item.stock}
+              />
             );
           })}
         </div>

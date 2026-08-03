@@ -11,6 +11,7 @@ import CancelIcon from '@mui/icons-material/Cancel';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import apiClient from '../api/client';
+import { useToast } from '../components/toast/useToast';
 
 const ORDER_STATUSES = [
   { label: 'Order Confirmed', icon: <CheckCircleIcon fontSize="small" /> },
@@ -36,6 +37,7 @@ const mapBackendStatus = (status) => {
 const Orders = ({ embedded = false }) => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
+  const { toast } = useToast();
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState('All');
   const [loading, setLoading] = useState(true);
@@ -102,7 +104,7 @@ const Orders = ({ embedded = false }) => {
       await apiClient.patch(`/orders/${orderToCancel.id}/cancel`, { reason: 'User cancelled' });
       setOrders(orders.map(o => o.id === orderToCancel.id ? { ...o, status: 'Cancelled', rawStatus: 'cancelled' } : o));
     } catch (error) {
-      alert('Failed to cancel order');
+      toast('Failed to cancel order', 'error');
     }
     setShowCancelModal(false);
     setOrderToCancel(null);

@@ -17,6 +17,8 @@ import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { useToast } from '../components/toast/useToast';
+import { friendlyStockMessage } from '../utils/stockMessages';
 
 const getTypeName = (type) => typeof type === 'string' ? type : type?.name || 'UNKNOWN';
 
@@ -52,6 +54,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   const [availableCoupons, setAvailableCoupons] = useState([]);
   const [appliedCoupon, setAppliedCoupon] = useState(null); // The full coupon object
   const { addToCart } = useCart();
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchCoupons = async () => {
@@ -99,7 +102,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       return true;
     } catch (error) {
       console.error('Failed to sync cart', error);
-      alert(`Cart Sync Error: ${error.response?.data?.message || error.message}`);
+      const raw = error.response?.data?.message;
+      toast(friendlyStockMessage(raw) || `Cart Sync Error: ${raw || error.message}`, 'error');
       return false;
     }
   };
@@ -118,7 +122,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
     try {
       const selectedAddress = savedAddresses[selectedAddressId];
       if (!selectedAddress) {
-        alert('Please select a delivery address');
+        toast('Please select a delivery address', 'warning');
         return;
       }
 
@@ -132,7 +136,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
         };
         const orderResponse = await apiClient.post('/orders/checkout', orderData);
         if (!orderResponse.data.success) {
-          alert('Failed to place order');
+          toast('Failed to place order', 'error');
           return;
         }
         clearCart();
@@ -146,7 +150,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
       const res = await loadRazorpayScript();
       if (!res) {
-        alert('Razorpay SDK failed to load. Are you online?');
+        toast('Razorpay SDK failed to load. Are you online?', 'error');
         return;
       }
 
@@ -158,7 +162,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       const orderResponse = await apiClient.post('/orders/checkout', orderData);
 
       if (!orderResponse.data.success) {
-        alert('Failed to create order');
+        toast('Failed to create order', 'error');
         return;
       }
 
@@ -167,7 +171,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       // Step 2: Create Razorpay Order
       const rzpOrderResponse = await apiClient.post('/payments/create-razorpay-order', { orderId });
       if (!rzpOrderResponse.data.success) {
-        alert('Failed to initialize Razorpay checkout');
+        toast('Failed to initialize Razorpay checkout', 'error');
         return;
       }
 
@@ -194,11 +198,11 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               clearCart();
               navigate('/orders');
             } else {
-              alert('Payment Verification Failed');
+              toast('Payment Verification Failed', 'error');
             }
           } catch (error) {
             console.error('Verify error:', error);
-            alert('An error occurred during payment verification.');
+            toast('An error occurred during payment verification.', 'error');
           }
         },
         prefill: {
@@ -214,7 +218,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       paymentObject.open();
     } catch (error) {
       console.error('Checkout error:', error);
-      alert(`Checkout Failed: ${error.response?.data?.message || error.message}`);
+      const raw = error.response?.data?.message;
+      toast(friendlyStockMessage(raw) || `Checkout Failed: ${raw || error.message}`, 'error');
     }
   };
 
@@ -279,8 +284,9 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       setAppliedCoupon(foundCoupon);
       setIsCouponApplied(true);
       setShowCouponPopup(false);
+      toast('Coupon applied successfully!');
     } else {
-      alert('Invalid coupon code!');
+      toast('Invalid coupon code!', 'warning');
     }
   };
 
@@ -361,7 +367,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
   const handleSaveAddress = async () => {
     if (!addressForm.fullName || !addressForm.phone || !addressForm.addressLine1 || !addressForm.city || !addressForm.state || !addressForm.postalCode) {
-      alert("Please fill out all required fields (*).");
+      toast("Please fill out all required fields (*).", 'warning');
       return;
     }
     
@@ -389,7 +395,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       setAddressForm({ fullName: '', phone: '', alternatePhone: '', addressLine1: '', addressLine2: '', landmark: '', city: '', state: '', country: 'India', postalCode: '', label: '', isDefault: false });
     } catch (error) {
       console.error('Failed to save address', error);
-      alert(error.response?.data?.message || 'Failed to save address');
+      toast(error.response?.data?.message || 'Failed to save address', 'error');
     }
   };
 
@@ -980,7 +986,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                             if (selectedAddressId !== null) {
                               setCheckoutStep('payment');
                             } else {
-                              alert("Please select a delivery address.");
+                              toast("Please select a delivery address.", 'warning');
                             }
                           }}
                           className="w-full bg-[#0052FF] text-white font-bold py-3 rounded-sm hover:bg-[#1E3A8A] transition-colors tracking-wide cursor-pointer mt-6"

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { allItems } from '../data/items';
 import StarIcon from '@mui/icons-material/Star';
 import StarHalfIcon from '@mui/icons-material/StarHalf';
@@ -54,25 +54,20 @@ const ComponentsCatalog = () => {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {items.map((item) => (
-              <Link 
-                to={`/detail/${item.id}`}
-                key={item.id} 
-                className="block h-full"
-              >
-                <Card 
-                  rating={item?.rating} 
-                  id={item.id}
-                  image={item.image}
-                  title={item.title}
-                  specs={item.specs}
-                  description={item.description}
-                  price={item.price}
-                  mrp={item.mrp}
-                  discount={item.discount}
-                  tag={item.discount || 'SALE'}
-                  tagColor="#EF4444"
-                />
-              </Link>
+              <Card
+                key={item.id}
+                id={item.id}
+                rating={item?.rating}
+                image={item.image}
+                title={item.title}
+                specs={item.specs}
+                description={item.description}
+                price={item.price}
+                mrp={item.mrp}
+                discount={item.discount}
+                tag={item.discount || 'SALE'}
+                tagColor="#EF4444"
+              />
             ))}
           </div>
         )}

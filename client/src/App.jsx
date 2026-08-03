@@ -34,6 +34,7 @@ import { WishlistProvider } from './context/WishlistContext';
 import AdminRoutes from './admin/routes/AdminRoutes';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
+import { ToastProvider } from './components/toast/ToastProvider';
 import Chatbot from './components/Chatbot';
 import BackToTop from './components/BackToTop';
 import ScrollToTop from './components/ScrollToTop';
@@ -75,6 +76,7 @@ const App = () => {
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
         <ScrollToTop />
+        <ToastProvider>
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
@@ -115,6 +117,7 @@ const App = () => {
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>
+        </ToastProvider>
       </BrowserRouter>
     </QueryClientProvider>
   );
