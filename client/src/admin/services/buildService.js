@@ -35,6 +35,11 @@ export const buildService = {
     return data.data;
   },
 
+  getSettings: async () => {
+    const { data } = await api.get(ENDPOINTS.ADMIN_BUILDER.SETTINGS_GET);
+    return data.data;
+  },
+
   updateSettings: async (settingsData) => {
     const { data } = await api.post(ENDPOINTS.ADMIN_BUILDER.SETTINGS, settingsData);
     return data.data;

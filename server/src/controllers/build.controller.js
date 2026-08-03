@@ -69,3 +69,8 @@ export const updateBuildSettings = asyncHandler(async (req, res) => {
   const settings = await buildService.updateBuildSettings(req.body);
   ApiResponse.ok(settings, "Build settings updated").send(res);
 });
+
+export const getBuildSettings = asyncHandler(async (req, res) => {
+  const settings = await buildService.getBuildSettings();
+  ApiResponse.ok(settings).send(res);
+});

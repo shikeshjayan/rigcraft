@@ -2,8 +2,9 @@ import { useState, useRef, Fragment } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useMutation } from '@tanstack/react-query';
+import { GoogleLogin } from '@react-oauth/google';
 import { authService } from '../services/auth.service';
-import useAuthStore from '../admin/store/authStore';
+import handleAuthSuccess from '../utils/authSuccess';
 import FadeUp from '../components/FadeUp';
 import DynamicLogo from '../components/DynamicLogo';
 import Visibility from '@mui/icons-material/Visibility';
@@ -16,6 +17,7 @@ const Customerlogin = () => {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
+  const [consent, setConsent] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const { login } = useAuth();
   const navigate = useNavigate();
@@ -37,28 +39,8 @@ const Customerlogin = () => {
     mutationFn: authService.login,
     onSuccess: (data) => {
       if (data && data.success && data.data) {
-        const { user, accessToken } = data.data;
-
-        localStorage.setItem("accessToken", accessToken);
-
-        login(user);
-
-        useAuthStore.setState({
-          user: {
-            id: user._id,
-            name: `${user.firstName} ${user.lastName}`,
-            email: user.email,
-            role: user.role,
-            avatar: user.avatar?.url || null,
-          },
-          isAuthenticated: true,
-        });
-
-        if (['admin', 'manager'].includes(user.role)) {
-          navigate('/admin/dashboard');
-        } else {
-          navigate('/');
-        }
+         const { user } = data.data;
+        handleAuthSuccess(user, navigate, login);
       }
     },
     onError: (err) => {
@@ -66,8 +48,25 @@ const Customerlogin = () => {
     }
   });
 
+  const googleLoginMutation = useMutation({
+    mutationFn: authService.googleLogin,
+    onSuccess: (data) => {
+      if (data && data.success && data.data) {
+         const { user } = data.data;
+        handleAuthSuccess(user, navigate, login);
+      }
+    },
+    onError: (err) => {
+      setError(err?.response?.data?.message || 'Google sign-in failed. Please try again.');
+    }
+  });
+
   const handleLoginSubmit = (e) => {
     e.preventDefault();
+    if (!consent) {
+      setError('Please agree to the Terms & Conditions and Privacy Policy to continue.');
+      return;
+    }
     const val = identifier.trim();
     if (val === '') {
       setError('Please enter a mobile number or email id.');
@@ -95,6 +94,10 @@ const Customerlogin = () => {
 
   const handlePasswordSubmit = (e) => {
     e.preventDefault();
+    if (!consent) {
+      setError('Please agree to the Terms & Conditions and Privacy Policy to continue.');
+      return;
+    }
     if (password.trim() !== '') {
       loginMutation.mutate({ email: identifier, password, rememberMe });
     }
@@ -123,6 +126,10 @@ const Customerlogin = () => {
 
   const handleVerifyOtp = (e) => {
     e.preventDefault();
+    if (!consent) {
+      setError('Please agree to the Terms & Conditions and Privacy Policy to continue.');
+      return;
+    }
     const otpString = otp.join('');
     if (otpString.length === 6) {
       const phoneDigits = identifier.replace(/\D/g, '').replace(/^91/, '');
@@ -177,13 +184,32 @@ const Customerlogin = () => {
                       }}
                     />
                   </div>
-                  {error && <p className="mt-2 text-sm text-red-600 font-medium">{error}</p>}
+                </div>
+                {error && <p className="mt-2 text-center text-sm text-red-600 font-medium">{error}</p>}
+
+                <div className="flex items-start gap-2">
+                  <input
+                    id="consent"
+                    type="checkbox"
+                    checked={consent}
+                    onChange={(e) => {
+                      setConsent(e.target.checked);
+                      if (e.target.checked) setError('');
+                    }}
+                    className="mt-0.5 h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded cursor-pointer"
+                  />
+                  <label htmlFor="consent" className="text-xs text-gray-600 leading-relaxed cursor-pointer">
+                    I agree to RigCraft's{' '}
+                    <Link to="/terms-of-service" className="font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">Conditions of Use</Link>{' '}
+                    and{' '}
+                    <Link to="/privacy-policy" className="font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">Privacy Notice</Link>.
+                  </label>
                 </div>
 
                 <div>
                   <button
                     type="submit"
-                    disabled={checkMutation.isPending || sendOtpMutation.isPending}
+                    disabled={checkMutation.isPending || sendOtpMutation.isPending || !consent}
                     className={`group relative cursor-pointer w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold text-white bg-[var(--color-primary)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-all shadow-md ${(checkMutation.isPending || sendOtpMutation.isPending) ? 'opacity-70 cursor-not-allowed' : ''}`}
                     style={{ borderRadius: 'var(--radius-sm)' }}
                   >
@@ -191,6 +217,38 @@ const Customerlogin = () => {
                   </button>
                 </div>
               </form>
+
+              <div className="mt-6">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <div className="w-full border-t border-gray-300"></div>
+                  </div>
+                  <div className="relative flex justify-center text-sm">
+                    <span className="px-2 bg-white text-gray-500">or continue with</span>
+                  </div>
+                </div>
+
+                <div className="relative mt-4">
+                  <div className={consent ? '' : 'pointer-events-none'}>
+                    <GoogleLogin
+                      onSuccess={({ credential }) => googleLoginMutation.mutate(credential)}
+                      onError={() => setError('Google sign-in failed. Please try again.')}
+                      width="100%"
+                      shape="rectangular"
+                      text="continue_with"
+                      theme="outline"
+                    />
+                  </div>
+                  {!consent && (
+                    <button
+                      type="button"
+                      aria-label="Agree to terms first"
+                      onClick={() => setError('Please agree to the Terms & Conditions and Privacy Policy before signing in with Google.')}
+                      className="absolute inset-0 w-full cursor-pointer bg-transparent"
+                    />
+                  )}
+                </div>
+              </div>
 
               <div className="mt-6 text-center">
                 <div className="relative">
@@ -347,17 +405,6 @@ const Customerlogin = () => {
               </form>
             </>
           )}
-
-          <div className="mt-8 text-center text-xs text-gray-500 leading-relaxed">
-            By continuing, you agree to RigCraft's{' '}
-            <Link to="/terms-of-service" className="font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">
-              Conditions of Use
-            </Link>{' '}
-            and{' '}
-            <Link to="/privacy-policy" className="font-medium text-blue-600 hover:text-blue-500 whitespace-nowrap">
-              Privacy Notice
-            </Link>.
-          </div>
         </div>
       </FadeUp>
     </div>

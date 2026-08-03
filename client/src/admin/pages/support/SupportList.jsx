@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Box, Chip } from "@mui/material";
 import { Visibility as ViewIcon, Delete as DeleteIcon } from "@mui/icons-material";
@@ -10,22 +10,18 @@ import StatusBadge from "../../components/common/StatusBadge";
 import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { useToast } from "../../components/common/Toast";
 import { supportService } from "../../services/supportService";
-import { extractError } from "../../utils/extractError";
 import { formatDateTime } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
-
-const PRIORITY_COLOR = {
-  low: "default",
-  medium: "info",
-  high: "warning",
-  urgent: "error",
-};
+import { useAdminList, useAdminMutation } from "../../hooks";
+import { connectSocket } from "../../../shared/socket";
+import { ISSUE_TYPE_LABELS } from "../../../utils/supportLabels";
 
 const STATUS_COLOR = {
   open: "info",
   in_progress: "warning",
+  waiting_customer: "warning",
   resolved: "success",
   closed: "muted",
 };
@@ -37,53 +33,57 @@ const SupportList = () => {
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
 
-  useEffect(() => { setPageSize(maxRows); }, [maxRows, setPageSize]);
-
-  const [tickets, setTickets] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [total, setTotal] = useState(0);
-  const [filters, setFilters] = useState({ status: "", priority: "" });
-  const [deleteTarget, setDeleteTarget] = useState(null);
   const [selected, setSelected] = useState([]);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [filters, setFilters] = useState({ status: "", priority: "", issueType: "" });
 
-  const fetchTickets = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await supportService.list({ page, pageSize, search, ...filters });
-      setTickets(result.data);
-      setTotal(result.total);
-    } catch (err) {
-      toast(extractError(err, "Failed to load tickets"), "error");
-    } finally {
-      setLoading(false);
+  const {
+    data: tickets,
+    total,
+    loading,
+    refetch,
+  } = useAdminList("supportList", supportService, { page, pageSize, search, ...filters });
+
+  useEffect(() => {
+    const sock = connectSocket();
+    const handleUpdate = () => refetch();
+    sock.on("support:new-message", handleUpdate);
+    sock.on("support:ticket-updated", handleUpdate);
+    sock.on("notification:new", handleUpdate);
+    return () => {
+      sock.off("support:new-message", handleUpdate);
+      sock.off("support:ticket-updated", handleUpdate);
+      sock.off("notification:new", handleUpdate);
+    };
+  }, [refetch]);
+
+  const deleteMutation = useAdminMutation(
+    (id) => supportService.delete(id),
+    { queryKey: "supportList", successMessage: "Ticket deleted" }
+  );
+
+  const bulkDeleteMutation = useAdminMutation(
+    (ids) => Promise.all(ids.map((id) => supportService.delete(id))),
+    {
+      queryKey: "supportList",
+      skipSuccessToast: true,
+      onSuccess: (_, ids) => {
+        toast(`${ids.length} tickets deleted`);
+        setSelected([]);
+      },
     }
-  }, [page, pageSize, search, filters, toast]);
-
-  useEffect(() => { fetchTickets(); }, [fetchTickets]);
+  );
 
   const handleDelete = (id) => setDeleteTarget(id);
 
-  const confirmDelete = async () => {
+  const confirmDelete = () => {
     if (!deleteTarget) return;
-    try {
-      await supportService.delete(deleteTarget);
-      toast("Ticket deleted");
-      setDeleteTarget(null);
-      fetchTickets();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete ticket"), "error");
-    }
+    deleteMutation.mutate(deleteTarget);
+    setDeleteTarget(null);
   };
 
-  const handleBulkDelete = async () => {
-    try {
-      await Promise.all(selected.map((id) => supportService.delete(id)));
-      toast(`${selected.length} tickets deleted`);
-      setSelected([]);
-      fetchTickets();
-    } catch (err) {
-      toast(extractError(err, "Failed to delete tickets"), "error");
-    }
+  const handleBulkDelete = () => {
+    bulkDeleteMutation.mutate(selected);
   };
 
   const filterOptions = [
@@ -94,6 +94,7 @@ const SupportList = () => {
         { value: "", label: "All" },
         { value: "open", label: "Open" },
         { value: "in_progress", label: "In Progress" },
+        { value: "waiting_customer", label: "Waiting on Customer" },
         { value: "resolved", label: "Resolved" },
         { value: "closed", label: "Closed" },
       ],
@@ -107,6 +108,14 @@ const SupportList = () => {
         { value: "medium", label: "Medium" },
         { value: "high", label: "High" },
         { value: "urgent", label: "Urgent" },
+      ],
+    },
+    {
+      key: "issueType",
+      label: "Issue Type",
+      options: [
+        { value: "", label: "All" },
+        ...Object.entries(ISSUE_TYPE_LABELS).map(([value, label]) => ({ value, label })),
       ],
     },
   ];
@@ -161,7 +170,7 @@ const SupportList = () => {
         title="Support Tickets"
         searchValue={search}
         onSearchChange={setSearch}
-        onRefresh={fetchTickets}
+        onRefresh={refetch}
       />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
       <DataTable

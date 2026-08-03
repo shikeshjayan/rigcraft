@@ -21,7 +21,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 const getTypeName = (type) => typeof type === 'string' ? type : type?.name || 'UNKNOWN';
 
 const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
-  const { cartItems, removeFromCart, clearCart } = useCart();
+  const { cartItems, isLoading, removeFromCart, clearCart } = useCart();
   const { isLoggedIn } = useAuth();
 
   // Track selected items by cartItemId (or id for legacy items)
@@ -329,17 +329,18 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   };
 
   const handleWishlistAddToCart = (wishlistItem) => {
-    const product = wishlistItem.item;
-    const itemType = wishlistItem.itemType || product.type || 'product';
+    const product = wishlistItem.item || wishlistItem.product;
+    const itemType = wishlistItem.itemType || product?.type || 'product';
 
     addToCart({
-      id: product._id,
+      id: product?._id,
       item: product,
-      type: itemType, // This lets CartContext know the explicit type
-      title: product.name || product.title,
-      price: product.price || product.pricing?.price,
-      mrp: product.mrp || product.pricing?.price,
-      image: product.image || product.images?.[0]?.url || product.images?.[0]
+      type: itemType,
+      itemType,
+      title: product?.name || product?.title,
+      price: product?.price || product?.pricing?.price || product?.salePrice,
+      mrp: product?.mrp || product?.pricing?.price,
+      image: product?.image || product?.images?.[0]?.url || product?.images?.[0]
     });
   };
 
@@ -453,6 +454,13 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   const formatPrice = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
   if (cartItems.length === 0 && checkoutStep === 'bag') {
+    if (isLoading) {
+      return (
+        <section className="w-full py-20 min-h-[50vh] flex items-center justify-center" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+          <div className="animate-spin rounded-full h-10 w-10 border-4 border-[var(--color-primary)] border-t-transparent" />
+        </section>
+      );
+    }
     return (
       <section className="w-full py-20 min-h-[50vh] flex flex-col items-center justify-center text-center px-4" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
         <h1 className="text-[28px] md:text-[36px] font-extrabold text-[#0F172A] mb-4">Hey, it feel so dark!</h1>

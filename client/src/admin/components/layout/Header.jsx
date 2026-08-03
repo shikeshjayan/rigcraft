@@ -16,6 +16,7 @@ import {
 import useAuthStore from "../../store/authStore";
 import useNotificationStore from "../../store/notificationStore";
 import NotificationPanel from "../common/NotificationPanel";
+import GlobalSearch from "../common/GlobalSearch";
 
 const ROUTE_TITLES = {
   "/admin/dashboard": "Dashboard",
@@ -130,6 +131,8 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
       </div>
 
       <div className="flex items-center gap-2">
+
+        <GlobalSearch />
 
         <IconButton
           onClick={(e) => setNotificationAnchorEl(e.currentTarget)}

@@ -22,6 +22,17 @@ const savedBuildSchema = new mongoose.Schema(
       default: [],
     },
 
+    assemblyMode: {
+      type: String,
+      enum: ["parts", "assembled"],
+      default: "parts",
+    },
+
+    assemblyFee: {
+      type: Number,
+      default: 0,
+    },
+
     totalPrice: {
       type: Number,
       default: 0,

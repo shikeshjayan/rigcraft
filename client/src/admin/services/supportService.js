@@ -29,7 +29,7 @@ const normalizeList = (res) => {
 };
 
 export const supportService = {
-  list: async ({ page = 0, pageSize = 10, search = "", status = "", priority = "" } = {}) => {
+  list: async ({ page = 0, pageSize = 10, search = "", status = "", priority = "", issueType = "" } = {}) => {
     const params = {
       page: page + 1,
       limit: pageSize,
@@ -37,22 +37,22 @@ export const supportService = {
     if (search) params.search = search.trim();
     if (status) params.status = status;
     if (priority) params.priority = priority;
+    if (issueType) params.issueType = issueType;
     const { data } = await api.get(ENDPOINTS.ADMIN_SUPPORT.LIST, { params });
     return normalizeList(data.data);
   },
 
   getById: async (id) => {
     const { data } = await api.get(ENDPOINTS.ADMIN_SUPPORT.DETAILS(id));
-    return normalizeTicket(data.data);
+    const { ticket, messages } = data.data || {};
+    return { ...normalizeTicket(ticket), messages: messages || [] };
   },
 
   reply: async (id, message, attachments = []) => {
     const formData = new FormData();
     formData.append("message", message);
     attachments.forEach((file) => formData.append("attachments", file));
-    const { data } = await api.post(ENDPOINTS.ADMIN_SUPPORT.REPLY(id), formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    const { data } = await api.post(ENDPOINTS.ADMIN_SUPPORT.REPLY(id), formData);
     return data.data;
   },
 
@@ -69,6 +69,11 @@ export const supportService = {
   updatePriority: async (id, priority) => {
     const { data } = await api.put(ENDPOINTS.ADMIN_SUPPORT.PRIORITY(id), { priority });
     return normalizeTicket(data.data);
+  },
+
+  cancelOrder: async (orderId) => {
+    const { data } = await api.patch(ENDPOINTS.ADMIN_ORDER.UPDATE_STATUS(orderId), { orderStatus: "cancelled" });
+    return data.data;
   },
 
   delete: async (id) => {

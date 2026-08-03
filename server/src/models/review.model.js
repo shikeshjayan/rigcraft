@@ -17,8 +17,39 @@ const reviewImageSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const reportSchema = new mongoose.Schema(
+  {
+    user: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    reason: {
+      type: String,
+      enum: ["spam", "inappropriate", "fake", "other"],
+      required: true,
+    },
+    note: {
+      type: String,
+      maxlength: 500,
+      trim: true,
+    },
+    createdAt: {
+      type: Date,
+      default: Date.now,
+    },
+  },
+  { _id: false }
+);
+
 const reviewSchema = new mongoose.Schema(
   {
+    reviewType: {
+      type: String,
+      enum: ["product", "website"],
+      default: "product",
+    },
+
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -29,19 +60,16 @@ const reviewSchema = new mongoose.Schema(
     itemType: {
       type: String,
       enum: ["product", "prebuilt"],
-      required: true,
     },
 
     item: {
       type: mongoose.Schema.Types.ObjectId,
-      required: true,
       refPath: "itemModel",
     },
 
     itemModel: {
       type: String,
       enum: ["Product", "PrebuiltPC"],
-      required: true,
     },
 
     rating: {
@@ -83,6 +111,58 @@ const reviewSchema = new mongoose.Schema(
       default: 0,
     },
 
+    helpfulVotes: {
+      type: [mongoose.Schema.Types.ObjectId],
+      ref: "User",
+      default: [],
+    },
+
+    featured: {
+      type: Boolean,
+      default: false,
+    },
+
+    displayOrder: {
+      type: Number,
+      default: 0,
+    },
+
+    adminReply: {
+      text: {
+        type: String,
+        maxlength: 500,
+        trim: true,
+      },
+      admin: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      },
+      repliedAt: {
+        type: Date,
+      },
+    },
+
+    reports: {
+      type: [reportSchema],
+      default: [],
+    },
+
+    spamFlagged: {
+      type: Boolean,
+      default: false,
+    },
+
+    spamScore: {
+      type: Number,
+      min: 0,
+      max: 1,
+      default: 0,
+    },
+
+    spamReason: {
+      type: String,
+    },
+
     status: {
       type: String,
       enum: ["pending", "approved", "rejected"],
@@ -97,10 +177,16 @@ const reviewSchema = new mongoose.Schema(
   }
 );
 
-reviewSchema.index({ user: 1, item: 1, itemType: 1 }, { unique: true });
+reviewSchema.index(
+  { user: 1, item: 1, itemType: 1 },
+  { unique: true, partialFilterExpression: { item: { $type: "objectId" } } }
+);
 reviewSchema.index({ item: 1 });
 reviewSchema.index({ rating: 1 });
 reviewSchema.index({ status: 1 });
+reviewSchema.index({ reviewType: 1, status: 1, featured: 1 });
+reviewSchema.index({ "reports.user": 1 });
+reviewSchema.index({ spamFlagged: 1 });
 
 reviewSchema.plugin(mongoosePaginate);
 

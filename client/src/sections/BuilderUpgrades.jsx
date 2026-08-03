@@ -1,40 +1,35 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import Card from '../components/Card';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
+import { useAuth } from '../context/AuthContext';
+import LoginPrompt from '../components/LoginPrompt';
+import { normalizeBuilderProduct, normalizeCategory, getRawCategory } from '../utils/builderProducts';
+
+const UPGRADE_CATEGORIES = ['ssd', 'cooling', 'psu'];
 
 const BuilderUpgrades = () => {
   const [upgrades, setUpgrades] = useState([]);
+  const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [loginMessage, setLoginMessage] = useState('');
+  const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchUpgrades = async () => {
       try {
-        const { data } = await apiClient.get('/products?limit=50');
+        const { data } = await apiClient.get('/products?limit=1000');
         if (data && data.data) {
           const docs = data.data.docs || data.data;
           const pcArray = Array.isArray(docs) ? docs : [];
-          
-          // Filter out accessories
-          const upgradeItems = pcArray.filter(p => {
-             const type = (p.categoryType || p.productType || '').toLowerCase();
-             return type !== 'accessory' && type !== 'accessories' && type !== 'prebuilt';
-          });
-          
-          const formatted = upgradeItems.slice(0, 4).map(p => {
-            const priceVal = p.pricing?.price || p.priceVal || p.price || 0;
-            const mrpVal = p.pricing?.salePrice || p.mrpVal || p.mrp || 0;
-            return {
-              ...p,
-              id: p._id || p.id,
-              image: p.images?.[0]?.url || p.images?.[0] || p.image || null,
-              title: p.name || p.title,
-              price: priceVal ? `₹${priceVal.toLocaleString()}` : p.price,
-              priceVal: priceVal,
-              mrp: mrpVal ? `₹${mrpVal.toLocaleString()}` : p.mrp,
-              specs: p.specifications ? Object.entries(p.specifications).map(([k, v]) => `${k}: ${v}`) : []
-            };
-          });
-          setUpgrades(formatted);
+
+          // Keep only upgrade categories (storage, cooling, PSU)
+          const upgradeItems = pcArray
+            .filter(p => UPGRADE_CATEGORIES.includes(normalizeCategory(getRawCategory(p))))
+            .slice(0, 4)
+            .map(p => normalizeBuilderProduct(p));
+
+          setUpgrades(upgradeItems);
         }
       } catch (error) {
         console.error('Failed to fetch upgrades', error);
@@ -42,6 +37,26 @@ const BuilderUpgrades = () => {
     };
     fetchUpgrades();
   }, []);
+
+  const handleAddToBuild = (item) => {
+    if (!isLoggedIn) {
+      setLoginMessage('You need to log in to your account to add items to your build.');
+      setShowLoginPrompt(true);
+      return;
+    }
+
+    const draftBuild = JSON.parse(localStorage.getItem('draftBuild')) || {};
+    const categoryKey = item.category || 'misc';
+
+    if (draftBuild[categoryKey]) {
+      if (!window.confirm(`You already have a ${categoryKey} in your active build. Replace it?`)) return;
+    }
+
+    draftBuild[categoryKey] = item;
+    localStorage.setItem('draftBuild', JSON.stringify(draftBuild));
+    navigate('/builder');
+  };
+
   return (
     <section className="w-full py-16" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
@@ -62,15 +77,23 @@ const BuilderUpgrades = () => {
                 price={item.price}
                 mrp={item.mrp}
                 discount={item.discount}
+                category={item.category}
                 tag="RECOMMENDED"
                 tagColor="var(--color-primary)"
                 buttonText="Add to Build"
+                onButtonClick={() => handleAddToBuild(item)}
               />
             </Link>
           ))}
         </div>
 
       </div>
+
+      <LoginPrompt
+        isOpen={showLoginPrompt}
+        onClose={() => setShowLoginPrompt(false)}
+        message={loginMessage}
+      />
     </section>
   );
 };

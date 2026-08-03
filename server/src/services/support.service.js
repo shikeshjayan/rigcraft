@@ -3,10 +3,88 @@ import supportTicketRepository from "../repositories/support.repository.js";
 import supportMessageRepository from "../repositories/support-message.repository.js";
 import ApiError from "../utils/ApiError.js";
 import SupportTicket from "../models/support-ticket.model.js";
+import User from "../models/user.model.js";
+import Order from "../models/order.model.js";
+import * as uploadService from "./upload.service.js";
 import { TICKET_STATUS, TICKET_PRIORITY } from "../constants/support.constants.js";
+import { USER_ROLES } from "../constants/constants.js";
+import * as orderService from "./order.service.js";
+import { createNotification } from "./notification.service.js";
+import { getIO } from "../socket/index.js";
+import { emitNewMessage, emitTicketUpdate } from "../socket/support.socket.js";
 
 const TICKET_PREFIX = "SUP";
 const TICKET_NUMBER_RETRIES = 5;
+
+const DEFAULT_PRIORITY_BY_ISSUE = {
+  payment: TICKET_PRIORITY.HIGH,
+  refund: TICKET_PRIORITY.HIGH,
+  order: TICKET_PRIORITY.MEDIUM,
+  shipping: TICKET_PRIORITY.MEDIUM,
+  warranty: TICKET_PRIORITY.MEDIUM,
+  return: TICKET_PRIORITY.MEDIUM,
+  replacement: TICKET_PRIORITY.MEDIUM,
+  product: TICKET_PRIORITY.LOW,
+  other: TICKET_PRIORITY.LOW,
+};
+
+const safeEmit = (fn) => {
+  try {
+    fn(getIO());
+  } catch (err) {
+    // Socket.IO not initialized — skip realtime emit
+  }
+};
+
+const toPlain = (doc) => (doc && typeof doc.toObject === "function" ? doc.toObject() : doc);
+
+const notifyStaff = async (ticket, title, message) => {
+  try {
+    const [admin, manager] = await Promise.all([
+      User.findOne({ role: USER_ROLES.ADMIN, isBlocked: { $ne: true } }),
+      User.findOne({ role: USER_ROLES.MANAGER, isBlocked: { $ne: true } }),
+    ]);
+
+    const targets = [
+      admin ? { userId: admin._id, role: USER_ROLES.ADMIN } : null,
+      manager ? { userId: manager._id, role: USER_ROLES.MANAGER } : null,
+    ].filter(Boolean);
+
+    await Promise.all(
+      targets.map(({ userId, role }) =>
+        createNotification({
+          recipient: userId,
+          recipientRole: role,
+          type: "support",
+          module: "Support",
+          reference: ticket._id,
+          referenceModel: "SupportTicket",
+          priority: "normal",
+          title,
+          message,
+          actionUrl: `/admin/support/${ticket._id}`,
+          metadata: { ticketId: ticket._id, ticketNumber: ticket.ticketNumber, issueType: ticket.issueType },
+        })
+      )
+    );
+  } catch (err) {
+    // Notification is best-effort
+  }
+};
+
+const uploadAttachments = async (files) => {
+  if (!files || files.length === 0) return [];
+
+  const uploaded = await uploadService.uploadMultipleImages(files, "support");
+
+  return uploaded.map((uploadedItem, i) => ({
+    url: uploadedItem?.url,
+    publicId: uploadedItem?.publicId || null,
+    originalName: files[i]?.originalname,
+    mimeType: files[i]?.mimetype,
+    size: files[i]?.size,
+  }));
+};
 
 export const generateTicketNumber = async () => {
   for (let attempt = 0; attempt < TICKET_NUMBER_RETRIES; attempt++) {
@@ -20,8 +98,41 @@ export const generateTicketNumber = async () => {
   throw ApiError.internal("Failed to generate unique ticket number");
 };
 
-export const createTicket = async (userId, { order, issueType, subject, description, name }, files = []) => {
+export const createTicket = async (userId, { order, issueType, subject, description, name, cancelOrder, priority }, files = []) => {
   const ticketNumber = await generateTicketNumber();
+
+  let resolvedPriority = priority || DEFAULT_PRIORITY_BY_ISSUE[issueType] || TICKET_PRIORITY.MEDIUM;
+  const keywordText = `${subject || ""} ${description || ""}`.toLowerCase();
+  if (/urgent|asap|immediately|right away/i.test(keywordText)) {
+    resolvedPriority = TICKET_PRIORITY.URGENT;
+  }
+
+  let cancellationNote = "";
+
+  if (order) {
+    const existingOrder = await Order.findById(order);
+    if (!existingOrder) throw ApiError.notFound("Order not found");
+    if (existingOrder.user.toString() !== userId.toString()) {
+      throw ApiError.forbidden("You can only create a ticket for your own orders");
+    }
+
+    if (cancelOrder) {
+      try {
+        await orderService.cancelOrder(
+          existingOrder._id,
+          userId,
+          { _id: userId, role: "customer" },
+          "Cancelled via support ticket"
+        );
+        cancellationNote =
+          "Your order was cancelled successfully. If you already paid, a refund will be processed.";
+      } catch (err) {
+        cancellationNote = `Your cancellation request could not be completed: ${
+          err.message || "please contact support for help"
+        }`;
+      }
+    }
+  }
 
   const ticketData = {
     ticketNumber,
@@ -31,7 +142,7 @@ export const createTicket = async (userId, { order, issueType, subject, descript
     subject,
     description,
     status: TICKET_STATUS.OPEN,
-    priority: TICKET_PRIORITY.MEDIUM,
+    priority: resolvedPriority,
     lastMessageAt: new Date(),
   };
 
@@ -39,21 +150,32 @@ export const createTicket = async (userId, { order, issueType, subject, descript
 
   const ticket = await supportTicketRepository.create(ticketData);
 
-  const attachments = files.map((f) => ({
-    url: f.path || f.url,
-    publicId: f.filename || f.publicId,
-    originalName: f.originalname,
-    mimeType: f.mimetype,
-    size: f.size,
-  }));
+  const attachments = await uploadAttachments(files);
 
-  await supportMessageRepository.create({
+  const firstMessage = [description, cancellationNote].filter(Boolean).join("\n\n---\n\n");
+
+  const firstMessageDoc = await supportMessageRepository.create({
     ticket: ticket._id,
     sender: userId,
     senderRole: "customer",
-    message: description || "",
+    message: firstMessage,
     attachments,
   });
+
+  safeEmit((io) => {
+    emitNewMessage(io, ticket._id, {
+      _id: firstMessageDoc._id,
+      ticket: ticket._id,
+      sender: userId,
+      senderRole: "customer",
+      message: firstMessage,
+      attachments,
+      createdAt: firstMessageDoc.createdAt,
+    });
+    emitTicketUpdate(io, ticket._id, toPlain(ticket));
+  });
+
+  await notifyStaff(ticket, "New support ticket", `${ticket.ticketNumber}: ${subject || "Support request"}`);
 
   return ticket;
 };
@@ -68,7 +190,7 @@ export const getMyTickets = async (userId, query = {}) => {
       .skip(skip)
       .limit(Number(limit))
       .populate("order", "orderNumber total orderStatus")
-      .populate("assignedTo", "name email"),
+      .populate("assignedTo", "firstName lastName email"),
     SupportTicket.countDocuments({ user: userId }),
   ]);
 
@@ -86,7 +208,7 @@ export const getMyTickets = async (userId, query = {}) => {
 export const getMyTicket = async (ticketId, userId) => {
   const ticket = await SupportTicket.findById(ticketId)
     .populate("order", "orderNumber total orderStatus createdAt")
-    .populate("assignedTo", "name email");
+    .populate("assignedTo", "firstName lastName email");
 
   if (!ticket) throw ApiError.notFound("Ticket not found");
   if (ticket.user.toString() !== userId.toString()) {
@@ -108,13 +230,7 @@ export const sendMessage = async (ticketId, userId, userRole, { message }, files
     throw ApiError.forbidden("You can only reply to your own tickets");
   }
 
-  const attachments = files.map((f) => ({
-    url: f.path || f.url,
-    publicId: f.filename || f.publicId,
-    originalName: f.originalname,
-    mimeType: f.mimetype,
-    size: f.size,
-  }));
+  const attachments = await uploadAttachments(files);
 
   const msg = await supportMessageRepository.create({
     ticket: ticketId,
@@ -126,7 +242,7 @@ export const sendMessage = async (ticketId, userId, userRole, { message }, files
 
   const populated = await supportMessageRepository.model
     .findById(msg._id)
-    .populate("sender", "name email avatar role");
+    .populate("sender", "firstName lastName email avatar role");
 
   ticket.lastMessageAt = new Date();
 
@@ -137,6 +253,33 @@ export const sendMessage = async (ticketId, userId, userRole, { message }, files
   }
 
   await ticket.save({ validateBeforeSave: false });
+
+  safeEmit((io) => {
+    emitNewMessage(io, ticketId, toPlain(populated));
+    emitTicketUpdate(io, ticketId, toPlain(ticket));
+  });
+
+  try {
+    if (userRole === "customer") {
+      await notifyStaff(ticket, "New reply on a ticket", `${ticket.ticketNumber}: ${(message || "").slice(0, 120)}`);
+    } else {
+      await createNotification({
+        recipient: ticket.user,
+        recipientRole: "customer",
+        type: "support",
+        module: "Support",
+        reference: ticket._id,
+        referenceModel: "SupportTicket",
+        priority: "normal",
+        title: "New reply on your ticket",
+        message: `${ticket.ticketNumber}: ${(message || "").slice(0, 120)}`,
+        actionUrl: `/my-tickets/${ticket._id}`,
+        metadata: { ticketId: ticket._id, ticketNumber: ticket.ticketNumber },
+      });
+    }
+  } catch (err) {
+    // Notification is best-effort
+  }
 
   return { message: populated, ticket };
 };
@@ -155,6 +298,8 @@ export const closeTicket = async (ticketId, userId) => {
   ticket.status = TICKET_STATUS.CLOSED;
   ticket.closedAt = new Date();
   await ticket.save({ validateBeforeSave: false });
+
+  safeEmit((io) => emitTicketUpdate(io, ticketId, toPlain(ticket)));
 
   return ticket;
 };
@@ -188,9 +333,9 @@ export const adminGetAllTickets = async (query = {}) => {
       .sort(sort)
       .skip(skip)
       .limit(Number(limit))
-      .populate("user", "name email avatar")
+      .populate("user", "firstName lastName email avatar")
       .populate("order", "orderNumber total orderStatus")
-      .populate("assignedTo", "name email"),
+      .populate("assignedTo", "firstName lastName email"),
     SupportTicket.countDocuments(filter),
   ]);
 
@@ -207,9 +352,9 @@ export const adminGetAllTickets = async (query = {}) => {
 
 export const adminGetTicket = async (ticketId) => {
   const ticket = await SupportTicket.findById(ticketId)
-    .populate("user", "name email phone avatar")
+    .populate("user", "firstName lastName email phone avatar")
     .populate("order", "orderNumber total orderStatus paymentMethod createdAt items")
-    .populate("assignedTo", "name email role");
+    .populate("assignedTo", "firstName lastName email role");
 
   if (!ticket) throw ApiError.notFound("Ticket not found");
 
@@ -241,13 +386,46 @@ export const adminUpdateStatus = async (ticketId, status, user) => {
   }
 
   await ticket.save({ validateBeforeSave: false });
+
+  safeEmit((io) => emitTicketUpdate(io, ticketId, toPlain(ticket)));
+
+  try {
+    if (status === TICKET_STATUS.RESOLVED || status === TICKET_STATUS.CLOSED) {
+      await createNotification({
+        recipient: ticket.user,
+        recipientRole: "customer",
+        type: "support",
+        module: "Support",
+        reference: ticket._id,
+        referenceModel: "SupportTicket",
+        priority: "normal",
+        title: "Your ticket was updated",
+        message: `${ticket.ticketNumber}: status changed to "${status.replace(/_/g, " ")}".`,
+        actionUrl: `/my-tickets/${ticket._id}`,
+        metadata: { ticketId: ticket._id, ticketNumber: ticket.ticketNumber },
+      });
+    }
+  } catch (err) {
+    // Notification is best-effort
+  }
+
   return ticket;
 };
 
 export const adminAssignTicket = async (ticketId, assignedToId) => {
   const ticket = await supportTicketRepository.findById(ticketId);
+
+  const assignee = await User.findById(assignedToId);
+  if (!assignee) throw ApiError.notFound("User not found");
+  if (![USER_ROLES.ADMIN, USER_ROLES.MANAGER].includes(assignee.role)) {
+    throw ApiError.badRequest("Can only assign a ticket to an admin or manager");
+  }
+
   ticket.assignedTo = assignedToId;
   await ticket.save({ validateBeforeSave: false });
+
+  safeEmit((io) => emitTicketUpdate(io, ticketId, toPlain(ticket)));
+
   return ticket;
 };
 
@@ -255,6 +433,9 @@ export const adminUpdatePriority = async (ticketId, priority) => {
   const ticket = await supportTicketRepository.findById(ticketId);
   ticket.priority = priority;
   await ticket.save({ validateBeforeSave: false });
+
+  safeEmit((io) => emitTicketUpdate(io, ticketId, toPlain(ticket)));
+
   return ticket;
 };
 
