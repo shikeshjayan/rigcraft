@@ -8,6 +8,16 @@ import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
 import { extractError } from "../../utils/extractError";
 
+const processHomeOfferBanners = async (promotion) => {
+  const offers = Array.isArray(promotion?.homeOffer) ? promotion.homeOffer : [];
+  const processed = await Promise.all(offers.map(async (offer) => {
+    if (!offer?.banner?.file) return offer;
+    const result = await dealService.uploadImage(offer.banner.file);
+    return { ...offer, banner: { ...result, alt: offer.title || "Home offer" } };
+  }));
+  return { ...promotion, homeOffer: processed };
+};
+
 const DealCreate = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -16,12 +26,14 @@ const DealCreate = () => {
   const handleSubmit = async (data) => {
     setLoading(true);
     try {
+      const promotion = await processHomeOfferBanners(data.promotion);
       const payload = {
         ...data,
         startDate: new Date(data.startDate).toISOString(),
         endDate: new Date(data.endDate).toISOString(),
         products: (data.products || []).map((p) => p.id || p._id),
         prebuiltPCs: (data.prebuiltPCs || []).map((p) => p.id || p._id),
+        promotion,
       };
 
       await dealService.create(payload);

@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import { useState, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -10,7 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import LoginPrompt from './LoginPrompt';
 
-const Card = ({ id, apiId, image, title, specs, price, tag, tagColor, description, mrp, discount, compact = false, category = '', rating = { average: 0, count: 0 }, itemType, buttonText, onButtonClick }) => {
+const Card = ({ id, apiId, image, title, specs, price, description, mrp, discount, compact = false, category = '', rating = { average: 0, count: 0 }, itemType, buttonText, onButtonClick }) => {
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart } = useCart();
   const { isLoggedIn } = useAuth();
@@ -131,7 +131,7 @@ const Card = ({ id, apiId, image, title, specs, price, tag, tagColor, descriptio
         )} */}
 
         {/* Hover Wishlist Button (Top Left) */}
-        <div className="absolute top-3 left-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300 z-20">
+        <div className="absolute top-3 left-3 opacity-100 transition-opacity duration-300 z-20 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100">
           <button
             onClick={handleWishlistClick}
             className={`flex items-center cursor-pointer justify-center transition-all duration-300 hover:scale-110 shadow-md ${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-full bg-white`}

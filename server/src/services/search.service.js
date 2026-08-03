@@ -105,9 +105,16 @@ const searchPrebuiltPCs = async (regex, limit, { publicOnly = false } = {}) => {
 };
 
 const searchDeals = async (regex, limit, { publicOnly = false } = {}) => {
+  const now = new Date();
   const filter = {
     ...buildRegexFilter(regex, ["title", "description"]),
-    ...(publicOnly ? { isActive: true } : {}),
+    ...(publicOnly
+      ? {
+          isActive: true,
+          startDate: { $lte: now },
+          endDate: { $gte: now },
+        }
+      : {}),
   };
 
   const docs = await Deal.find(filter)

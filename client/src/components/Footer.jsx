@@ -158,7 +158,7 @@ const Footer = () => {
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/builder" className="block w-full">Custom PC Builder</Link></li>
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/prebuild" className="block w-full">Prebuilt PCs</Link></li>
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/components" className="block w-full">PC Components</Link></li>
-                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/components/peripherals" className="block w-full">Peripherals</Link></li>
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/components/accessories" className="block w-full">Peripherals</Link></li>
               </ul>
             </div>
 

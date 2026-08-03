@@ -382,12 +382,17 @@ async function seed() {
     ...d,
     desktopBanner: { url: `${IMGBASE}/deal-${slugify(d.title, { lower: true, strict: true })}-desktop/1920/600`, publicId: null, alt: d.title },
     mobileBanner: { url: `${IMGBASE}/deal-${slugify(d.title, { lower: true, strict: true })}-mobile/640/640`, publicId: null, alt: d.title },
+    isFeatured: d.isFeatured ?? false,
     promotion: {
       ...d.promotion,
-      homeOffer: d.promotion.homeOffer?.enabled ? {
-        ...d.promotion.homeOffer,
-        banner: { url: `${IMGBASE}/deal-${slugify(d.title, { lower: true, strict: true })}-offer/800/400`, publicId: null, alt: d.promotion.homeOffer.title },
-      } : { enabled: false },
+      homeOffer: (d.promotion.homeOffer || []).map((offer) =>
+        offer.enabled
+          ? {
+              ...offer,
+              banner: { url: `${IMGBASE}/deal-${slugify(d.title, { lower: true, strict: true })}-offer/800/400`, publicId: null, alt: offer.title },
+            }
+          : offer,
+      ),
     },
   }));
   const dealDocs = await Deal.create(dealPayloads);

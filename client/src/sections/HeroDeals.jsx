@@ -2,17 +2,14 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Card from '../components/Card';
+import CountdownTimer from '../components/CountdownTimer';
 import { productService } from '../services/product.service';
 
 const HeroDeals = () => {
-  // Initialize timer for 3 days from now (in seconds)
-  const [timeLeft, setTimeLeft] = useState(3 * 24 * 60 * 60);
-
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     const timer = setInterval(() => {
-      setTimeLeft(prev => (prev > 0 ? prev - 1 : 0));
       setCurrentTime(new Date());
     }, 1000);
     return () => clearInterval(timer);
@@ -36,16 +33,47 @@ const HeroDeals = () => {
     allProducts = productsData;
   }
 
-  // Filter products by saleStart and saleEnd
+  // Hot Deals: active now, starts today, ends after today but by the end of the current week (Sunday 23:59)
+  const startOfToday = new Date(currentTime);
+  startOfToday.setHours(0, 0, 0, 0);
+
+  const endOfToday = new Date(currentTime);
+  endOfToday.setHours(23, 59, 59, 999);
+
+  const endOfWeek = new Date(currentTime);
+  endOfWeek.setDate(endOfWeek.getDate() + ((7 - endOfWeek.getDay()) % 7));
+  endOfWeek.setHours(23, 59, 59, 999);
+
   const activeSaleProducts = allProducts.filter(product => {
     if (!product.saleStart || !product.saleEnd) return false;
     const start = new Date(product.saleStart);
     const end = new Date(product.saleEnd);
-    return currentTime >= start && currentTime <= end;
+    return (
+      currentTime >= start &&
+      currentTime <= end &&
+      start >= startOfToday &&
+      end > endOfToday &&
+      end <= endOfWeek
+    );
   });
-  
+
   // Show only 4 products
   const displayProducts = activeSaleProducts.slice(0, 4);
+
+  if (isLoading) return null;
+  if (activeSaleProducts.length === 0) return null;
+
+  // Countdown to the soonest sale end among the displayed products
+  const soonestEnd = displayProducts.reduce((min, product) => {
+    const t = product.saleEnd ? new Date(product.saleEnd).getTime() : Infinity;
+    return t < min ? t : min;
+  }, Infinity);
+  const dealEnd = Number.isFinite(soonestEnd) ? new Date(soonestEnd) : null;
+  const diffSeconds = dealEnd ? Math.max(0, Math.floor((dealEnd.getTime() - currentTime.getTime()) / 1000)) : 0;
+  const days = Math.floor(diffSeconds / 86400);
+  const hours = Math.floor((diffSeconds % 86400) / 3600);
+  const minutes = Math.floor((diffSeconds % 3600) / 60);
+  const seconds = diffSeconds % 60;
 
   return (
     <section className="w-full py-16" style={{ backgroundColor: 'var(--color-bg-secondary, #ffffff)' }}>
@@ -61,12 +89,24 @@ const HeroDeals = () => {
               Don't miss out on these limited time offers for top tier components.
             </p>
           </div>
-          <Link to="/alldeals" className="font-[600] text-[16px] flex items-center gap-1 mt-4 md:mt-0 transition-transform hover:translate-x-1" style={{ color: 'var(--color-primary, #06B6D4)' }}>
-            View All Deals
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
+          <div className="flex items-center gap-6 mt-4 md:mt-0">
+            <div className="flex items-center gap-2">
+              <span className="text-[14px] font-[600] text-[#6B7280]">Ends in:</span>
+              <CountdownTimer
+                days={days}
+                hours={hours}
+                minutes={minutes}
+                seconds={seconds}
+                size="sm"
+              />
+            </div>
+            <Link to="/alldeals" className="font-[600] text-[16px] flex items-center gap-1 transition-transform hover:translate-x-1" style={{ color: 'var(--color-primary, #06B6D4)' }}>
+              View All Deals
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </div>
         </div>
         
         {/* Grid Section */}

@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -45,11 +45,28 @@ const AllDeals = () => {
       allProducts = productsData;
     }
 
+    // Hot Deals rule: active now, starts today, ends after today but by the end of the current week (Sunday 23:59)
+    const startOfToday = new Date(currentTime);
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date(currentTime);
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const endOfWeek = new Date(currentTime);
+    endOfWeek.setDate(endOfWeek.getDate() + ((7 - endOfWeek.getDay()) % 7));
+    endOfWeek.setHours(23, 59, 59, 999);
+
     return allProducts.filter(product => {
       if (!product.saleStart || !product.saleEnd) return false;
       const start = new Date(product.saleStart);
       const end = new Date(product.saleEnd);
-      return currentTime >= start && currentTime <= end;
+      return (
+        currentTime >= start &&
+        currentTime <= end &&
+        start >= startOfToday &&
+        end > endOfToday &&
+        end <= endOfWeek
+      );
     });
   }, [productsData, currentTime]);
 

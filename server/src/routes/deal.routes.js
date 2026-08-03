@@ -14,6 +14,7 @@ const adminRouter = Router();
 // ── Public routes ──────────────────────────────────────────────
 router.get("/", dealController.getAll);
 router.get("/active", dealController.getActive);
+router.get("/promotions", dealController.getPromotions);
 router.get("/:slug", dealController.getBySlug);
 
 // ── Admin routes ───────────────────────────────────────────────

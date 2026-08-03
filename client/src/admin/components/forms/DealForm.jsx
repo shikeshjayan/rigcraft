@@ -1,12 +1,14 @@
 import { useState, useEffect, useCallback } from "react";
-import { useForm, Controller } from "react-hook-form";
+import { useForm, Controller, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
-  Box, Grid, Typography, Switch as MuiSwitch, Autocomplete, TextField, Chip,
+  Box, Grid, Typography, Switch as MuiSwitch, Autocomplete, TextField, Chip, IconButton,
 } from "@mui/material";
+import { Add as AddIcon, Delete as DeleteIcon } from "@mui/icons-material";
 import AdminInput from "../common/Input";
 import AdminButton from "../common/Button";
+import ImageUpload from "../common/ImageUpload";
 import { productService } from "../../services/productService";
 import { prebuiltService } from "../../services/prebuiltService";
 import { useDebounce } from "../../hooks/useDebounce";
@@ -18,20 +20,22 @@ const dealFormSchema = z.object({
   endDate: z.string().min(1, "End date is required"),
   products: z.array(z.any()).optional().default([]),
   prebuiltPCs: z.array(z.any()).optional().default([]),
+  desktopBanner: z.any().optional(),
+  mobileBanner: z.any().optional(),
+  isFeatured: z.boolean().optional().default(false),
   promotion: z.object({
-    topBar: z.object({
+    topBar: z.array(z.object({
       enabled: z.boolean().optional().default(false),
       text: z.string().max(200).optional().default(""),
-    }).optional().default({}),
-    homeOffer: z.object({
+    })).optional().default([]),
+    homeOffer: z.array(z.object({
       enabled: z.boolean().optional().default(false),
       title: z.string().max(200).optional().default(""),
       description: z.string().max(500).optional().default(""),
-    }).optional().default({}),
+      banner: z.any().optional(),
+    })).optional().default([]),
   }).optional().default({}),
 });
-
-
 
 const DealForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Deal" }) => {
   const { control, handleSubmit, formState: { errors }, setValue, watch } = useForm({
@@ -43,10 +47,16 @@ const DealForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Deal
       endDate: "",
       products: [],
       prebuiltPCs: [],
-      promotion: { topBar: { enabled: false, text: "" }, homeOffer: { enabled: false, title: "", description: "" } },
+      desktopBanner: null,
+      mobileBanner: null,
+      isFeatured: false,
+      promotion: { topBar: [], homeOffer: [] },
       ...defaultValues,
     },
   });
+
+  const topBarArray = useFieldArray({ control, name: "promotion.topBar" });
+  const homeOfferArray = useFieldArray({ control, name: "promotion.homeOffer" });
 
   const [productOptions, setProductOptions] = useState([]);
   const [prebuiltOptions, setPrebuiltOptions] = useState([]);
@@ -110,10 +120,65 @@ const DealForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Deal
               )}
             />
           </Grid>
+          <Grid size={{ xs: 12 }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>Featured as Main Deal</Typography>
+              <Controller
+                name="isFeatured"
+                control={control}
+                render={({ field }) => (
+                  <MuiSwitch
+                    checked={field.value ?? false}
+                    onChange={(e) => field.onChange(e.target.checked)}
+                    sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: "var(--color-admin-success)" }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "var(--color-admin-success)" } }}
+                  />
+                )}
+              />
+            </Box>
+          </Grid>
         </Grid>
       </Box>
 
-      {/* Section 2 - Countdown */}
+      {/* Section 2 - Main Deal Images */}
+      <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)", mb: 3 }}>
+        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 3, color: "var(--color-admin-text)" }}>
+          Main Deal Images
+        </Typography>
+        <Grid container spacing={3}>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1.5, color: "var(--color-admin-text)", fontWeight: 600 }}>Desktop Banner</Typography>
+            <Controller
+              name="desktopBanner"
+              control={control}
+              render={({ field }) => (
+                <ImageUpload
+                  images={field.value ? [field.value] : []}
+                  onChange={(files) => field.onChange(files[0] || null)}
+                  maxFiles={1}
+                  multiple={false}
+                />
+              )}
+            />
+          </Grid>
+          <Grid size={{ xs: 12, sm: 6 }}>
+            <Typography variant="subtitle2" sx={{ mb: 1.5, color: "var(--color-admin-text)", fontWeight: 600 }}>Mobile Banner</Typography>
+            <Controller
+              name="mobileBanner"
+              control={control}
+              render={({ field }) => (
+                <ImageUpload
+                  images={field.value ? [field.value] : []}
+                  onChange={(files) => field.onChange(files[0] || null)}
+                  maxFiles={1}
+                  multiple={false}
+                />
+              )}
+            />
+          </Grid>
+        </Grid>
+      </Box>
+
+      {/* Section 3 - Countdown */}
       <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)", mb: 3 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 3, color: "var(--color-admin-text)" }}>
           Countdown Timer
@@ -140,7 +205,7 @@ const DealForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Deal
         </Grid>
       </Box>
 
-      {/* Section 3 - Featured Products */}
+      {/* Section 4 - Featured Products */}
       <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)", mb: 3 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 3, color: "var(--color-admin-text)" }}>
           Featured Products
@@ -165,7 +230,7 @@ const DealForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Deal
         />
       </Box>
 
-      {/* Section 4 - Featured Prebuilt PCs */}
+      {/* Section 5 - Featured Prebuilt PCs */}
       <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)", mb: 3 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 3, color: "var(--color-admin-text)" }}>
           Featured Prebuilt PCs
@@ -190,87 +255,151 @@ const DealForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Deal
         />
       </Box>
 
-      {/* Section 5 - Promotion */}
+      {/* Section 6 - Promotion */}
       <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)", mb: 3 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 3, color: "var(--color-admin-text)" }}>
-          Promotion
+          Promotions
         </Typography>
 
-        {/* Top Bar */}
+        {/* Top Bar Announcements */}
         <Box sx={{ mb: 3, p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
-          <Typography variant="subtitle2" sx={{ mb: 2, color: "var(--color-admin-text)", fontWeight: 600 }}>
-            Top Announcement Bar
-          </Typography>
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>Enable</Typography>
-                <Controller
-                  name="promotion.topBar.enabled"
-                  control={control}
-                  render={({ field }) => (
-                    <MuiSwitch
-                      checked={field.value ?? false}
-                      onChange={(e) => field.onChange(e.target.checked)}
-                      sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: "var(--color-admin-success)" }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "var(--color-admin-success)" } }}
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ color: "var(--color-admin-text)", fontWeight: 600 }}>
+              Top Announcement Bar
+            </Typography>
+            <AdminButton variant="ghost" size="small" icon={<AddIcon />} onClick={() => topBarArray.append({ enabled: true, text: "" })}>
+              Add Announcement
+            </AdminButton>
+          </Box>
+          {topBarArray.fields.length === 0 && (
+            <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", mb: 1 }}>
+              No announcements yet — the navbar bar will be hidden.
+            </Typography>
+          )}
+          {topBarArray.fields.map((item, index) => (
+            <Box key={item.id} sx={{ mb: 2, p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)", backgroundColor: "var(--color-admin-bg-tertiary)" }}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid size={{ xs: 12, sm: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>Enable</Typography>
+                    <Controller
+                      name={`promotion.topBar.${index}.enabled`}
+                      control={control}
+                      render={({ field }) => (
+                        <MuiSwitch
+                          checked={field.value ?? false}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                          size="small"
+                          sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: "var(--color-admin-success)" }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "var(--color-admin-success)" } }}
+                        />
+                      )}
                     />
-                  )}
-                />
-              </Box>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 8 }}>
-              <Controller
-                name="promotion.topBar.text"
-                control={control}
-                render={({ field }) => (
-                  <AdminInput label="Announcement Text" placeholder="🎉 Free Shipping Above ₹999" {...field} />
-                )}
-              />
-            </Grid>
-          </Grid>
+                  </Box>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 8 }}>
+                  <Controller
+                    name={`promotion.topBar.${index}.text`}
+                    control={control}
+                    render={({ field }) => (
+                      <AdminInput label={`Announcement Text ${index + 1}`} placeholder="🎉 Free Shipping Above ₹999" {...field} />
+                    )}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 2 }}>
+                  <IconButton
+                    size="small"
+                    onClick={() => topBarArray.remove(index)}
+                    sx={{ color: "var(--color-admin-danger)" }}
+                    aria-label="Remove announcement"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Grid>
+              </Grid>
+            </Box>
+          ))}
         </Box>
 
-        {/* Homepage Offer */}
+        {/* Homepage Offers */}
         <Box sx={{ p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
-          <Typography variant="subtitle2" sx={{ mb: 2, color: "var(--color-admin-text)", fontWeight: 600 }}>
-            Homepage Offer Section
-          </Typography>
-          <Grid container spacing={3}>
-            <Grid size={{ xs: 12, sm: 4 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>Enable</Typography>
-                <Controller
-                  name="promotion.homeOffer.enabled"
-                  control={control}
-                  render={({ field }) => (
-                    <MuiSwitch
-                      checked={field.value ?? false}
-                      onChange={(e) => field.onChange(e.target.checked)}
-                      sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: "var(--color-admin-success)" }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "var(--color-admin-success)" } }}
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+            <Typography variant="subtitle2" sx={{ color: "var(--color-admin-text)", fontWeight: 600 }}>
+              Homepage Offer Section
+            </Typography>
+            <AdminButton variant="ghost" size="small" icon={<AddIcon />} onClick={() => homeOfferArray.append({ enabled: true, title: "", description: "", banner: null })}>
+              Add Home Offer
+            </AdminButton>
+          </Box>
+          {homeOfferArray.fields.length === 0 && (
+            <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", mb: 1 }}>
+              No home offers yet — the homepage offer carousel will be hidden.
+            </Typography>
+          )}
+          {homeOfferArray.fields.map((item, index) => (
+            <Box key={item.id} sx={{ mb: 2, p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)", backgroundColor: "var(--color-admin-bg-tertiary)" }}>
+              <Grid container spacing={2} alignItems="center">
+                <Grid size={{ xs: 12, sm: 2 }}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                    <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>Enable</Typography>
+                    <Controller
+                      name={`promotion.homeOffer.${index}.enabled`}
+                      control={control}
+                      render={({ field }) => (
+                        <MuiSwitch
+                          checked={field.value ?? false}
+                          onChange={(e) => field.onChange(e.target.checked)}
+                          size="small"
+                          sx={{ "& .MuiSwitch-switchBase.Mui-checked": { color: "var(--color-admin-success)" }, "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": { backgroundColor: "var(--color-admin-success)" } }}
+                        />
+                      )}
                     />
-                  )}
-                />
-              </Box>
-            </Grid>
-            <Grid size={{ xs: 12, sm: 8 }}>
-              <Controller
-                name="promotion.homeOffer.title"
-                control={control}
-                render={({ field }) => (
-                  <AdminInput label="Offer Title" placeholder="Weekend Mega Sale" {...field} />
-                )}
-              />
-            </Grid>
-            <Grid size={{ xs: 12 }}>
-              <Controller
-                name="promotion.homeOffer.description"
-                control={control}
-                render={({ field }) => (
-                  <AdminInput label="Offer Description" placeholder="Up to 30% OFF Gaming Accessories" {...field} />
-                )}
-              />
-            </Grid>
-          </Grid>
+                  </Box>
+                </Grid>
+                <Grid size={{ xs: 12, sm: 8 }}>
+                  <Controller
+                    name={`promotion.homeOffer.${index}.title`}
+                    control={control}
+                    render={({ field }) => (
+                      <AdminInput label="Offer Title" placeholder="Weekend Mega Sale" {...field} />
+                    )}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12, sm: 2 }}>
+                  <IconButton
+                    size="small"
+                    onClick={() => homeOfferArray.remove(index)}
+                    sx={{ color: "var(--color-admin-danger)" }}
+                    aria-label="Remove home offer"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Controller
+                    name={`promotion.homeOffer.${index}.description`}
+                    control={control}
+                    render={({ field }) => (
+                      <AdminInput label="Offer Description" placeholder="Up to 30% OFF Gaming Accessories" {...field} />
+                    )}
+                  />
+                </Grid>
+                <Grid size={{ xs: 12 }}>
+                  <Controller
+                    name={`promotion.homeOffer.${index}.banner`}
+                    control={control}
+                    render={({ field }) => (
+                      <ImageUpload
+                        images={field.value ? [field.value] : []}
+                        onChange={(files) => field.onChange(files[0] || null)}
+                        maxFiles={1}
+                        multiple={false}
+                      />
+                    )}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
+          ))}
         </Box>
       </Box>
 
