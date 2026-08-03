@@ -1016,7 +1016,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="bg-white rounded-md w-full max-w-[400px] p-6 shadow-xl relative text-center"
+              className="bg-white w-full max-w-[400px] p-6 shadow-xl relative text-center"
+              style={{ borderRadius: 'var(--radius-sm)' }}
             >
               <h2 className="text-[18px] font-bold text-[#0F172A] mb-2">Remove Address</h2>
               <p className="text-[14px] text-[#64748B] mb-6">Are you sure you want to remove this address?</p>
@@ -1057,7 +1058,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="bg-white rounded-md w-full max-w-[400px] p-6 shadow-xl relative"
+              className="bg-white w-full max-w-[400px] p-6 shadow-xl relative"
+              style={{ borderRadius: 'var(--radius-sm)' }}
             >
               <button
                 onClick={() => setShowCouponPopup(false)}

@@ -306,7 +306,7 @@ const Orders = ({ embedded = false }) => {
   const modalContent = (showCancelModal && (
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
       <FadeUp>
-        <div className="bg-white rounded-md p-6 max-w-sm w-full shadow-2xl border-t-4 border-red-500" style={{ borderRadius: 'var(--radius-sm)' }}>
+        <div className="bg-white p-6 max-w-sm w-full shadow-2xl border-t-4 border-red-500" style={{ borderRadius: 'var(--radius-sm)' }}>
           <div className="flex flex-col items-center text-center mb-6">
             <WarningAmberIcon sx={{ fontSize: 48, color: '#EF4444' }} className="mb-4" />
             <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-wide">Cancel Order?</h3>
