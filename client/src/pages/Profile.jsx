@@ -20,6 +20,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import Breadcrumb from '../components/Breadcrumb';
 import Orders from './Orders';
+import { useToast } from '../components/toast/useToast';
 
 const getTypeName = (type) => {
   if (typeof type === 'string') return type;
@@ -82,7 +83,7 @@ const Profile = () => {
       window.location.reload();
     } catch (error) {
       console.error('Failed to update profile', error);
-      alert('Failed to update profile');
+      toast('Failed to update profile', 'error');
     }
   };
   const location = useLocation();
@@ -116,8 +117,8 @@ const Profile = () => {
   }, []);
   const [selectedBuildPopup, setSelectedBuildPopup] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, buildId: null, isDraft: false });
-  const [showCartToast, setShowCartToast] = useState(false);
   const { addToCart, cartItems } = useCart();
+  const { toast } = useToast();
   
   const [isAddingAddress, setIsAddingAddress] = useState(false);
   const [editingAddressId, setEditingAddressId] = useState(null);
@@ -190,7 +191,7 @@ const Profile = () => {
       setDeleteConfirmation({ show: false, buildId: null, isDraft: false });
     } catch (error) {
       console.error('Failed to delete build', error);
-      alert('Failed to delete build');
+      toast('Failed to delete build', 'error');
     }
   };
 
@@ -207,10 +208,7 @@ const Profile = () => {
       components: build.components
     });
 
-    setShowCartToast(true);
-    setTimeout(() => {
-      setShowCartToast(false);
-    }, 5000);
+    toast('Build successfully added to your cart!');
   };
 
   useEffect(() => {
@@ -247,7 +245,7 @@ const Profile = () => {
       setEditingAddressId(null);
     } catch (error) {
       console.error('Failed to save address', error);
-      alert('Failed to save address');
+      toast('Failed to save address', 'error');
     }
   };
 
@@ -800,23 +798,6 @@ const Profile = () => {
                 )}
               </div>
             </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Cart Toast Notification */}
-      <AnimatePresence>
-        {showCartToast && (
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 50 }}
-            className="fixed bottom-8 right-8 bg-[#0F172A] border border-gray-700 text-white px-6 py-4 rounded-sm shadow-2xl z-[150] font-bold flex items-center gap-3"
-          >
-            <div className="w-8 h-8 bg-[#2563EB] rounded-full flex items-center justify-center">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-            </div>
-            Build successfully added to your cart!
           </motion.div>
         )}
       </AnimatePresence>

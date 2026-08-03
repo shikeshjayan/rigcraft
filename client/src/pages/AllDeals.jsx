@@ -1,6 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Link } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
@@ -249,23 +248,22 @@ const AllDeals = () => {
                         
                         return (
                           <div key={item._id || item.id} className="block h-full relative group">
-                            <Link to={`/detail/${item.slug}`} className="block h-full">
-                              <Card 
-                                id={item.slug}
-                                apiId={item._id || item.id}
-                                rating={item?.rating}
-                                image={imageUrl}
-                                title={item.name}
-                                specs={specs.length > 0 ? specs : undefined}
-                                description={item.shortDescription || item.description || ''}
-                                price={`₹${price?.toLocaleString('en-IN')}`}
-                                mrp={mrp ? `₹${mrp?.toLocaleString('en-IN')}` : undefined}
-                                discount={discount}
-                                tag={discount ? discount : null}
-                                tagColor="#E11D48"
-                                compact={filterDropdownOpen} 
-                              />
-                            </Link>
+                            <Card 
+                              id={item.slug}
+                              apiId={item._id || item.id}
+                              rating={item?.rating}
+                              image={imageUrl}
+                              title={item.name}
+                              specs={specs.length > 0 ? specs : undefined}
+                              description={item.shortDescription || item.description || ''}
+                              price={`₹${price?.toLocaleString('en-IN')}`}
+                              mrp={mrp ? `₹${mrp?.toLocaleString('en-IN')}` : undefined}
+                              discount={discount}
+                              tag={discount ? discount : null}
+                              tagColor="#E11D48"
+                              compact={filterDropdownOpen} 
+                              stock={item.stock}
+                            />
                           </div>
                         );
                       })

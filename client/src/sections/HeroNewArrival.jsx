@@ -129,6 +129,7 @@ const HeroNewArrival = () => {
                     discount={discountPercentage > 0 ? `${discountPercentage}% off` : ''}
                     tag="NEW"
                     tagColor="var(--color-primary, #06B6D4)"
+                    stock={product.stock}
                   />
                 </div>
               );

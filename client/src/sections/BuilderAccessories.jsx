@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import Card from '../components/Card';
-import { Link } from 'react-router-dom';
 import apiClient from '../api/client';
 import { useCart } from '../context/CartContext';
 import { normalizeBuilderProduct, normalizeCategory, getRawCategory } from '../utils/builderProducts';
@@ -49,23 +48,23 @@ const BuilderAccessories = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {accessories.map(item => (
-            <Link to={`/detail/${item.id}`} key={item.id} className="block h-full">
-              <Card 
-                id={item.id}
-                image={item.image}
-                title={item.title}
-                specs={item.specs}
-                description={item.description}
-                price={item.price}
-                mrp={item.mrp}
-                discount={item.discount}
-                category={item.category}
-                tag="ACCESSORY"
-                tagColor="var(--color-primary)"
-                buttonText="Add to Cart"
-                onButtonClick={() => handleAddToCart(item)}
-              />
-            </Link>
+            <Card 
+              key={item.id}
+              id={item.id}
+              image={item.image}
+              title={item.title}
+              specs={item.specs}
+              description={item.description}
+              price={item.price}
+              mrp={item.mrp}
+              discount={item.discount}
+              category={item.category}
+              tag="ACCESSORY"
+              tagColor="var(--color-primary)"
+              buttonText="Add to Cart"
+              onButtonClick={() => handleAddToCart(item)}
+              stock={item.stock}
+            />
           ))}
         </div>
 

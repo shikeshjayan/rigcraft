@@ -10,6 +10,7 @@ import FadeUp from '../components/FadeUp';
 import DynamicLogo from '../components/DynamicLogo';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { useToast } from '../components/toast/useToast';
 
 const CustomerRegister = () => {
   const [formData, setFormData] = useState({
@@ -26,12 +27,14 @@ const CustomerRegister = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const registerMutation = useMutation({
     mutationFn: authService.register,
     onSuccess: (data) => {
       if (data && data.success && data.data) {
          const { user } = data.data;
+        toast('Account created successfully.');
         handleAuthSuccess(user, navigate, login);
       }
     }

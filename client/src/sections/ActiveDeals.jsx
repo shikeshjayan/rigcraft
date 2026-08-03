@@ -74,6 +74,7 @@ const ActiveDeals = () => {
                 }
                 tag="HOT DEAL"
                 tagColor="bg-[#EF4444]"
+                stock={product.stock}
               />
             </div>
           ))}

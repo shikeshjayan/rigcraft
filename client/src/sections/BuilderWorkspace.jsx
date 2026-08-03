@@ -9,6 +9,7 @@ import SearchIcon from '@mui/icons-material/Search';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import CloseIcon from '@mui/icons-material/Close';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import { useToast } from '../components/toast/useToast';
 
 const STEPS = [
   { id: 1, label: 'CPU', category: 'cpu' },
@@ -57,6 +58,7 @@ const BuilderWorkspace = () => {
   const { addToCart } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
+  const { toast } = useToast();
 
   useEffect(() => {
     const rawDraft = location.state?.draftBuild || JSON.parse(localStorage.getItem('draftBuild') || 'null');
@@ -135,12 +137,12 @@ const BuilderWorkspace = () => {
     }
 
     if (components.length === 0) {
-      alert('Please select at least one component to save a build.');
+      toast('Please select at least one component to save a build.', 'warning');
       return;
     }
 
     if (builderSettings.requireCompleteBuild && compatibility.status === 'incomplete') {
-      alert(`Your build is incomplete. ${compatibility.issues[0] || ''}`);
+      toast(`Your build is incomplete. ${compatibility.issues[0] || ''}`, 'warning');
       return;
     }
 
@@ -171,7 +173,7 @@ const BuilderWorkspace = () => {
     } catch (error) {
       console.error('Failed to save build', error);
       const serverMessage = error?.response?.data?.message;
-      alert(serverMessage || 'Failed to save build. Make sure you are logged in.');
+      toast(serverMessage || 'Failed to save build. Make sure you are logged in.', 'error');
     }
   };
 
