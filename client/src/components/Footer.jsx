@@ -40,6 +40,12 @@ const Footer = () => {
   const handleSubscribe = (e) => {
     e.preventDefault();
     
+    if (!user) {
+      setStatus('error');
+      setMessage('Please login to subscribe to our newsletter.');
+      return;
+    }
+    
     // Basic email validation regex
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     

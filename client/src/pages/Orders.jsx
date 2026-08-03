@@ -231,6 +231,10 @@ const Orders = ({ embedded = false }) => {
                                   <div className="text-[13px] font-bold text-green-600 uppercase tracking-wide flex items-center gap-1 bg-green-50 px-3 py-1 rounded-sm border border-green-200">
                                     <CheckCircleIcon fontSize="small" /> Product Delivered
                                   </div>
+                                ) : order.status === 'Cancelled' ? (
+                                  <div className="text-[13px] font-bold text-red-500 uppercase tracking-wide flex items-center gap-1 bg-red-50 px-3 py-1 rounded-sm border border-red-200">
+                                    <CancelIcon fontSize="small" /> Cancelled
+                                  </div>
                                 ) : (
                                   <button 
                                     onClick={() => handleCancelClick(order)}

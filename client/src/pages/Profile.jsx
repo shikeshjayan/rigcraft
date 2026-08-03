@@ -452,7 +452,22 @@ const Profile = () => {
                         <h4 className="font-bold text-gray-800 text-[14px] mb-2">Why do I need to verify my account?</h4>
                         <p className="text-gray-600 text-[13px] leading-relaxed">Verification ensures that hardware warranty claims and high-value orders are securely linked to your identity, preventing unauthorized engineering configuration changes.</p>
                       </div>
-                      <button className="text-[13px] font-bold text-red-500 hover:text-red-600">Deactivate Account</button>
+                      <button 
+                        onClick={async () => {
+                          if (window.confirm("Are you sure you want to deactivate your account? This action cannot be undone.")) {
+                            try {
+                              await apiClient.delete('/users/me').catch(() => {});
+                              logout();
+                              navigate('/');
+                            } catch (error) {
+                              alert("Failed to deactivate account.");
+                            }
+                          }
+                        }}
+                        className="text-[13px] font-bold text-red-500 hover:text-red-600"
+                      >
+                        Deactivate Account
+                      </button>
                     </div>
                   </FadeUp>
                 )}

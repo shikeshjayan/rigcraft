@@ -5,6 +5,7 @@ import PhoneIcon from '@mui/icons-material/Phone';
 import EmailIcon from '@mui/icons-material/Email';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import apiClient from '../api/client';
+import { useAuth } from '../context/AuthContext';
 
 const Contact = () => {
   const [formData, setFormData] = useState({
@@ -26,8 +27,15 @@ const Contact = () => {
 
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const { isLoggedIn } = useAuth();
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isLoggedIn) {
+      alert("Please login to raise a support ticket or get in touch.");
+      return;
+    }
+    
     if (formData.name && formData.email && formData.subject && formData.message && formData.consent) {
       try {
         setIsSubmitting(true);
