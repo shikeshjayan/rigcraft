@@ -81,34 +81,31 @@ const Contact = () => {
     setErrorMsg('')
   }
 
-  const { isLoggedIn } = useAuth();
-
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!isLoggedIn) {
-      alert("Please login to raise a support ticket or get in touch.");
-      return;
+    e.preventDefault()
+    setErrorMsg('')
+    if (!isLoggedIn) return
+    if (!formData.reason) {
+      setErrorMsg('Please select a reason so we can route your request correctly.')
+      return
     }
-    
-    if (formData.name && formData.email && formData.subject && formData.message && formData.consent) {
-      try {
-        setIsSubmitting(true);
-        const res = await apiClient.post('/support', {
-          name: formData.name,
-          subject: formData.subject,
-          issueType: 'other',
-          description: `Name: ${formData.name}\nEmail: ${formData.email}\n\nMessage:\n${formData.message}`
-        });
-        
-        if (res.data.success) {
-          setShowPopup(true);
-          setFormData({ name: '', email: '', subject: '', message: '', consent: false });
-          setTimeout(() => setShowPopup(false), 3000);
-        }
-      } catch (error) {
-        alert(error.response?.data?.message || "Failed to send message. Please ensure you are logged in to raise a support ticket.");
-      } finally {
-        setIsSubmitting(false);
+    if (!formData.message) {
+      setErrorMsg('Please describe how we can help.')
+      return
+    }
+    if (!formData.consent) {
+      setErrorMsg('Please agree to the Terms & Conditions and Privacy Policy to continue.')
+      return
+    }
+    try {
+      setIsSubmitting(true)
+      const payload = {
+        name: fullName || emailValue.split('@')[0],
+        subject: formData.subject || `Support request (${formData.reason})`,
+        issueType: formData.reason,
+        description: `Name: ${fullName}\nEmail: ${emailValue}\n\nMessage:\n${formData.message}`,
+        order: formData.order || undefined,
+        cancelOrder: formData.cancelOrder || undefined
       }
 
       let res
