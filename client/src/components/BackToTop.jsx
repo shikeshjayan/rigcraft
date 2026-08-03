@@ -4,16 +4,28 @@ import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 
 const BackToTop = () => {
   const [visible, setVisible] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
 
   useEffect(() => {
-    const onScroll = () => setVisible(window.scrollY > 300);
+    let scrollTimeout;
+    const onScroll = () => {
+      setVisible(window.scrollY > 300);
+      setIsScrolling(true);
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        setIsScrolling(false);
+      }, 400);
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      clearTimeout(scrollTimeout);
+    };
   }, []);
 
   return (
     <AnimatePresence>
-      {visible && (
+      {visible && !isScrolling && (
         <motion.button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           initial={{ opacity: 0, scale: 0.5 }}

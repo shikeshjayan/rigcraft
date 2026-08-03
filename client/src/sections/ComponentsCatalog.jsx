@@ -190,24 +190,24 @@ const ComponentsCatalog = () => {
   const gridClasses = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-h-[800px] items-start content-start";
 
   return (
-    <section id="catalog-top" className="w-full py-12 pb-24" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+    <section id="catalog-top" className="w-full py-6 md:py-12 pb-16 md:pb-24" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         
         <div 
-          className="flex justify-between items-center mb-6 sticky top-[111px] z-40 py-4 border-b border-transparent backdrop-blur-md transition-all duration-300"
+          className="flex justify-between items-center mb-4 md:mb-6 sticky top-[60px] md:top-[75px] z-40 py-3 md:py-4 border-b border-transparent backdrop-blur-md transition-all duration-300 -mx-4 px-4 lg:-mx-8 lg:px-8"
           style={{ backgroundColor: 'rgba(241, 245, 249, 0.95)' }}
         >
           <div>
-            <h1 className="text-[24px] font-bold text-[#0F1111]">{categoryTitle}</h1>
-            <p className="text-[14px] text-[#565959]">Showing {currentItems.length} results</p>
+            <h1 className="text-[18px] md:text-[24px] font-bold text-[#0F1111] leading-tight">{categoryTitle}</h1>
+            <p className="text-[12px] md:text-[14px] text-[#565959] mt-0.5">Showing {currentItems.length} results</p>
           </div>
           
           <button 
             onClick={() => setFilterDropdownOpen(!filterDropdownOpen)} 
-            className={`flex items-center gap-2 px-4 py-2 border shadow-[0_1px_2px_rgba(0,0,0,0.05)] font-medium cursor-pointer transition-colors ${filterDropdownOpen ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'bg-white text-[#0F1111] border-[#D5D9D9] hover:bg-[#F7F7F7]'}`}
+            className={`flex items-center gap-1.5 md:gap-2 px-3 py-1.5 md:px-4 md:py-2 border shadow-[0_1px_2px_rgba(0,0,0,0.05)] text-[13px] md:text-[15px] font-medium cursor-pointer transition-colors ${filterDropdownOpen ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'bg-white text-[#0F1111] border-[#D5D9D9] hover:bg-[#F7F7F7]'}`}
             style={{ borderRadius: 'var(--radius-sm)' }}
           >
-            <FilterListIcon sx={{ fontSize: 20 }} /> Filters
+            <FilterListIcon sx={{ fontSize: 18 }} className="md:!text-[20px]" /> Filters
           </button>
         </div>
 
