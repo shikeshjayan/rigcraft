@@ -616,7 +616,8 @@ User: ${userText}`;
               initial={{ scale: 0.95 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0.95 }}
-              className="bg-white rounded-xl p-6 max-w-sm w-full shadow-2xl relative"
+              className="bg-white p-6 max-w-sm w-full shadow-2xl relative"
+              style={{ borderRadius: 'var(--radius-sm)' }}
             >
               <button 
                 onClick={() => setShowLoginPopup(false)}

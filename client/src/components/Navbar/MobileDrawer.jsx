@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
@@ -20,6 +21,7 @@ const MobileDrawer = ({
   profileText,
   wishlistCount,
   cartCount,
+  showCartTick,
   onLogout,
 }) => {
   const containerRef = useDialog({ open, onClose });
@@ -116,9 +118,30 @@ const MobileDrawer = ({
             )}
           </Link>
           <Link to="/cart" onClick={onClose} className="flex items-center justify-between text-[16px] font-bold p-3 rounded-md hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer" style={{ color: 'var(--color-text)' }}>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-3 relative" id="mobile-navbar-cart-icon">
               <ShoppingCartOutlinedIcon />
               Cart
+              <AnimatePresence>
+                {showCartTick && (
+                  <motion.svg
+                    className="absolute top-1/2 left-8 -translate-y-1/2 w-5 h-5 text-green-500"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <motion.path
+                      initial={{ pathLength: 0 }}
+                      animate={{ pathLength: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.4, ease: 'easeOut' }}
+                      d="M5 13l4 4L19 7"
+                    />
+                  </motion.svg>
+                )}
+              </AnimatePresence>
             </div>
             {cartCount > 0 && (
               <span className="bg-[var(--color-danger)] text-white text-[12px] font-bold w-6 h-6 rounded-full flex items-center justify-center">

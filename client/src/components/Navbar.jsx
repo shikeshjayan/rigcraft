@@ -63,8 +63,19 @@ const Navbar = () => {
   const isBuilder = location.pathname === '/builder';
   const isComponents = location.pathname.startsWith('/components');
 
-  const wishlistCount = wishlist.length;
+const wishlistCount = wishlist.length;
   const cartCount = cartItems.reduce((sum, item) => sum + (item.qty || 1), 0);
+
+  const [showCartTick, setShowCartTick] = useState(false);
+
+  useEffect(() => {
+    const handleCartAdded = () => {
+      setShowCartTick(true);
+      setTimeout(() => setShowCartTick(false), 2000);
+    };
+    window.addEventListener('added-to-cart', handleCartAdded);
+    return () => window.removeEventListener('added-to-cart', handleCartAdded);
+  }, []);
 
   const handleNavClick = (path) => {
     if (location.pathname === path) {
@@ -256,13 +267,34 @@ const Navbar = () => {
 
                 {/* Cart (Desktop Only) */}
                 <Link to="/cart" aria-label="Cart" className="hidden lg:flex hover:text-[var(--color-primary)] transition-colors flex-col items-center justify-center cursor-pointer relative pb-1 pt-1">
-                  <div className="relative">
+                  <div className="relative" id="navbar-cart-icon">
                     <ShoppingCartOutlinedIcon sx={{ fontSize: 24 }} />
                     {cartCount > 0 && (
                       <span className="absolute -top-1.5 -right-2 bg-[var(--color-danger)] text-white text-[10px] font-bold min-w-4 h-4 px-1 rounded-full flex items-center justify-center">
                         {formatCount(cartCount)}
                       </span>
                     )}
+                    <AnimatePresence>
+                      {showCartTick && (
+                        <motion.svg
+                          className="absolute -bottom-2 -right-3 w-5 h-5 text-green-500"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <motion.path
+                            initial={{ pathLength: 0 }}
+                            animate={{ pathLength: 1 }}
+                            exit={{ opacity: 0 }}
+                            transition={{ duration: 0.4, ease: 'easeOut' }}
+                            d="M5 13l4 4L19 7"
+                          />
+                        </motion.svg>
+                      )}
+                    </AnimatePresence>
                   </div>
                   <span className="text-[12px] font-bold mt-0.5">Cart</span>
                 </Link>
@@ -289,6 +321,7 @@ const Navbar = () => {
         profileText={profileText}
         wishlistCount={wishlistCount}
         cartCount={cartCount}
+        showCartTick={showCartTick}
         onLogout={handleLogoutClick}
       />
 

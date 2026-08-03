@@ -6,14 +6,22 @@
   body {
     font-family: 'Inter', sans-serif;
   }
-  
+
   /* Make all interactive elements have a pointer cursor globally */
-  button, a, [role="button"], label, input[type="radio"], input[type="checkbox"], select, summary {
+  button,
+  a,
+  [role="button"],
+  label,
+  input[type="radio"],
+  input[type="checkbox"],
+  select,
+  summary {
     cursor: pointer !important;
   }
-  
+
   /* Also try to catch custom clickable items that have specific styles */
-  [class*="hover:"], [onClick] {
+  [class*="hover:"],
+  [onClick] {
     cursor: pointer;
   }
 }
@@ -68,25 +76,19 @@
 
 @layer utilities {
   .hide-scrollbar {
-    -ms-overflow-style: none; /* IE and Edge */
-    scrollbar-width: none; /* Firefox */
-  }
-  .hide-scrollbar::-webkit-scrollbar {
-    display: none; /* Chrome, Safari and Opera */
+    -ms-overflow-style: none;
+    /* IE and Edge */
+    scrollbar-width: none;
+    /* Firefox */
   }
 
-  .custom-scrollbar::-webkit-scrollbar {
-    width: 6px;
+  /* Hide scrollbars globally but keep scrolling functionality */
+  ::-webkit-scrollbar {
+    display: none;
   }
-  .custom-scrollbar::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb {
-    background: var(--color-primary);
-    border-radius: var(--radius-sm);
-  }
-  .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: var(--color-primary-hover);
+  * {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 }
 
@@ -139,4 +141,14 @@
 .animate-fade-in-up {
   opacity: 0;
   animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
+}
+
+/* Hide scrollbars globally */
+::-webkit-scrollbar {
+  display: none;
+}
+
+* {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
 }
