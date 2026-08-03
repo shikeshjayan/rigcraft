@@ -218,10 +218,10 @@ const ComponentsCatalog = () => {
           
           <button 
             onClick={() => setFilterDropdownOpen(!filterDropdownOpen)} 
-            className={`flex items-center gap-1 md:gap-2 px-2 py-1.5 md:px-4 md:py-2 border shadow-[0_1px_2px_rgba(0,0,0,0.05)] font-medium cursor-pointer transition-colors ${filterDropdownOpen ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'bg-white text-[#0F1111] border-[#D5D9D9] hover:bg-[#F7F7F7]'}`}
+            className={`flex items-center gap-2 px-4 py-2 border shadow-[0_1px_2px_rgba(0,0,0,0.05)] font-medium cursor-pointer transition-colors ${filterDropdownOpen ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'bg-white text-[#0F1111] border-[#D5D9D9] hover:bg-[#F7F7F7]'}`}
             style={{ borderRadius: 'var(--radius-sm)' }}
           >
-            <FilterListIcon sx={{ fontSize: 20 }} /> <span className="hidden md:inline">Filters</span>
+            <FilterListIcon sx={{ fontSize: 20 }} /> Filters
           </button>
         </div>
 
