@@ -182,6 +182,7 @@ const HeroToday = () => {
                     discount={discountPercentage > 0 ? `${discountPercentage}% off` : ''}
                     tag={discountPercentage > 0 ? `-${discountPercentage}%` : ''}
                     tagColor="#EF4444"
+                    stock={product.stock}
                   />
                 </div>
               );

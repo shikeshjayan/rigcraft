@@ -1,6 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
@@ -299,21 +298,20 @@ const PrebuildCatalog = () => {
                         
                         return (
                           <div key={pc.id} className="block h-full">
-                            <Link to={`/detail/${pc.slug || pc.id}?type=prebuilt`} className="block h-full">
-                              <Card 
-                                rating={pc?.rating} id={pc.id}
-                                image={pc.image || 'https://via.placeholder.com/300?text=No+Image'}
-                                title={pc.title}
-                                specs={cardSpecs}
-                                description={pc.shortDescription || pc.description}
-                                price={pc.price}
-                                mrp={pc.mrp}
-                                discount={pc.pricing?.salePrice ? Math.round(((pc.pricing.price - pc.pricing.salePrice) / pc.pricing.price) * 100) + '% OFF' : null}
-                                tagColor="#CC0C39"
-                                compact={filterDropdownOpen} 
-                                category="prebuilt"
-                              />
-                            </Link>
+                            <Card 
+                              rating={pc?.rating} id={pc.id}
+                              image={pc.image || 'https://via.placeholder.com/300?text=No+Image'}
+                              title={pc.title}
+                              specs={cardSpecs}
+                              description={pc.shortDescription || pc.description}
+                              price={pc.price}
+                              mrp={pc.mrp}
+                              discount={pc.pricing?.salePrice ? Math.round(((pc.pricing.price - pc.pricing.salePrice) / pc.pricing.price) * 100) + '% OFF' : null}
+                              tagColor="#CC0C39"
+                              compact={filterDropdownOpen} 
+                              category="prebuilt"
+                              stock={pc.stock}
+                            />
                           </div>
                         );
                       })

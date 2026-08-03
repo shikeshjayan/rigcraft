@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import Card from '../components/Card';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import { useAuth } from '../context/AuthContext';
 import LoginPrompt from '../components/LoginPrompt';
@@ -67,23 +67,23 @@ const BuilderUpgrades = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {upgrades.map(item => (
-            <Link to={`/detail/${item.id}`} key={item.id} className="block h-full">
-              <Card 
-                id={item.id}
-                image={item.image}
-                title={item.title}
-                specs={item.specs}
-                description={item.description}
-                price={item.price}
-                mrp={item.mrp}
-                discount={item.discount}
-                category={item.category}
-                tag="RECOMMENDED"
-                tagColor="var(--color-primary)"
-                buttonText="Add to Build"
-                onButtonClick={() => handleAddToBuild(item)}
-              />
-            </Link>
+            <Card
+              key={item.id}
+              id={item.id}
+              image={item.image}
+              title={item.title}
+              specs={item.specs}
+              description={item.description}
+              price={item.price}
+              mrp={item.mrp}
+              discount={item.discount}
+              category={item.category}
+              tag="RECOMMENDED"
+              tagColor="var(--color-primary)"
+              buttonText="Add to Build"
+              onButtonClick={() => handleAddToBuild(item)}
+              stock={item.stock}
+            />
           ))}
         </div>
 

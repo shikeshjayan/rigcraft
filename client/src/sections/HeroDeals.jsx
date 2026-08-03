@@ -126,6 +126,7 @@ const HeroDeals = () => {
                   tag={discountPercentage > 0 ? `-${discountPercentage}%` : ''}
                   tagColor="#E11D48"
                   category={product.categoryType}
+                  stock={product.stock}
                 />
               );
             })}

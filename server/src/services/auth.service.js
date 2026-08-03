@@ -6,6 +6,17 @@ import ApiError from '../utils/ApiError.js';
 import * as uploadService from './upload.service.js';
 import { sendResetPasswordEmail, sendEmail } from './email.service.js';
 
+const isProduction = process.env.NODE_ENV === 'production';
+
+const cookieAttributes = {
+  httpOnly: true,
+  secure: isProduction,
+  // Frontend (vercel.app) and API (onrender.com) are cross-site in production.
+  // SameSite=None is required so the browser sends the cookie on cross-site
+  // XHR/fetch; it is only valid together with Secure (enabled in production).
+  sameSite: isProduction ? 'none' : 'lax',
+};
+
 const createTokenResponse = async (user, statusCode, res, rememberMe = false) => {
   const accessTokenExpiry = rememberMe ? '30d' : process.env.JWT_EXPIRES_IN || '1d';
   const cookieMaxAge = rememberMe
@@ -15,10 +26,8 @@ const createTokenResponse = async (user, statusCode, res, rememberMe = false) =>
   const accessToken = user.generateAccessToken(accessTokenExpiry);
 
   res.cookie('token', accessToken, {
+    ...cookieAttributes,
     expires: new Date(Date.now() + cookieMaxAge),
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
   });
 
   if (rememberMe) {
@@ -27,17 +36,15 @@ const createTokenResponse = async (user, statusCode, res, rememberMe = false) =>
     await user.save({ validateBeforeSave: false });
 
     res.cookie('refreshToken', refreshToken, {
+      ...cookieAttributes,
       expires: new Date(Date.now() + cookieMaxAge),
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
       path: '/api/v1/auth',
     });
   } else {
     user.refreshToken = undefined;
     await user.save({ validateBeforeSave: false });
 
-    res.clearCookie('refreshToken', { path: '/api/v1/auth' });
+    res.clearCookie('refreshToken', { ...cookieAttributes, path: '/api/v1/auth' });
   }
 
   user.password = undefined;
@@ -84,12 +91,12 @@ export const updateUserRole = async (userId, role) => {
 
 export const logout = (res) => {
   res.cookie('token', 'none', {
+    ...cookieAttributes,
     expires: new Date(Date.now() + 5 * 1000),
-    httpOnly: true,
   });
   res.cookie('refreshToken', 'none', {
+    ...cookieAttributes,
     expires: new Date(Date.now() + 5 * 1000),
-    httpOnly: true,
     path: '/api/v1/auth',
   });
 };

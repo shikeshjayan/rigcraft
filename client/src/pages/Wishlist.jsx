@@ -7,7 +7,7 @@ import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 import LoginPrompt from '../components/LoginPrompt';
 import { motion, AnimatePresence } from 'framer-motion';
-import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutlined';
+import { useToast } from '../components/toast/useToast';
 
 const Wishlist = () => {
   const { wishlist, isLoading, removeFromWishlist } = useWishlist();
@@ -17,8 +17,7 @@ const Wishlist = () => {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [flyingItem, setFlyingItem] = useState(null);
-  const [showCartToast, setShowCartToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState("");
+  const { toast } = useToast();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -48,9 +47,7 @@ const Wishlist = () => {
     // Remove from wishlist after successfully adding to cart
     removeFromWishlist(item.id || item._id);
 
-    setToastMessage(`${item.title || item.name} is added to cart`);
-    setShowCartToast(true);
-    setTimeout(() => setShowCartToast(false), 4000);
+    toast(`${item.title || item.name} is added to cart`);
   };
 
   return (
@@ -124,25 +121,29 @@ const Wishlist = () => {
 
                 {/* Move to Bag Button */}
                 <div className="w-full border-t border-[#EAEAEC] mt-auto">
-                  <button 
-                    onClick={(e) => handleAddToCart(e, item)}
-                    className="w-full py-3.5 text-[14px] font-[700] text-white bg-[var(--color-primary)] tracking-wide hover:opacity-90 transition-opacity cursor-pointer"
-                  >
-                    ADD TO CART
-                  </button>
+                  {typeof item.stock === 'number' && item.stock <= 0 ? (
+                    <button
+                      type="button"
+                      disabled
+                      aria-disabled="true"
+                      className="w-full py-3.5 text-[14px] font-[700] bg-gray-100 text-gray-400 tracking-wide cursor-not-allowed"
+                    >
+                      OUT OF STOCK
+                    </button>
+                  ) : (
+                    <button 
+                      onClick={(e) => handleAddToCart(e, item)}
+                      className="w-full py-3.5 text-[14px] font-[700] text-white bg-[var(--color-primary)] tracking-wide hover:opacity-90 transition-opacity cursor-pointer"
+                    >
+                      ADD TO CART
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         )}
       </div>
-
-      {/* Toast Notification for Cart */}
-      {showCartToast && (
-        <div className="fixed bottom-4 right-4 bg-[#0047AB] text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in flex items-center gap-2">
-          <CheckCircleOutlineIcon /> {toastMessage}
-        </div>
-      )}
 
       {/* Flying Cart Animation */}
       <AnimatePresence>

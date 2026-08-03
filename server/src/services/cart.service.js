@@ -147,9 +147,7 @@ export const addItem = async (userId, { itemType, itemId, quantity }) => {
         : await prebuiltPCRepository.findById(itemId);
 
     if (stockItem.stock < newQty) {
-      throw ApiError.badRequest(
-        `Insufficient stock. Only ${stockItem.stock} available.`
-      );
+      throw ApiError.badRequest("Insufficient stock.");
     }
 
     existing.quantity = newQty;
@@ -197,18 +195,14 @@ export const updateQuantity = async (userId, itemId, quantity) => {
   if (item.itemType === CART_ITEM_TYPES.PRODUCT) {
     const product = await productRepository.findById(item.item);
     if (!allowBackorders && product.stock < quantity) {
-      throw ApiError.badRequest(
-        `Insufficient stock. Only ${product.stock} available.`
-      );
+      throw ApiError.badRequest("Insufficient stock.");
     }
   }
 
   if (item.itemType === CART_ITEM_TYPES.PREBUILT) {
     const prebuilt = await prebuiltPCRepository.findById(item.item);
     if (!allowBackorders && prebuilt.stock < quantity) {
-      throw ApiError.badRequest(
-        `Insufficient stock. Only ${prebuilt.stock} available.`
-      );
+      throw ApiError.badRequest("Insufficient stock.");
     }
   }
 
@@ -363,7 +357,7 @@ export const validateStock = async (userId) => {
       const product = item.item;
       if (!product || product.stock < item.quantity) {
         issues.push(
-          `"${product?.name || "Product"}" has insufficient stock (requested: ${item.quantity}, available: ${product?.stock || 0})`
+          `"${product?.name || "Product"}" has insufficient stock`
         );
       }
     }
@@ -372,7 +366,7 @@ export const validateStock = async (userId) => {
       const prebuilt = item.item;
       if (!prebuilt || prebuilt.stock < item.quantity) {
         issues.push(
-          `"${prebuilt?.name || "Prebuilt PC"}" has insufficient stock (requested: ${item.quantity}, available: ${prebuilt?.stock || 0})`
+          `"${prebuilt?.name || "Prebuilt PC"}" has insufficient stock`
         );
       }
     }

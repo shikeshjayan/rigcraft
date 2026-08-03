@@ -3,6 +3,7 @@ import StarIcon from '@mui/icons-material/Star';
 import StarBorderIcon from '@mui/icons-material/StarBorder';
 import apiClient from '../api/client';
 import { useAuth } from '../context/AuthContext';
+import { useToast } from './toast/useToast';
 
 const ProductReviews = ({ itemId, itemType }) => {
   const [reviews, setReviews] = useState([]);
@@ -15,6 +16,7 @@ const ProductReviews = ({ itemId, itemType }) => {
   const [successMsg, setSuccessMsg] = useState("");
   
   const { isLoggedIn } = useAuth();
+  const { toast } = useToast();
 
   const fetchReviews = async () => {
     try {
@@ -54,11 +56,13 @@ const ProductReviews = ({ itemId, itemType }) => {
 
       await apiClient.post('/reviews', payload);
       
+      toast('Review submitted successfully.');
       setSuccessMsg("Review submitted successfully!");
       setComment("");
       setRating(5);
       fetchReviews(); // Refresh the reviews list
     } catch (err) {
+      toast(err.response?.data?.message || "Failed to submit review.", 'error');
       setErrorMsg(err.response?.data?.message || "Failed to submit review.");
     } finally {
       setSubmitting(false);
