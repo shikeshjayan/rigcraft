@@ -201,10 +201,7 @@ const ComponentsCatalog = () => {
 
   const categoryTitle = category ? category.replace('-', ' ').toUpperCase() : 'ALL COMPONENTS';
   
-  // Dynamic Grid classes
-  const gridClasses = filterDropdownOpen
-    ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 min-h-[800px] items-start content-start"
-    : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-h-[800px] items-start content-start";
+  const gridClasses = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-h-[800px] items-start content-start";
 
   return (
     <section id="catalog-top" className="w-full py-12 pb-24" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
@@ -228,8 +225,8 @@ const ComponentsCatalog = () => {
           </button>
         </div>
 
-        <div className="flex relative gap-6">
-          <motion.div layout className="flex-1 min-w-0 transition-all duration-300">
+        <div className="relative">
+          <div className="w-full">
             <AnimatePresence mode="wait">
               {currentItems.length === 0 && !isFiltering ? (
                 <motion.div 
@@ -274,7 +271,7 @@ const ComponentsCatalog = () => {
                         }
                         
                         return (
-                        <div key={item._id || item.id} className="block h-full animate-fade-in relative group">
+                        <div key={item._id || item.id} className="block h-full relative group">
                           <Link to={`/detail/${item.slug}`} className="block h-full">
                             <Card 
                               id={item.slug}
@@ -329,10 +326,11 @@ const ComponentsCatalog = () => {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
 
           <Filter 
             isOpen={filterDropdownOpen}
+            onClose={() => setFilterDropdownOpen(false)}
             filters={filters}
             setFilters={setFilters}
             onClearAll={handleClearAll}

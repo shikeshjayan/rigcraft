@@ -753,9 +753,10 @@ const Profile = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white max-w-[600px] w-full flex flex-col rounded-lg shadow-2xl relative max-h-[90vh]"
+              className="bg-white max-w-[600px] w-full flex flex-col shadow-2xl relative max-h-[90vh] overflow-hidden"
+              style={{ borderRadius: 'var(--radius-sm)' }}
             >
-              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50 rounded-t-lg">
+              <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                 <div>
                   <h2 className="text-xl font-bold text-gray-900">{selectedBuildPopup.name}</h2>
                   <div className="text-sm text-gray-500 mt-1">{selectedBuildPopup.components?.length || 0} Components</div>
@@ -850,7 +851,8 @@ const Profile = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white max-w-sm w-full p-6 rounded-lg shadow-2xl relative text-center"
+              className="bg-white max-w-sm w-full p-6 shadow-2xl relative text-center"
+              style={{ borderRadius: 'var(--radius-sm)' }}
             >
               <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
                 <DeleteOutlineIcon fontSize="large" />
