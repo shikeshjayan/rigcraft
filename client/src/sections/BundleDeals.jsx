@@ -13,9 +13,11 @@ const BundleDeals = () => {
   });
 
   const dealsList = Array.isArray(dealsData?.data) ? dealsData.data : [];
-  const activeDeal = dealsList.find((d) => d.isFeatured) || dealsList[0];
-  const prebuiltPCs = activeDeal?.prebuiltPCs || [];
-  const bundles = prebuiltPCs.slice(0, 4);
+  const allPrebuiltPCs = dealsList.reduce((acc, deal) => {
+    return [...acc, ...(deal.prebuiltPCs || [])];
+  }, []);
+  const uniqueBundles = Array.from(new Map(allPrebuiltPCs.map(item => [item._id || item.id, item])).values());
+  const bundles = uniqueBundles;
 
   if (isLoading) {
     return (
