@@ -1,11 +1,29 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import FlashOnIcon from '@mui/icons-material/FlashOn';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import Card from '../components/Card';
 import SkeletonCard from '../components/SkeletonCard';
+import CountdownTimer from '../components/CountdownTimer';
 import { productService } from '../services/product.service';
 
 const HeroToday = () => {
+  const carouselRef = useRef(null);
+  const [canScroll, setCanScroll] = useState(false);
+
+  const scrollLeft = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: -400, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: 400, behavior: 'smooth' });
+    }
+  };
+
   const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
@@ -28,8 +46,6 @@ const HeroToday = () => {
   const hours = Math.floor(timeLeft / 3600);
   const minutes = Math.floor((timeLeft % 3600) / 60);
   const seconds = timeLeft % 60;
-
-  const formatNumber = (num) => String(num).padStart(2, '0');
 
   let allProducts = [];
   if (productsData?.data?.docs) {
@@ -64,6 +80,20 @@ const HeroToday = () => {
     );
   });
 
+  useEffect(() => {
+    const measure = () => {
+      if (carouselRef.current) {
+        setCanScroll(carouselRef.current.scrollWidth > carouselRef.current.clientWidth + 1);
+      }
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [todaysDeals.length]);
+
+  if (isLoading) return null;
+  if (todaysDeals.length === 0) return null;
+
   // Only show 4 cards
   const displayProducts = todaysDeals.slice(0, 4);
 
@@ -85,64 +115,79 @@ const HeroToday = () => {
             </h2>
           </div>
           
-          {/* Timer Section on the Right */}
-          <div className="flex items-center gap-4 mt-6 md:mt-0">
-            <span className="text-[14px] font-[600] text-[#6B7280]">Ends in:</span>
-            <div className="flex gap-2">
-              <div className="flex flex-col items-center justify-center bg-[#111827] text-white w-14 h-16 shadow-lg" style={{ borderRadius: 'var(--radius-sm, 8px)' }}>
-                <span className="text-[20px] font-[800] leading-none">{formatNumber(hours)}</span>
-                <span className="text-[10px] font-medium text-gray-400 mt-1">HRS</span>
-              </div>
-              <div className="flex flex-col items-center justify-center bg-[#111827] text-white w-14 h-16 shadow-lg" style={{ borderRadius: 'var(--radius-sm, 8px)' }}>
-                <span className="text-[20px] font-[800] leading-none">{formatNumber(minutes)}</span>
-                <span className="text-[10px] font-medium text-gray-400 mt-1">MIN</span>
-              </div>
-              <div className="flex flex-col items-center justify-center bg-[#111827] text-white w-14 h-16 shadow-lg" style={{ borderRadius: 'var(--radius-sm, 8px)' }}>
-                <span className="text-[20px] font-[800] leading-none">{formatNumber(seconds)}</span>
-                <span className="text-[10px] font-medium text-gray-400 mt-1">SEC</span>
-              </div>
+          {/* Timer & Carousel Nav on the Right */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mt-6 md:mt-0">
+            <div className="flex items-center gap-4">
+              <span className="text-[14px] font-[600] text-[#6B7280]">Ends in:</span>
+              <CountdownTimer
+                hours={hours}
+                minutes={minutes}
+                seconds={seconds}
+                size="sm"
+                showDays={false}
+              />
             </div>
+            {canScroll && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={scrollLeft}
+                  className="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors shadow-sm cursor-pointer"
+                  style={{ borderRadius: 'var(--radius-sm, 8px)' }}
+                  aria-label="Previous"
+                >
+                  <ChevronLeftIcon />
+                </button>
+                <button
+                  onClick={scrollRight}
+                  className="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors shadow-sm cursor-pointer"
+                  style={{ borderRadius: 'var(--radius-sm, 8px)' }}
+                  aria-label="Next"
+                >
+                  <ChevronRightIcon />
+                </button>
+              </div>
+            )}
           </div>
         </div>
         
-        {/* Grid Section */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {Array.from({ length: 4 }).map((_, idx) => (
-              <SkeletonCard key={idx} />
-            ))}
-          </div>
-        ) : displayProducts.length === 0 ? (
-          <div className="text-center py-10 text-gray-500">
-            <h3 className="text-[18px] font-bold">No active flash sales right now</h3>
-            <p>Check back later for exciting today's deals!</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {displayProducts.map((product) => {
+        {/* Carousel Section */}
+        <div
+          ref={carouselRef}
+          className="flex overflow-x-auto gap-6 pb-8 pt-2 snap-x snap-mandatory hide-scrollbar"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
+          {isLoading ? (
+            Array.from({ length: 4 }).map((_, idx) => (
+              <div key={idx} className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex flex-col snap-start">
+                <SkeletonCard />
+              </div>
+            ))
+          ) : (
+            displayProducts.map((product) => {
               const price = product.salePrice || product.price;
               const mrp = product.salePrice ? product.price : null;
               const discountPercentage = mrp ? Math.round(((mrp - price) / mrp) * 100) : 0;
               const imageUrl = product.images?.[0]?.url || 'https://via.placeholder.com/300?text=No+Image';
 
               return (
-                <Card 
- rating={product?.rating} key={product._id}
-                  id={product._id}
-                  image={imageUrl}
-                  title={product.name}
-                  specs={product.tags || []}
-                  description={product.shortDescription || product.description}
-                  price={formatPrice(price)}
-                  mrp={mrp ? formatPrice(mrp) : ''}
-                  discount={discountPercentage > 0 ? `${discountPercentage}% off` : ''}
-                  tag={discountPercentage > 0 ? `-${discountPercentage}%` : ''}
-                  tagColor="#EF4444"
-                />
+                <div key={product._id} className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex flex-col snap-start">
+                  <Card 
+ rating={product?.rating} id={product._id}
+                    image={imageUrl}
+                    title={product.name}
+                    specs={product.tags || []}
+                    description={product.shortDescription || product.description}
+                    price={formatPrice(price)}
+                    mrp={mrp ? formatPrice(mrp) : ''}
+                    discount={discountPercentage > 0 ? `${discountPercentage}% off` : ''}
+                    tag={discountPercentage > 0 ? `-${discountPercentage}%` : ''}
+                    tagColor="#EF4444"
+                  />
+                </div>
               );
-            })}
-          </div>
-        )}
+            })
+          )}
+        </div>
 
       </div>
     </section>

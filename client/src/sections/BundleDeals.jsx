@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import Card from '../components/Card';
@@ -8,12 +7,13 @@ const BundleDeals = () => {
   const { data: dealsData, isLoading } = useQuery({
     queryKey: ['activeDealsBundles'],
     queryFn: async () => {
-      const res = await apiClient.get('/deals');
+      const res = await apiClient.get('/deals/active');
       return res.data;
     }
   });
 
-  const activeDeal = dealsData?.data?.deals?.find(d => d.isActive) || dealsData?.deals?.find(d => d.isActive);
+  const dealsList = Array.isArray(dealsData?.data) ? dealsData.data : [];
+  const activeDeal = dealsList.find((d) => d.isFeatured) || dealsList[0];
   const prebuiltPCs = activeDeal?.prebuiltPCs || [];
   const bundles = prebuiltPCs.slice(0, 4);
 

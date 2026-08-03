@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Card from '../components/Card';
 import apiClient from '../api/client';
@@ -13,12 +13,13 @@ const AllBundleDeals = () => {
   const { data: dealsData, isLoading } = useQuery({
     queryKey: ['allBundleDeals'],
     queryFn: async () => {
-      const res = await apiClient.get('/deals');
+      const res = await apiClient.get('/deals/active');
       return res.data;
     }
   });
 
-  const activeDeal = dealsData?.data?.deals?.find(d => d.isActive) || dealsData?.deals?.find(d => d.isActive);
+  const dealsList = Array.isArray(dealsData?.data) ? dealsData.data : [];
+  const activeDeal = dealsList.find((d) => d.isFeatured) || dealsList[0];
   const bundles = activeDeal?.prebuiltPCs || [];
 
   return (

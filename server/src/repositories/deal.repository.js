@@ -21,7 +21,7 @@ class DealRepository extends BaseRepository {
         endDate: { $gte: now },
       })
       .populate("products prebuiltPCs")
-      .sort({ displayOrder: 1, createdAt: -1 });
+      .sort({ isFeatured: -1, displayOrder: 1, createdAt: -1 });
   }
 
   async findActiveForHomepage() {
@@ -34,7 +34,21 @@ class DealRepository extends BaseRepository {
       })
       .populate("products prebuiltPCs")
       .limit(8)
-      .sort({ displayOrder: 1, createdAt: -1 });
+      .sort({ isFeatured: -1, displayOrder: 1, createdAt: -1 });
+  }
+
+  async findPromotions() {
+    const now = new Date();
+    return this.model
+      .find({
+        isActive: true,
+        startDate: { $lte: now },
+        endDate: { $gte: now },
+      })
+      .select(
+        "title slug description startDate endDate desktopBanner mobileBanner buttonText buttonLink isFeatured promotion displayOrder",
+      )
+      .sort({ isFeatured: -1, displayOrder: 1, createdAt: -1 });
   }
 }
 

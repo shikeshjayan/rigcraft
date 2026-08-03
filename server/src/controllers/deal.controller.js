@@ -27,6 +27,11 @@ export const getActiveForHomepage = asyncHandler(async (req, res) => {
   ApiResponse.ok(deals).send(res);
 });
 
+export const getPromotions = asyncHandler(async (req, res) => {
+  const deals = await dealService.getPromotions();
+  ApiResponse.ok(deals).send(res);
+});
+
 export const create = asyncHandler(async (req, res) => {
   const deal = await dealService.create(req.body, req.files);
   ApiResponse.created(deal, "Deal created").send(res);
