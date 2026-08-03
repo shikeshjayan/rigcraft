@@ -58,17 +58,17 @@ const HeroBrands = () => {
         </div>
 
         <motion.div 
-          className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7 gap-4"
+          className="flex flex-wrap justify-center gap-4"
           variants={containerVariants}
           initial="hidden"
           whileInView="show"
           viewport={{ once: true, margin: "-100px" }}
         >
-          {brands.map((brand) => (
+          {brands.map((brand, index) => (
             <motion.div 
               key={brand._id}
               variants={itemVariants}
-              className="group flex flex-col items-center justify-center p-3 bg-white border border-[#E2E8F0] shadow-sm hover:shadow-xl hover:border-[var(--color-primary)] transition-all duration-300 relative overflow-hidden"
+              className="group flex flex-col items-center justify-center p-3 bg-white border border-[#E2E8F0] shadow-sm hover:shadow-xl hover:border-[var(--color-primary)] transition-all duration-300 relative overflow-hidden w-[calc(50%-0.5rem)] sm:w-[calc(25%-0.75rem)] md:w-[calc(20%-0.8rem)] lg:w-[calc(14.28%-0.857rem)]"
               style={{ borderRadius: 'var(--radius-sm, 12px)' }}
               whileHover={{ y: -3 }}
             >
