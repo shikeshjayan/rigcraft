@@ -64,10 +64,10 @@ const Filter = ({ isOpen, filters, setFilters, onClearAll, dynamicOptions = { br
   };
 
   return (
-    <div className="self-stretch flex-shrink-0 z-30">
+    <div className="self-stretch flex-shrink-0 z-50 absolute lg:relative left-0 lg:left-auto top-0 lg:top-auto">
       <div className="sticky top-[200px]" style={{ marginTop: '10px' }}>
         <motion.div 
-          className="bg-white border-[#D5D9D9] shadow-sm overflow-y-auto overflow-x-hidden custom-scrollbar"
+          className="bg-white border-[#D5D9D9] shadow-2xl lg:shadow-sm overflow-y-auto overflow-x-hidden custom-scrollbar"
           initial={false}
           animate={{ 
             width: isOpen ? 320 : 0, 
