@@ -26,7 +26,11 @@ const HeroBrands = () => {
     }
   });
 
-  const brands = brandsData?.data || brandsData || [];
+  const brands = Array.isArray(brandsData?.data)
+    ? brandsData.data
+    : Array.isArray(brandsData)
+      ? brandsData
+      : [];
 
   if (isLoading) {
     return (
@@ -43,7 +47,7 @@ const HeroBrands = () => {
     );
   }
 
-  if (isError || brands.length === 0) return null;
+  if (isError || !Array.isArray(brands) || brands.length === 0) return null;
 
   return (
     <section className="w-full bg-[var(--color-bg-primary)] py-20 px-4 lg:px-8 border-b border-[var(--color-border)] overflow-hidden">

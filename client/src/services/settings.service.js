@@ -3,5 +3,5 @@ import { ENDPOINTS } from "../shared/api/endpoints";
 
 export const getPublicSettings = async () => {
   const { data } = await api.get(ENDPOINTS.SETTINGS.PUBLIC);
-  return data.data;
+  return data?.data ?? null;
 };
