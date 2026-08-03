@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useMutation } from '@tanstack/react-query';
 import { GoogleLogin } from '@react-oauth/google';
 import { authService } from '../services/auth.service';
+import { isGoogleOAuthEnabled } from '../utils/googleOAuth';
 import { useAuth } from '../context/AuthContext';
 import handleAuthSuccess from '../utils/authSuccess';
 import FadeUp from '../components/FadeUp';
@@ -138,14 +139,20 @@ const CustomerRegister = () => {
 
           <div className="relative mt-6">
             <div className={formData.consent ? '' : 'pointer-events-none'}>
-              <GoogleLogin
-                onSuccess={({ credential }) => googleLoginMutation.mutate(credential)}
-                onError={() => setErrors((prev) => ({ ...prev, google: 'Google sign-in failed. Please try again.' }))}
-                width="100%"
-                shape="rectangular"
-                text="signup_with"
-                theme="outline"
-              />
+              {isGoogleOAuthEnabled() ? (
+                <GoogleLogin
+                  onSuccess={({ credential }) => googleLoginMutation.mutate(credential)}
+                  onError={() => setErrors((prev) => ({ ...prev, google: 'Google sign-in failed. Please try again.' }))}
+                  width="100%"
+                  shape="rectangular"
+                  text="signup_with"
+                  theme="outline"
+                />
+              ) : (
+                <p className="text-center text-sm text-gray-500">
+                  Google sign-up is unavailable right now. Please use the email form below instead.
+                </p>
+              )}
             </div>
             {!formData.consent && (
               <button
@@ -290,7 +297,7 @@ const CustomerRegister = () => {
             <div>
               <button
                 type="submit"
-                disabled={registerMutation.isPending || !formData.consent}
+                disabled={registerMutation.isPending}
                 className={`group relative cursor-pointer w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold text-white bg-[var(--color-primary)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-all shadow-md ${registerMutation.isPending || !formData.consent ? 'opacity-70 cursor-not-allowed' : ''}`}
                 style={{ borderRadius: 'var(--radius-sm)' }}
               >
