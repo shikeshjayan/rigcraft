@@ -41,15 +41,29 @@ const resolveProducts = async (components) => {
   }));
 };
 
+const DEFAULT_BUILD_SETTINGS = {
+  enabled: true,
+  assemblyFeeEnabled: false,
+  assemblyFeeType: "percent",
+  assemblyFeeValue: 0.5,
+  requireCompleteBuild: true,
+};
+
+export const getBuildSettings = async () => {
+  const setting = await BuildSetting.findOne();
+  return { ...DEFAULT_BUILD_SETTINGS, ...(setting ? setting.toObject() : {}) };
+};
+
 export const createBuild = async (userId, data) => {
 
   const build = await buildRepository.create({
     user: userId,
     name: data.name,
     components: data.components || [],
+    assemblyMode: data.assemblyMode || "parts",
   });
 
-  return recalculateBuild(build);
+  return recalculateBuild(build, true);
 };
 
 export const getBuild = async (buildId, userId) => {
@@ -80,12 +94,16 @@ export const updateBuild = async (buildId, userId, data) => {
     updateData.components = data.components;
   }
 
+  if (data.assemblyMode !== undefined) {
+    updateData.assemblyMode = data.assemblyMode;
+  }
+
   if (data.isPublic !== undefined) {
     updateData.isPublic = data.isPublic;
   }
 
   const updated = await buildRepository.updateById(buildId, updateData);
-  return recalculateBuild(updated);
+  return recalculateBuild(updated, true);
 };
 
 export const renameBuild = async (buildId, userId, name) => {
@@ -116,11 +134,32 @@ export const duplicateBuild = async (buildId, userId, name) => {
   return duplicated;
 };
 
-const recalculateBuild = async (build) => {
-  const result = compatibilityValidate(build);
+const recalculateBuild = async (build, enforceComplete = false) => {
+  const result = await compatibilityValidate(build);
+  const settings = await getBuildSettings();
 
-  build.totalPrice = result.totalPrice;
-  build.totalSalePrice = result.totalSalePrice;
+  if (enforceComplete && settings.requireCompleteBuild && result.status === "incomplete") {
+    throw ApiError.badRequest(
+      `Build is incomplete. Missing required components: ${result.issues.join(", ")}`
+    );
+  }
+
+  let totalPrice = result.totalPrice;
+  let totalSalePrice = result.totalSalePrice;
+
+  const assemblyFee =
+    build.assemblyMode === "assembled" && settings.assemblyFeeEnabled
+      ? settings.assemblyFeeType === "fixed"
+        ? Number(settings.assemblyFeeValue) || 0
+        : totalPrice * ((Number(settings.assemblyFeeValue) || 0) / 100)
+      : 0;
+
+  totalPrice += assemblyFee;
+  totalSalePrice += assemblyFee;
+
+  build.totalPrice = totalPrice;
+  build.totalSalePrice = totalSalePrice;
+  build.assemblyFee = assemblyFee;
   build.estimatedPower = result.estimatedPower;
   build.compatibility = {
     status: result.status,
@@ -166,6 +205,15 @@ export const updateBuildSettings = async (data) => {
   if (!setting) {
     setting = new BuildSetting();
   }
-  if (data.enabled !== undefined) setting.enabled = data.enabled;
+  const settableFields = [
+    "enabled",
+    "assemblyFeeEnabled",
+    "assemblyFeeType",
+    "assemblyFeeValue",
+    "requireCompleteBuild",
+  ];
+  for (const field of settableFields) {
+    if (data[field] !== undefined) setting[field] = data[field];
+  }
   return setting.save();
 };

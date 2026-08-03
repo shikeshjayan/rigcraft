@@ -2,7 +2,7 @@ import { Router } from "express";
 import * as supportController from "../controllers/support.controller.js";
 import { protect, authorize } from "../middlewares/auth.js";
 import validate from "../middlewares/validate.js";
-import { uploadMultipleImages } from "../middlewares/upload.middleware.js";
+import { uploadAnyFiles } from "../middlewares/upload.middleware.js";
 import {
   createTicketSchema,
   sendMessageSchema,
@@ -14,10 +14,10 @@ import { USER_ROLES } from "../constants/constants.js";
 
 const router = Router();
 
-router.post("/", protect, uploadMultipleImages("attachments", 5), validate(createTicketSchema), supportController.create);
+router.post("/", protect, uploadAnyFiles("attachments", 5), validate(createTicketSchema), supportController.create);
 router.get("/", protect, supportController.list);
 router.get("/:id", protect, supportController.getById);
-router.post("/:id/messages", protect, uploadMultipleImages("attachments", 5), validate(sendMessageSchema), supportController.sendMessage);
+router.post("/:id/messages", protect, uploadAnyFiles("attachments", 5), validate(sendMessageSchema), supportController.sendMessage);
 router.put("/:id/close", protect, supportController.close);
 
 export default router;
@@ -42,7 +42,7 @@ adminSupportRoutes.post(
   "/:id/messages",
   protect,
   authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
-  uploadMultipleImages("attachments", 5),
+  uploadAnyFiles("attachments", 5),
   validate(sendMessageSchema),
   supportController.adminReply
 );

@@ -172,8 +172,10 @@ const Footer = () => {
             <div className="flex flex-col">
               <h4 className="text-[14px] font-bold tracking-widest text-white mb-6 uppercase">Support</h4>
               <ul className="flex flex-col gap-4 text-[14px] font-medium text-gray-400">
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/help" className="block w-full">Help Center</Link></li>
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/about" className="block w-full">About RigCraft</Link></li>
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/orders" className="block w-full">Track Order</Link></li>
+                <li className="cursor-pointer hover:text-white transition-colors"><Link to="/my-tickets" className="block w-full">My Tickets</Link></li>
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/warranty" className="block w-full">Warranty Claims</Link></li>
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/returns" className="block w-full">Returns & Refunds</Link></li>
                 <li className="cursor-pointer hover:text-white transition-colors"><Link to="/contact" className="block w-full">Contact Support</Link></li>

@@ -14,13 +14,3 @@ export const removeFromWishlistApi = async (itemId) => {
   const response = await apiClient.delete(`/wishlist/${itemId}`);
   return response.data;
 };
-
-export const clearWishlistApi = async () => {
-  const response = await apiClient.delete('/wishlist');
-  return response.data;
-};
-
-export const moveToCartApi = async (itemId) => {
-  const response = await apiClient.post(`/wishlist/${itemId}/move-to-cart`);
-  return response.data;
-};

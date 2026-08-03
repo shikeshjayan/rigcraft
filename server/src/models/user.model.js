@@ -36,9 +36,13 @@ const userSchema = new mongoose.Schema(
       unique: true,
       sparse: true,
     },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true,
+    },
     password: {
       type: String,
-      required: [true, 'Password is required'],
       minlength: [8, 'Password must be at least 8 characters'],
       select: false,
     },
@@ -69,6 +73,12 @@ const userSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+userSchema.pre('validate', function () {
+  if (!this.password && !this.googleId) {
+    this.invalidate('password', 'Password is required');
+  }
+});
 
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;

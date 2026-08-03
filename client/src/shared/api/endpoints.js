@@ -10,6 +10,7 @@ export const ENDPOINTS = {
     FORGOT_PASSWORD: "/auth/forgot-password",
     RESET_PASSWORD: "/auth/reset-password",
     CHECK: "/auth/check",
+    GOOGLE: "/auth/google",
   },
 
   // Deals (public)
@@ -91,6 +92,7 @@ export const ENDPOINTS = {
     VALIDATE: (id) => `/builds/${id}/validate`,
     DUPLICATE: (id) => `/builds/${id}/duplicate`,
     ADD_TO_CART: (id) => `/builds/${id}/add-to-cart`,
+    SETTINGS: "/builds/settings",
   },
 
   // PC Builder (admin)
@@ -99,6 +101,7 @@ export const ENDPOINTS = {
     ANALYTICS: "/builds/admin/analytics",
     ISSUES: "/builds/admin/issues",
     SETTINGS: "/builds/admin/settings",
+    SETTINGS_GET: "/builds/admin/settings",
   },
 
   // Cart
@@ -125,6 +128,11 @@ export const ENDPOINTS = {
   REVIEW: {
     LIST: "/reviews",
     CREATE: "/reviews",
+    CREATE_PRODUCT: "/reviews/product",
+    CREATE_TESTIMONIAL: "/reviews/testimonial",
+    TESTIMONIALS: "/reviews/testimonials",
+    HELPFUL: (id) => `/reviews/${id}/helpful`,
+    REPORT: (id) => `/reviews/${id}/report`,
     DETAILS: (id) => `/reviews/${id}`,
     UPDATE: (id) => `/reviews/${id}`,
     DELETE: (id) => `/reviews/${id}`,
@@ -160,6 +168,11 @@ export const ENDPOINTS = {
     LIST: "/admin/reviews",
     DETAILS: (id) => `/admin/reviews/${id}`,
     UPDATE_STATUS: (id) => `/admin/reviews/${id}/status`,
+    FEATURE: (id) => `/admin/reviews/${id}/feature`,
+    REPLY: (id) => `/admin/reviews/${id}/reply`,
+    DISMISS_REPORTS: (id) => `/admin/reviews/${id}/dismiss-reports`,
+    CLEAR_SPAM: (id) => `/admin/reviews/${id}/clear-spam`,
+    STATS: "/admin/reviews/stats",
     DELETE: (id) => `/admin/reviews/${id}`,
   },
 
@@ -261,5 +274,11 @@ export const ENDPOINTS = {
     CREATE: "/admin/faqs",
     UPDATE: (id) => `/admin/faqs/${id}`,
     DELETE: (id) => `/admin/faqs/${id}`,
+  },
+
+  // Search
+  SEARCH: {
+    PUBLIC: "/search",
+    ADMIN: "/admin/search",
   },
 };

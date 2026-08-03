@@ -1,5 +1,6 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
+import getGoogleClient from '../config/google.js';
 import userRepository from '../repositories/user.repository.js';
 import ApiError from '../utils/ApiError.js';
 import * as uploadService from './upload.service.js';
@@ -44,7 +45,7 @@ const createTokenResponse = async (user, statusCode, res, rememberMe = false) =>
 
   return res.status(statusCode).json({
     success: true,
-    data: { user, rememberMe, accessToken },
+    data: { user, rememberMe },
   });
 };
 
@@ -108,6 +109,8 @@ export const login = async (body, res) => {
   if (email && password) {
     const user = await userRepository.findByEmailWithPassword(email);
     if (!user) throw ApiError.unauthorized('Invalid credentials');
+    if (!user.password)
+      throw ApiError.unauthorized('This account uses Google sign-in. Please sign in with Google');
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) throw ApiError.unauthorized('Invalid credentials');
@@ -172,6 +175,64 @@ export const login = async (body, res) => {
   }
 
   throw ApiError.badRequest('Invalid login request');
+};
+
+export const googleLogin = async (idToken, res) => {
+  const client = getGoogleClient();
+  let payload;
+  try {
+    const ticket = await client.verifyIdToken({
+      idToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    payload = ticket.getPayload();
+  } catch (error) {
+    throw ApiError.unauthorized('Invalid Google credential');
+  }
+
+  const {
+    sub: googleId,
+    email,
+    email_verified: emailVerified,
+    name,
+    picture,
+  } = payload;
+  if (!email) throw ApiError.unauthorized('Google account has no email');
+
+  let user = await userRepository.findByEmail(email);
+  if (user?.googleId && user.googleId !== googleId) {
+    throw ApiError.conflict('This email is linked to a different Google account');
+  }
+  if (user?.isBlocked) throw ApiError.forbidden('Account is blocked');
+
+  if (user) {
+    if (!user.googleId) user.googleId = googleId;
+    if (!user.firstName && name) {
+      const [firstName, ...rest] = name.split(' ');
+      user.firstName = firstName;
+      user.lastName = rest.join(' ') || user.lastName;
+    }
+    if (emailVerified) user.isEmailVerified = true;
+    if (picture && !user.avatar?.url) user.avatar = { url: picture };
+    user.lastLogin = new Date();
+    await user.save({ validateBeforeSave: false });
+    return createTokenResponse(user, 200, res);
+  }
+
+  const nameParts = (name || '').split(' ');
+  const firstName = nameParts[0] || email.split('@')[0];
+  const lastName = nameParts.slice(1).join(' ');
+
+  user = await userRepository.create({
+    googleId,
+    firstName,
+    lastName,
+    email,
+    isEmailVerified: !!emailVerified,
+    avatar: picture ? { url: picture } : undefined,
+    lastLogin: new Date(),
+  });
+  return createTokenResponse(user, 201, res);
 };
 
 export const getProfile = async (userId) => {

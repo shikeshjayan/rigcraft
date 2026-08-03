@@ -277,7 +277,9 @@ const ComponentsCatalog = () => {
                         <div key={item._id || item.id} className="block h-full animate-fade-in relative group">
                           <Link to={`/detail/${item.slug}`} className="block h-full">
                             <Card 
- rating={item?.rating} id={item.slug}
+                              id={item.slug}
+                              apiId={item._id || item.id}
+                              rating={item?.rating}
                               image={imageUrl}
                               title={item.name}
                               specs={specs.length > 0 ? specs : undefined}

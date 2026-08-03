@@ -164,7 +164,7 @@ const Orders = ({ embedded = false }) => {
                   Have an issue with your order? Our support team is available 24/7 to assist you.
                 </p>
                 <button 
-                  onClick={() => navigate('/contact')}
+                  onClick={() => navigate('/contact?type=order')}
                   className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-sm hover:bg-blue-700 transition-colors text-[13px] tracking-wide uppercase"
                 >
                   Contact Us

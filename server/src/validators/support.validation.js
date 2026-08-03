@@ -7,6 +7,7 @@ export const createTicketSchema = z.object({
   subject: z.string().min(3).max(200),
   description: z.string().max(2000).optional(),
   name: z.string().optional(),
+  cancelOrder: z.boolean().optional(),
 });
 
 export const sendMessageSchema = z.object({

@@ -4,7 +4,7 @@ import { SENDER_ROLES } from "../constants/support.constants.js";
 const attachmentSchema = new mongoose.Schema(
   {
     url: { type: String, required: true, trim: true },
-    publicId: { type: String, required: true },
+    publicId: { type: String, trim: true },
     originalName: { type: String, trim: true },
     mimeType: { type: String, trim: true },
     size: { type: Number },

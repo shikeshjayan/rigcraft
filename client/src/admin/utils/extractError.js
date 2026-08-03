@@ -169,9 +169,7 @@ export const extractError = (err, fallback = "Something went wrong") => {
     });
   }
   if (messages.length) {
-    const visible = messages.slice(0, 2);
-    const hidden = messages.length - visible.length;
-    return visible.join(" ") + (hidden > 0 ? ` (and ${hidden} more)` : "");
+    return messages.join(" ");
   }
 
   const message = typeof data?.message === "string" ? data.message.trim() : "";
