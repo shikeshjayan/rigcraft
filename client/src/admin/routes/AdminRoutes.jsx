@@ -1,7 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import AdminLayout from "../components/layout/AdminLayout";
 import ProtectedRoute from "./ProtectedRoute";
-import { ToastProvider } from "../components/common/Toast";
 import Dashboard from "../pages/dashboard/Dashboard";
 import CategoryList from "../pages/categories/CategoryList";
 import CategoryCreate from "../pages/categories/CategoryCreate";
@@ -49,9 +48,7 @@ const AdminRoutes = () => {
       <Route
         element={
           <ProtectedRoute allowedRoles={["admin", "manager"]}>
-            <ToastProvider>
-              <AdminLayout />
-            </ToastProvider>
+            <AdminLayout />
           </ProtectedRoute>
         }
       >

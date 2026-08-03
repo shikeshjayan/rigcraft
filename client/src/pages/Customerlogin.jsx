@@ -10,6 +10,7 @@ import FadeUp from '../components/FadeUp';
 import DynamicLogo from '../components/DynamicLogo';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
+import { useToast } from '../components/toast/useToast';
 
 const Customerlogin = () => {
   const [step, setStep] = useState('login'); // 'login' or 'otp' or 'password'
@@ -23,6 +24,7 @@ const Customerlogin = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
   const inputRefs = useRef([]);
+  const { toast } = useToast();
 
   const checkMutation = useMutation({
     mutationFn: authService.checkAccount,
@@ -36,11 +38,12 @@ const Customerlogin = () => {
     onError: (err) => setError(err?.response?.data?.message || 'No account found with this phone number.')
   });
 
-  const loginMutation = useMutation({
+const loginMutation = useMutation({
     mutationFn: authService.login,
     onSuccess: (data) => {
       if (data && data.success && data.data) {
          const { user } = data.data;
+        toast(`Welcome back${user.firstName ? `, ${user.firstName}` : ''}!`);
         handleAuthSuccess(user, navigate, login);
       }
     },
@@ -54,6 +57,7 @@ const Customerlogin = () => {
     onSuccess: (data) => {
       if (data && data.success && data.data) {
          const { user } = data.data;
+        toast(`Welcome back${user.firstName ? `, ${user.firstName}` : ''}!`);
         handleAuthSuccess(user, navigate, login);
       }
     },

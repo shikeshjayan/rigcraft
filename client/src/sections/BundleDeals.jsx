@@ -72,6 +72,7 @@ const BundleDeals = () => {
                 }
                 tag="BUNDLE"
                 tagColor="bg-[#3B82F6]"
+                stock={product.stock}
               />
             </div>
           ))}

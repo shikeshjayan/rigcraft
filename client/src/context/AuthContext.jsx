@@ -47,6 +47,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('admin-auth-storage');
     localStorage.removeItem('rigcraft_cart_guest');
     localStorage.removeItem('rigcraft_wishlist_guest');
+    // Surface a "Logged out" toast after the full page reload below.
+    sessionStorage.setItem(
+      'rigcraft_pending_toast',
+      JSON.stringify({ message: 'Logged out successfully.', type: 'success' })
+    );
     // Force reload to a fresh start
     window.location.href = '/';
   };

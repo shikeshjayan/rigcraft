@@ -8,6 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import LoginPrompt from '../components/LoginPrompt';
 import ProductReviews from '../components/ProductReviews';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useToast } from '../components/toast/useToast';
 
 // Icons
 import AddIcon from '@mui/icons-material/Add';
@@ -30,9 +31,7 @@ const Detail = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [activeImage, setActiveImage] = useState(0);
-  const [showAddedToast, setShowAddedToast] = useState(false);
-  const [showCartToast, setShowCartToast] = useState(false);
-  
+
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [flyingItem, setFlyingItem] = useState(null);
@@ -41,6 +40,7 @@ const Detail = () => {
   const navigate = useNavigate();
   const { addToCart } = useCart();
   const { isLoggedIn } = useAuth();
+  const { toast } = useToast();
 
   const handleBuyNow = () => {
     if (!isLoggedIn) {
@@ -76,8 +76,7 @@ const Detail = () => {
     }
 
     addToCart(pc);
-    setShowCartToast(true);
-    setTimeout(() => setShowCartToast(false), 4000);
+    toast(`${pc.title || pc.name || 'item'} is added to cart`);
   };
 
   const handleAddToBuild = () => {
@@ -114,9 +113,8 @@ const Detail = () => {
     
     draftBuild[categoryKey] = pc;
     localStorage.setItem('draftBuild', JSON.stringify(draftBuild));
-    
-    setShowAddedToast(true);
-    setTimeout(() => setShowAddedToast(false), 4000);
+
+    toast('Component added to your Active Build!');
   };
 
   // Scroll to top when page loads
@@ -382,7 +380,7 @@ const Detail = () => {
                   <LocalShippingOutlinedIcon sx={{ fontSize: 18, color: '#565959' }} />
                 </div>
                 <div>
-                  <div className="text-[13px] text-[#333] font-medium">{pc.stock > 0 ? `In Stock (${pc.stock} units)` : 'Out of Stock'}</div>
+                  <div className="text-[13px] text-[#333] font-medium">{pc.stock > 0 ? 'In Stock' : 'Out of Stock'}</div>
                   <div className="text-[13px] text-[#565959] flex gap-2">
                     <span>Est. Delivery:</span>
                     <span className="font-bold text-[#0F1111]">3-5 Business Days</span>
@@ -420,19 +418,6 @@ const Detail = () => {
         <ProductReviews itemId={pc._id} itemType={typeParam === 'prebuilt' ? 'prebuilt' : 'product'} />
 
       </div>
-      {/* Toast Notification for Build */}
-      {showAddedToast && (
-        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in flex items-center gap-2">
-          <CheckCircleOutlineIcon /> Component added to your Active Build!
-        </div>
-      )}
-      
-      {/* Toast Notification for Cart */}
-      {showCartToast && (
-        <div className="fixed bottom-4 right-4 bg-[#0047AB] text-white px-6 py-3 rounded-md shadow-lg z-50 animate-fade-in flex items-center gap-2">
-          <CheckCircleOutlineIcon /> {title} is added to cart
-        </div>
-      )}
 
       {/* Flying Cart Animation */}
       <AnimatePresence>

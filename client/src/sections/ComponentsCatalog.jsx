@@ -1,6 +1,6 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useParams, useLocation } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
@@ -258,23 +258,22 @@ const ComponentsCatalog = () => {
                         
                         return (
                         <div key={item._id || item.id} className="block h-full relative group">
-                          <Link to={`/detail/${item.slug}`} className="block h-full">
-                            <Card 
-                              id={item.slug}
-                              apiId={item._id || item.id}
-                              rating={item?.rating}
-                              image={imageUrl}
-                              title={item.name}
-                              specs={specs.length > 0 ? specs : undefined}
-                              description={item.shortDescription || item.description || ''}
-                              price={`₹${price?.toLocaleString('en-IN')}`}
-                              mrp={mrp ? `₹${mrp?.toLocaleString('en-IN')}` : undefined}
-                              discount={discount}
-                              tag={discount ? discount : null}
-                              tagColor="#CC0C39"
-                              compact={filterDropdownOpen} 
-                            />
-                          </Link>
+                          <Card 
+                            id={item.slug}
+                            apiId={item._id || item.id}
+                            rating={item?.rating}
+                            image={imageUrl}
+                            title={item.name}
+                            specs={specs.length > 0 ? specs : undefined}
+                            description={item.shortDescription || item.description || ''}
+                            price={`₹${price?.toLocaleString('en-IN')}`}
+                            mrp={mrp ? `₹${mrp?.toLocaleString('en-IN')}` : undefined}
+                            discount={discount}
+                            tag={discount ? discount : null}
+                            tagColor="#CC0C39"
+                            compact={filterDropdownOpen} 
+                            stock={item.stock}
+                          />
                         </div>
                         );
                       })
