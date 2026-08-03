@@ -1,4 +1,5 @@
 import React from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 
 const LoginPrompt = ({ isOpen, onClose, message }) => {
@@ -6,7 +7,7 @@ const LoginPrompt = ({ isOpen, onClose, message }) => {
 
   if (!isOpen) return null;
 
-  return (
+  return createPortal(
     <div 
       className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40 backdrop-blur-sm px-4"
       onClick={(e) => {
@@ -47,7 +48,8 @@ const LoginPrompt = ({ isOpen, onClose, message }) => {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 };
 
