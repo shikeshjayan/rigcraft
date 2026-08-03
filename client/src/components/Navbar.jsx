@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import FadeUp from './FadeUp';
 import SearchIcon from '@mui/icons-material/Search';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -95,6 +95,17 @@ const Navbar = () => {
   const searchContainerRef = useRef(null);
   const mobileSearchContainerRef = useRef(null);
   const searchRequestIdRef = useRef(0);
+
+  const [showCartTick, setShowCartTick] = useState(false);
+
+  useEffect(() => {
+    const handleCartAdded = () => {
+      setShowCartTick(true);
+      setTimeout(() => setShowCartTick(false), 2000);
+    };
+    window.addEventListener('added-to-cart', handleCartAdded);
+    return () => window.removeEventListener('added-to-cart', handleCartAdded);
+  }, []);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -652,13 +663,34 @@ const Navbar = () => {
               
               {/* Cart (Desktop Only) */}
               <Link to="/cart" aria-label="Cart" className="hidden lg:flex hover:text-[var(--color-primary)] transition-colors flex-col items-center justify-center cursor-pointer relative pb-1 pt-1">
-                <div className="relative">
+                <div className="relative" id="navbar-cart-icon">
                   <ShoppingCartOutlinedIcon sx={{ fontSize: 24 }} />
                   {cartItems.length > 0 && (
                     <span className="absolute -top-1.5 -right-2 bg-[#FF3E6C] text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
                       {cartItems.length}
                     </span>
                   )}
+                  <AnimatePresence>
+                    {showCartTick && (
+                      <motion.svg 
+                        className="absolute -bottom-2 -right-3 w-5 h-5 text-green-500" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <motion.path 
+                          initial={{ pathLength: 0 }} 
+                          animate={{ pathLength: 1 }} 
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.4, ease: "easeOut" }}
+                          d="M5 13l4 4L19 7" 
+                        />
+                      </motion.svg>
+                    )}
+                  </AnimatePresence>
                 </div>
                 <span className="text-[12px] font-bold mt-0.5">Cart</span>
               </Link>
@@ -743,9 +775,30 @@ const Navbar = () => {
                 )}
               </Link>
               <Link to="/cart" onClick={() => handleMobileNavClick('/cart')} className="flex items-center justify-between text-[16px] font-bold p-3 rounded-md hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer text-[var(--color-text)]">
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 relative" id="mobile-navbar-cart-icon">
                   <ShoppingCartOutlinedIcon />
                   Cart
+                  <AnimatePresence>
+                    {showCartTick && (
+                      <motion.svg 
+                        className="absolute top-1/2 left-8 -translate-y-1/2 w-5 h-5 text-green-500" 
+                        viewBox="0 0 24 24" 
+                        fill="none" 
+                        stroke="currentColor" 
+                        strokeWidth="4"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      >
+                        <motion.path 
+                          initial={{ pathLength: 0 }} 
+                          animate={{ pathLength: 1 }} 
+                          exit={{ opacity: 0 }}
+                          transition={{ duration: 0.4, ease: "easeOut" }}
+                          d="M5 13l4 4L19 7" 
+                        />
+                      </motion.svg>
+                    )}
+                  </AnimatePresence>
                 </div>
                 {cartItems.length > 0 && (
                   <span className="bg-[#FF3E6C] text-white text-[12px] font-bold w-6 h-6 rounded-full flex items-center justify-center">
@@ -788,7 +841,7 @@ const Navbar = () => {
       {showLogoutConfirm && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
           <FadeUp>
-            <div className="bg-white rounded-md p-6 max-w-sm w-full shadow-2xl">
+            <div className="bg-white p-6 max-w-sm w-full shadow-2xl" style={{ borderRadius: 'var(--radius-sm)' }}>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Confirm Logout</h3>
               <p className="text-gray-600 mb-6 text-sm">Are you sure you want to log out of your account?</p>
               

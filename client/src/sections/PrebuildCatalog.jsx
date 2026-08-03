@@ -245,11 +245,11 @@ const PrebuildCatalog = () => {
         </div>
 
         {/* Main Content Area */}
-        <div className="flex relative gap-6">
+        <div className="relative">
           
           {/* Grid Area */}
-          <motion.div layout className="flex-1 min-w-0">
-            
+          <div className="w-full">
+
             <AnimatePresence mode="wait">
               {currentItems.length === 0 ? (
                 <motion.div 
@@ -298,10 +298,10 @@ const PrebuildCatalog = () => {
                         }
                         
                         return (
-                          <div key={pc.id} className="block h-full animate-fade-in">
+                          <div key={pc.id} className="block h-full">
                             <Link to={`/detail/${pc.slug || pc.id}?type=prebuilt`} className="block h-full">
                               <Card 
- rating={pc?.rating} id={pc.id}
+                                rating={pc?.rating} id={pc.id}
                                 image={pc.image || 'https://via.placeholder.com/300?text=No+Image'}
                                 title={pc.title}
                                 specs={cardSpecs}
@@ -347,10 +347,11 @@ const PrebuildCatalog = () => {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
 
           <Filter 
             isOpen={filterDropdownOpen}
+            onClose={() => setFilterDropdownOpen(false)}
             filters={filters}
             setFilters={setFilters}
             onClearAll={handleClearAll}

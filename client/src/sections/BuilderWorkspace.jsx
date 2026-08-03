@@ -814,7 +814,8 @@ const BuilderWorkspace = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-white max-w-[800px] w-full flex flex-col md:flex-row rounded-lg overflow-hidden shadow-2xl relative"
+              className="bg-white max-w-[800px] w-full flex flex-col md:flex-row overflow-hidden shadow-2xl relative"
+              style={{ borderRadius: 'var(--radius-sm)' }}
             >
               <button 
                 onClick={() => setActivePopupItem(null)}
