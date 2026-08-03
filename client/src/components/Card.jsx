@@ -1,7 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
+import { createPortal } from 'react-dom';
+import { motion } from 'framer-motion';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import { useWishlist } from '../context/WishlistContext';
+import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
@@ -9,9 +12,13 @@ import LoginPrompt from './LoginPrompt';
 
 const Card = ({ id, apiId, image, title, specs, price, tag, tagColor, description, mrp, discount, compact = false, category = '', rating = { average: 0, count: 0 }, itemType, buttonText, onButtonClick }) => {
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
+  const { addToCart } = useCart();
   const { isLoggedIn } = useAuth();
   const navigate = useNavigate();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
+  const [loginPromptMessage, setLoginPromptMessage] = useState("");
+  const [flyingImage, setFlyingImage] = useState(null);
+  const imageRef = useRef(null);
 
   const wishlistId = apiId || id;
   const type = (itemType === 'prebuilt' || category === 'prebuilt') ? 'prebuilt' : 'product';
@@ -23,6 +30,7 @@ const Card = ({ id, apiId, image, title, specs, price, tag, tagColor, descriptio
     e.stopPropagation();
 
     if (!isLoggedIn) {
+      setLoginPromptMessage("You need to log in to your account to add items to the wishlist.");
       setShowLoginPrompt(true);
       return;
     }
@@ -60,6 +68,46 @@ const Card = ({ id, apiId, image, title, specs, price, tag, tagColor, descriptio
 
   const averageRating = rating?.average || 0;
   const ratingCount = rating?.count || 0;
+
+  const handleAddToCart = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    if (!isLoggedIn) {
+      setLoginPromptMessage("You need to log in to your account to add items to the cart.");
+      setShowLoginPrompt(true);
+      return;
+    }
+
+    // Perform standard add to cart
+    addToCart({
+      id: apiId || id,
+      image,
+      title,
+      price: typeof price === 'string' ? parseFloat(price.replace(/[^0-9.-]+/g,"")) : price,
+      quantity: 1,
+      itemType: type
+    });
+
+    // Flying animation logic
+    const imgEl = imageRef.current;
+    // Try desktop icon first, fallback to mobile icon
+    const cartIcon = document.getElementById('navbar-cart-icon') || document.getElementById('mobile-navbar-cart-icon');
+    
+    if (imgEl && cartIcon && image) {
+      const rect = imgEl.getBoundingClientRect();
+      const cartRect = cartIcon.getBoundingClientRect();
+      
+      setFlyingImage({ start: rect, end: cartRect });
+
+      setTimeout(() => {
+        setFlyingImage(null);
+        window.dispatchEvent(new Event('added-to-cart'));
+      }, 800);
+    } else {
+      window.dispatchEvent(new Event('added-to-cart'));
+    }
+  };
 
   return (
     <div
@@ -102,9 +150,11 @@ const Card = ({ id, apiId, image, title, specs, price, tag, tagColor, descriptio
 
         {image ? (
           <img
+            ref={imageRef}
             src={image}
             alt={title}
-            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
+            loading="lazy"
+            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="w-full h-full flex flex-col items-center justify-center bg-gray-100 text-gray-400 group-hover:bg-gray-200 transition-colors duration-300">
@@ -142,22 +192,8 @@ const Card = ({ id, apiId, image, title, specs, price, tag, tagColor, descriptio
           </p>
         )}
 
-        {/* Badges */}
-        {badges.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4 mt-auto">
-            {badges.map((badge, idx) => (
-              <span
-                key={idx}
-                className="text-[10px] font-medium text-gray-600 bg-gray-100 px-2.5 py-1 rounded-full whitespace-nowrap"
-              >
-                {badge}
-              </span>
-            ))}
-          </div>
-        )}
-
         {/* Price Row and Ratings */}
-        <div className="flex items-center justify-between mb-4 mt-auto">
+        <div className="flex items-center justify-between mb-4 mt-auto pt-2">
           <div className="flex flex-col gap-0.5">
             {mrp && (
               <span className="text-gray-400 line-through text-xs">{mrp}</span>
@@ -179,26 +215,46 @@ const Card = ({ id, apiId, image, title, specs, price, tag, tagColor, descriptio
         </div>
 
         {/* Action Button */}
-        {buttonText && (
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (onButtonClick) onButtonClick(e);
-            }}
-            className="w-full font-bold py-2.5 px-4 text-[13px] uppercase tracking-wide transition-colors cursor-pointer bg-[var(--color-primary)] text-white hover:opacity-90"
-            style={{ borderRadius: 'var(--radius-sm)' }}
-          >
-            {buttonText}
-          </button>
-        )}
+        <button
+          onClick={handleAddToCart}
+          className="w-full font-bold py-2.5 px-4 text-[13px] uppercase tracking-wide transition-colors cursor-pointer bg-white text-[var(--color-primary)] border-2 border-[var(--color-primary)] hover:bg-[var(--color-bg-secondary)]"
+          style={{ borderRadius: 'var(--radius-sm)' }}
+        >
+          Add to Cart
+        </button>
       </div>
 
       <LoginPrompt
         isOpen={showLoginPrompt}
         onClose={() => setShowLoginPrompt(false)}
-        message="You need to log in to your account to add items to the wishlist."
+        message={loginPromptMessage}
       />
+
+      {flyingImage && createPortal(
+        <motion.img 
+          src={image}
+          initial={{ 
+            position: 'fixed', 
+            top: flyingImage.start.top, 
+            left: flyingImage.start.left, 
+            width: flyingImage.start.width, 
+            height: flyingImage.start.height,
+            zIndex: 99999,
+            objectFit: 'contain'
+          }}
+          animate={{
+            top: flyingImage.end.top + flyingImage.end.height / 2 - 15,
+            left: flyingImage.end.left + flyingImage.end.width / 2 - 15,
+            width: 30,
+            height: 30,
+            opacity: 0.2,
+            scale: 0.1
+          }}
+          transition={{ duration: 0.8, ease: [0.25, 1, 0.5, 1] }}
+          className="pointer-events-none rounded-full shadow-lg"
+        />,
+        document.body
+      )}
     </div>
   );
 };

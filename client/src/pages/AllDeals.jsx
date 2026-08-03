@@ -159,9 +159,7 @@ const AllDeals = () => {
     }
   };
 
-  const gridClasses = filterDropdownOpen
-    ? "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 min-h-[800px] items-start content-start"
-    : "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[800px] items-start content-start";
+  const gridClasses = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[800px] items-start content-start";
 
   return (
     <section id="deals-top" className="w-full py-12 pb-24" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
@@ -187,8 +185,8 @@ const AllDeals = () => {
           </button>
         </div>
 
-        <div className="flex relative gap-6">
-          <motion.div layout className="flex-1 min-w-0 transition-all duration-300">
+        <div className="relative">
+          <div className="w-full">
             <AnimatePresence mode="wait">
               {currentProducts.length === 0 && !isLoading ? (
                 <motion.div 
@@ -233,7 +231,7 @@ const AllDeals = () => {
                         }
                         
                         return (
-                          <div key={item._id || item.id} className="block h-full animate-fade-in relative group">
+                          <div key={item._id || item.id} className="block h-full relative group">
                             <Link to={`/detail/${item.slug}`} className="block h-full">
                               <Card 
                                 id={item.slug}
@@ -288,10 +286,11 @@ const AllDeals = () => {
                 </motion.div>
               )}
             </AnimatePresence>
-          </motion.div>
+          </div>
 
           <Filter 
             isOpen={filterDropdownOpen}
+            onClose={() => setFilterDropdownOpen(false)}
             filters={filters}
             setFilters={setFilters}
             onClearAll={handleClearAll}
