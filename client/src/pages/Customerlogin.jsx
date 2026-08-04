@@ -235,7 +235,7 @@ const loginMutation = useMutation({
                 </div>
 
                 <div className="relative mt-4">
-                  <div className={consent ? '' : 'pointer-events-none'}>
+                  <div className={`flex justify-center ${consent ? '' : 'pointer-events-none'}`}>
                     {isGoogleOAuthEnabled() ? (
                       <GoogleLogin
                         onSuccess={({ credential }) => googleLoginMutation.mutate(credential)}

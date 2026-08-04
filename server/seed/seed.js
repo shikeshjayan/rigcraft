@@ -500,6 +500,22 @@ async function seed() {
   const reviewDocs = await Review.create(reviews);
   summary.push(["Reviews", reviewDocs.length]);
 
+  console.log("  Recalculating rating aggregates...");
+  const recalcItems = [
+    ...productDocs.map((d) => ({ id: d._id, model: Product, itemType: "product" })),
+    ...prebuiltDocs.map((d) => ({ id: d._id, model: PrebuiltPC, itemType: "prebuilt" })),
+  ];
+  for (const item of recalcItems) {
+    const stats = await Review.aggregate([
+      { $match: { item: item.id, itemType: item.itemType, status: "approved" } },
+      { $group: { _id: null, average: { $avg: "$rating" }, count: { $sum: 1 } } },
+    ]);
+    const average = stats.length ? Math.round(stats[0].average * 10) / 10 : 0;
+    const count = stats.length ? stats[0].count : 0;
+    await item.model.updateOne({ _id: item.id }, { rating: { average, count } });
+  }
+  summary.push(["Ratings Recalculated", recalcItems.length]);
+
   // ── 13. Support Tickets & Messages ──
   console.log("  Seeding Support Tickets...");
   const ticketSubjects = [
