@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "";
+const getGeminiApiKey = () => process.env.GEMINI_API_KEY || "";
 const MODEL = "gemini-flash-latest";
 
 const SPAM_KEYWORDS = [
@@ -87,7 +87,7 @@ const heuristicClassification = ({ title = "", comment = "" }) => {
 };
 
 const geminiClassification = async (content) => {
-  const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+  const genAI = new GoogleGenerativeAI(getGeminiApiKey());
   const model = genAI.getGenerativeModel({ model: MODEL });
 
   const prompt = `You are a content moderator for an e-commerce website called RigCraft.
@@ -133,10 +133,13 @@ export const FLAG_THRESHOLD = 0.4;
 export const moderateReview = async (content) => {
   let result;
 
-  if (GEMINI_API_KEY) {
+  if (getGeminiApiKey()) {
     try {
       result = await geminiClassification(content);
-    } catch {
+    } catch (err) {
+      console.warn(
+        `[moderation] Gemini call failed, using heuristic fallback: ${err?.message || err}`
+      );
       result = heuristicClassification(content);
     }
   } else {
