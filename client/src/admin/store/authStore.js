@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import api from "../../shared/api/axios";
 import { ENDPOINTS } from "../../shared/api/endpoints";
+import { clearToken } from "../../shared/auth/token";
 
 const useAuthStore = create(
   persist(
@@ -33,6 +34,7 @@ const useAuthStore = create(
         } catch {
           // ignore
         }
+        clearToken();
         localStorage.removeItem("rigcraft_auth");
         localStorage.removeItem("rigcraft_user");
         set({ user: null, isAuthenticated: false });

@@ -3,10 +3,10 @@ import Settings from "../models/settings.model.js";
 const PUBLIC_PREFIXES = ["/api/v1/auth", "/api/v1/settings"];
 
 const maintenanceMode = async (req, res, next) => {
-  // Only gate the API — the static SPA must keep loading during maintenance.
-  if (!req.path.startsWith("/api/v1/")) return next();
   if (req.path.startsWith("/api/v1/admin/")) return next();
   if (PUBLIC_PREFIXES.some((p) => req.path.startsWith(p) || req.path === p)) return next();
+  if (req.path.startsWith("/uploads")) return next();
+  if (req.path === "/") return next();
 
   try {
     const settings = await Settings.findOne();
