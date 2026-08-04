@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 import { useQuery, useMutation } from '@tanstack/react-query';
@@ -18,11 +18,18 @@ const Footer = () => {
   const [message, setMessage] = useState('');
   const [status, setStatus] = useState('idle'); // 'idle', 'error', 'success'
   const [showPopup, setShowPopup] = useState(false);
+  const [alreadySubscribed, setAlreadySubscribed] = useState(false);
+
+  const closePopup = () => {
+    setShowPopup(false);
+    setStatus('idle');
+  };
 
   const subscribeMutation = useMutation({
     mutationFn: (emailData) => apiClient.post('/newsletter/subscribe', emailData),
     onSuccess: () => {
       setStatus('success');
+      setAlreadySubscribed(false);
       setMessage('');
       setEmail('');
       setShowPopup(true);
@@ -32,6 +39,18 @@ const Footer = () => {
       }, 3000);
     },
     onError: (error) => {
+      if (error.response?.status === 409) {
+        setStatus('success');
+        setAlreadySubscribed(true);
+        setMessage('');
+        setEmail('');
+        setShowPopup(true);
+        setTimeout(() => {
+          setShowPopup(false);
+          setStatus('idle');
+        }, 3000);
+        return;
+      }
       setStatus('error');
       setMessage(error.response?.data?.message || 'Failed to subscribe. Please try again later.');
     }
@@ -212,7 +231,7 @@ const Footer = () => {
       {/* Subscription Success Popup */}
       {showPopup && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center px-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowPopup(false)}></div>
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={closePopup}></div>
           <FadeUp>
             <div 
               className="bg-white shadow-2xl p-8 max-w-md w-full relative z-10 text-center border-t-4 border-[var(--color-primary)]"
@@ -223,9 +242,13 @@ const Footer = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-wide">Congratulations!</h3>
+              <h3 className="text-2xl font-black text-gray-900 mb-3 tracking-wide">
+                {alreadySubscribed ? "You're already subscribed!" : "Congratulations!"}
+              </h3>
               <p className="text-[15px] text-gray-600 font-medium leading-relaxed">
-                You have successfully subscribed to our newsletter. You will now receive early access to exclusive offers and our latest hardware deals.
+                {alreadySubscribed
+                  ? "You are already a member of the RigCraft community. You'll keep receiving early access to exclusive offers and our latest hardware deals."
+                  : "You have successfully subscribed to our newsletter. You will now receive early access to exclusive offers and our latest hardware deals."}
               </p>
             </div>
           </FadeUp>
