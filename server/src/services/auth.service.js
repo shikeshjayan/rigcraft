@@ -52,7 +52,12 @@ const createTokenResponse = async (user, statusCode, res, rememberMe = false) =>
 
   return res.status(statusCode).json({
     success: true,
-    data: { user, rememberMe },
+    data: {
+      user,
+      rememberMe,
+      accessToken,
+      ...(user.refreshToken ? { refreshToken: user.refreshToken } : {}),
+    },
   });
 };
 

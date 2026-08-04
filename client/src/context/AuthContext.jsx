@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { clearToken } from '../shared/auth/token';
 
 const AuthContext = createContext();
 
@@ -42,6 +43,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setIsLoggedIn(false);
     setUser(null);
+    clearToken();
     localStorage.removeItem('rigcraft_auth');
     localStorage.removeItem('rigcraft_user');
     localStorage.removeItem('admin-auth-storage');
