@@ -53,10 +53,33 @@ const HomePrebuildSection = () => {
             const id = pc._id || pc.id;
             const image = pc.images?.[0]?.url || pc.images?.[0] || pc.image || null;
             const title = pc.name || pc.title;
-            const priceVal = pc.pricing?.price || pc.priceVal;
-            const mrpVal = pc.pricing?.salePrice || pc.mrpVal;
-            const price = priceVal ? `₹${priceVal.toLocaleString()}` : pc.price;
-            const mrp = mrpVal ? `₹${mrpVal.toLocaleString()}` : pc.mrp;
+            
+            // Check for active deal
+            let isActiveDeal = false;
+            if (pc.pricing?.salePrice) {
+              if (pc.pricing.saleStart && pc.pricing.saleEnd) {
+                const now = new Date();
+                const start = new Date(pc.pricing.saleStart);
+                const end = new Date(pc.pricing.saleEnd);
+                if (now >= start && now <= end) {
+                  isActiveDeal = true;
+                }
+              } else {
+                isActiveDeal = true;
+              }
+            }
+
+            const priceVal = isActiveDeal ? pc.pricing.salePrice : (pc.pricing?.price || pc.priceVal);
+            const mrpVal = isActiveDeal ? pc.pricing.price : null;
+            
+            const price = priceVal ? `₹${priceVal.toLocaleString('en-IN')}` : pc.price;
+            const mrp = mrpVal ? `₹${mrpVal.toLocaleString('en-IN')}` : pc.mrp;
+            
+            let discountPercentage = 0;
+            if (isActiveDeal && mrpVal && priceVal) {
+              discountPercentage = Math.round(((mrpVal - priceVal) / mrpVal) * 100);
+            }
+            
             const specs = pc.specs || pc.tags || [];
             
             return (
@@ -70,9 +93,9 @@ const HomePrebuildSection = () => {
                 description={pc.description}
                 price={price}
                 mrp={mrp}
-                discount={pc.discount}
-                tag={pc.tag}
-                tagColor={pc.tagColor}
+                discount={discountPercentage > 0 ? `${discountPercentage}% off` : pc.discount}
+                tag={discountPercentage > 0 ? `-${discountPercentage}%` : pc.tag}
+                tagColor={discountPercentage > 0 ? "#E11D48" : pc.tagColor}
                 category="prebuilt"
                 stock={pc.stock}
               />

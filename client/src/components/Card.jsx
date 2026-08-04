@@ -158,16 +158,19 @@ const Card = ({ id, apiId, image, title, specs, price, description, mrp, discoun
             onClick={handleWishlistClick}
             aria-label={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
             title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-            className={`flex items-center cursor-pointer justify-center transition-all duration-300 hover:scale-110 shadow-md ${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-full bg-white`}
+            className={`flex items-center cursor-pointer justify-center transition-all duration-300 hover:scale-110 shadow-md ${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-full relative overflow-hidden`}
             style={{
-              color: isWishlisted ? 'var(--color-danger)' : 'var(--color-text-secondary)'
+              color: isWishlisted ? 'var(--color-danger, red)' : 'white'
             }}
           >
-            {isWishlisted ? (
-              <FavoriteIcon fontSize={compact ? 'small' : 'medium'} />
-            ) : (
-              <FavoriteBorderIcon fontSize={compact ? 'small' : 'medium'} />
-            )}
+            <div className="absolute inset-0 z-0 opacity-80" style={{ backgroundColor: 'var(--color-primary, #06B6D4)' }}></div>
+            <div className="relative z-10 flex items-center justify-center">
+              {isWishlisted ? (
+                <FavoriteIcon fontSize={compact ? 'small' : 'medium'} />
+              ) : (
+                <FavoriteBorderIcon fontSize={compact ? 'small' : 'medium'} />
+              )}
+            </div>
           </button>
         </div>
 
@@ -209,7 +212,7 @@ const Card = ({ id, apiId, image, title, specs, price, description, mrp, discoun
         </h3>
 
         {/* Spec Badges */}
-        {badges.length > 0 && (
+        {/* {badges.length > 0 && (
           <div className="flex flex-wrap gap-1 mb-3">
             {badges.slice(0, 3).map((b, i) => (
               <span
@@ -221,7 +224,7 @@ const Card = ({ id, apiId, image, title, specs, price, description, mrp, discoun
               </span>
             ))}
           </div>
-        )}
+        )} */}
 
         {/* Description */}
         {finalDescription && (

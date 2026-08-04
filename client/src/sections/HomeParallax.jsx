@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence } from 'framer-motion';
+import { Link } from 'react-router-dom';
 
 const TOTAL_FRAMES = 49
 
@@ -193,12 +194,14 @@ const HomeParallax = () => {
                   <p className="mt-4 mb-8 text-xl text-gray-200 drop-shadow-lg font-medium max-w-2xl">
                     The ultimate rig awaits. Seamlessly reassembled for peak performance.
                   </p>
-                  <button
-                    className="px-6 py-2 cursor-pointer text-white font-bold text-lg uppercase tracking-wider transition-all pointer-events-auto hover:shadow-lg hover:-translate-y-1 hover:brightness-110"
-                    style={{ backgroundColor: 'var(--color-primary, #06B6D4)', borderRadius: 'var(--radius-sm, 6px)' }}
-                  >
-                    Build PC
-                  </button>
+                  <Link to="/builder">
+                    <button
+                      className="px-6 py-2 cursor-pointer text-white font-bold text-lg uppercase tracking-wider transition-all pointer-events-auto hover:shadow-lg hover:-translate-y-1 hover:brightness-110"
+                      style={{ backgroundColor: 'var(--color-primary, #06B6D4)', borderRadius: 'var(--radius-sm, 6px)' }}
+                    >
+                      Build PC
+                    </button>
+                  </Link>
                 </div>
               </motion.div>
             )}
