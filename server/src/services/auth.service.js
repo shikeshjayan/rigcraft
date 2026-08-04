@@ -11,10 +11,10 @@ const isProduction = process.env.NODE_ENV === 'production';
 const cookieAttributes = {
   httpOnly: true,
   secure: isProduction,
-  // Frontend (vercel.app) and API (onrender.com) are cross-site in production.
-  // SameSite=None is required so the browser sends the cookie on cross-site
-  // XHR/fetch; it is only valid together with Secure (enabled in production).
-  sameSite: isProduction ? 'none' : 'lax',
+  // Frontend and API are served from the same origin (single-origin deployment).
+  // SameSite=Lax keeps the cookie out of cross-site subrequests and restores
+  // CSRF protection, while still being sent on same-site XHR/fetch.
+  sameSite: 'lax',
 };
 
 const createTokenResponse = async (user, statusCode, res, rememberMe = false) => {
