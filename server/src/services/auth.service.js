@@ -79,13 +79,15 @@ export const refreshToken = async (token, res) => {
 
 export const checkAccount = async (identifier) => {
   let user;
+  let googleOnly = false;
   if (identifier.includes('@')) {
-    user = await userRepository.findByEmail(identifier);
+    user = await userRepository.findByEmailWithPassword(identifier);
+    googleOnly = Boolean(user && user.googleId && !user.password);
   } else {
     user = await userRepository.findByPhone(identifier);
   }
   if (!user) throw ApiError.notFound('No account found with this identifier');
-  return true;
+  return { googleOnly };
 };
 
 export const updateUserRole = async (userId, role) => {

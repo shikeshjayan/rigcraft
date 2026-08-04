@@ -22,7 +22,7 @@ export const getStats = async () => {
     prevMonthCustomers,
   ] = await Promise.all([
     Order.aggregate([
-      { $match: { paymentStatus: "paid" } },
+      { $match: { $or: [{ paymentStatus: "paid" }, { paymentMethod: "cod" }] } },
       {
         $group: {
           _id: null,
@@ -111,7 +111,7 @@ export const getSalesData = async (period = "yearly") => {
   const sales = await Order.aggregate([
     {
       $match: {
-        paymentStatus: "paid",
+        $or: [{ paymentStatus: "paid" }, { paymentMethod: "cod" }],
         createdAt: { $gte: startDate },
       },
     },
