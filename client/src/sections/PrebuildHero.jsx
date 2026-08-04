@@ -159,7 +159,7 @@ const PrebuildHero = () => {
     <section 
       ref={sectionRef}
       onMouseMove={handleMouseMove}
-      className="relative w-full min-h-[75vh] lg:min-h-[85vh] flex items-center overflow-hidden bg-white selection:bg-[var(--color-primary)] selection:text-white lg:-mt-16"
+      className="relative w-full min-h-[75vh] lg:min-h-[85vh] flex items-center overflow-hidden bg-white selection:bg-[var(--color-primary)] selection:text-white"
       style={{ perspective: '1400px' }}
     >
       {/* ---------------- BACKGROUND LAYERS ---------------- */}
