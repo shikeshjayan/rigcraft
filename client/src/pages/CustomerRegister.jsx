@@ -61,13 +61,13 @@ const CustomerRegister = () => {
       const digits = e.target.value.replace(/[^0-9]/g, '').replace(/^91/, '');
       const formatted = digits ? `+91 ${digits}` : '';
       setFormData(prev => ({ ...prev, phone: formatted }));
-      setErrors(prev => ({ ...prev, phone: '' }));
+      setErrors(prev => ({ ...prev, phone: '', google: '' }));
       registerMutation.reset();
       return;
     }
     const { name, value, type, checked } = e.target;
     setFormData(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
-    setErrors(prev => ({ ...prev, [name]: '' }));
+    setErrors(prev => ({ ...prev, [name]: '', google: '' }));
     registerMutation.reset();
   };
 

@@ -5,7 +5,6 @@ import SearchIcon from '@mui/icons-material/Search';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
-import CloseIcon from '@mui/icons-material/Close';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
@@ -21,8 +20,6 @@ import ProfileMenu from './Navbar/ProfileMenu';
 import MobileDrawer from './Navbar/MobileDrawer';
 import ConfirmDialog from './Navbar/ConfirmDialog';
 
-const BANNER_KEY = 'rigcraft_banner_dismissed';
-
 const Navbar = () => {
   const location = useLocation();
   const { isLoggedIn, user, logout } = useAuth();
@@ -32,13 +29,6 @@ const Navbar = () => {
 
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [bannerVisible, setBannerVisible] = useState(() => {
-    try {
-      return localStorage.getItem(BANNER_KEY) !== '1';
-    } catch {
-      return true;
-    }
-  });
 
   const { data: profileData } = useQuery({
     queryKey: ['profile', user?._id || user?.id],
@@ -92,15 +82,6 @@ const wishlistCount = wishlist.length;
   const closeMobileOverlays = () => {
     setMobileMenuOpen(false);
     search.setMobileSearchOpen(false);
-  };
-
-  const dismissBanner = () => {
-    setBannerVisible(false);
-    try {
-      localStorage.setItem(BANNER_KEY, '1');
-    } catch {
-      // storage unavailable — ignore
-    }
   };
 
   const storeName = brand?.storeName || 'RigCraft';
@@ -157,7 +138,7 @@ const wishlistCount = wishlist.length;
         className="sticky top-0 z-50 flex flex-col w-full"
       >
         {/* Announcement Top Bar */}
-        {bannerVisible && currentAnnouncement && (
+        {currentAnnouncement && (
           <div
             className="text-center py-2 px-10 text-sm font-medium z-20 relative"
             style={{
@@ -178,14 +159,6 @@ const wishlistCount = wishlist.length;
                 {currentAnnouncement}
               </motion.span>
             </AnimatePresence>
-            <button
-              type="button"
-              onClick={dismissBanner}
-              aria-label="Dismiss announcement"
-              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-full hover:opacity-70 transition-opacity cursor-pointer"
-            >
-              <CloseIcon sx={{ fontSize: 16 }} />
-            </button>
           </div>
         )}
 
