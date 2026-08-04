@@ -103,14 +103,25 @@ const Filter = React.memo(({ isOpen, onClose, filters, setFilters, onClearAll, d
       >
         <div className="flex-1 overflow-y-auto overflow-x-hidden custom-scrollbar">
           <div className="p-6">
-            <div className="flex items-center justify-between mb-6 sticky top-0 bg-white z-10 pb-2">
-              <h3 className="text-[18px] font-bold text-[#0F1111] mt-[10px]">Filters</h3>
-              <button
-                onClick={onClearAll}
-                className="text-[13px] font-bold text-[#EF4444] mt-[10px] hover:text-[#DC2626] hover:underline cursor-pointer"
-              >
-                Clear All
-              </button>
+            <div className="flex items-center justify-between mb-6 sticky top-0 bg-white z-10 pt-2 pb-2">
+              <h3 className="text-[18px] font-bold text-[#0F1111]">Filters</h3>
+              <div className="flex items-center gap-4">
+                <button
+                  onClick={onClearAll}
+                  className="text-[13px] font-bold text-[#EF4444] hover:text-[#DC2626] hover:underline cursor-pointer"
+                >
+                  Clear All
+                </button>
+                <button 
+                  onClick={onClose} 
+                  className="text-gray-400 hover:text-[#0F1111] transition-colors p-1 rounded-full hover:bg-gray-100"
+                  aria-label="Close filters"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
             </div>
 
             {/* Price Range */}

@@ -48,6 +48,32 @@ const Chatbot = () => {
   const [activeBuildParts, setActiveBuildParts] = useState([]);
   const [isBuilding, setIsBuilding] = useState(false);
   const [showSavePopup, setShowSavePopup] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
+
+  useEffect(() => {
+    let scrollTimeout;
+    const handleScroll = () => {
+      setIsScrolling(true);
+      if (isOpen) setIsOpen(false); // close chat window on scroll
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        setIsScrolling(false);
+      }, 400);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, [isOpen]);
+
+  useEffect(() => {
+    const handleDropdownToggle = (e) => setIsDropdownOpen(e.detail.isOpen);
+    window.addEventListener('mobileCategoryDropdownToggled', handleDropdownToggle);
+    return () => window.removeEventListener('mobileCategoryDropdownToggled', handleDropdownToggle);
+  }, []);
   
   const idleTimeoutRef = useRef(null);
   const messagesEndRef = useRef(null);
@@ -343,8 +369,8 @@ User: ${userText}`;
     }
   };
 
-  // Hide on auth pages
-  if (location.pathname === '/login' || location.pathname === '/register') {
+  // Hide on auth pages, when dropdown is open, or when scrolling
+  if (location.pathname === '/login' || location.pathname === '/register' || isDropdownOpen || isScrolling) {
     return null;
   }
 

@@ -77,7 +77,7 @@ const HeroDeals = () => {
               Don't miss out on these limited time offers for top tier components.
             </p>
           </div>
-          <div className="flex items-center gap-6 mt-4 md:mt-0">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 mt-4 md:mt-0">
             <div className="flex items-center gap-2">
               <span className="text-[14px] font-[600] text-[#6B7280]">Ends in:</span>
               <CountdownTimer
