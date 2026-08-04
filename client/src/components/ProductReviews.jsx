@@ -54,7 +54,7 @@ const ProductReviews = ({ itemId, itemType }) => {
         title: "Review"
       };
 
-      await apiClient.post('/reviews', payload);
+      await apiClient.post('/reviews/product', payload);
       
       toast('Review submitted successfully.');
       setSuccessMsg("Review submitted successfully!");
