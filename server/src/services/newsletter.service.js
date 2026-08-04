@@ -35,11 +35,15 @@ export const subscribe = async (email) => {
 };
 
 const sendWelcomeEmail = async (email) => {
-  await sendEmail({
-    to: email,
-    subject: "Welcome to RigCraft Newsletter!",
-    html: `<p>Thank you for subscribing to the RigCraft newsletter!</p><p>Stay tuned for the latest PC building tips, exclusive deals, and new product announcements.</p>`,
-  });
+  try {
+    await sendEmail({
+      to: email,
+      subject: "Welcome to RigCraft Newsletter!",
+      html: `<p>Thank you for subscribing to the RigCraft newsletter!</p><p>Stay tuned for the latest PC building tips, exclusive deals, and new product announcements.</p>`,
+    });
+  } catch (err) {
+    console.warn("[newsletter] welcome email failed:", err.message);
+  }
 };
 
 export const unsubscribe = async (email) => {

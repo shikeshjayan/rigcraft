@@ -21,6 +21,11 @@ const uploadsDir =
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
 }
+
+// Built frontend (single-origin). The Render build copies client/dist here,
+// or override with CLIENT_DIST_DIR. Skipped when absent (e.g. local dev).
+const clientDistDir = process.env.CLIENT_DIST_DIR || path.resolve(__dirname, "../public");
+const hasClientBuild = fs.existsSync(clientDistDir);
 import authRoutes from "./routes/auth.routes.js";
 import categoryRoutes from "./routes/category.routes.js";
 import brandRoutes from "./routes/brand.routes.js";
@@ -75,10 +80,6 @@ app.use("/uploads", express.static(uploadsDir));
 
 app.use(maintenanceMode);
 
-app.get("/", (req, res) => {
-  res.send("Welcome to the RigCraft E-commerce API!");
-});
-
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/brands", brandRoutes);
@@ -118,6 +119,17 @@ app.use("/api/v1/admin/faqs", adminFaqRoutes);
 app.use("/api/v1/search", searchRoutes);
 app.use("/api/v1/admin/search", adminSearchRoutes);
 app.use("/api/v1/uploads", uploadRoutes);
+
+// Serve the built SPA from the same origin (single-origin deployment).
+if (hasClientBuild) {
+  app.use(express.static(clientDistDir));
+
+  const spaIndex = path.join(clientDistDir, "index.html");
+  // Fallback for client-side routes, excluding API/uploads/socket.io.
+  app.get(/^(?!\/(api|uploads|socket\.io)(\/|$)).*/, (req, res) => {
+    res.sendFile(spaIndex);
+  });
+}
 
 app.use(errorHandler);
 
