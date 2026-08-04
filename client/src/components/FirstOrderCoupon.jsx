@@ -20,6 +20,33 @@ const FirstOrderCoupon = () => {
   const hideRoutes = ['/profile', '/wishlist', '/cart'];
   const shouldHide = hideRoutes.some(route => location.pathname.startsWith(route));
 
+  const [isScrolling, setIsScrolling] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    const handleDropdownToggle = (e) => setIsDropdownOpen(e.detail.isOpen);
+    window.addEventListener('mobileCategoryDropdownToggled', handleDropdownToggle);
+    return () => window.removeEventListener('mobileCategoryDropdownToggled', handleDropdownToggle);
+  }, []);
+
+  useEffect(() => {
+    let scrollTimeout;
+    const handleScroll = () => {
+      setIsScrolling(true);
+      if (isOpen) setIsOpen(false); // Auto-close when user starts scrolling
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        setIsScrolling(false);
+      }, 400); // reappear 400ms after scrolling stops
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(scrollTimeout);
+    };
+  }, [isOpen]);
+
   useEffect(() => {
     const checkEligibilityAndFetchCoupon = async () => {
       try {
@@ -47,7 +74,7 @@ const FirstOrderCoupon = () => {
     }
   }, [isLoggedIn, shouldHide]);
 
-  if (shouldHide || !isEligible || !coupon) {
+  if (shouldHide || !isEligible || !coupon || isDropdownOpen) {
     return null;
   }
 
@@ -65,22 +92,22 @@ const FirstOrderCoupon = () => {
     <div className="fixed top-1/2 left-0 z-50 perspective-1000">
       {/* Tab Button (Visible when closed) */}
       <AnimatePresence>
-        {!isOpen && (
+        {!isOpen && !isScrolling && (
           <motion.div
             initial={{ x: '-100%', opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: '-100%', opacity: 0 }}
             transition={{ type: 'tween', ease: 'easeInOut', duration: 0.2 }}
             onClick={() => setIsOpen(true)}
-            className="absolute left-0 top-0 -translate-y-1/2 w-[44px] h-[240px] py-4 pl-2 bg-[var(--color-primary)] cursor-pointer flex flex-col items-center justify-center hover:bg-[var(--color-primary)]/80 transition-all shadow-[4px_0_15px_rgba(0,0,0,0.15)] origin-center rotate-180 border-l border-gray-200"
+            className="absolute left-0 top-0 -translate-y-1/2 w-[38px] md:w-[44px] h-[160px] md:h-[240px] py-2 md:py-4 px-1 md:px-0 bg-[var(--color-primary)] cursor-pointer flex flex-col items-center justify-center hover:bg-[var(--color-primary)]/80 transition-all shadow-[4px_0_15px_rgba(0,0,0,0.15)] origin-center rotate-180 border-l border-gray-200"
             style={{ writingMode: 'vertical-rl', borderRadius: 'var(--radius-sm) 0 0 var(--radius-sm)' }}
           >
-            <span className="font-bold text-[16px] tracking-widest uppercase text-white mb-3 text-center">
+            <span className="font-bold text-[13px] md:text-[16px] tracking-[0.1em] md:tracking-widest uppercase text-white mb-2 md:mb-3 pr-2 text-center">
               UPTO {discountText}
             </span>
             {/* Downward triangle in DOM becomes upward triangle at the top when rotated 180deg */}
-            <div className="flex items-center justify-center w-full rotate-90 p-2">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="white">
+            <div className="flex items-center justify-center w-full rotate-90 pb-1 md:p-2">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="white">
                 <path d="M12 21l-12-18h24z" />
               </svg>
             </div>
@@ -102,7 +129,7 @@ const FirstOrderCoupon = () => {
              {/* Left Close Strip */}
             <div 
               onClick={() => setIsOpen(false)}
-              className="bg-[var(--color-primary)] text-gray-800 w-10 h-full min-h-[240px] flex flex-col items-center justify-center cursor-pointer hover:bg-[var(--color-primary)]/80 transition-colors border-r border-gray-200"
+              className="bg-[var(--color-primary)] text-gray-800 w-8 md:w-10 h-full min-h-[180px] md:min-h-[240px] flex flex-col items-center justify-center cursor-pointer hover:bg-[var(--color-primary)]/80 transition-colors border-r border-gray-200"
             >
               <ArrowLeftIcon className="text-white" />
               <span 
@@ -114,27 +141,27 @@ const FirstOrderCoupon = () => {
             </div>
 
             {/* Card Content */}
-            <div className="p-6 md:p-8 w-[320px] md:w-[450px] relative">
-              <div className="absolute top-5 right-5 bg-gray-100 border border-gray-200 text-gray-700 text-[10px] font-black px-3 py-1 rounded-sm uppercase tracking-widest shadow-sm">
+            <div className="p-5 md:p-8 w-[280px] sm:w-[320px] md:w-[450px] relative">
+              <div className="absolute top-3 right-3 md:top-5 md:right-5 bg-gray-100 border border-gray-200 text-gray-700 text-[9px] md:text-[10px] font-black px-2 py-1 md:px-3 md:py-1 rounded-sm uppercase tracking-widest shadow-sm">
                 Special Offer
               </div>
 
               <div className="mb-2 relative z-10">
-                <span className="text-[12px] font-bold text-gray-500 uppercase tracking-widest">Avail Upto</span>
-                <h3 className="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-none mt-1 drop-shadow-sm">
+                <span className="text-[10px] md:text-[12px] font-bold text-gray-500 uppercase tracking-widest">Avail Upto</span>
+                <h3 className="text-3xl md:text-5xl font-black text-gray-900 tracking-tight leading-none mt-1 drop-shadow-sm">
                   {discountText}
                 </h3>
               </div>
 
-              <div className="mt-6 mb-8 relative z-10">
-                <p className="text-[13px] text-gray-600 font-medium mb-2">Use this Code at Checkout:</p>
-                <div className="flex items-center gap-3">
-                  <span className="text-[22px] font-black text-blue-600 tracking-widest bg-blue-50 px-5 py-2.5 rounded-sm shadow-inner border border-blue-100">
+              <div className="mt-4 md:mt-6 mb-6 md:mb-8 relative z-10">
+                <p className="text-[11px] md:text-[13px] text-gray-600 font-medium mb-2">Use this Code at Checkout:</p>
+                <div className="flex items-center gap-2 md:gap-3">
+                  <span className="text-[18px] md:text-[22px] font-black text-blue-600 tracking-widest bg-blue-50 px-4 py-2 md:px-5 md:py-2.5 rounded-sm shadow-inner border border-blue-100 flex-1 text-center md:flex-none">
                     {coupon.code}
                   </span>
                   <button 
                     onClick={handleCopy}
-                    className="p-3 bg-gray-100 rounded-sm shadow-sm border border-gray-200 hover:bg-gray-200 transition-all text-gray-700 hover:text-black group"
+                    className="p-2 md:p-3 bg-gray-100 rounded-sm shadow-sm border border-gray-200 hover:bg-gray-200 transition-all text-gray-700 hover:text-black group shrink-0"
                     title="Copy Code"
                   >
                     <ContentCopyIcon fontSize="small" className="group-hover:scale-110 transition-transform" />
@@ -162,13 +189,13 @@ const FirstOrderCoupon = () => {
                 </p>
               </div>
 
-              <div className="flex justify-between items-center pt-5 border-t border-gray-200 relative z-10">
-                <div className="flex items-center gap-2 text-[12px] font-bold text-[#10B981]">
-                  <span className="w-5 h-5 rounded-full bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center">✓</span>
+              <div className="flex justify-between items-center pt-4 md:pt-5 border-t border-gray-200 relative z-10 flex-col sm:flex-row gap-2 sm:gap-0 items-start sm:items-center">
+                <div className="flex items-center gap-2 text-[11px] md:text-[12px] font-bold text-[#10B981]">
+                  <span className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center text-[10px]">✓</span>
                   Genuine Products
                 </div>
-                <div className="flex items-center gap-2 text-[12px] font-bold text-[#10B981]">
-                  <span className="w-5 h-5 rounded-full bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center">✓</span>
+                <div className="flex items-center gap-2 text-[11px] md:text-[12px] font-bold text-[#10B981]">
+                  <span className="w-4 h-4 md:w-5 md:h-5 rounded-full bg-[#10B981]/10 border border-[#10B981]/20 flex items-center justify-center text-[10px]">✓</span>
                   Fast Delivery
                 </div>
               </div>
