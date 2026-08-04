@@ -33,7 +33,7 @@ const ComponentsCatalog = () => {
   const [isFiltering, setIsFiltering] = useState(false);
   const [products, setProducts] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
-  const itemsPerPage = 40; 
+  const itemsPerPage = 12; 
 
   useEffect(() => {
     setFilters({
