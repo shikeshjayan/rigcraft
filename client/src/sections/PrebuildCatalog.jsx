@@ -23,7 +23,7 @@ const PrebuildCatalog = () => {
   // Pagination & Loading State
   const [currentPage, setCurrentPage] = useState(1);
   const [isFiltering, setIsFiltering] = useState(false);
-  const itemsPerPage = 40; 
+  const itemsPerPage = 12; 
 
   const [basePCs, setBasePCs] = useState([]);
   const [allProductsDict, setAllProductsDict] = useState({});

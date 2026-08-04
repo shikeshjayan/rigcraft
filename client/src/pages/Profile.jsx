@@ -503,7 +503,14 @@ const Profile = () => {
                             const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
                             handleAddressChange({ target: { name: 'phone', value: val } });
                           }} placeholder="10-digit mobile number" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
-                          <input type="text" name="postalCode" value={addressForm.postalCode} onChange={handleAddressChange} placeholder="Pincode" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
+                          <input type="text" name="alternatePhone" value={addressForm.alternatePhone} onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
+                            handleAddressChange({ target: { name: 'alternatePhone', value: val } });
+                          }} placeholder="Alternate mobile number (Optional)" className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
+                          <input type="text" name="postalCode" value={addressForm.postalCode} onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
+                            handleAddressChange({ target: { name: 'postalCode', value: val } });
+                          }} placeholder="Pincode" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
                           <input type="text" name="city" value={addressForm.city} onChange={handleAddressChange} placeholder="City/District/Town" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
                           <select name="state" value={addressForm.state} onChange={handleAddressChange} required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium">
                             <option value="" disabled>Select State</option>
