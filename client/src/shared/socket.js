@@ -1,4 +1,5 @@
 import { io } from 'socket.io-client'
+import { getToken } from './auth/token'
 
 const SERVER_ORIGIN =
   import.meta.env.VITE_SOCKET_URL ||
@@ -17,6 +18,7 @@ export const socket = io(SERVER_ORIGIN, {
 })
 
 export const connectSocket = () => {
+  socket.auth = { token: getToken() };
   if (!socket.connected) socket.connect()
   return socket
 }
