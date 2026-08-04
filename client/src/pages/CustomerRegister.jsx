@@ -141,7 +141,7 @@ const CustomerRegister = () => {
           </div>
 
           <div className="relative mt-6">
-            <div className={formData.consent ? '' : 'pointer-events-none'}>
+            <div className={`flex justify-center ${formData.consent ? '' : 'pointer-events-none'}`}>
               {isGoogleOAuthEnabled() ? (
                 <GoogleLogin
                   onSuccess={({ credential }) => googleLoginMutation.mutate(credential)}

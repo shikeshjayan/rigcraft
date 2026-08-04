@@ -11,6 +11,8 @@
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
     "seed": "node seed/seed.js",
+    "seed:more": "node seed/seed-more.js",
+    "seed:reviews": "node seed/seed-reviews.js",
     "migrate:category-type": "node src/scripts/migrate-category-type.js",
     "migrate:review-type": "node src/scripts/migrate-review-type.js",
     "migrate:review-user": "node src/scripts/migrate-review-user.js",
