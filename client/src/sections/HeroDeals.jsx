@@ -33,28 +33,16 @@ const HeroDeals = () => {
     allProducts = productsData;
   }
 
-  // Hot Deals: active now, starts today, ends after today but by the end of the current week (Sunday 23:59)
-  const startOfToday = new Date(currentTime);
-  startOfToday.setHours(0, 0, 0, 0);
-
-  const endOfToday = new Date(currentTime);
-  endOfToday.setHours(23, 59, 59, 999);
-
-  const endOfWeek = new Date(currentTime);
-  endOfWeek.setDate(endOfWeek.getDate() + ((7 - endOfWeek.getDay()) % 7));
-  endOfWeek.setHours(23, 59, 59, 999);
-
   const activeSaleProducts = allProducts.filter(product => {
-    if (!product.saleStart || !product.saleEnd) return false;
-    const start = new Date(product.saleStart);
-    const end = new Date(product.saleEnd);
-    return (
-      currentTime >= start &&
-      currentTime <= end &&
-      start >= startOfToday &&
-      end > endOfToday &&
-      end <= endOfWeek
-    );
+    if (!product.salePrice) return false;
+    
+    if (product.saleStart && product.saleEnd) {
+      const start = new Date(product.saleStart);
+      const end = new Date(product.saleEnd);
+      return currentTime >= start && currentTime <= end;
+    }
+    
+    return true;
   });
 
   // Show only 4 products
@@ -89,7 +77,7 @@ const HeroDeals = () => {
               Don't miss out on these limited time offers for top tier components.
             </p>
           </div>
-          <div className="flex items-center gap-6 mt-4 md:mt-0">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 mt-4 md:mt-0">
             <div className="flex items-center gap-2">
               <span className="text-[14px] font-[600] text-[#6B7280]">Ends in:</span>
               <CountdownTimer
@@ -100,7 +88,7 @@ const HeroDeals = () => {
                 size="sm"
               />
             </div>
-            <Link to="/alldeals" className="font-[600] text-[16px] flex items-center gap-1 transition-transform hover:translate-x-1" style={{ color: 'var(--color-primary, #06B6D4)' }}>
+            <Link to="/deals" className="font-[600] text-[16px] flex items-center gap-1 transition-transform hover:translate-x-1" style={{ color: 'var(--color-primary, #06B6D4)' }}>
               View All Deals
               <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9 5l7 7-7 7" />

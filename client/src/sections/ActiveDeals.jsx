@@ -13,11 +13,14 @@ const ActiveDeals = () => {
   });
 
   const dealsList = Array.isArray(dealsData?.data) ? dealsData.data : [];
-  const activeDeal = dealsList.find((d) => d.isFeatured) || dealsList[0];
-  const products = activeDeal?.products || [];
-  const prebuiltPCs = activeDeal?.prebuiltPCs || [];
-  const allDealItems = [...products, ...prebuiltPCs];
-  const deals = allDealItems.slice(0, 4);
+  const allDealItems = dealsList.reduce((acc, deal) => {
+    const products = deal.products || [];
+    const prebuiltPCs = deal.prebuiltPCs || [];
+    return [...acc, ...products, ...prebuiltPCs];
+  }, []);
+  
+  const uniqueDeals = Array.from(new Map(allDealItems.map(item => [item._id || item.id, item])).values());
+  const deals = uniqueDeals;
 
   if (isLoading) {
     return (
