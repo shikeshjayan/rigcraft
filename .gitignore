@@ -12,6 +12,9 @@ graphify-out
 API.md
 
 .agents/
+.claude/
+.gitnexus
+.opencode
 .opencodeignore
 # Test infrastructure
 client/src/tests/
