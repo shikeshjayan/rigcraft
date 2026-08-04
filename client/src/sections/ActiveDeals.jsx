@@ -20,7 +20,7 @@ const ActiveDeals = () => {
   }, []);
   
   const uniqueDeals = Array.from(new Map(allDealItems.map(item => [item._id || item.id, item])).values());
-  const deals = uniqueDeals;
+  const deals = uniqueDeals.slice(0, 12);
 
   if (isLoading) {
     return (

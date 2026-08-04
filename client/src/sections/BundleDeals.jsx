@@ -17,7 +17,7 @@ const BundleDeals = () => {
     return [...acc, ...(deal.prebuiltPCs || [])];
   }, []);
   const uniqueBundles = Array.from(new Map(allPrebuiltPCs.map(item => [item._id || item.id, item])).values());
-  const bundles = uniqueBundles;
+  const bundles = uniqueBundles.slice(0, 12);
 
   if (isLoading) {
     return (

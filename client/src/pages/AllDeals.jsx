@@ -69,7 +69,7 @@ const AllDeals = () => {
 
   const [filters, setFilters] = useState(initialFilters);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 40; 
+  const itemsPerPage = 12; 
 
   const dynamicFilterOptions = useMemo(() => {
     const brands = new Set();
@@ -163,7 +163,7 @@ const AllDeals = () => {
     }
   };
 
-  const gridClasses = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 min-h-[800px] items-start content-start";
+  const gridClasses = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-h-[800px] items-start content-start";
 
   return (
     <section id="deals-top" className="w-full py-12 pb-24" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
