@@ -14,11 +14,11 @@ const ITEM_MODEL_MAP = {
   prebuilt: "PrebuiltPC",
 };
 
-const verifyPurchase = async (userId, itemId, itemType) => {
+const hasDeliveredOrder = async (userId, itemId, itemType) => {
   const order = await Order.findOne({
     user: userId,
     paymentStatus: "paid",
-    orderStatus: { $ne: "cancelled" },
+    orderStatus: "delivered",
     items: { $elemMatch: { item: itemId, itemType } },
   });
   return !!order;
@@ -42,9 +42,11 @@ export const createReview = async (userId, data, files) => {
       throw ApiError.badRequest("item and itemType are required");
     }
 
-    const isPurchased = await verifyPurchase(userId, item, itemType);
-    if (!isPurchased) {
-      throw ApiError.forbidden("You must purchase this item before reviewing");
+    isVerifiedPurchase = await hasDeliveredOrder(userId, item, itemType);
+    if (settings.review?.verifiedPurchaseOnly && !isVerifiedPurchase) {
+      throw ApiError.forbidden(
+        "You must purchase and receive this item before reviewing"
+      );
     }
 
     const existing = await reviewRepository.findOneByUserAndItem(
@@ -57,7 +59,6 @@ export const createReview = async (userId, data, files) => {
     }
 
     itemModel = ITEM_MODEL_MAP[itemType];
-    isVerifiedPurchase = true;
   }
 
   let images = [];
@@ -225,19 +226,27 @@ export const getTestimonials = async () => {
 };
 
 export const getProductReviews = async (itemId, itemType, query) => {
-  const { page = 1, limit = 20, sort, rating } = query;
+  const { page = 1, limit = 20, sort, rating, minRating, verifiedOnly } = query;
 
-  const sortOptions = {};
+  const sortOptions = { isVerifiedPurchase: -1, createdAt: -1 };
   if (sort === "highest") sortOptions.rating = -1;
   else if (sort === "lowest") sortOptions.rating = 1;
-  else sortOptions.createdAt = -1;
+  else if (sort === "newest") sortOptions.createdAt = -1;
+  else if (sort === "oldest") sortOptions.createdAt = 1;
 
-  return reviewRepository.findByItem(itemId, itemType, {
-    page: Number(page),
-    limit: Number(limit),
-    sort: sortOptions,
-    rating: rating ? Number(rating) : undefined,
-  });
+  const [result, distribution] = await Promise.all([
+    reviewRepository.findByItem(itemId, itemType, {
+      page: Number(page),
+      limit: Number(limit),
+      sort: sortOptions,
+      rating: rating ? Number(rating) : undefined,
+      minRating: minRating ? Number(minRating) : undefined,
+      verifiedOnly: verifiedOnly === "true",
+    }),
+    reviewRepository.getRatingDistribution(itemId, itemType),
+  ]);
+
+  return { ...result, distribution };
 };
 
 export const getUserReviews = async (userId, query) => {

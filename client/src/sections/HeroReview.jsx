@@ -11,6 +11,7 @@ import { useAuth } from "../context/AuthContext";
 import { useToast } from "../components/toast/useToast";
 import { useNavigate } from "react-router-dom";
 import SkeletonCard from "../components/SkeletonCard";
+import ReportReview from "../components/ReportReview";
 
 const getInitials = (name = "") => {
   const parts = name.trim().split(/\s+/).filter(Boolean);
@@ -65,7 +66,7 @@ const ReviewCard = ({ review, onReadMore, onToggleHelpful }) => {
         ))}
       </div>
 
-      <div className="flex-grow mb-6">
+      <div className="flex-grow mb-6 cursor-pointer" onClick={() => onReadMore(review)}>
         <p className="text-[15px] text-[#4B5563] leading-relaxed font-medium">
           &quot;{displayText}&quot;
           {isLong && (
@@ -132,6 +133,7 @@ const HeroReview = () => {
               name:
                 `${t.user?.firstName || ""} ${t.user?.lastName || ""}`.trim() ||
                 "Customer",
+              userId: t.user?._id,
               initials: getInitials(
                 `${t.user?.firstName || ""} ${t.user?.lastName || ""}`
               ),
@@ -364,20 +366,7 @@ const HeroReview = () => {
                 <CloseIcon />
               </button>
 
-              <div className="flex gap-1 mb-6">
-                {[...Array(5)].map((_, i) => (
-                  <StarIcon
-                    key={i}
-                    sx={{ fontSize: 24, color: i < selectedReview.rating ? "#F59E0B" : "#E5E7EB" }}
-                  />
-                ))}
-              </div>
-
-              <p className="text-[16px] text-[#374151] leading-relaxed font-medium mb-8">
-                &quot;{selectedReview.text}&quot;
-              </p>
-
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 mb-8">
                 {selectedReview.avatar ? (
                   <img
                     src={selectedReview.avatar}
@@ -399,6 +388,23 @@ const HeroReview = () => {
                     {selectedReview.verified ? "Verified Purchase" : "Verified Customer"}
                   </span>
                 </div>
+              </div>
+
+              <div className="flex gap-1 mb-6">
+                {[...Array(5)].map((_, i) => (
+                  <StarIcon
+                    key={i}
+                    sx={{ fontSize: 24, color: i < selectedReview.rating ? "#F59E0B" : "#E5E7EB" }}
+                  />
+                ))}
+              </div>
+
+              <p className="text-[16px] text-[#374151] leading-relaxed font-medium mb-8">
+                &quot;{selectedReview.text}&quot;
+              </p>
+
+              <div className="flex justify-end">
+                <ReportReview itemId={selectedReview.id} authorId={selectedReview.userId} />
               </div>
             </motion.div>
           </motion.div>

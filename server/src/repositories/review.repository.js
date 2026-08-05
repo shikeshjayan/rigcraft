@@ -10,12 +10,16 @@ class ReviewRepository extends BaseRepository {
     const {
       page = 1,
       limit = 20,
-      sort = { createdAt: -1 },
+      sort = { isVerifiedPurchase: -1, createdAt: -1 },
       rating,
+      minRating,
+      verifiedOnly,
     } = options;
 
     const filter = { item: itemId, itemType, status: "approved" };
     if (rating) filter.rating = Number(rating);
+    if (minRating) filter.rating = { $gte: Number(minRating) };
+    if (verifiedOnly) filter.isVerifiedPurchase = true;
 
     return this.model.paginate(filter, {
       page,
@@ -194,6 +198,18 @@ class ReviewRepository extends BaseRepository {
       },
     ]);
     return stats.length > 0 ? stats[0] : { average: 0, count: 0 };
+  }
+
+  async getRatingDistribution(itemId, itemType) {
+    const rows = await this.model.aggregate([
+      { $match: { item: itemId, itemType, status: "approved" } },
+      { $group: { _id: "$rating", count: { $sum: 1 } } },
+    ]);
+    const distribution = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    for (const row of rows) {
+      if (row._id >= 1 && row._id <= 5) distribution[row._id] = row.count;
+    }
+    return distribution;
   }
 
   async adminFindAll(options = {}) {
