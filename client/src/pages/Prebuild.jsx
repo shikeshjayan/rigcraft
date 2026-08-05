@@ -7,7 +7,7 @@ import Breadcrumb from '../components/Breadcrumb';
 const Prebuild = () => {
   return (
     <>
-      <div className="max-w-[1500px] mx-auto px-4 lg:px-8 pt-4 pb-0 bg-[var(--color-bg-primary)]">
+      <div className="relative z-40 max-w-[1500px] mx-auto px-4 lg:px-8 pt-4 pb-0 bg-[var(--color-bg-primary)]">
         <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Prebuilt PCs' }]} />
       </div>
       {/* 1st section: bg-primary */}

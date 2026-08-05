@@ -60,7 +60,7 @@ const HeroNewArrival = () => {
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10">
-          <div>
+          <div className="w-full text-center md:text-left">
             <h2 className="text-[32px] md:text-[40px] font-extrabold text-[#111111] uppercase tracking-wide">
               New <span style={{ color: 'var(--color-primary, #06B6D4)' }}>Arrivals</span>
             </h2>
@@ -68,8 +68,8 @@ const HeroNewArrival = () => {
               Be the first to experience our latest additions to the RigCraft lineup.
             </p>
           </div>
-          
-          <div className="flex flex-col sm:flex-row items-center gap-4 mt-6 md:mt-0">
+
+          <div className="flex items-center gap-2 mt-6 md:mt-0 self-end md:self-auto">
             {/* Carousel Navigation Arrows */}
             <div className="flex items-center gap-2">
               <button 

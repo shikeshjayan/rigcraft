@@ -54,7 +54,7 @@ const RevenueChart = ({ data = [] }) => {
         variant="body2"
         sx={{ color: "var(--color-admin-text-secondary)", mb: 3 }}
       >
-        Monthly revenue for the current year
+        Monthly revenue for the last 12 months
       </Typography>
       <ResponsiveContainer width="100%" height={320}>
         <AreaChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>

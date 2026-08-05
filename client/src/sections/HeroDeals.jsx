@@ -69,7 +69,7 @@ const HeroDeals = () => {
         
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-10">
-          <div>
+          <div className="w-full text-center md:text-left">
             <h2 className="text-[32px] md:text-[40px] font-extrabold text-[#111111] uppercase tracking-wide">
               Hot <span style={{ color: 'var(--color-primary)' }}>Deals</span>
             </h2>
@@ -77,7 +77,7 @@ const HeroDeals = () => {
               Don't miss out on these limited time offers for top tier components.
             </p>
           </div>
-          <div className="flex flex-col md:flex-row items-start md:items-center gap-4 md:gap-6 mt-4 md:mt-0">
+          <div className="flex flex-col items-end gap-4 sm:flex-row sm:items-center sm:justify-end sm:gap-6 w-full mt-6 sm:mt-0">
             <div className="flex items-center gap-2">
               <span className="text-[14px] font-[600] text-[#6B7280]">Ends in:</span>
               <CountdownTimer
