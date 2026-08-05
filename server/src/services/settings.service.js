@@ -69,6 +69,8 @@ export const getPublic = async () => {
     },
     tax: {
       pricesIncludeTax: s.tax?.pricesIncludeTax ?? false,
+      rate: s.tax?.rate ?? 0,
+      name: s.tax?.name || 'GST',
     },
     seo: {
       defaultTitle: s.seo?.defaultTitle || '',

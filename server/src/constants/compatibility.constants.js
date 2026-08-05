@@ -10,6 +10,7 @@ export const COMPATIBILITY_KEYS = {
   COOLER_HEIGHT: "coolerHeight",
   STORAGE_INTERFACE: "storageInterface",
   STORAGE_FORM_FACTOR: "storageFormFactor",
+  STORAGE_SLOTS: "storageSlots",
   PCIE_VERSION: "pcieVersion",
   CPU_SERIES: "cpuSeries",
   CHIPSET: "chipset",
