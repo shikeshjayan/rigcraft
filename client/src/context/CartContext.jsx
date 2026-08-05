@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './AuthContext';
-import { getCart, addToCartApi, removeFromCartApi, clearCartApi } from '../api/cart';
+import { getCart, addToCartApi, removeFromCartApi, clearCartApi, updateCartItemApi } from '../api/cart';
 import { useToast } from '../components/toast/useToast';
 import { friendlyStockMessage } from '../utils/stockMessages';
 
@@ -65,13 +65,32 @@ export const CartProvider = ({ children }) => {
     onSuccess: invalidateCart,
   });
 
+  const updateMutation = useMutation({
+    mutationFn: ({ itemId, quantity }) => updateCartItemApi(itemId, quantity),
+    onMutate: async ({ itemId, quantity }) => {
+      await queryClient.cancelQueries({ queryKey: ['cart', user?._id] });
+      const previous = queryClient.getQueryData(['cart', user?._id]);
+      queryClient.setQueryData(['cart', user?._id], (old) =>
+        (old || []).map((ci) => (ci.cartItemId === itemId ? { ...ci, qty: quantity } : ci))
+      );
+      return { previous };
+    },
+    onError: (err, _vars, context) => {
+      if (context?.previous) queryClient.setQueryData(['cart', user?._id], context.previous);
+      const raw = err.response?.data?.message;
+      toast(friendlyStockMessage(raw) || raw || 'Failed to update item quantity.', 'error');
+    },
+    onSettled: invalidateCart,
+  });
+
   const clearMutation = useMutation({
     mutationFn: clearCartApi,
     onSuccess: invalidateCart,
   });
 
-  const addToCart = async (item) => {
+  const addToCart = async (item, qty = 1) => {
     const normalizedId = item.id || item._id;
+    const quantity = Math.max(1, Math.floor(Number(qty) || 1));
     let itemType = 'product';
     if (item.type === 'custom-build') itemType = 'savedBuild';
     else if (item.type === 'PC' || item.type === 'prebuilt') itemType = 'prebuilt';
@@ -80,7 +99,7 @@ export const CartProvider = ({ children }) => {
 
     if (user) {
       try {
-        await addMutation.mutateAsync({ itemType, itemId: normalizedId, quantity: 1 });
+        await addMutation.mutateAsync({ itemType, itemId: normalizedId, quantity });
         toast(`Added ${item.title || item.name || 'item'} to cart!`);
       } catch (err) {
         console.error("Failed to add to cart:", err);
@@ -92,10 +111,10 @@ export const CartProvider = ({ children }) => {
         const existingItemIndex = prev.findIndex(i => i.id === normalizedId);
         if (existingItemIndex > -1) {
           const updated = [...prev];
-          updated[existingItemIndex].qty = (updated[existingItemIndex].qty || 1) + 1;
+          updated[existingItemIndex].qty = (updated[existingItemIndex].qty || 1) + quantity;
           return updated;
         }
-        return [...prev, { ...item, id: normalizedId, qty: 1, cartItemId: Date.now().toString() + Math.random().toString(), itemType }];
+        return [...prev, { ...item, id: normalizedId, qty: quantity, cartItemId: Date.now().toString() + Math.random().toString(), itemType }];
       });
       toast(`Added ${item.title || item.name || 'item'} to cart!`);
     }
@@ -116,6 +135,19 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const updateQuantity = async (itemId, qty) => {
+    const quantity = Math.max(1, Math.floor(Number(qty) || 1));
+    if (user) {
+      try {
+        await updateMutation.mutateAsync({ itemId, quantity });
+      } catch (err) {
+        console.error("Failed to update cart:", err);
+      }
+    } else {
+      setGuestCart(prev => prev.map(item => (item.cartItemId === itemId || item.id === itemId ? { ...item, qty: quantity } : item)));
+    }
+  };
+
   const clearCart = async () => {
     if (user) {
       try {
@@ -132,7 +164,7 @@ export const CartProvider = ({ children }) => {
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, isLoading, addToCart, removeFromCart, clearCart }}>
+    <CartContext.Provider value={{ cartItems, isLoading, addToCart, removeFromCart, updateQuantity, clearCart }}>
       {children}
     </CartContext.Provider>
   );
