@@ -11,6 +11,8 @@ DESIGN.md
 graphify-out
 API.md
 server/.env
+AGENTS.md
+CLAUDE.md
 
 .agents/
 .claude/
@@ -22,3 +24,6 @@ client/src/tests/
 server/src/tests/
 client/vitest.config.js
 server/vitest.config.js
+
+package-lock.json
+package.json

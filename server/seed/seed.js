@@ -179,7 +179,7 @@ async function seed() {
     },
     order: { prefix: "RC-", allowCancellation: true, cancellationTimeLimit: 24, cancelPendingAfter: 24 },
     inventory: { lowStockThreshold: 10, allowBackorders: false, hideOutOfStock: false, autoUpdateInventory: true },
-    review: { allowReviews: true, verifiedPurchaseOnly: true, autoApprove: false, allowImages: true, maxImages: 5 },
+    review: { allowReviews: true, verifiedPurchaseOnly: false, autoApprove: false, allowImages: true, maxImages: 5 },
     maintenanceMode: false,
     maintenanceMessage: "We'll be back soon!",
     notification: {

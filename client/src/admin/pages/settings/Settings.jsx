@@ -51,7 +51,7 @@ const defaultSettings = {
   seo: { defaultTitle: "", defaultDescription: "", metaKeywords: "" },
   order: { prefix: "RC-", allowCancellation: true, cancellationTimeLimit: 24, cancelPendingAfter: 24 },
   inventory: { lowStockThreshold: 10, allowBackorders: false, hideOutOfStock: false, autoUpdateInventory: true },
-  review: { allowReviews: true, verifiedPurchaseOnly: true, autoApprove: false, allowImages: true, maxImages: 5 },
+  review: { allowReviews: true, verifiedPurchaseOnly: false, autoApprove: false, allowImages: true, maxImages: 5 },
   notification: { orderConfirmation: true, shippingUpdate: true, paymentConfirmation: true, lowStockAlerts: true, newOrderAlerts: true },
 };
 
