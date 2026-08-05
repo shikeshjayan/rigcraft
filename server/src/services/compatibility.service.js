@@ -143,6 +143,26 @@ const checkStorageMotherboard = (storage, motherboard) => {
   return issues;
 };
 
+const checkStorageMotherboardSlots = (storage, motherboard) => {
+  const issues = [];
+  const maxSlots = getCompatibilityValue(motherboard, COMPATIBILITY_KEYS.STORAGE_SLOTS);
+  if (!maxSlots) return issues;
+
+  const entries = Array.isArray(storage) ? storage : [{ product: storage, quantity: 1 }];
+  let totalUnits = 0;
+  for (const entry of entries) {
+    totalUnits += entry.quantity || 1;
+  }
+
+  if (totalUnits > maxSlots) {
+    issues.push(
+      `Selected ${totalUnits} storage drives exceed motherboard storage slots (${maxSlots})`
+    );
+  }
+
+  return issues;
+};
+
 const checkCpuCooler = (cpu, cooler) => {
   const issues = [];
   const cpuTdp = getCompatibilityValue(cpu, COMPATIBILITY_KEYS.TDP);
@@ -279,6 +299,7 @@ const validateBuild = (components) => {
     for (const s of storage) {
       issues.push(...checkStorageMotherboard(s.product, motherboard));
     }
+    issues.push(...checkStorageMotherboardSlots(storage, motherboard));
   }
 
   if (cpu && cooler) {
@@ -330,6 +351,7 @@ export {
   checkCoolerCabinet,
   checkMotherboardCabinet,
   checkStorageMotherboard,
+  checkStorageMotherboardSlots,
   checkCpuCooler,
   calculatePower,
   calculatePrice,

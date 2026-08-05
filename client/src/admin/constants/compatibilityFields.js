@@ -147,4 +147,17 @@ export const COMPATIBILITY_FIELDS = {
     { key: "memory_type", label: "Memory Type", type: "select", options: ["DDR4", "DDR5", "DDR3"] },
     { key: "form_factor", label: "Form Factor", type: "select", options: ["DIMM", "SO-DIMM"] },
   ],
+  motherboard: [
+    { key: "socket", label: "Socket Compatibility", type: "select", options: ["LGA1700", "LGA1851", "AM4", "AM5", "LGA1200", "LGA2066", "sTRX4"] },
+    { key: "chipset", label: "Chipset", type: "text" },
+    { key: "formFactor", label: "Form Factor", type: "select", options: ["ATX", "Micro-ATX", "Mini-ITX", "E-ATX"] },
+    { key: "memoryType", label: "Memory Type", type: "select", options: ["DDR4", "DDR5", "DDR3"] },
+    { key: "maxMemory", label: "Max Memory (GB)", type: "number" },
+    { key: "maxMemorySlots", label: "Memory Slots", type: "number" },
+    { key: "storageInterface", label: "Storage Interface", type: "text" },
+    { key: "storageFormFactor", label: "Storage Form Factor", type: "text" },
+    { key: "storageSlots", label: "Storage Slots", type: "number" },
+    { key: "maxGpuLength", label: "Max GPU Length (mm)", type: "number" },
+    { key: "maxCoolerHeight", label: "Max Cooler Height (mm)", type: "number" },
+  ],
 };
