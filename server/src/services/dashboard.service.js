@@ -4,59 +4,76 @@ import User from "../models/user.model.js";
 import Review from "../models/review.model.js";
 
 export const getStats = async () => {
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+  const prevMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+
   const [
     revenueResult,
     totalOrders,
     totalProducts,
     totalCustomers,
-    prevRevenueResult,
-    prevOrders,
-    prevProducts,
-    prevCustomers,
+    thisMonthOrders,
+    prevMonthOrders,
+    thisMonthProducts,
+    prevMonthProducts,
+    thisMonthCustomers,
+    prevMonthCustomers,
   ] = await Promise.all([
     Order.aggregate([
-      { $match: { paymentStatus: "paid" } },
-      { $group: { _id: null, total: { $sum: "$total" } } },
+      { $match: { $or: [{ paymentStatus: "paid" }, { paymentMethod: "cod" }] } },
+      {
+        $group: {
+          _id: null,
+          total: { $sum: "$total" },
+          thisMonth: {
+            $sum: {
+              $cond: [
+                { $and: [{ $gte: ["$createdAt", monthStart] }, { $lt: ["$createdAt", monthEnd] }] },
+                "$total",
+                0,
+              ],
+            },
+          },
+          prevMonth: {
+            $sum: {
+              $cond: [
+                { $and: [{ $gte: ["$createdAt", prevMonthStart] }, { $lt: ["$createdAt", monthStart] }] },
+                "$total",
+                0,
+              ],
+            },
+          },
+        },
+      },
     ]),
     Order.countDocuments(),
     Product.countDocuments({ isDeleted: false }),
     User.countDocuments({ role: "customer" }),
-    Order.aggregate([
-      {
-        $match: {
-          paymentStatus: "paid",
-          createdAt: {
-            $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-            $lt: new Date(new Date().setDate(new Date().getDate() - 1)),
-          },
-        },
-      },
-      { $group: { _id: null, total: { $sum: "$total" } } },
-    ]),
-    Order.countDocuments({
-      createdAt: {
-        $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-        $lt: new Date(new Date().setDate(new Date().getDate() - 1)),
-      },
+    Order.countDocuments({ createdAt: { $gte: monthStart, $lt: monthEnd } }),
+    Order.countDocuments({ createdAt: { $gte: prevMonthStart, $lt: monthStart } }),
+    Product.countDocuments({
+      isDeleted: false,
+      createdAt: { $gte: monthStart, $lt: monthEnd },
     }),
     Product.countDocuments({
       isDeleted: false,
-      createdAt: {
-        $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-        $lt: new Date(new Date().setDate(new Date().getDate() - 1)),
-      },
+      createdAt: { $gte: prevMonthStart, $lt: monthStart },
     }),
     User.countDocuments({
       role: "customer",
-      createdAt: {
-        $gte: new Date(new Date().setMonth(new Date().getMonth() - 1)),
-        $lt: new Date(new Date().setDate(new Date().getDate() - 1)),
-      },
+      createdAt: { $gte: monthStart, $lt: monthEnd },
+    }),
+    User.countDocuments({
+      role: "customer",
+      createdAt: { $gte: prevMonthStart, $lt: monthStart },
     }),
   ]);
 
   const totalRevenue = revenueResult[0]?.total || 0;
-  const prevRevenue = prevRevenueResult[0]?.total || 0;
+  const thisMonthRevenue = revenueResult[0]?.thisMonth || 0;
+  const prevRevenue = revenueResult[0]?.prevMonth || 0;
 
   const calcChange = (current, previous) => {
     if (previous === 0) return current > 0 ? 100 : 0;
@@ -68,11 +85,10 @@ export const getStats = async () => {
     totalOrders,
     totalProducts,
     totalCustomers,
-    revenueChange: calcChange(totalRevenue, prevRevenue),
-    ordersChange: calcChange(totalOrders, prevOrders),
-    productsChange: calcChange(totalProducts, prevProducts),
-    customersChange: calcChange(totalCustomers, prevCustomers),
-    notificationCount: 0, // Horizontal for now - make dynamic later
+    revenueChange: calcChange(thisMonthRevenue, prevRevenue),
+    ordersChange: calcChange(thisMonthOrders, prevMonthOrders),
+    productsChange: calcChange(thisMonthProducts, prevMonthProducts),
+    customersChange: calcChange(thisMonthCustomers, prevMonthCustomers),
   };
 };
 
@@ -88,14 +104,14 @@ export const getSalesData = async (period = "yearly") => {
     startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
     groupFormat = { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } };
   } else {
-    startDate = new Date(now.getFullYear() - 1, 0, 1);
+    startDate = new Date(now.getFullYear(), now.getMonth() - 11, 1);
     groupFormat = { year: { $year: "$createdAt" }, month: { $month: "$createdAt" } };
   }
 
   const sales = await Order.aggregate([
     {
       $match: {
-        paymentStatus: "paid",
+        $or: [{ paymentStatus: "paid" }, { paymentMethod: "cod" }],
         createdAt: { $gte: startDate },
       },
     },

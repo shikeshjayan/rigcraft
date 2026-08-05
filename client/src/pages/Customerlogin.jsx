@@ -21,6 +21,7 @@ const Customerlogin = () => {
   const [rememberMe, setRememberMe] = useState(false);
   const [consent, setConsent] = useState(false);
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [googleOnly, setGoogleOnly] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
   const inputRefs = useRef([]);
@@ -28,7 +29,10 @@ const Customerlogin = () => {
 
   const checkMutation = useMutation({
     mutationFn: authService.checkAccount,
-    onSuccess: () => setStep('password'),
+    onSuccess: (data) => {
+      setGoogleOnly(Boolean(data?.data?.googleOnly));
+      setStep('password');
+    },
     onError: (err) => setError(err?.response?.data?.message || 'No account found with this email.')
   });
 
@@ -68,6 +72,7 @@ const loginMutation = useMutation({
 
   const handleLoginSubmit = (e) => {
     e.preventDefault();
+    setGoogleOnly(false);
     if (!consent) {
       setError('Please agree to the Terms & Conditions and Privacy Policy to continue.');
       return;
@@ -180,11 +185,12 @@ const loginMutation = useMutation({
                       value={identifier}
                       onChange={(e) => {
                         const raw = e.target.value;
-                        const stripped = raw.replace(/^\+91\s*/, '');
-                        if (/^\d*$/.test(stripped)) {
-                          setIdentifier(stripped ? `+91 ${stripped}` : '');
+                        const withoutPrefix = raw.replace(/^\+91\s*/, '');
+                        const compact = withoutPrefix.replace(/\s/g, '');
+                        if (/^\d*$/.test(compact)) {
+                          setIdentifier(compact ? `+91 ${compact}` : '');
                         } else {
-                          setIdentifier(stripped);
+                          setIdentifier(withoutPrefix);
                         }
                         setError('');
                       }}
@@ -235,7 +241,7 @@ const loginMutation = useMutation({
                 </div>
 
                 <div className="relative mt-4">
-                  <div className={consent ? '' : 'pointer-events-none'}>
+                  <div className={`flex justify-center ${consent ? '' : 'pointer-events-none'}`}>
                     {isGoogleOAuthEnabled() ? (
                       <GoogleLogin
                         onSuccess={({ credential }) => googleLoginMutation.mutate(credential)}
@@ -359,7 +365,34 @@ const loginMutation = useMutation({
                 </p>
               </div>
 
-              <form className="mt-8 space-y-6" onSubmit={handlePasswordSubmit}>
+              {googleOnly ? (
+                <div className="mt-8 space-y-6">
+                  <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-md text-sm font-medium text-center shadow-sm">
+                    This account was created with Google and has no password. Continue with Google to sign in.
+                  </div>
+                  <div className="flex justify-center">
+                    <GoogleLogin
+                      onSuccess={({ credential }) => googleLoginMutation.mutate(credential)}
+                      onError={() => setError('Google sign-in failed. Please try again.')}
+                      width="100%"
+                      shape="rectangular"
+                      text="continue_with"
+                      theme="outline"
+                    />
+                  </div>
+                  {error && step === 'password' && (
+                    <p className="mt-2 text-center text-sm text-red-600 font-medium">{error}</p>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => { setGoogleOnly(false); setStep('login'); }}
+                    className="w-full text-center text-sm text-gray-600 hover:text-gray-500 cursor-pointer"
+                  >
+                    Use a different email or phone number
+                  </button>
+                </div>
+              ) : (
+                <form className="mt-8 space-y-6" onSubmit={handlePasswordSubmit}>
                 <div className="shadow-sm -space-y-px" style={{ borderRadius: 'var(--radius-sm)' }}>
                   <div>
                     <label htmlFor="password" className="sr-only">
@@ -415,6 +448,7 @@ const loginMutation = useMutation({
                   {error && step === 'password' && <p className="mt-2 text-center text-sm text-red-600 font-medium">{error}</p>}
                 </div>
               </form>
+              )}
             </>
           )}
           </div>

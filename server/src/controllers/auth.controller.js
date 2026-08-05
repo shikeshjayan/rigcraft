@@ -15,8 +15,8 @@ export const googleLogin = asyncHandler(async (req, res) => {
 });
 
 export const checkAccount = asyncHandler(async (req, res) => {
-  await authService.checkAccount(req.body.identifier);
-  ApiResponse.ok(null, 'Account exists').send(res);
+  const result = await authService.checkAccount(req.body.identifier);
+  ApiResponse.ok({ googleOnly: result.googleOnly }, 'Account exists').send(res);
 });
 
 export const getProfile = asyncHandler(async (req, res) => {

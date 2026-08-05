@@ -25,6 +25,15 @@ export const AuthProvider = ({ children }) => {
   });
 
   useEffect(() => {
+    const onAuthLogout = () => {
+      setIsLoggedIn(false);
+      setUser(null);
+    };
+    window.addEventListener('rigcraft:auth-logout', onAuthLogout);
+    return () => window.removeEventListener('rigcraft:auth-logout', onAuthLogout);
+  }, []);
+
+  useEffect(() => {
     localStorage.setItem('rigcraft_auth', isLoggedIn.toString());
     if (user) {
       localStorage.setItem('rigcraft_user', JSON.stringify(user));

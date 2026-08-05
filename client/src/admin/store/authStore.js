@@ -38,6 +38,7 @@ const useAuthStore = create(
         localStorage.removeItem("rigcraft_auth");
         localStorage.removeItem("rigcraft_user");
         set({ user: null, isAuthenticated: false });
+        window.dispatchEvent(new Event("rigcraft:auth-logout"));
       },
 
       setUser: (userData) => {

@@ -15,6 +15,11 @@ export const removeFromCartApi = async (itemId) => {
   return response.data;
 };
 
+export const updateCartItemApi = async (itemId, quantity) => {
+  const response = await apiClient.put(`/cart/items/${itemId}`, { quantity });
+  return response.data;
+};
+
 export const clearCartApi = async () => {
   const response = await apiClient.delete('/cart');
   return response.data;
