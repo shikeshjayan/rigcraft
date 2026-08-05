@@ -215,7 +215,7 @@ const settingsSchema = new mongoose.Schema(
       },
       verifiedPurchaseOnly: {
         type: Boolean,
-        default: true,
+        default: false,
       },
       autoApprove: {
         type: Boolean,

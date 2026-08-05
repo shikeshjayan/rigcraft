@@ -12,7 +12,7 @@ import LoginPrompt from './LoginPrompt';
 
 const Card = ({ id, apiId, image, title, specs, price, description, mrp, discount, compact = false, category = '', rating = { average: 0, count: 0 }, itemType, buttonText, onButtonClick, tag, tagColor, to, stock }) => {
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
-  const { addToCart } = useCart();
+  const { addToCart, cartItems, updateQuantity, removeFromCart } = useCart();
   const { isLoggedIn } = useAuth();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginPromptMessage, setLoginPromptMessage] = useState("");
@@ -127,6 +127,9 @@ const Card = ({ id, apiId, image, title, specs, price, description, mrp, discoun
   const buttonLabel = buttonText || 'Add to Cart';
 
   const isOutOfStock = typeof stock === 'number' && stock <= 0;
+
+  const cartItemId = apiId || id;
+  const inCart = cartItems.find(ci => String(ci.id) === String(cartItemId) && ci.itemType === type);
 
   const tagIsClass = typeof tagColor === 'string' && tagColor.startsWith('bg-');
 
@@ -269,6 +272,42 @@ const Card = ({ id, apiId, image, title, specs, price, description, mrp, discoun
           >
             Out of Stock
           </button>
+        ) : inCart && typeof onButtonClick !== 'function' ? (
+          <div
+            className="w-full flex items-center border-2 border-[var(--color-primary)] overflow-hidden"
+            style={{ borderRadius: 'var(--radius-sm)' }}
+          >
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if ((inCart.qty || 1) > 1) {
+                  updateQuantity(inCart.cartItemId, (inCart.qty || 1) - 1);
+                } else {
+                  removeFromCart(inCart.cartItemId);
+                }
+              }}
+              aria-label={(inCart.qty || 1) <= 1 ? 'Remove from cart' : 'Decrease quantity'}
+              className="flex-1 py-2.5 flex items-center justify-center font-bold text-[var(--color-primary)] hover:bg-[#F0F6FF] transition-colors cursor-pointer"
+            >
+              −
+            </button>
+            <span className="w-12 text-center font-bold text-[14px] text-gray-900">{inCart.qty || 1}</span>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                updateQuantity(inCart.cartItemId, Math.min((inCart.qty || 1) + 1, typeof stock === 'number' && stock > 0 ? stock : Infinity));
+              }}
+              disabled={typeof stock === 'number' && stock > 0 && (inCart.qty || 1) >= stock}
+              aria-label="Increase quantity"
+              className="flex-1 py-2.5 flex items-center justify-center font-bold text-[var(--color-primary)] hover:bg-[#F0F6FF] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+            >
+              +
+            </button>
+          </div>
         ) : (
           <button
             type="button"
