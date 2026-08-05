@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
 import { getProfile } from '../api/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -31,6 +31,7 @@ const getTypeName = (type) => {
 const Profile = () => {
   const { isLoggedIn, user, logout } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   // Redirect if not logged in
   useEffect(() => {
@@ -80,7 +81,8 @@ const Profile = () => {
       if (section === 'name') setIsEditingName(false);
       if (section === 'email') setIsEditingEmail(false);
       if (section === 'phone') setIsEditingPhone(false);
-      window.location.reload();
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast('Profile updated successfully');
     } catch (error) {
       console.error('Failed to update profile', error);
       toast('Failed to update profile', 'error');
@@ -153,6 +155,7 @@ const Profile = () => {
       }
     } catch (error) {
       console.error('Failed to fetch addresses', error);
+      toast('Failed to load addresses', 'error');
     }
   };
 
@@ -164,6 +167,7 @@ const Profile = () => {
       }
     } catch (error) {
       console.error('Failed to fetch builds', error);
+      toast('Failed to load builds', 'error');
     }
   };
 
@@ -176,6 +180,7 @@ const Profile = () => {
       }
     } catch (error) {
       console.error('Failed to fetch coupons', error);
+      toast('Failed to load coupons', 'error');
     }
   };
 
@@ -189,6 +194,7 @@ const Profile = () => {
         fetchBuilds();
       }
       setDeleteConfirmation({ show: false, buildId: null, isDraft: false });
+      toast('Build deleted successfully');
     } catch (error) {
       console.error('Failed to delete build', error);
       toast('Failed to delete build', 'error');
@@ -207,8 +213,6 @@ const Profile = () => {
       price: `₹${buildPrice.toLocaleString()}`,
       components: build.components
     });
-
-    toast('Build successfully added to your cart!');
   };
 
   useEffect(() => {
@@ -243,6 +247,7 @@ const Profile = () => {
       fetchAddresses();
       setIsAddingAddress(false);
       setEditingAddressId(null);
+      toast('Address saved successfully');
     } catch (error) {
       console.error('Failed to save address', error);
       toast('Failed to save address', 'error');
@@ -259,8 +264,10 @@ const Profile = () => {
     try {
       await apiClient.delete(`/addresses/${id}`);
       fetchAddresses();
+      toast('Address deleted successfully');
     } catch (error) {
       console.error('Failed to delete address', error);
+      toast('Failed to delete address', 'error');
     }
   };
 

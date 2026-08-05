@@ -31,6 +31,7 @@ const CategoryList = () => {
     data: categories,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("categoryList", categoryService, { page, pageSize, search, ...filters });
 
@@ -132,6 +133,7 @@ const CategoryList = () => {
         columns={columns}
         rows={categories}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}

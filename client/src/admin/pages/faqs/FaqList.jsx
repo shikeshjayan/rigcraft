@@ -28,6 +28,7 @@ const FaqList = () => {
     data: faqs,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("faqList", faqService, { page, pageSize, search });
 
@@ -101,6 +102,7 @@ const FaqList = () => {
         columns={columns}
         rows={faqs}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}

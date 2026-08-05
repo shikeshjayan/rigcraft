@@ -92,6 +92,7 @@ export const WishlistProvider = ({ children }) => {
         await removeMutation.mutateAsync(id);
       } catch (err) {
         console.error("Failed to remove from wishlist:", err);
+        toast(err.response?.data?.message || 'Failed to remove item from wishlist.', 'error');
       }
     } else {
       setGuestWishlist(prev => prev.filter(item => item.id !== id && item._id !== id));

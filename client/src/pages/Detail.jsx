@@ -8,7 +8,6 @@ import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import LoginPrompt from '../components/LoginPrompt';
 import ProductReviews from '../components/ProductReviews';
-import ProductGallery from '../components/ProductGallery';
 import Card from '../components/Card';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../components/toast/useToast';
@@ -30,11 +29,14 @@ import ShareIcon from '@mui/icons-material/Share';
 import SearchOffIcon from '@mui/icons-material/SearchOff';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import HistoryIcon from '@mui/icons-material/History';
 import LockIcon from '@mui/icons-material/Lock';
+import HistoryIcon from '@mui/icons-material/History';
+import ConfirmDialog from '../components/Navbar/ConfirmDialog';
 
-const formatINR = (n) =>
-  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(n) || 0);
+const formatINR = (num) => {
+  const value = Number(num) || 0;
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value);
+};
 
 const Detail = () => {
   const { id } = useParams();
@@ -52,13 +54,14 @@ const Detail = () => {
   const [loginMessage, setLoginMessage] = useState("");
   const [flyingItem, setFlyingItem] = useState(null);
   const [isHammering, setIsHammering] = useState(false);
-  const [showMobileBar, setShowMobileBar] = useState(false);
+  const [pendingReplaceCategory, setPendingReplaceCategory] = useState(null);
   const [related, setRelated] = useState([]);
-  const [dealIds, setDealIds] = useState(new Set());
-  const [recentlyViewed, setRecentlyViewed] = useState([]);
-  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
   const [relatedScrollable, setRelatedScrollable] = useState(false);
+  const [recentlyViewed, setRecentlyViewed] = useState([]);
   const [recentScrollable, setRecentScrollable] = useState(false);
+  const [descriptionExpanded, setDescriptionExpanded] = useState(false);
+  const [showMobileBar, setShowMobileBar] = useState(false);
+  const [dealIds, setDealIds] = useState(() => new Set());
 
   const navigate = useNavigate();
   const { addToCart } = useCart();
@@ -98,8 +101,7 @@ const Detail = () => {
       }, 800);
     }
 
-    addToCart(pc, qty);
-    toast(`${pc.title || pc.name || 'item'} is added to cart`);
+    addToCart(pc);
   };
 
   const handleAddToBuild = () => {
@@ -131,12 +133,18 @@ const Detail = () => {
     let categoryKey = CATEGORY_MAP[dbCategory] || dbCategory;
 
     if (draftBuild[categoryKey]) {
-       if(!window.confirm(`You already have a ${categoryKey} in your active build. Replace it?`)) return;
+       setPendingReplaceCategory(categoryKey);
+       return;
     }
+    
+    commitComponentToBuild(categoryKey);
+  };
 
-    draftBuild[categoryKey] = pc;
-    localStorage.setItem('draftBuild', JSON.stringify(draftBuild));
-
+  const commitComponentToBuild = (categoryKey) => {
+    const currentDraft = JSON.parse(localStorage.getItem('draftBuild')) || {};
+    currentDraft[categoryKey] = pc;
+    localStorage.setItem('draftBuild', JSON.stringify(currentDraft));
+    setPendingReplaceCategory(null);
     toast('Component added to your Active Build!');
   };
 
@@ -147,7 +155,7 @@ const Detail = () => {
       return;
     }
     const wishlistId = pc._id;
-    const images = pc.images && pc.images.length > 0 ? pc.images.map(img => img.url) : ['/fallback.png'];
+  const images = pc.images && pc.images.length > 0 ? pc.images.map(img => img.url) : ['/fallback.png'];
     const title = pc.name;
     if (isWishlisted) {
       removeFromWishlist(wishlistId);
@@ -423,6 +431,7 @@ const Detail = () => {
 
   // Images
   const images = pc.images && pc.images.length > 0 ? pc.images.map(img => img.url) : ['/fallback.png'];
+  const currentImage = images[activeImage] || images[0];
 
   // Stock
   const stock = typeof pc.stock === 'number' ? pc.stock : (pc.isMock ? 10 : 0);
@@ -556,22 +565,22 @@ const Detail = () => {
           <div className="w-full lg:w-[60%] min-w-0">
 
             {/* Image Gallery */}
-            <ProductGallery images={images} title={title} onActiveChange={setActiveImage} />
-
-            {/* Highlights chips */}
-            {pc.tags && pc.tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-6">
-                {pc.tags.map((tag, i) => (
-                  <span
-                    key={i}
-                    className="inline-flex items-center gap-1 bg-[#F3F4F6] border border-[#E7E7E7] rounded-full px-3 py-1.5 text-[12px] text-[#333] capitalize"
-                  >
-                    <CheckCircleOutlineIcon sx={{ fontSize: 14, color: '#0047AB' }} />
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
+            <div className="w-full h-[400px] lg:h-[500px] bg-[#E5E7EB] rounded-sm mb-4 flex items-center justify-center p-8 relative">
+              <img id="main-product-image" src={currentImage} alt={title} className="max-h-full max-w-full object-contain mix-blend-multiply" />
+            </div>
+            
+            {/* Thumbnails */}
+            <div className="flex gap-2 mb-12 overflow-x-auto hide-scrollbar">
+              {images.slice(0, 4).map((img, i) => (
+                <div 
+                  key={i} 
+                  onClick={() => setActiveImage(i)}
+                  className={`w-20 h-20 shrink-0 bg-white border ${i === activeImage ? 'border-[#0047AB]' : 'border-[#D5D9D9]'} rounded-sm flex items-center justify-center p-2 cursor-pointer hover:border-[#0047AB]`}
+                >
+                  <img src={img} alt="thumb" className="max-h-full max-w-full object-contain" />
+                </div>
+              ))}
+            </div>
 
             {/* About this System */}
             <div className="mb-10">
@@ -1022,6 +1031,16 @@ const Detail = () => {
         isOpen={showLoginPrompt}
         onClose={() => setShowLoginPrompt(false)}
         message={loginMessage}
+      />
+
+      <ConfirmDialog
+        open={!!pendingReplaceCategory}
+        title={`Replace ${pendingReplaceCategory}?`}
+        message={`You already have a ${pendingReplaceCategory} in your active build. Replace it with ${title}?`}
+        confirmLabel="Replace"
+        cancelLabel="Keep Current"
+        onConfirm={() => commitComponentToBuild(pendingReplaceCategory)}
+        onCancel={() => setPendingReplaceCategory(null)}
       />
     </div>
     </FadeUp>

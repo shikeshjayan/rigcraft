@@ -92,7 +92,8 @@ const NotificationPanel = ({ anchorEl, open, onClose }) => {
       slotProps={{
         paper: {
           sx: {
-            width: 380,
+            width: { xs: "calc(100vw - 32px)", sm: 380 },
+            maxWidth: "calc(100vw - 32px)",
             maxHeight: 480,
             borderRadius: "var(--radius-admin-card, 12px)",
             boxShadow: "0 10px 40px rgba(0,0,0,0.12), 0 2px 8px rgba(0,0,0,0.06)",
