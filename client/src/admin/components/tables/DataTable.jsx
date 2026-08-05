@@ -6,6 +6,7 @@ const DataTable = ({
   columns,
   rows,
   loading,
+  error,
   total,
   page,
   pageSize,
@@ -22,6 +23,10 @@ const DataTable = ({
   sx,
 }) => {
   if (loading) return <Loading />;
+
+  if (error) {
+    return <EmptyState title="Failed to load data" description="Something went wrong while loading this list. Please try again." />;
+  }
 
   if (!rows || rows.length === 0) {
     return <EmptyState title="No data found" description="No records match your current filters." />;

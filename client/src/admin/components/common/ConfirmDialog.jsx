@@ -11,7 +11,9 @@ const ConfirmDialog = ({ open, title, message, confirmLabel = "Delete", cancelLa
           sx: {
             borderRadius: "var(--radius-admin-modal)",
             boxShadow: "var(--shadow-admin-modal)",
-            minWidth: 400,
+            minWidth: { xs: 0, sm: 400 },
+            maxWidth: { xs: "calc(100vw - 32px)", sm: "none" },
+            margin: 1,
           },
         }
       }}

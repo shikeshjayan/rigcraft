@@ -33,6 +33,7 @@ const BrandList = () => {
     data: brands,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("brandList", brandService, { page, pageSize, search, ...filters });
 
@@ -136,6 +137,7 @@ const BrandList = () => {
         columns={columns}
         rows={brands}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}

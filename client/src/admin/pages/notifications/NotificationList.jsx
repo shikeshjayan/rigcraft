@@ -36,6 +36,7 @@ const NotificationList = () => {
     data: notifications,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("notificationList", notificationService, { page, pageSize });
 
@@ -121,6 +122,7 @@ const NotificationList = () => {
         columns={columns}
         rows={notifications}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}

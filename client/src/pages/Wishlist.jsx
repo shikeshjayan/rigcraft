@@ -7,7 +7,6 @@ import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 import LoginPrompt from '../components/LoginPrompt';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useToast } from '../components/toast/useToast';
 
 const Wishlist = () => {
   const { wishlist, isLoading, removeFromWishlist } = useWishlist();
@@ -17,7 +16,6 @@ const Wishlist = () => {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [flyingItem, setFlyingItem] = useState(null);
-  const { toast } = useToast();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -46,8 +44,6 @@ const Wishlist = () => {
     
     // Remove from wishlist after successfully adding to cart
     removeFromWishlist(item.id || item._id);
-
-    toast(`${item.title || item.name} is added to cart`);
   };
 
   return (
