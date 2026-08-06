@@ -4,7 +4,7 @@ const orderItemSchema = new mongoose.Schema(
   {
     itemType: {
       type: String,
-      enum: ["product", "prebuilt", "savedBuild"],
+      enum: ["product", "prebuilt", "savedBuild", "bundle"],
       required: true,
     },
 
@@ -16,7 +16,7 @@ const orderItemSchema = new mongoose.Schema(
 
     itemModel: {
       type: String,
-      enum: ["Product", "PrebuiltPC", "SavedBuild"],
+      enum: ["Product", "PrebuiltPC", "SavedBuild", "Bundle"],
       required: true,
     },
 

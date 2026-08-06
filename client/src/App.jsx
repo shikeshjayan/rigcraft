@@ -13,6 +13,7 @@ import Cart from './pages/Cart';
 import Dels from './pages/Dels';
 import AllDeals from './pages/AllDeals';
 import AllBundleDeals from './pages/AllBundleDeals';
+import BundleDetail from './pages/BundleDetail';
 import Customerlogin from './pages/Customerlogin';
 import CustomerRegister from './pages/CustomerRegister';
 import ForgotPassword from './pages/ForgotPassword';
@@ -37,6 +38,7 @@ import { CartProvider } from './context/CartContext';
 import { ToastProvider } from './components/toast/ToastProvider';
 import Chatbot from './components/Chatbot';
 import BackToTop from './components/BackToTop';
+import DealStickyBar from './sections/DealStickyBar';
 import ScrollToTop from './components/ScrollToTop';
 import PageTransition from './components/PageTransition';
 
@@ -64,9 +66,10 @@ const PublicLayout = () => {
           </PageTransition>
         </AnimatePresence>
       </div>
-      <Footer />
+      <Footer hideNewsletter={location.pathname === '/deals'} />
       <Chatbot />
       <BackToTop />
+      <DealStickyBar />
     </div>
   );
 };
@@ -95,6 +98,7 @@ const App = () => {
                   <Route path="/deals" element={<Dels />} />
                   <Route path="/alldeals" element={<AllDeals />} />
                   <Route path="/bundle" element={<AllBundleDeals />} />
+                  <Route path="/bundle/:slug" element={<BundleDetail />} />
                   <Route path="/login" element={<Customerlogin />} />
                   <Route path="/register" element={<CustomerRegister />} />
                   <Route path="/forgot-password" element={<ForgotPassword />} />

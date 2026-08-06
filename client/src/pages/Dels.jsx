@@ -1,15 +1,28 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import DealsHero from '../sections/DealsHero';
-import ActiveDeals from '../sections/ActiveDeals';
-import BundleDeals from '../sections/BundleDeals';
+import DealStats from '../sections/DealStats';
+import DealsCatalog from '../sections/DealsCatalog';
+import DealsBundleSection from '../sections/DealsBundleSection';
+import HeroOffer from '../sections/HeroOffer';
+import WhyShopDeals from '../sections/WhyShopDeals';
+import DealsNewsletter from '../sections/DealsNewsletter';
 import DealsBrands from '../sections/DealsBrands';
 import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 
 const Dels = () => {
+  const location = useLocation();
+
   useEffect(() => {
+    if (location.state?.scrollToCatalog) {
+      const timer = setTimeout(() => {
+        document.getElementById('deals-catalog')?.scrollIntoView({ behavior: 'smooth' });
+      }, 400);
+      return () => clearTimeout(timer);
+    }
     window.scrollTo(0, 0);
-  }, []);
+  }, [location.state]);
 
   return (
     <div className="flex flex-col w-full min-h-screen">
@@ -18,8 +31,12 @@ const Dels = () => {
       </div>
       {/* The sections handle their own alternating background colors via inline styles */}
       <FadeUp delay={0.1}><DealsHero /></FadeUp>
-      <FadeUp delay={0.2}><ActiveDeals /></FadeUp>
-      <FadeUp delay={0.2}><BundleDeals /></FadeUp>
+      <FadeUp delay={0.15}><DealStats /></FadeUp>
+      <FadeUp delay={0.2}><DealsCatalog /></FadeUp>
+      <FadeUp delay={0.2}><DealsBundleSection /></FadeUp>
+      <FadeUp delay={0.2}><HeroOffer /></FadeUp>
+      <FadeUp delay={0.2}><WhyShopDeals /></FadeUp>
+      <FadeUp delay={0.2}><DealsNewsletter /></FadeUp>
       <FadeUp delay={0.2}><DealsBrands /></FadeUp>
     </div>
   );
