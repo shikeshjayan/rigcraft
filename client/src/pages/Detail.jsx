@@ -497,7 +497,9 @@ const Detail = () => {
       itemType: isPrebuilt ? 'prebuilt' : 'product',
       category: item.category?.name || (isPrebuilt ? 'Prebuilt PC' : item.category || ''),
       stock: item.stock,
-      to: `/detail/${slug}/${item._id}?type=${typeParam}`
+      to: `/detail/${slug}/${item._id}?type=${typeParam}`,
+      brand: item.brand?.name || item.brand,
+      warranty: item.warranty,
     };
   });
 
@@ -515,7 +517,9 @@ const Detail = () => {
     itemType: item.itemType,
     category: item.category || '',
     stock: item.stock,
-    to: item.to
+    to: item.to,
+    brand: item.brand,
+    warranty: item.warranty,
   }));
 
   // Sticky section nav items
