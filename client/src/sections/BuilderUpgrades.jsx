@@ -191,6 +191,8 @@ const BuilderUpgrades = () => {
                   buttonText="Add to Build"
                   onButtonClick={() => handleAddToBuild(item)}
                   stock={item.stock}
+                  brand={item.brand?.name || item.brand}
+                  warranty={item.warranty}
                 />
               </div>
             ))}

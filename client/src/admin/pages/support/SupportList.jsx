@@ -41,6 +41,7 @@ const SupportList = () => {
     data: tickets,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("supportList", supportService, { page, pageSize, search, ...filters });
 
@@ -177,6 +178,7 @@ const SupportList = () => {
         columns={columns}
         rows={tickets}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}

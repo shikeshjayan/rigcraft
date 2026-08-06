@@ -96,7 +96,7 @@ export const WishlistProvider = ({ children }) => {
         toast(`Removed ${name} from wishlist!`);
       } catch (err) {
         console.error("Failed to remove from wishlist:", err);
-        toast("Failed to remove item from wishlist! Please try again.", 'error');
+        toast(err.response?.data?.message || 'Failed to remove item from wishlist.', 'error');
       }
     } else {
       setGuestWishlist(prev => prev.filter(item => item.id !== id && item._id !== id));
