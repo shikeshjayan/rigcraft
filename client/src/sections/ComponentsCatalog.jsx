@@ -264,6 +264,8 @@ const ComponentsCatalog = () => {
                             tagColor="#CC0C39"
                             compact={filterDropdownOpen} 
                             stock={item.stock}
+                            brand={item.brand?.name || item.brand}
+                            warranty={item.warranty}
                           />
                         </div>
                         );

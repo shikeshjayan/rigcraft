@@ -4,16 +4,64 @@ import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteIcon from '@mui/icons-material/Favorite';
+import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import LoginPrompt from './LoginPrompt';
+import { usePublicSettings } from '../context/PublicSettingsContext';
 
-const Card = ({ id, apiId, image, title, specs, price, description, mrp, discount, compact = false, category = '', rating = { average: 0, count: 0 }, itemType, buttonText, onButtonClick, tag, tagColor, to, stock }) => {
+const parsePrice = (val) => {
+  if (typeof val === 'number') return val;
+  if (typeof val === 'string') {
+    const parsed = parseFloat(val.replace(/[^0-9.-]+/g, ''));
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+  return 0;
+};
+
+const formatWarranty = (warranty) => {
+  if (!warranty?.duration || !warranty?.unit) return null;
+  const { duration, unit } = warranty;
+  const label = unit === 'year' ? (duration === 1 ? 'Year' : 'Years') : (duration === 1 ? 'Month' : 'Months');
+  return `${duration} ${label} Warranty`;
+};
+
+const getStockStatus = (stock, lowStockThreshold = 5) => {
+  if (typeof stock !== 'number' || stock <= 0) return { status: 'out', text: 'Out of Stock', className: 'text-[#EF4444]' };
+  if (stock <= lowStockThreshold) return { status: 'low', text: `Only ${stock} Left`, className: 'text-[#EA580C]' };
+  return { status: 'in', text: 'In Stock', className: 'text-[#16A34A]' };
+};
+
+const Card = ({
+  id,
+  apiId,
+  image,
+  title,
+  specs,
+  price,
+  description,
+  mrp,
+  discount,
+  compact = false,
+  category = '',
+  rating = { average: 0, count: 0 },
+  itemType,
+  buttonText,
+  onButtonClick,
+  tag,
+  tagColor,
+  to,
+  stock,
+  brand,
+  warranty,
+}) => {
   const { wishlist, addToWishlist, removeFromWishlist } = useWishlist();
   const { addToCart, cartItems, updateQuantity, removeFromCart } = useCart();
   const { isLoggedIn } = useAuth();
+  const { freeShippingAbove } = usePublicSettings();
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginPromptMessage, setLoginPromptMessage] = useState("");
   const [flyingImage, setFlyingImage] = useState(null);
@@ -54,7 +102,6 @@ const Card = ({ id, apiId, image, title, specs, price, description, mrp, discoun
     }
   };
 
-  // Handle specs whether it is an array or a pipe-separated string
   let specParts = [];
   if (Array.isArray(specs)) {
     specParts = specs;
@@ -62,12 +109,9 @@ const Card = ({ id, apiId, image, title, specs, price, description, mrp, discoun
     specParts = specs.split('|').map(s => s.trim());
   }
 
-  // Use specs as badges and description
-  const badges = specParts.slice(0, 3).flatMap(part => part.split(',').map(b => b.trim()).filter(Boolean));
   const derivedDescription = specParts.slice(3).join(' • ');
   const finalDescription = description || derivedDescription;
 
-  // Format title for URL
   const formattedTitle = title ? title.toLowerCase().replace(/[^a-z0-9]+/g, '-') : 'product';
   const linkTo = to || `/detail/${formattedTitle}/${id}${category ? `?type=${category}` : ''}`;
 
@@ -84,19 +128,17 @@ const Card = ({ id, apiId, image, title, specs, price, description, mrp, discoun
       return;
     }
 
-    // Perform standard add to cart
+    const priceNum = parsePrice(price);
     addToCart({
       id: apiId || id,
       image,
       title,
-      price: typeof price === 'string' ? parseFloat(price.replace(/[^0-9.-]+/g,"")) : price,
+      price: priceNum,
       quantity: 1,
       itemType: type
     });
 
-    // Flying animation logic
     const imgEl = imageRef.current;
-    // Try desktop icon first, fallback to mobile icon
     const cartIcon = document.getElementById('navbar-cart-icon') || document.getElementById('mobile-navbar-cart-icon');
 
     if (imgEl && cartIcon && image) {
@@ -133,18 +175,45 @@ const Card = ({ id, apiId, image, title, specs, price, description, mrp, discoun
 
   const tagIsClass = typeof tagColor === 'string' && tagColor.startsWith('bg-');
 
+  const priceNum = parsePrice(price);
+  const mrpNum = parsePrice(mrp);
+  const hasDiscount = mrpNum > priceNum && priceNum > 0;
+  const savings = hasDiscount ? mrpNum - priceNum : 0;
+  const discountPct = hasDiscount ? Math.round((savings / mrpNum) * 100) : 0;
+
+  const formatINR = (n) => `₹${Number(n).toLocaleString('en-IN')}`;
+
+  const warrantyText = formatWarranty(warranty);
+  const stockInfo = getStockStatus(stock);
+
+  const ratingDisplay = ratingCount > 0
+    ? `${averageRating.toFixed(1)} (${ratingCount})`
+    : 'New';
+
+  const renderStars = () => {
+    return [...Array(5)].map((_, i) => {
+      const fill = averageRating >= i + 1 ? 1 : (averageRating >= i + 0.5 ? 0.5 : 0);
+      if (fill === 1) return <span key={i}>★</span>;
+      if (fill === 0.5) return (
+        <span key={i} style={{ display: 'inline-flex', position: 'relative', width: '0.5em', overflow: 'hidden' }}>
+          <span>★</span>
+          <span style={{ position: 'absolute', left: '0.5em', top: 0, color: 'var(--color-text-muted)' }}>★</span>
+        </span>
+      );
+      return <span key={i} className="text-gray-300">★</span>;
+    });
+  };
+
   return (
     <Link
       to={linkTo}
       className="relative flex flex-col h-full overflow-hidden border border-gray-300 group transition-all duration-300 cursor-pointer bg-white hover:shadow-xl"
       style={{
         borderRadius: 'var(--radius-sm)',
-        minHeight: compact ? '320px' : '420px'
+        minHeight: compact ? '375px' : '480px'
       }}
     >
-      {/* Image Container */}
       <div className="relative w-full aspect-square bg-white flex items-center justify-center border-b border-gray-100 overflow-hidden">
-        {/* Discount/Tag Badge (Top Right) */}
         {tag && (
           <span
             className={`absolute top-3 right-3 px-2.5 py-1 text-[10px] font-bold text-white uppercase tracking-wider rounded-full shadow-sm z-10 ${tagIsClass ? tagColor : ''}`}
@@ -153,29 +222,6 @@ const Card = ({ id, apiId, image, title, specs, price, description, mrp, discoun
             {tag}
           </span>
         )}
-
-        {/* Wishlist Button (Top Left) */}
-        <div className="absolute top-3 left-3 opacity-100 transition-opacity duration-300 z-20 pointer-fine:opacity-0 pointer-fine:group-hover:opacity-100">
-          <button
-            type="button"
-            onClick={handleWishlistClick}
-            aria-label={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-            title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
-            className={`flex items-center cursor-pointer justify-center transition-all duration-300 hover:scale-110 shadow-md ${compact ? 'w-8 h-8' : 'w-10 h-10'} rounded-full relative overflow-hidden`}
-            style={{
-              color: isWishlisted ? 'var(--color-danger, red)' : 'white'
-            }}
-          >
-            <div className="absolute inset-0 z-0 opacity-80" style={{ backgroundColor: 'var(--color-primary, #06B6D4)' }}></div>
-            <div className="relative z-10 flex items-center justify-center">
-              {isWishlisted ? (
-                <FavoriteIcon fontSize={compact ? 'small' : 'medium'} />
-              ) : (
-                <FavoriteBorderIcon fontSize={compact ? 'small' : 'medium'} />
-              )}
-            </div>
-          </button>
-        </div>
 
         {image ? (
           <img
@@ -193,19 +239,14 @@ const Card = ({ id, apiId, image, title, specs, price, description, mrp, discoun
         )}
       </div>
 
-      {/* Content Container */}
       <div className="flex flex-col flex-1 p-4">
-        {/* Brand/Category Tag */}
-        {category && (
-          <span
-            className="text-gray-400 font-bold uppercase tracking-wider mb-2"
-            style={{ fontSize: compact ? '9px' : '10px' }}
-          >
-            {category}
-          </span>
-        )}
+        <span
+          className="text-gray-400 font-bold uppercase tracking-wider mb-2"
+          style={{ fontSize: compact ? '9px' : '10px' }}
+        >
+          {brand || category}
+        </span>
 
-        {/* Title */}
         <h3
           title={title}
           className="font-bold text-gray-900 leading-tight mb-2 line-clamp-1"
@@ -214,22 +255,15 @@ const Card = ({ id, apiId, image, title, specs, price, description, mrp, discoun
           {title}
         </h3>
 
-        {/* Spec Badges */}
-        {/* {badges.length > 0 && (
-          <div className="flex flex-wrap gap-1 mb-3">
-            {badges.slice(0, 3).map((b, i) => (
-              <span
-                key={i}
-                className="px-2 py-0.5 text-[10px] font-semibold rounded-full"
-                style={{ backgroundColor: 'var(--color-bg-secondary)', color: 'var(--color-text-secondary)' }}
-              >
-                {b}
-              </span>
-            ))}
+        <div className="flex items-center gap-1.5 mb-3">
+          <div className="flex text-yellow-400 text-sm" aria-label={`Rating ${averageRating.toFixed(1)} out of 5`}>
+            {renderStars()}
           </div>
-        )} */}
+          <span className="text-gray-400 text-[10px] font-medium">
+            {ratingDisplay}
+          </span>
+        </div>
 
-        {/* Description */}
         {finalDescription && (
           <p
             className="text-gray-500 leading-relaxed line-clamp-2 mb-4"
@@ -239,85 +273,122 @@ const Card = ({ id, apiId, image, title, specs, price, description, mrp, discoun
           </p>
         )}
 
-        {/* Price Row and Ratings */}
-        <div className="flex items-center justify-between mb-4 mt-auto pt-2">
-          <div className="flex flex-col gap-0.5">
-            {mrp && (
-              <span className="text-gray-400 line-through text-xs">{mrp}</span>
-            )}
-            <span className="font-extrabold text-gray-900 text-xl">
-              {price}
+        <div className="mb-3">
+          <div className="flex items-end gap-2 flex-wrap mb-1">
+            <span className="font-extrabold text-gray-900 text-xl leading-none">
+              {formatINR(priceNum)}
             </span>
+            {hasDiscount && (
+              <span className="text-gray-400 line-through text-sm leading-none mb-0.5">
+                {formatINR(mrpNum)}
+              </span>
+            )}
           </div>
-          <div className="flex items-center gap-1.5 mt-auto">
-            <div className="flex text-yellow-400 text-sm">
-              {[...Array(5)].map((_, i) => {
-                if (averageRating >= i + 1) return <span key={i}>★</span>;
-                if (averageRating >= i + 0.5) return <span key={i}>★</span>;
-                return <span key={i} className="text-gray-300">★</span>;
-              })}
+          {hasDiscount && (
+            <div className="text-[#16A34A] font-bold text-[13px]">
+              Save {formatINR(savings)} ({discountPct}%)
             </div>
-            <span className="text-gray-400 text-[10px] font-medium">({ratingCount})</span>
-          </div>
+          )}
         </div>
 
-        {/* Action Button */}
-        {isOutOfStock ? (
-          <button
-            type="button"
-            disabled
-            aria-disabled="true"
-            className="w-full font-bold py-2.5 px-4 text-[13px] uppercase tracking-wide bg-gray-100 text-gray-400 border-2 border-gray-200 cursor-not-allowed"
-            style={{ borderRadius: 'var(--radius-sm)' }}
-          >
-            Out of Stock
-          </button>
-        ) : inCart && typeof onButtonClick !== 'function' ? (
-          <div
-            className="w-full flex items-center border-2 border-[var(--color-primary)] overflow-hidden"
-            style={{ borderRadius: 'var(--radius-sm)' }}
-          >
+        <div className={`flex items-center gap-1.5 mb-3 ${stockInfo.className} font-medium text-[12px]`}>
+          {stockInfo.status === 'in' && <span>✔</span>}
+          {stockInfo.status === 'low' && <span>⚠</span>}
+          {stockInfo.status === 'out' && <span>✕</span>}
+          {stockInfo.text}
+        </div>
+
+        <div className="flex flex-wrap gap-2 mb-4" role="img" aria-label="Trust badges">
+          {warrantyText && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-full">
+              <ShieldOutlinedIcon sx={{ fontSize: 13 }} />
+              {warrantyText}
+            </span>
+          )}
+          {freeShippingAbove > 0 && priceNum >= freeShippingAbove && (
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 text-[10px] font-medium text-gray-700 bg-gray-50 border border-gray-200 rounded-full">
+              <LocalShippingOutlinedIcon sx={{ fontSize: 13 }} />
+              Free Shipping
+            </span>
+          )}
+        </div>
+
+        <div className="flex items-stretch gap-2 mt-auto">
+          {isOutOfStock ? (
             <button
               type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                if ((inCart.qty || 1) > 1) {
-                  updateQuantity(inCart.cartItemId, (inCart.qty || 1) - 1);
-                } else {
-                  removeFromCart(inCart.cartItemId);
-                }
-              }}
-              aria-label={(inCart.qty || 1) <= 1 ? 'Remove from cart' : 'Decrease quantity'}
-              className="flex-1 py-2.5 flex items-center justify-center font-bold text-[var(--color-primary)] hover:bg-[#F0F6FF] transition-colors cursor-pointer"
+              disabled
+              aria-disabled="true"
+              className="flex-1 font-bold py-2.5 px-4 text-[13px] uppercase tracking-wide bg-gray-100 text-gray-400 border-2 border-gray-200 cursor-not-allowed"
+              style={{ borderRadius: 'var(--radius-sm)' }}
             >
-              −
+              Out of Stock
             </button>
-            <span className="w-12 text-center font-bold text-[14px] text-gray-900">{inCart.qty || 1}</span>
+          ) : inCart && typeof onButtonClick !== 'function' ? (
+            <div
+              className="flex-1 flex items-center border-2 border-[var(--color-primary)] overflow-hidden"
+              style={{ borderRadius: 'var(--radius-sm)' }}
+            >
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  if ((inCart.qty || 1) > 1) {
+                    updateQuantity(inCart.cartItemId, (inCart.qty || 1) - 1);
+                  } else {
+                    removeFromCart(inCart.cartItemId);
+                  }
+                }}
+                aria-label={(inCart.qty || 1) <= 1 ? 'Remove from cart' : 'Decrease quantity'}
+                className="flex-1 py-2.5 flex items-center justify-center font-bold text-[var(--color-primary)] hover:bg-[#F0F6FF] transition-colors cursor-pointer"
+              >
+                −
+              </button>
+              <span className="w-12 text-center font-bold text-[14px] text-gray-900">{inCart.qty || 1}</span>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  updateQuantity(inCart.cartItemId, Math.min((inCart.qty || 1) + 1, typeof stock === 'number' && stock > 0 ? stock : Infinity));
+                }}
+                disabled={typeof stock === 'number' && stock > 0 && (inCart.qty || 1) >= stock}
+                aria-label="Increase quantity"
+                className="flex-1 py-2.5 flex items-center justify-center font-bold text-[var(--color-primary)] hover:bg-[#F0F6FF] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              >
+                +
+              </button>
+            </div>
+          ) : (
             <button
               type="button"
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                updateQuantity(inCart.cartItemId, Math.min((inCart.qty || 1) + 1, typeof stock === 'number' && stock > 0 ? stock : Infinity));
-              }}
-              disabled={typeof stock === 'number' && stock > 0 && (inCart.qty || 1) >= stock}
-              aria-label="Increase quantity"
-              className="flex-1 py-2.5 flex items-center justify-center font-bold text-[var(--color-primary)] hover:bg-[#F0F6FF] transition-colors disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+              onClick={handleButtonClick}
+              className="flex-1 font-bold py-2.5 px-4 text-[13px] uppercase tracking-wide transition-colors cursor-pointer bg-white text-[var(--color-primary)] border-2 border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white active:bg-[var(--color-primary)] active:text-white"
+              style={{ borderRadius: 'var(--radius-sm)' }}
             >
-              +
+              {buttonLabel}
             </button>
-          </div>
-        ) : (
+          )}
           <button
             type="button"
-            onClick={handleButtonClick}
-            className="w-full font-bold py-2.5 px-4 text-[13px] uppercase tracking-wide transition-colors cursor-pointer bg-white text-[var(--color-primary)] border-2 border-[var(--color-primary)] hover:bg-[var(--color-primary)] hover:text-white active:bg-[var(--color-primary)] active:text-white"
-            style={{ borderRadius: 'var(--radius-sm)' }}
+            onClick={handleWishlistClick}
+            aria-label={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+            title={isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+            className="shrink-0 flex items-center justify-center transition-all duration-300 cursor-pointer bg-white border-2 border-[var(--color-primary)] hover:bg-[#F0F6FF] hover:scale-105 active:bg-[#F0F6FF]"
+            style={{
+              borderRadius: 'var(--radius-sm)',
+              width: 46,
+              color: isWishlisted ? 'var(--color-danger, red)' : 'var(--color-primary)'
+            }}
           >
-            {buttonLabel}
+            {isWishlisted ? (
+              <FavoriteIcon fontSize={compact ? 'small' : 'medium'} />
+            ) : (
+              <FavoriteBorderIcon fontSize={compact ? 'small' : 'medium'} />
+            )}
           </button>
-        )}
+        </div>
       </div>
 
       <LoginPrompt

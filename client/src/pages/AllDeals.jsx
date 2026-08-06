@@ -251,6 +251,8 @@ const AllDeals = () => {
         endDate={item.endDate}
         itemType={item.itemType}
         compact
+        brand={item.brand?.name || item.brand}
+        warranty={item.warranty}
       />
     );
   };
