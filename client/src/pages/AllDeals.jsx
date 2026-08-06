@@ -2,10 +2,10 @@ import { useEffect, useState, useRef, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import DealCard from '../components/DealCard';
 import BundleDealCard from '../components/BundleDealCard';
+import Pagination from '../components/Pagination';
 import { getMemberPrice } from '../utils/bundleUtils';
 import Breadcrumb from '../components/Breadcrumb';
 import apiClient from '../api/client';
@@ -212,18 +212,10 @@ const AllDeals = () => {
     currentPage * itemsPerPage
   );
 
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage((prev) => prev - 1);
-      document.getElementById('deals-top').scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage((prev) => prev + 1);
-      document.getElementById('deals-top').scrollIntoView({ behavior: 'smooth' });
-    }
+  const handlePageChange = (nextPage) => {
+    if (nextPage < 1 || nextPage > totalPages) return;
+    setCurrentPage(nextPage);
+    document.getElementById('deals-top').scrollIntoView({ behavior: 'smooth' });
   };
 
   const currentSortLabel = SORT_OPTIONS.find((o) => o.key === sortBy)?.label || 'Sort';
@@ -430,35 +422,12 @@ const AllDeals = () => {
                     )}
                   </div>
 
-                  {!isLoading && totalPages > 1 && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      className="w-full flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-16 border-t border-[#E2E8F0] pt-8"
-                    >
-                      <button
-                        onClick={handlePrevPage}
-                        disabled={currentPage === 1}
-                        className="flex items-center gap-1 px-3 sm:px-5 py-2.5 bg-white border border-[#D5D9D9] font-bold text-[#0F1111] whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F7F7F7] transition-colors cursor-pointer shadow-sm"
-                        style={{ borderRadius: 'var(--radius-sm)' }}
-                      >
-                        <KeyboardArrowLeftIcon /> Previous
-                      </button>
-
-                      <span className="text-[13px] md:text-[15px] font-bold text-[#565959] whitespace-nowrap">
-                        Page {currentPage} of {totalPages}
-                      </span>
-
-                      <button
-                        onClick={handleNextPage}
-                        disabled={currentPage === totalPages}
-                        className="flex items-center gap-1 px-3 sm:px-5 py-2.5 bg-white border border-[#D5D9D9] font-bold text-[#0F1111] whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F7F7F7] transition-colors cursor-pointer shadow-sm"
-                        style={{ borderRadius: 'var(--radius-sm)' }}
-                      >
-                        Next <KeyboardArrowRightIcon />
-                      </button>
-                    </motion.div>
+                  {!isLoading && (
+                    <Pagination
+                      page={currentPage}
+                      totalPages={totalPages}
+                      onPageChange={handlePageChange}
+                    />
                   )}
                 </motion.div>
               )}

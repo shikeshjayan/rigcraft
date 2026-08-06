@@ -11,7 +11,7 @@ import DealsBrands from '../sections/DealsBrands';
 import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 
-const Dels = () => {
+const Deals = () => {
   const location = useLocation();
 
   useEffect(() => {
@@ -42,4 +42,4 @@ const Dels = () => {
   );
 };
 
-export default Dels;
+export default Deals;

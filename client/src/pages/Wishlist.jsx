@@ -6,8 +6,11 @@ import { useAuth } from '../context/AuthContext';
 import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 import LoginPrompt from '../components/LoginPrompt';
+import Pagination from '../components/Pagination';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../components/toast/useToast';
+
+const ITEMS_PER_PAGE = 20;
 
 const Wishlist = () => {
   const { wishlist, isLoading, removeFromWishlist } = useWishlist();
@@ -17,11 +20,22 @@ const Wishlist = () => {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [flyingItem, setFlyingItem] = useState(null);
+  const [page, setPage] = useState(1);
   const { toast } = useToast();
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const totalPages = Math.max(1, Math.ceil(wishlist.length / ITEMS_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const currentItems = wishlist.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const handlePageChange = (nextPage) => {
+    if (nextPage < 1 || nextPage > totalPages) return;
+    setPage(nextPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleAddToCart = (e, item) => {
     if (!isLoggedIn) {
@@ -76,8 +90,9 @@ const Wishlist = () => {
             </a>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {wishlist.map((item) => (
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+            {currentItems.map((item) => (
               <div 
                 key={item.id} 
                 className="flex flex-col bg-white border border-[#EAEAEC] relative group hover:shadow-md transition-shadow"
@@ -142,6 +157,13 @@ const Wishlist = () => {
               </div>
             ))}
           </div>
+
+          <Pagination
+            page={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+          </>
         )}
       </div>
 

@@ -10,7 +10,7 @@ import Components from './pages/Components';
 import Detail from './pages/Detail';
 import Wishlist from './pages/Wishlist';
 import Cart from './pages/Cart';
-import Dels from './pages/Dels';
+import Deals from './pages/Deals';
 import AllDeals from './pages/AllDeals';
 import BundleDetail from './pages/BundleDetail';
 import Customerlogin from './pages/Customerlogin';
@@ -94,7 +94,7 @@ const App = () => {
                   <Route path="/detail/:productName/:id" element={<Detail />} />
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/cart" element={<Cart />} />
-                  <Route path="/deals" element={<Dels />} />
+                  <Route path="/deals" element={<Deals />} />
                   <Route path="/alldeals" element={<AllDeals />} />
                   <Route path="/bundle/:slug" element={<BundleDetail />} />
                   <Route path="/login" element={<Customerlogin />} />
