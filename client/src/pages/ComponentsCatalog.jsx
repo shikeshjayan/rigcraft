@@ -67,6 +67,8 @@ const ComponentsCatalog = () => {
                 discount={item.discount}
                 tag={item.discount || 'SALE'}
                 tagColor="#EF4444"
+                brand={item.brand}
+                warranty={item.warranty}
               />
             ))}
           </div>

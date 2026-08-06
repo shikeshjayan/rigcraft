@@ -112,9 +112,10 @@ const HeroDeals = () => {
               // Formatting currency
               const formatPrice = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
-              return (
+return (
                 <Card 
- rating={product?.rating} key={product._id}
+                  rating={product?.rating} 
+                  key={product._id}
                   id={product._id}
                   image={product.images?.[0]?.url}
                   title={product.name}
@@ -127,6 +128,8 @@ const HeroDeals = () => {
                   tagColor="#E11D48"
                   category={product.categoryType}
                   stock={product.stock}
+                  brand={product.brand?.name || product.brand}
+                  warranty={product.warranty}
                 />
               );
             })}

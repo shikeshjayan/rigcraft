@@ -31,6 +31,7 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import Error from './pages/Error';
 import { WishlistProvider } from './context/WishlistContext';
+import { PublicSettingsProvider } from './context/PublicSettingsContext';
 import AdminRoutes from './admin/routes/AdminRoutes';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
@@ -82,6 +83,7 @@ const App = () => {
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
+              <PublicSettingsProvider>
               <Routes>
                 <Route path="/admin/*" element={<AdminRoutes />} />
                 <Route element={<PublicLayout />}>
@@ -116,6 +118,7 @@ const App = () => {
                   <Route path="*" element={<Error />} />
                 </Route>
               </Routes>
+              </PublicSettingsProvider>
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>
