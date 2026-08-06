@@ -23,8 +23,8 @@ const CountdownTimer = ({ days, hours, minutes, seconds, size = 'sm', showDays =
       {units.map((unit, i) => (
         <Fragment key={unit.label}>
           <div className="flex flex-col items-center leading-none">
-            <span className={`font-extrabold tabular-nums ${s.num} ${isLight ? 'text-white' : 'text-[#0F172A]'}`}>{unit.value}</span>
-            <span className={`font-bold uppercase tracking-wider mt-1 ${s.label} ${isLight ? 'text-white/70' : 'text-[#64748B]'}`}>{unit.label}</span>
+            <span className={`font-extrabold tabular-nums ${s.num} ${isLight ? 'text-white' : 'text-[var(--color-text)]'}`}>{unit.value}</span>
+            <span className={`font-bold uppercase tracking-wider mt-1 ${s.label} ${isLight ? 'text-white/70' : 'text-[var(--color-text-secondary)]'}`}>{unit.label}</span>
           </div>
           {showColons && i !== units.length - 1 && (
             <span

@@ -50,7 +50,7 @@ const BuilderFAQ = () => {
     <section className="w-full py-16" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <div className="max-w-[800px] mx-auto px-4 lg:px-8">
         
-        <h2 className="text-[20px] font-bold text-[#0F172A] mb-6 text-center md:text-left">
+        <h2 className="text-[20px] font-bold text-[var(--color-text)] mb-6 text-center md:text-left">
           Frequently Asked Questions
         </h2>
 
@@ -65,17 +65,17 @@ const BuilderFAQ = () => {
               >
                 <button 
                   onClick={() => toggleAccordion(faq.id)}
-                  className="w-full flex items-center justify-between p-4 text-left cursor-pointer hover:bg-[#F8FAFC] transition-colors"
+                  className="w-full flex items-center justify-between p-4 text-left cursor-pointer hover:bg-[var(--color-surface)] transition-colors"
                 >
-                  <span className="font-bold text-[#0F172A] text-[15px]">{faq.question}</span>
+                  <span className="font-bold text-[var(--color-text)] text-[15px]">{faq.question}</span>
                   <KeyboardArrowDownIcon 
-                    sx={{ fontSize: 24, color: '#64748B' }} 
+                    sx={{ fontSize: 24, color: 'var(--color-text-secondary)' }} 
                     className={`transform transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
                   />
                 </button>
                 
                 {isOpen && (
-                  <div className="p-4 pt-0 text-[#64748B] text-[14px] leading-relaxed border-t border-[#E2E8F0] mt-2">
+                  <div className="p-4 pt-0 text-[var(--color-text-secondary)] text-[14px] leading-relaxed border-t border-[var(--color-border)] mt-2">
                     <p className="pt-2">{faq.answer}</p>
                   </div>
                 )}

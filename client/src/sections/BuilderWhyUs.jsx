@@ -19,8 +19,8 @@ const BuilderWhyUs = () => {
     <section className="w-full py-16" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         <div className="text-center mb-10">
-          <h2 className="text-[28px] font-bold text-[#0F172A] mb-2">Why Build with RigCraft</h2>
-          <p className="text-[14px] text-[#64748B] max-w-2xl mx-auto">
+          <h2 className="text-[28px] font-bold text-[var(--color-text)] mb-2">Why Build with RigCraft</h2>
+          <p className="text-[14px] text-[var(--color-text-secondary)] max-w-2xl mx-auto">
             Build with total confidence — we take care of compatibility, quality, and support from start to finish.
           </p>
         </div>
@@ -37,8 +37,8 @@ const BuilderWhyUs = () => {
                 <div className="w-11 h-11 rounded-full bg-[#EFF6FF] flex items-center justify-center text-[var(--color-primary)]">
                   <Icon sx={{ fontSize: 22 }} />
                 </div>
-                <div className="text-[16px] font-bold text-[#0F172A]">{benefit.title}</div>
-                <p className="text-[13px] text-[#64748B] leading-relaxed">{benefit.description}</p>
+                <div className="text-[16px] font-bold text-[var(--color-text)]">{benefit.title}</div>
+                <p className="text-[13px] text-[var(--color-text-secondary)] leading-relaxed">{benefit.description}</p>
               </div>
             );
           })}

@@ -14,10 +14,10 @@ const WhyShopDeals = () => {
   ];
 
   return (
-    <section className="w-full py-16 border-t border-[#E2E8F0]" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+    <section className="w-full py-16 border-t border-[var(--color-border)]" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         <div className="text-center mb-10">
-          <h2 className="text-[24px] md:text-[32px] font-extrabold text-[#0F172A] tracking-tight uppercase">
+          <h2 className="text-[24px] md:text-[32px] font-extrabold text-[var(--color-text)] tracking-tight uppercase">
             Why Shop The Sale
           </h2>
           <div className="w-16 h-1 bg-[#0052FF] mt-2 mx-auto"></div>
@@ -26,14 +26,14 @@ const WhyShopDeals = () => {
           {items.map((item) => (
             <div
               key={item.title}
-              className="flex flex-col items-center text-center px-4 py-8 bg-white border border-[#E2E8F0] hover:shadow-md transition-shadow"
+              className="flex flex-col items-center text-center px-4 py-8 bg-white border border-[var(--color-border)] hover:shadow-md transition-shadow"
               style={{ borderRadius: 'var(--radius-sm)' }}
             >
               <div className="w-14 h-14 rounded-full flex items-center justify-center mb-4 bg-[#F0F6FF] text-[#0052FF]">
                 {item.icon}
               </div>
-              <h3 className="text-[14px] font-bold text-[#0F172A] mb-1.5">{item.title}</h3>
-              <p className="text-[12px] text-[#64748B] font-medium leading-relaxed">{item.text}</p>
+              <h3 className="text-[14px] font-bold text-[var(--color-text)] mb-1.5">{item.title}</h3>
+              <p className="text-[12px] text-[var(--color-text-secondary)] font-medium leading-relaxed">{item.text}</p>
             </div>
           ))}
         </div>

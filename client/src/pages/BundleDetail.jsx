@@ -115,8 +115,8 @@ const BundleDetail = () => {
     return (
       <div className="w-full min-h-screen flex flex-col items-center justify-center px-4" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
         <SearchOffIcon sx={{ fontSize: 56, color: '#CBD5E1', mb: 3 }} />
-        <h2 className="text-2xl font-bold mb-2 text-[#0F172A]">Bundle Not Found</h2>
-        <p className="text-[#64748B] mb-6">The bundle you are looking for does not exist or has been removed.</p>
+        <h2 className="text-2xl font-bold mb-2 text-[var(--color-text)]">Bundle Not Found</h2>
+        <p className="text-[var(--color-text-secondary)] mb-6">The bundle you are looking for does not exist or has been removed.</p>
         <div className="flex gap-6">
           <Link to="/" className="text-[#0052FF] underline font-medium">Return to Home</Link>
           <Link to="/deals" className="text-[#0052FF] underline font-medium">Browse Deals</Link>
@@ -199,7 +199,7 @@ const BundleDetail = () => {
 
               {/* What's included */}
               <div className="mb-10">
-                <h3 className="text-[16px] font-bold text-[#0F172A] border-b border-[#E2E8F0] pb-2 mb-4">
+                <h3 className="text-[16px] font-bold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2 mb-4">
                   What's Included
                 </h3>
                 <div className="flex flex-col">
@@ -211,18 +211,18 @@ const BundleDetail = () => {
                       <Link
                         key={`${item._id || i}`}
                         to={detailLink}
-                        className="flex items-center gap-4 bg-white border border-[#E2E8F0] p-3 transition-colors hover:border-[#0052FF]/40"
+                        className="flex items-center gap-4 bg-white border border-[var(--color-border)] p-3 transition-colors hover:border-[#0052FF]/40"
                         style={{ borderRadius: 'var(--radius-sm)' }}
                       >
-                        <div className="w-16 h-16 bg-[#F8FAFC] border border-[#E2E8F0] rounded p-1.5 flex items-center justify-center shrink-0 overflow-hidden">
+                        <div className="w-16 h-16 bg-[var(--color-surface)] border border-[var(--color-border)] rounded p-1.5 flex items-center justify-center shrink-0 overflow-hidden">
                           <img src={getMemberImage(item) || '/fallback.png'} alt={item.name} className="w-full h-full object-contain mix-blend-multiply" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-[13px] font-bold text-[#0F172A] truncate">{item.name || 'Item'}</div>
-                          <div className="text-[11px] text-[#64748B] font-semibold uppercase tracking-wide mt-0.5">
+                          <div className="text-[13px] font-bold text-[var(--color-text)] truncate">{item.name || 'Item'}</div>
+                          <div className="text-[11px] text-[var(--color-text-secondary)] font-semibold uppercase tracking-wide mt-0.5">
                             {isPrebuiltItem ? 'Prebuilt PC' : 'Component'}
                           </div>
-                          <div className="text-[13px] font-bold text-[#0F172A] mt-0.5">{formatINR(itemPrice)}</div>
+                          <div className="text-[13px] font-bold text-[var(--color-text)] mt-0.5">{formatINR(itemPrice)}</div>
                         </div>
                         <ChevronRightIcon sx={{ fontSize: 20, color: '#94A3B8' }} />
                       </Link>
@@ -234,7 +234,7 @@ const BundleDetail = () => {
               {/* Description */}
               {bundle.description && (
                 <div className="mb-10">
-                  <h3 className="text-[16px] font-bold text-[#0F172A] border-b border-[#E2E8F0] pb-2 mb-4">
+                  <h3 className="text-[16px] font-bold text-[var(--color-text)] border-b border-[var(--color-border)] pb-2 mb-4">
                     About this Bundle
                   </h3>
                   <p className="text-[14px] text-[#475569] leading-relaxed whitespace-pre-line">{bundle.description}</p>
@@ -244,9 +244,9 @@ const BundleDetail = () => {
 
             {/* RIGHT: Buy box */}
             <div className="w-full lg:w-[45%] min-w-0">
-              <div id="buy-box" className="lg:sticky lg:top-[120px] bg-white border border-[#E2E8F0] shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-6 flex flex-col"
+              <div id="buy-box" className="lg:sticky lg:top-[120px] bg-white border border-[var(--color-border)] shadow-[0_4px_12px_rgba(0,0,0,0.05)] p-6 flex flex-col"
                 style={{ borderRadius: 'var(--radius-sm)' }}>
-                <h1 className="text-[22px] sm:text-[26px] font-extrabold tracking-tight text-[#0F172A] leading-tight mb-2">
+                <h1 className="text-[22px] sm:text-[26px] font-extrabold tracking-tight text-[var(--color-text)] leading-tight mb-2">
                   {bundle.name}
                 </h1>
 
@@ -265,7 +265,7 @@ const BundleDetail = () => {
                   <BundleCountdown endDate={bundle.endDate} />
                 </div>
 
-                <div className="text-[12.5px] text-[#64748B] mt-4 pb-4 border-b border-[#E2E8F0]">
+                <div className="text-[12.5px] text-[var(--color-text-secondary)] mt-4 pb-4 border-b border-[var(--color-border)]">
                   Buy the whole combo together — priced lower than buying each item separately.
                 </div>
 
@@ -278,16 +278,16 @@ const BundleDetail = () => {
                       onClick={() => setQty((q) => Math.max(1, q - 1))}
                       disabled={qty <= 1}
                       aria-label="Decrease quantity"
-                      className="w-10 h-10 flex items-center justify-center hover:bg-[#EFF6FF] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer text-[18px] font-bold text-[#0F172A]"
+                      className="w-10 h-10 flex items-center justify-center hover:bg-[#EFF6FF] disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer text-[18px] font-bold text-[var(--color-text)]"
                     >
                       −
                     </button>
-                    <span className="w-12 text-center font-bold text-[14px] text-[#0F172A]">{qty}</span>
+                    <span className="w-12 text-center font-bold text-[14px] text-[var(--color-text)]">{qty}</span>
                     <button
                       type="button"
                       onClick={() => setQty((q) => q + 1)}
                       aria-label="Increase quantity"
-                      className="w-10 h-10 flex items-center justify-center hover:bg-[#EFF6FF] transition-colors cursor-pointer text-[18px] font-bold text-[#0F172A]"
+                      className="w-10 h-10 flex items-center justify-center hover:bg-[#EFF6FF] transition-colors cursor-pointer text-[18px] font-bold text-[var(--color-text)]"
                     >
                       +
                     </button>
@@ -295,22 +295,22 @@ const BundleDetail = () => {
                 </div>
 
                 {/* Trust badges */}
-                <div className="grid grid-cols-3 gap-2 mb-5 pb-5 border-b border-[#E2E8F0]">
+                <div className="grid grid-cols-3 gap-2 mb-5 pb-5 border-b border-[var(--color-border)]">
                   <div className="flex flex-col items-center gap-1 text-center">
                     <VerifiedUserIcon sx={{ fontSize: 20, color: '#0052FF' }} />
-                    <span className="text-[10px] text-[#64748B] font-semibold leading-tight">Secure Payment</span>
+                    <span className="text-[10px] text-[var(--color-text-secondary)] font-semibold leading-tight">Secure Payment</span>
                   </div>
                   <div className="flex flex-col items-center gap-1 text-center">
                     <LocalShippingOutlinedIcon sx={{ fontSize: 20, color: '#0052FF' }} />
-                    <span className="text-[10px] text-[#64748B] font-semibold leading-tight">Free Delivery</span>
+                    <span className="text-[10px] text-[var(--color-text-secondary)] font-semibold leading-tight">Free Delivery</span>
                   </div>
                   <div className="flex flex-col items-center gap-1 text-center">
                     <CheckCircleOutlineIcon sx={{ fontSize: 20, color: '#0052FF' }} />
-                    <span className="text-[10px] text-[#64748B] font-semibold leading-tight">1-Year Warranty</span>
+                    <span className="text-[10px] text-[var(--color-text-secondary)] font-semibold leading-tight">1-Year Warranty</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[12px] text-[#64748B] mb-5">
+                <div className="flex items-center justify-between text-[12px] text-[var(--color-text-secondary)] mb-5">
                   <span>7-Day Easy Returns</span>
                   <span className="flex items-center gap-1">
                     <LockIcon sx={{ fontSize: 14, color: '#0052FF' }} />

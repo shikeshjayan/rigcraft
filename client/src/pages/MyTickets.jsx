@@ -61,7 +61,7 @@ const MyTickets = () => {
       <div className="bg-white p-8 md:p-10 border border-gray-200 shadow-sm mt-8" style={{ borderRadius: 'var(--radius-sm)' }}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div className="flex items-center gap-3">
-            <SupportAgentIcon sx={{ fontSize: 32, color: '#2563EB' }} />
+            <SupportAgentIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
             <div>
               <h1 className="text-2xl font-black text-gray-900 uppercase tracking-wide">My Support Tickets</h1>
               <p className="text-sm text-gray-500 font-medium">Track and follow up on your claims and requests.</p>

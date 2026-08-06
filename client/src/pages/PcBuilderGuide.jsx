@@ -45,7 +45,7 @@ const PcBuilderGuide = () => {
                 <div className="lg:w-1/2 flex justify-end text-left lg:text-right">
                   <div className="bg-white p-8 border border-gray-200 shadow-sm w-full" style={{ borderRadius: 'var(--radius-sm)' }}>
                     <div className="flex lg:flex-row-reverse items-center gap-3 mb-4">
-                      <MemoryIcon sx={{ fontSize: 32, color: '#2563EB' }} />
+                      <MemoryIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
                       <h3 className="text-2xl font-black text-gray-900 uppercase">1. Core Components</h3>
                     </div>
                     <p className="text-sm text-gray-600 font-medium leading-relaxed mb-4">
@@ -77,7 +77,7 @@ const PcBuilderGuide = () => {
                 <div className="lg:w-1/2 text-left">
                   <div className="bg-white p-8 border border-gray-200 shadow-sm w-full" style={{ borderRadius: 'var(--radius-sm)' }}>
                     <div className="flex items-center gap-3 mb-4">
-                      <ExtensionIcon sx={{ fontSize: 32, color: '#2563EB' }} />
+                      <ExtensionIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
                       <h3 className="text-2xl font-black text-gray-900 uppercase">2. Essential Upgrades</h3>
                     </div>
                     <p className="text-sm text-gray-600 font-medium leading-relaxed mb-4">
@@ -109,7 +109,7 @@ const PcBuilderGuide = () => {
                 <div className="lg:w-1/2 flex justify-end text-left lg:text-right">
                   <div className="bg-white p-8 border border-gray-200 shadow-sm w-full" style={{ borderRadius: 'var(--radius-sm)' }}>
                     <div className="flex lg:flex-row-reverse items-center gap-3 mb-4">
-                      <KeyboardIcon sx={{ fontSize: 32, color: '#2563EB' }} />
+                      <KeyboardIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
                       <h3 className="text-2xl font-black text-gray-900 uppercase">3. Accessories & Peripherals</h3>
                     </div>
                     <p className="text-sm text-gray-600 font-medium leading-relaxed mb-4">
@@ -141,7 +141,7 @@ const PcBuilderGuide = () => {
                 <div className="lg:w-1/2 text-left">
                   <div className="bg-white p-8 border border-gray-200 shadow-sm w-full" style={{ borderRadius: 'var(--radius-sm)' }}>
                     <div className="flex items-center gap-3 mb-4">
-                      <BuildCircleIcon sx={{ fontSize: 32, color: '#2563EB' }} />
+                      <BuildCircleIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
                       <h3 className="text-2xl font-black text-gray-900 uppercase">4. Let RigCraft Build It</h3>
                     </div>
                     <p className="text-sm text-gray-600 font-medium leading-relaxed mb-4">
