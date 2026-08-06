@@ -41,6 +41,7 @@ const DealList = () => {
     data: deals,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("dealList", dealService, { page, pageSize, search, status: filters.status });
 
@@ -188,6 +189,7 @@ const DealList = () => {
         columns={columns}
         rows={deals}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}
