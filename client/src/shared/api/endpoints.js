@@ -30,6 +30,23 @@ export const ENDPOINTS = {
     TOGGLE_STATUS: (id) => `/admin/deals/${id}/status`,
   },
 
+  // Bundles (public)
+  BUNDLE: {
+    LIST: "/bundles",
+    ACTIVE: "/bundles/active",
+    DETAILS: (slug) => `/bundles/${slug}`,
+  },
+
+  // Bundles (admin)
+  ADMIN_BUNDLE: {
+    LIST: "/admin/bundles",
+    DETAILS: (id) => `/admin/bundles/${id}`,
+    CREATE: "/admin/bundles",
+    UPDATE: (id) => `/admin/bundles/${id}`,
+    DELETE: (id) => `/admin/bundles/${id}`,
+    TOGGLE_STATUS: (id) => `/admin/bundles/${id}/status`,
+  },
+
   // Dashboard
   DASHBOARD: {
     STATS: "/dashboard/stats",

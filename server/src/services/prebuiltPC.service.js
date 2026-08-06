@@ -5,6 +5,7 @@ import prebuiltPCRepository from "../repositories/prebuiltPC.repository.js";
 import productRepository from "../repositories/product.repository.js";
 import ApiError from "../utils/ApiError.js";
 import * as uploadService from "./upload.service.js";
+import { getSettings } from "../models/settings.model.js";
 
 const FOLDER = "prebuilt-pcs";
 
@@ -60,6 +61,11 @@ export const list = async (query) => {
   if (category) filter.category = category;
   if (status) filter.status = status;
   if (isFeatured !== undefined) filter.isFeatured = isFeatured === "true";
+
+  const settings = await getSettings();
+  if (settings?.inventory?.hideOutOfStock && !status) {
+    filter.stock = { $gt: 0 };
+  }
 
   if (minPrice || maxPrice) {
     filter["pricing.price"] = {};

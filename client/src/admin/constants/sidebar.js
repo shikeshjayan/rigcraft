@@ -49,6 +49,12 @@ export const SIDEBAR_SECTIONS = [
         roles: ["admin", "manager"],
       },
       {
+        label: "Bundles",
+        path: "/admin/bundles",
+        icon: "Sell",
+        roles: ["admin", "manager"],
+      },
+      {
         label: "Coupons",
         path: "/admin/coupons",
         icon: "Discount",

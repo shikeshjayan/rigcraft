@@ -12,7 +12,7 @@ import YouTubeIcon from '@mui/icons-material/YouTube';
 import InstagramIcon from '@mui/icons-material/Instagram';
 import PrecisionManufacturingIcon from '@mui/icons-material/PrecisionManufacturing';
 
-const Footer = () => {
+const Footer = ({ hideNewsletter = false }) => {
   const { user } = useAuth();
   const [email, setEmail] = useState('');
   const [message, setMessage] = useState('');
@@ -87,8 +87,10 @@ const Footer = () => {
   return (
     <footer className="w-full">
       <FadeUp delay={0.2}>
-      {/* Newsletter Banner */}
-      <div className="w-full py-12" style={{ backgroundColor: 'var(--color-primary, #2563EB)' }}>
+      {!hideNewsletter && (
+        <>
+        {/* Newsletter Banner */}
+        <div className="w-full py-12" style={{ backgroundColor: 'var(--color-primary, #2563EB)' }}>
         <div className="max-w-[1400px] mx-auto px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-white text-center md:text-left">
             <h3 className="text-[24px] md:text-[28px] font-extrabold tracking-wide mb-2">Join the {brand?.storeName || 'RigCraft'} Community</h3>
@@ -130,6 +132,8 @@ const Footer = () => {
           </div>
         </div>
       </div>
+        </>
+      )}
 
       {/* Main Footer */}
       <div className="w-full pt-16 pb-8" style={{ backgroundColor: '#1A1A1A', color: 'white' }}>
