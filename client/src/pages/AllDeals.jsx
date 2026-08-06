@@ -1,199 +1,408 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { motion, AnimatePresence } from 'framer-motion';
-import FilterListIcon from '@mui/icons-material/FilterList';
+import SwapVertIcon from '@mui/icons-material/SwapVert';
 import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
-import Card from '../components/Card';
-import Filter from '../components/Filter';
+import DealCard from '../components/DealCard';
+import BundleDealCard from '../components/BundleDealCard';
+import { getMemberPrice } from '../utils/bundleUtils';
 import Breadcrumb from '../components/Breadcrumb';
-import SkeletonCard from '../components/SkeletonCard';
-import { productService } from '../services/product.service';
+import apiClient from '../api/client';
+import { bundleService } from '../services/bundle.service';
+
+const uniqueBy = (items, key) =>
+  Array.from(new Map(items.map(item => [item[key] || item._id, item])).values());
+
+const normalizeItem = (item, itemType) => {
+  const isPrebuilt = itemType === 'prebuilt';
+  const pricing = isPrebuilt ? (item.pricing || {}) : item;
+
+  const mrp = isPrebuilt ? pricing.price : item.price;
+  const dealPrice = isPrebuilt ? (pricing.salePrice || pricing.price) : (item.salePrice || item.price);
+  const discountPct =
+    mrp && dealPrice && Number(mrp) > Number(dealPrice)
+      ? Math.round(((Number(mrp) - Number(dealPrice)) / Number(mrp)) * 100)
+      : 0;
+
+  const categoryValue =
+    (item.category && typeof item.category === 'object' && item.category.name) ||
+    (typeof item.category === 'string' && item.category.length !== 24 ? item.category : null) ||
+    (typeof item.brand === 'string' && item.brand.length !== 24 ? item.brand : null) ||
+    (item.brand && typeof item.brand === 'object' && item.brand.name) ||
+    (isPrebuilt ? 'PREBUILD' : 'COMPONENT');
+
+  return {
+    id: item._id || item.id,
+    slug: item.slug,
+    title: item.name || item.title,
+    image: item.images?.[0]?.url || item.image || '/fallback.png',
+    description: item.shortDescription || item.description,
+    rating: item.rating,
+    stock: item.stock,
+    createdAt: item.createdAt,
+    price: Number(dealPrice) || 0,
+    mrp: Number(mrp) || 0,
+    discountPct,
+    category: categoryValue,
+    endDate: item.dealEndDate,
+    itemType,
+  };
+};
+
+const normalizeBundle = (bundle) => {
+  const members = [...(bundle.products || []), ...(bundle.prebuiltPCs || [])];
+  const itemsTotal = members.reduce((sum, item) => sum + getMemberPrice(item), 0);
+  const bundlePrice = Number(bundle.bundlePrice) || 0;
+  const savings = Number(bundle.savings) || Math.max(0, itemsTotal - bundlePrice);
+  const discountPct =
+    Number(bundle.discountPct) ||
+    (itemsTotal > 0 ? Math.round((savings / itemsTotal) * 100) : 0);
+
+  return {
+    id: bundle._id || bundle.id,
+    slug: bundle.slug,
+    title: bundle.name || bundle.title,
+    image: bundle.image?.url || '/fallback.png',
+    createdAt: bundle.createdAt,
+    price: bundlePrice,
+    mrp: itemsTotal,
+    discountPct,
+    endDate: bundle.endDate,
+    itemType: 'bundle',
+    bundle,
+  };
+};
+
+const TABS = [
+  { key: 'all', label: 'All Deals' },
+  { key: 'components', label: 'Components' },
+  { key: 'prebuilt', label: 'Prebuilt PCs' },
+  { key: 'bundles', label: 'Bundle Deals' },
+];
+
+const SORT_OPTIONS = [
+  { key: 'discount', label: 'Biggest Discount' },
+  { key: 'priceLow', label: 'Price: Low to High' },
+  { key: 'priceHigh', label: 'Price: High to Low' },
+  { key: 'endingSoon', label: 'Ending Soon' },
+  { key: 'newest', label: 'Newest' },
+];
+
+const sortItems = (items, sortBy) => {
+  const sorted = [...items];
+  switch (sortBy) {
+    case 'priceLow':
+      return sorted.sort((a, b) => a.price - b.price);
+    case 'priceHigh':
+      return sorted.sort((a, b) => b.price - a.price);
+    case 'endingSoon':
+      return sorted.sort((a, b) => {
+        const aT = a.endDate ? new Date(a.endDate).getTime() : Infinity;
+        const bT = b.endDate ? new Date(b.endDate).getTime() : Infinity;
+        return aT - bT;
+      });
+    case 'newest':
+      return sorted.sort((a, b) => {
+        const aT = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const bT = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return bT - aT;
+      });
+    case 'discount':
+    default:
+      return sorted.sort((a, b) => b.discountPct - a.discountPct || b.mrp - a.mrp);
+  }
+};
 
 const AllDeals = () => {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
-  const [currentTime, setCurrentTime] = useState(new Date());
+  // Tabs + Sort State
+  const [activeTab, setActiveTab] = useState('all');
+  const [sortBy, setSortBy] = useState('discount');
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef(null);
+  const [catOpen, setCatOpen] = useState(false);
+  const catRef = useRef(null);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentTime(new Date());
-    }, 1000);
-    return () => clearInterval(timer);
+    const handleClick = (e) => {
+      if (sortRef.current && !sortRef.current.contains(e.target)) setSortOpen(false);
+      if (catRef.current && !catRef.current.contains(e.target)) setCatOpen(false);
+    };
+    const handleKey = (e) => {
+      if (e.key === 'Escape') {
+        setSortOpen(false);
+        setCatOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
   }, []);
 
-  const { data: productsData, isLoading } = useQuery({
-    queryKey: ['activeSaleProductsAll'],
-    queryFn: () => productService.list({ limit: 1000 }),
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 12;
+
+  const { data: dealsData, isLoading: dealsLoading } = useQuery({
+    queryKey: ['activeDealsProducts'],
+    queryFn: async () => {
+      const res = await apiClient.get('/deals/active');
+      return res.data;
+    },
   });
 
-  // Extract products from the response and filter by active sale
-  const activeSaleProducts = useMemo(() => {
-    let allProducts = [];
-    if (productsData?.data?.docs) {
-      allProducts = productsData.data.docs;
-    } else if (productsData?.data?.data?.docs) {
-      allProducts = productsData.data.data.docs;
-    } else if (productsData?.docs) {
-      allProducts = productsData.docs;
-    } else if (Array.isArray(productsData?.data)) {
-      allProducts = productsData.data;
-    } else if (Array.isArray(productsData)) {
-      allProducts = productsData;
-    }
+  const { data: bundlesData, isLoading: bundlesLoading } = useQuery({
+    queryKey: ['activeBundlesAllDeals'],
+    queryFn: () => bundleService.getActive(),
+    staleTime: 60_000,
+  });
 
-    return allProducts.filter(product => {
-      if (!product.salePrice) return false;
-      
-      if (product.saleStart && product.saleEnd) {
-        const start = new Date(product.saleStart);
-        const end = new Date(product.saleEnd);
-        return currentTime >= start && currentTime <= end;
-      }
-      
-      return true;
+  const { components, prebuilts } = useMemo(() => {
+    const dealsList = Array.isArray(dealsData?.data) ? dealsData.data : [];
+    const allComponents = [];
+    const allPrebuilts = [];
+
+    dealsList.forEach((deal) => {
+      const endDate = deal.endDate;
+      (deal.products || []).forEach((p) => allComponents.push({ ...p, dealEndDate: endDate }));
+      (deal.prebuiltPCs || []).forEach((p) => allPrebuilts.push({ ...p, dealEndDate: endDate }));
     });
-  }, [productsData, currentTime]);
-
-  // Filters State
-  const [filterDropdownOpen, setFilterDropdownOpen] = useState(false);
-  
-  const initialFilters = {
-    priceMax: 500000,
-    brands: [],
-    ratings: [],
-    specs: {}
-  };
-
-  const [filters, setFilters] = useState(initialFilters);
-  const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12; 
-
-  const dynamicFilterOptions = useMemo(() => {
-    const brands = new Set();
-    const ratings = new Set();
-    const specs = {};
-    
-    activeSaleProducts.forEach(p => {
-      if (p.brand?.name) brands.add(p.brand.name);
-      
-      const rating = Math.floor(p.rating?.average || 0);
-      if (rating > 0) ratings.add(rating);
-      
-      if (p.specifications) {
-        Object.entries(p.specifications).forEach(([key, val]) => {
-          if (val && typeof val !== 'object') {
-            if (!specs[key]) specs[key] = new Set();
-            specs[key].add(String(val));
-          }
-        });
-      }
-    });
-
-    const parsedSpecs = Object.keys(specs).map(key => ({
-      key,
-      options: Array.from(specs[key]).sort()
-    }));
 
     return {
-      brands: Array.from(brands).sort(),
-      ratings: Array.from(ratings).sort((a,b) => b - a),
-      specs: parsedSpecs,
+      components: uniqueBy(allComponents, 'slug').map((item) => normalizeItem(item, 'product')),
+      prebuilts: uniqueBy(allPrebuilts, 'slug').map((item) => normalizeItem(item, 'prebuilt')),
     };
-  }, [activeSaleProducts]);
+  }, [dealsData]);
 
-  const handleClearAll = () => {
-    setFilters(initialFilters);
-    setCurrentPage(1);
-  };
+  const bundles = useMemo(() => {
+    const list = Array.isArray(bundlesData?.data) ? bundlesData.data : [];
+    return list.map(normalizeBundle);
+  }, [bundlesData]);
 
-  // Apply filters
-  const filteredProducts = useMemo(() => {
-    return activeSaleProducts.filter(item => {
-      const price = item.salePrice || item.price || 0;
-      if (price > filters.priceMax) return false;
+  const isLoading = dealsLoading || bundlesLoading;
 
-      if (filters.ratings.length > 0) {
-        const itemRating = item.rating?.average || 0;
-        const meetsRating = filters.ratings.some(selectedRating => itemRating >= selectedRating);
-        if (!meetsRating) return false;
-      }
+  const allItems = useMemo(() => [...components, ...prebuilts, ...bundles], [components, prebuilts, bundles]);
 
-      if (filters.brands && filters.brands.length > 0) {
-        const itemBrand = item.brand?.name;
-        if (!itemBrand || !filters.brands.includes(itemBrand)) return false;
-      }
+  const baseItems = useMemo(() => {
+    switch (activeTab) {
+      case 'components':
+        return components;
+      case 'prebuilt':
+        return prebuilts;
+      case 'bundles':
+        return bundles;
+      case 'all':
+      default:
+        return allItems;
+    }
+  }, [activeTab, components, prebuilts, bundles, allItems]);
 
-      if (filters.specs) {
-        const specKeys = Object.keys(filters.specs);
-        for (let i = 0; i < specKeys.length; i++) {
-          const key = specKeys[i];
-          const selectedValues = filters.specs[key];
-          if (selectedValues && selectedValues.length > 0) {
-            const itemVal = item.specifications?.[key];
-            if (!itemVal || !selectedValues.includes(String(itemVal))) return false;
-          }
-        }
-      }
-
-      return true;
-    });
-  }, [filters, activeSaleProducts]);
+  const sortedItems = useMemo(() => sortItems(baseItems, sortBy), [baseItems, sortBy]);
 
   // Pagination logic
-  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
-  const currentProducts = filteredProducts.slice(
+  const totalPages = Math.max(1, Math.ceil(sortedItems.length / itemsPerPage));
+  const currentItems = sortedItems.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage
   );
 
   const handlePrevPage = () => {
     if (currentPage > 1) {
-      setCurrentPage(prev => prev - 1);
+      setCurrentPage((prev) => prev - 1);
       document.getElementById('deals-top').scrollIntoView({ behavior: 'smooth' });
     }
   };
 
   const handleNextPage = () => {
     if (currentPage < totalPages) {
-      setCurrentPage(prev => prev + 1);
+      setCurrentPage((prev) => prev + 1);
       document.getElementById('deals-top').scrollIntoView({ behavior: 'smooth' });
     }
   };
 
-  const gridClasses = "grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-h-[800px] items-start content-start";
+  const currentSortLabel = SORT_OPTIONS.find((o) => o.key === sortBy)?.label || 'Sort';
+
+  const getTabCount = (key) =>
+    key === 'all'
+      ? allItems.length
+      : key === 'components'
+        ? components.length
+        : key === 'prebuilt'
+          ? prebuilts.length
+          : bundles.length;
+
+  const activeTabData = TABS.find((t) => t.key === activeTab) || TABS[0];
+
+  const renderCard = (item) => {
+    if (item.itemType === 'bundle') {
+      return <BundleDealCard key={item.id} bundle={item.bundle} />;
+    }
+    return (
+      <DealCard
+        key={item.id}
+        id={item.slug}
+        apiId={item.id}
+        title={item.title}
+        image={item.image}
+        price={item.price}
+        mrp={item.mrp}
+        stock={item.stock}
+        rating={item.rating}
+        description={item.description}
+        category={item.category}
+        endDate={item.endDate}
+        itemType={item.itemType}
+        compact
+      />
+    );
+  };
 
   return (
     <section id="deals-top" className="w-full py-12 pb-24" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
-        
         <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'All Deals' }]} />
 
-        <div 
-          className="flex justify-between items-center mb-6 sticky top-[111px] z-40 py-4 border-b border-transparent backdrop-blur-md transition-all duration-300"
+        <div
+          className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-6 sticky top-[111px] z-40 py-4 border-b border-transparent backdrop-blur-md transition-all duration-300"
           style={{ backgroundColor: 'rgba(241, 245, 249, 0.95)' }}
         >
-          <div>
-            <h1 className="text-[32px] font-extrabold text-[#0F172A] uppercase">All Deals</h1>
-            <p className="text-[14px] text-[#565959]">Showing {filteredProducts.length} results</p>
+          <div className="text-center md:text-left">
+            <h1 className="text-[28px] md:text-[32px] font-extrabold text-[#0F172A] uppercase">All Deals</h1>
+            <p className="text-[14px] text-[#565959]">Showing {sortedItems.length} results</p>
           </div>
-          
-          <button 
-            onClick={() => setFilterDropdownOpen(!filterDropdownOpen)} 
-            className={`flex items-center gap-2 px-4 py-2 border shadow-[0_1px_2px_rgba(0,0,0,0.05)] font-medium cursor-pointer transition-colors ${filterDropdownOpen ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]' : 'bg-white text-[#0F1111] border-[#D5D9D9] hover:bg-[#F7F7F7]'}`}
+
+          {/* Sort Dropdown */}
+          <div className="relative w-full md:w-auto" ref={sortRef}>
+            <button
+              type="button"
+              onClick={() => setSortOpen(!sortOpen)}
+              className="flex items-center justify-center gap-2 w-full md:w-52 px-4 py-2.5 bg-white border border-[#CBD5E1] rounded-sm text-[13px] font-bold text-[#0F172A] hover:border-[#0F172A] transition-colors cursor-pointer shadow-sm"
+            >
+              <span className="flex items-center gap-2">
+                <SwapVertIcon sx={{ fontSize: 18 }} />
+                {currentSortLabel}
+              </span>
+            </button>
+            {sortOpen && (
+              <div className="absolute left-0 right-0 md:left-auto md:right-0 top-full mt-2 z-40 bg-white border border-[#CBD5E1] shadow-xl overflow-hidden w-full md:w-52" style={{ borderRadius: 'var(--radius-sm)' }}>
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.key}
+                    type="button"
+                    onClick={() => {
+                      setSortBy(opt.key);
+                      setSortOpen(false);
+                      setCurrentPage(1);
+                    }}
+                    className={`w-full text-center px-4 py-2.5 text-[13px] font-medium hover:bg-[#F0F6FF] transition-colors cursor-pointer ${sortBy === opt.key ? 'text-[var(--color-primary)] font-bold bg-[#F0F6FF]' : 'text-[#0F172A]'}`}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Category Tabs - Desktop / Tablet */}
+        <div className="hidden md:flex items-center gap-2 overflow-x-auto pb-2 mb-10 -mx-1 px-1">
+          {TABS.map((tab) => {
+            const count = getTabCount(tab.key);
+            const active = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                type="button"
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  setCurrentPage(1);
+                }}
+                className={`flex items-center gap-2 whitespace-nowrap px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide transition-colors cursor-pointer border ${
+                  active
+                    ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
+                    : 'bg-white text-[#0F172A] border-[#CBD5E1] hover:border-[#0F172A]'
+                }`}
+                style={{ borderRadius: 'var(--radius-sm)' }}
+              >
+                {tab.label}
+                <span
+                  className={`text-[11px] px-1.5 py-0.5 rounded-full font-extrabold ${
+                    active ? 'bg-white/20 text-white' : 'bg-[#F0F6FF] text-[var(--color-primary)]'
+                  }`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Category Tabs - Mobile Dropdown */}
+        <div className="md:hidden relative mb-10" ref={catRef}>
+          <button
+            type="button"
+            onClick={() => setCatOpen(!catOpen)}
+            className="flex items-center justify-between gap-2 w-full px-4 py-2.5 bg-white border border-[#CBD5E1] text-[13px] font-bold text-[#0F172A] hover:border-[#0F172A] transition-colors cursor-pointer shadow-sm"
             style={{ borderRadius: 'var(--radius-sm)' }}
           >
-            <FilterListIcon sx={{ fontSize: 20 }} /> Filters
+            <span className="flex items-center gap-2">
+              <SwapVertIcon sx={{ fontSize: 18 }} />
+              {activeTabData.label}
+              <span className="text-[11px] px-1.5 py-0.5 rounded-full font-extrabold bg-[#F0F6FF] text-[var(--color-primary)]">
+                {getTabCount(activeTab)}
+              </span>
+            </span>
+            <KeyboardArrowRightIcon
+              sx={{ fontSize: 18 }}
+              className={`transition-transform duration-300 ${catOpen ? 'rotate-90' : ''}`}
+            />
           </button>
+          {catOpen && (
+            <div
+              className="absolute left-0 right-0 top-full mt-2 z-40 bg-white border border-[#CBD5E1] shadow-xl overflow-hidden"
+              style={{ borderRadius: 'var(--radius-sm)' }}
+            >
+              {TABS.map((tab) => {
+                const active = activeTab === tab.key;
+                return (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    onClick={() => {
+                      setActiveTab(tab.key);
+                      setCurrentPage(1);
+                      setCatOpen(false);
+                    }}
+                    className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 text-[13px] font-medium transition-colors cursor-pointer ${
+                      active ? 'text-[var(--color-primary)] font-bold bg-[#F0F6FF]' : 'text-[#0F172A] hover:bg-[#F0F6FF]'
+                    }`}
+                  >
+                    {tab.label}
+                    <span
+                      className={`text-[11px] px-1.5 py-0.5 rounded-full font-extrabold ${
+                        active ? 'bg-[var(--color-primary)] text-white' : 'bg-[#F0F6FF] text-[var(--color-primary)]'
+                      }`}
+                    >
+                      {getTabCount(tab.key)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         <div className="relative">
           <div className="w-full">
             <AnimatePresence mode="wait">
-              {currentProducts.length === 0 && !isLoading ? (
-                <motion.div 
+              {currentItems.length === 0 && !isLoading ? (
+                <motion.div
                   key="empty"
                   initial={{ opacity: 0, scale: 0.95 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -201,86 +410,51 @@ const AllDeals = () => {
                   className="w-full p-20 text-center border border-dashed border-gray-300 rounded-lg bg-white"
                 >
                   <h3 className="text-[20px] font-bold text-[#0F1111] mb-2">No deals found</h3>
-                  <p className="text-[#565959]">Try adjusting your filters or check back later.</p>
-                  <button 
-                    onClick={handleClearAll}
-                    className="mt-4 px-6 py-2 bg-[var(--color-primary)] text-white font-bold rounded-md hover:opacity-90 cursor-pointer"
-                  >
-                    Clear All Filters
-                  </button>
+                  <p className="text-[#565959]">Try a different category or check back later.</p>
                 </motion.div>
               ) : (
-                <motion.div 
+                <motion.div
                   key="grid"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   className="w-full"
                 >
-                  <div className={gridClasses}>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 min-h-[800px] items-start content-start">
                     {isLoading ? (
                       Array.from({ length: 10 }).map((_, idx) => (
-                        <SkeletonCard key={`skeleton-${idx}`} compact={filterDropdownOpen} />
+                        <div key={`skeleton-${idx}`} className="h-[400px] bg-gray-100 rounded-lg animate-pulse"></div>
                       ))
                     ) : (
-                      currentProducts.map((item) => {
-                        const price = item.salePrice || item.price;
-                        const mrp = item.salePrice ? item.price : null;
-                        const discount = item.salePrice ? Math.round(((item.price - item.salePrice) / item.price) * 100) + '% OFF' : null;
-                        const imageUrl = item.images?.[0]?.url || 'https://via.placeholder.com/300?text=No+Image';
-                        let specs = [];
-                        if (item.specifications) {
-                          const specVals = Object.values(item.specifications);
-                          specs = specVals.filter(v => typeof v === 'string').slice(0, 3);
-                        }
-                        
-                        return (
-                          <div key={item._id || item.id} className="block h-full relative group">
-                            <Card 
-                              id={item.slug}
-                              apiId={item._id || item.id}
-                              rating={item?.rating}
-                              image={imageUrl}
-                              title={item.name}
-                              specs={specs.length > 0 ? specs : undefined}
-                              description={item.shortDescription || item.description || ''}
-                              price={`₹${price?.toLocaleString('en-IN')}`}
-                              mrp={mrp ? `₹${mrp?.toLocaleString('en-IN')}` : undefined}
-                              discount={discount}
-                              tag={discount ? discount : null}
-                              tagColor="#E11D48"
-                              compact={filterDropdownOpen} 
-                              stock={item.stock}
-                            />
-                          </div>
-                        );
-                      })
+                      currentItems.map(renderCard)
                     )}
                   </div>
 
-                  {totalPages > 1 && (
-                    <motion.div 
+                  {!isLoading && totalPages > 1 && (
+                    <motion.div
                       initial={{ opacity: 0 }}
                       whileInView={{ opacity: 1 }}
                       viewport={{ once: true }}
-                      className="w-full flex items-center justify-center gap-6 mt-16 border-t border-[#E2E8F0] pt-8"
+                      className="w-full flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-16 border-t border-[#E2E8F0] pt-8"
                     >
-                      <button 
+                      <button
                         onClick={handlePrevPage}
                         disabled={currentPage === 1}
-                        className="flex items-center gap-1 px-5 py-2.5 bg-white border border-[#D5D9D9] rounded-md font-bold text-[#0F1111] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F7F7F7] transition-colors cursor-pointer shadow-sm"
+                        className="flex items-center gap-1 px-3 sm:px-5 py-2.5 bg-white border border-[#D5D9D9] font-bold text-[#0F1111] whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F7F7F7] transition-colors cursor-pointer shadow-sm"
+                        style={{ borderRadius: 'var(--radius-sm)' }}
                       >
                         <KeyboardArrowLeftIcon /> Previous
                       </button>
-                      
-                      <span className="text-[15px] font-bold text-[#565959]">
+
+                      <span className="text-[13px] md:text-[15px] font-bold text-[#565959] whitespace-nowrap">
                         Page {currentPage} of {totalPages}
                       </span>
 
-                      <button 
+                      <button
                         onClick={handleNextPage}
                         disabled={currentPage === totalPages}
-                        className="flex items-center gap-1 px-5 py-2.5 bg-white border border-[#D5D9D9] rounded-md font-bold text-[#0F1111] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F7F7F7] transition-colors cursor-pointer shadow-sm"
+                        className="flex items-center gap-1 px-3 sm:px-5 py-2.5 bg-white border border-[#D5D9D9] font-bold text-[#0F1111] whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F7F7F7] transition-colors cursor-pointer shadow-sm"
+                        style={{ borderRadius: 'var(--radius-sm)' }}
                       >
                         Next <KeyboardArrowRightIcon />
                       </button>
@@ -290,16 +464,6 @@ const AllDeals = () => {
               )}
             </AnimatePresence>
           </div>
-
-          <Filter 
-            isOpen={filterDropdownOpen}
-            onClose={() => setFilterDropdownOpen(false)}
-            filters={filters}
-            setFilters={setFilters}
-            onClearAll={handleClearAll}
-            dynamicOptions={dynamicFilterOptions}
-          />
-
         </div>
       </div>
     </section>
