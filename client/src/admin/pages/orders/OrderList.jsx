@@ -26,6 +26,7 @@ const OrderList = () => {
     data: orders,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("orderList", orderService, { page, pageSize, search, ...filters });
 
@@ -65,7 +66,7 @@ const OrderList = () => {
     <Box ref={containerRef}>
       <TableToolbar title="Orders" searchValue={search} onSearchChange={setSearch} onRefresh={refetch} />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
-      <DataTable columns={columns} rows={orders} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/orders/${row.id}`)} rowsPerPageOptions={[10, 25, 50, 100]} />
+      <DataTable columns={columns} rows={orders} loading={loading} error={error} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/orders/${row.id}`)} rowsPerPageOptions={[10, 25, 50, 100]} />
     </Box>
   );
 };

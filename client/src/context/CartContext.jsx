@@ -29,7 +29,7 @@ export const CartProvider = ({ children }) => {
         return {
           ...product,
           id: product._id,
-          cartItemId: itemObj._id || product._id,
+          cartItemId: itemObj._id,
           qty: itemObj.quantity || 1,
           itemType: itemObj.itemType,
           price: itemObj.price,

@@ -75,12 +75,13 @@ const Orders = ({ embedded = false }) => {
         }
       } catch (error) {
         console.error('Failed to fetch orders', error);
+        toast('Failed to load orders', 'error');
       } finally {
         setLoading(false);
       }
     };
     fetchOrders();
-  }, [isLoggedIn]);
+  }, [isLoggedIn, toast]);
 
   // Filter Logic
   const filteredOrders = orders.filter(order => {
@@ -116,6 +117,7 @@ const Orders = ({ embedded = false }) => {
     try {
       await apiClient.patch(`/orders/${orderToCancel.id}/cancel`, { reason: 'User cancelled' });
       setOrders(orders.map(o => o.id === orderToCancel.id ? { ...o, status: 'Cancelled', rawStatus: 'cancelled' } : o));
+      toast('Order cancelled successfully');
     } catch (error) {
       toast('Failed to cancel order', 'error');
     }
