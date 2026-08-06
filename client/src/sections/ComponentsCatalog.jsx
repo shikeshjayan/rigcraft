@@ -2,12 +2,11 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useParams, useLocation } from 'react-router-dom';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import Card from '../components/Card';
 import SkeletonCard from '../components/SkeletonCard';
 import Filter from '../components/Filter';
+import Pagination from '../components/Pagination';
 import { productService } from '../services/product.service';
 import apiClient from '../api/client';
 import { getCategoryType } from '../constants/categories';
@@ -171,18 +170,10 @@ const ComponentsCatalog = () => {
 
   const currentItems = filteredComponents; 
 
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(prev => prev - 1);
-      document.getElementById('catalog-top').scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(prev => prev + 1);
-      document.getElementById('catalog-top').scrollIntoView({ behavior: 'smooth' });
-    }
+  const handlePageChange = (nextPage) => {
+    if (nextPage < 1 || nextPage > totalPages) return;
+    setCurrentPage(nextPage);
+    document.getElementById('catalog-top').scrollIntoView({ behavior: 'smooth' });
   };
 
   const categoryTitle = category ? category.replace('-', ' ').toUpperCase() : 'ALL COMPONENTS';
@@ -280,34 +271,11 @@ const ComponentsCatalog = () => {
                     )}
                   </div>
 
-                  {totalPages > 1 && (
-                    <motion.div 
-                      initial={{ opacity: 0 }}
-                      whileInView={{ opacity: 1 }}
-                      viewport={{ once: true }}
-                      className="w-full flex items-center justify-center gap-6 mt-16 border-t border-[#E2E8F0] pt-8"
-                    >
-                      <button 
-                        onClick={handlePrevPage}
-                        disabled={currentPage === 1}
-                        className="flex items-center gap-1 px-5 py-2.5 bg-white border border-[#D5D9D9] rounded-md font-bold text-[#0F1111] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F7F7F7] transition-colors cursor-pointer shadow-sm"
-                      >
-                        <KeyboardArrowLeftIcon /> Previous
-                      </button>
-                      
-                      <span className="text-[15px] font-bold text-[#565959]">
-                        Page {currentPage} of {totalPages}
-                      </span>
-
-                      <button 
-                        onClick={handleNextPage}
-                        disabled={currentPage === totalPages}
-                        className="flex items-center gap-1 px-5 py-2.5 bg-white border border-[#D5D9D9] rounded-md font-bold text-[#0F1111] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F7F7F7] transition-colors cursor-pointer shadow-sm"
-                      >
-                        Next <KeyboardArrowRightIcon />
-                      </button>
-                    </motion.div>
-                  )}
+                  <Pagination
+                    page={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
                 </motion.div>
               )}
             </AnimatePresence>
