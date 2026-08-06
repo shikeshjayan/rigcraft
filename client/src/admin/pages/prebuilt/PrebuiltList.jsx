@@ -33,6 +33,7 @@ const PrebuiltList = () => {
     data: items,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("prebuiltList", prebuiltService, { page, pageSize, search, ...filters });
 
@@ -129,6 +130,7 @@ const PrebuiltList = () => {
         columns={columns}
         rows={items}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}

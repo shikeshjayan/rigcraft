@@ -57,6 +57,8 @@ const CartSuggestions = () => {
                 buttonText="Add to cart"
                 compact={true}
                 stock={item.stock}
+                brand={item.brand?.name || item.brand}
+                warranty={item.warranty}
               />
             );
           })}

@@ -86,6 +86,8 @@ const BuilderRecentlyViewed = () => {
                 buttonText="Add to Build"
                 onButtonClick={() => selectPart(item)}
                 stock={item.stock}
+                brand={item.brand?.name || item.brand}
+                warranty={item.warranty}
               />
             </div>
           ))}

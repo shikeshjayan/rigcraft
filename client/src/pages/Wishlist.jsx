@@ -8,7 +8,6 @@ import Breadcrumb from '../components/Breadcrumb';
 import LoginPrompt from '../components/LoginPrompt';
 import Pagination from '../components/Pagination';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useToast } from '../components/toast/useToast';
 
 const ITEMS_PER_PAGE = 20;
 
@@ -20,8 +19,6 @@ const Wishlist = () => {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [flyingItem, setFlyingItem] = useState(null);
-  const [page, setPage] = useState(1);
-  const { toast } = useToast();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -60,8 +57,6 @@ const Wishlist = () => {
     
     // Remove from wishlist after successfully adding to cart
     removeFromWishlist(item.id || item._id);
-
-    toast(`${item.title || item.name} is added to cart`);
   };
 
   return (

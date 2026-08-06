@@ -302,6 +302,8 @@ const PrebuildCatalog = () => {
                               compact={filterDropdownOpen} 
                               category="prebuilt"
                               stock={pc.stock}
+                              brand={pc.brand?.name || pc.brand}
+                              warranty={pc.warranty}
                             />
                           </div>
                         );

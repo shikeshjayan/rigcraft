@@ -38,6 +38,7 @@ const NewsletterList = () => {
     data: subscribers,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("newsletterList", newsletterService, { page, pageSize, search, ...filters });
 
@@ -183,6 +184,7 @@ const NewsletterList = () => {
         columns={columns}
         rows={subscribers}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}

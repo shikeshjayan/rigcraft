@@ -65,10 +65,11 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
         }
       } catch (err) {
         console.error('Failed to fetch coupons', err);
+        toast('Failed to load coupons', 'error');
       }
     };
     fetchCoupons();
-  }, []);
+  }, [toast]);
 
   const syncCartToBackend = async () => {
     try {
@@ -196,6 +197,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
             if (verifyResponse.data.success) {
               clearCart();
+              toast('Payment successful! Your order has been placed.');
               navigate('/orders');
             } else {
               toast('Payment Verification Failed', 'error');
@@ -254,6 +256,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       }
     } catch (error) {
       console.error('Failed to fetch addresses', error);
+      toast('Failed to load addresses', 'error');
     }
   };
 
@@ -318,6 +321,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       setSelectedItemIds([]);
     } catch (err) {
       console.error(err);
+      toast('Failed to move items to wishlist', 'error');
     }
   };
 
@@ -328,6 +332,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
         if (data.success) setWishlistItems(data.data.items || []);
       } catch (e) {
         console.error(e);
+        toast('Failed to load wishlist', 'error');
       }
     }
     setIsWishlistOpen(!isWishlistOpen);
@@ -417,8 +422,10 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       } else if (selectedAddressId > addressToRemove) {
         setSelectedAddressId(selectedAddressId - 1);
       }
+      toast('Address removed successfully');
     } catch (error) {
       console.error('Failed to remove address', error);
+      toast('Failed to remove address', 'error');
     }
   };
 
@@ -489,7 +496,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
             {checkoutStep === 'bag' ? (
               <>
                 {/* Item Header */}
-                <div className="flex items-center justify-between mt-4">
+                <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
                   <div className="flex items-center gap-2 font-bold text-[15px] text-[var(--color-text)]">
                     <input
                       type="checkbox"
