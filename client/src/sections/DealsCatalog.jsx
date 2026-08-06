@@ -1,9 +1,10 @@
-import { useState, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 import apiClient from '../api/client';
 import DealCard from '../components/DealCard';
+import { bundleService } from '../services/bundle.service';
 
 const uniqueBy = (items, key) =>
   Array.from(new Map(items.map(item => [item[key] || item._id, item])).values());
@@ -44,12 +45,6 @@ const normalizeItem = (item, itemType) => {
   };
 };
 
-const TABS = [
-  { key: 'all', label: 'All Deals' },
-  { key: 'components', label: 'Components' },
-  { key: 'prebuilt', label: 'Prebuilt PCs' },
-];
-
 const SORT_OPTIONS = [
   { key: 'discount', label: 'Biggest Discount' },
   { key: 'priceLow', label: 'Price: Low to High' },
@@ -59,9 +54,24 @@ const SORT_OPTIONS = [
 ];
 
 const DealsCatalog = () => {
-  const [activeTab, setActiveTab] = useState('all');
   const [sortBy, setSortBy] = useState('discount');
   const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef(null);
+
+  useEffect(() => {
+    const handleClick = (e) => {
+      if (sortRef.current && !sortRef.current.contains(e.target)) setSortOpen(false);
+    };
+    const handleKey = (e) => {
+      if (e.key === 'Escape') setSortOpen(false);
+    };
+    document.addEventListener('mousedown', handleClick);
+    document.addEventListener('keydown', handleKey);
+    return () => {
+      document.removeEventListener('mousedown', handleClick);
+      document.removeEventListener('keydown', handleKey);
+    };
+  }, []);
 
   const { data: dealsData, isLoading } = useQuery({
     queryKey: ['activeDealsProducts'],
@@ -69,6 +79,12 @@ const DealsCatalog = () => {
       const res = await apiClient.get('/deals/active');
       return res.data;
     },
+  });
+
+  const { data: bundlesData } = useQuery({
+    queryKey: ['activeBundlesShopDeals'],
+    queryFn: () => bundleService.getActive(),
+    staleTime: 60_000,
   });
 
   const { components, prebuilts } = useMemo(() => {
@@ -145,7 +161,7 @@ const DealsCatalog = () => {
   const renderGrid = (items) =>
     items.length > 0 ? (
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
-        {items.map(renderCard)}
+        {items.slice(0, 8).map(renderCard)}
       </div>
     ) : null;
 
@@ -191,23 +207,25 @@ const DealsCatalog = () => {
               Shop Deals
             </h2>
             <p className="text-[14px] text-[#64748B] font-medium mt-1">
-              {components.length + prebuilts.length} products on sale right now
+              {components.length + prebuilts.length + (Array.isArray(bundlesData?.data) ? bundlesData.data.length : 0)} products on sale right now
             </p>
             <div className="w-16 h-1 bg-[#0052FF] mt-2"></div>
           </div>
 
           {/* Sort Dropdown */}
-          <div className="relative">
+          <div className="relative" ref={sortRef}>
             <button
               type="button"
               onClick={() => setSortOpen(!sortOpen)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-white border border-[#CBD5E1] rounded-sm text-[13px] font-bold text-[#0F172A] hover:border-[#0F172A] transition-colors cursor-pointer shadow-sm"
+              className="flex items-center justify-center gap-2 w-52 px-4 py-2.5 bg-white border border-[#CBD5E1] rounded-sm text-[13px] font-bold text-[#0F172A] hover:border-[#0F172A] transition-colors cursor-pointer shadow-sm"
             >
-              <SwapVertIcon sx={{ fontSize: 18 }} />
-              {currentSortLabel}
+              <span className="flex items-center gap-2">
+                <SwapVertIcon sx={{ fontSize: 18 }} />
+                {currentSortLabel}
+              </span>
             </button>
             {sortOpen && (
-              <div className="absolute right-0 top-full mt-2 z-40 bg-white border border-[#CBD5E1] rounded-md shadow-xl overflow-hidden w-52">
+              <div className="absolute right-0 top-full mt-2 z-40 bg-white border border-[#CBD5E1] shadow-xl overflow-hidden w-52" style={{ borderRadius: 'var(--radius-sm)' }}>
                 {SORT_OPTIONS.map((opt) => (
                   <button
                     key={opt.key}
@@ -216,7 +234,7 @@ const DealsCatalog = () => {
                       setSortBy(opt.key);
                       setSortOpen(false);
                     }}
-                    className={`w-full text-left px-4 py-2.5 text-[13px] font-medium hover:bg-[#F0F6FF] transition-colors cursor-pointer ${sortBy === opt.key ? 'text-[var(--color-primary)] font-bold bg-[#F0F6FF]' : 'text-[#0F172A]'}`}
+                    className={`w-full text-center px-4 py-2.5 text-[13px] font-medium hover:bg-[#F0F6FF] transition-colors cursor-pointer ${sortBy === opt.key ? 'text-[var(--color-primary)] font-bold bg-[#F0F6FF]' : 'text-[#0F172A]'}`}
                   >
                     {opt.label}
                   </button>
@@ -224,40 +242,6 @@ const DealsCatalog = () => {
               </div>
             )}
           </div>
-        </div>
-
-        {/* Category Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-10 -mx-1 px-1">
-          {TABS.map((tab) => {
-            const count =
-              tab.key === 'all'
-                ? components.length + prebuilts.length
-                : tab.key === 'components'
-                  ? components.length
-                  : prebuilts.length;
-            const active = activeTab === tab.key;
-            return (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center gap-2 whitespace-nowrap px-5 py-2.5 rounded-full text-[13px] font-bold uppercase tracking-wide transition-colors cursor-pointer border ${
-                  active
-                    ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
-                    : 'bg-white text-[#0F172A] border-[#CBD5E1] hover:border-[#0F172A]'
-                }`}
-              >
-                {tab.label}
-                <span
-                  className={`text-[11px] px-1.5 py-0.5 rounded-full font-extrabold ${
-                    active ? 'bg-white/20 text-white' : 'bg-[#F0F6FF] text-[var(--color-primary)]'
-                  }`}
-                >
-                  {count}
-                </span>
-              </button>
-            );
-          })}
         </div>
 
         {/* Loading */}
@@ -280,24 +264,18 @@ const DealsCatalog = () => {
         {/* Content */}
         {!isLoading && !isEmpty && (
           <>
-            {activeTab === 'all' && (
-              <>
-                {renderGroup(
-                  'Component Deals',
-                  'Component deals on the hottest hardware',
-                  sortedComponents,
-                  '/alldeals'
-                )}
-                {renderGroup(
-                  'Prebuilt PC Deals',
-                  'Complete prebuilt PCs, ready to game',
-                  sortedPrebuilts,
-                  '/bundle'
-                )}
-              </>
+            {renderGroup(
+              'Component Deals',
+              'Component deals on the hottest hardware',
+              sortedComponents,
+              '/alldeals'
             )}
-            {activeTab === 'components' && renderGroup('Component Deals', null, sortedComponents)}
-            {activeTab === 'prebuilt' && renderGroup('Prebuilt PC Deals', null, sortedPrebuilts)}
+            {renderGroup(
+              'Prebuilt PC Deals',
+              'Complete prebuilt PCs, ready to game',
+              sortedPrebuilts,
+              '/alldeals'
+            )}
           </>
         )}
       </div>

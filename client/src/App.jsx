@@ -12,7 +12,6 @@ import Wishlist from './pages/Wishlist';
 import Cart from './pages/Cart';
 import Dels from './pages/Dels';
 import AllDeals from './pages/AllDeals';
-import AllBundleDeals from './pages/AllBundleDeals';
 import BundleDetail from './pages/BundleDetail';
 import Customerlogin from './pages/Customerlogin';
 import CustomerRegister from './pages/CustomerRegister';
@@ -97,7 +96,6 @@ const App = () => {
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/deals" element={<Dels />} />
                   <Route path="/alldeals" element={<AllDeals />} />
-                  <Route path="/bundle" element={<AllBundleDeals />} />
                   <Route path="/bundle/:slug" element={<BundleDetail />} />
                   <Route path="/login" element={<Customerlogin />} />
                   <Route path="/register" element={<CustomerRegister />} />
