@@ -497,7 +497,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               <>
                 {/* Item Header */}
                 <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
-                  <div className="flex items-center gap-2 font-bold text-[15px] text-[#0F172A]">
+                  <div className="flex items-center gap-2 font-bold text-[15px] text-[var(--color-text)]">
                     <input
                       type="checkbox"
                       checked={selectedItemIds.length === cartItems.length && cartItems.length > 0}
