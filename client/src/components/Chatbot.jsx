@@ -51,14 +51,16 @@ const Chatbot = () => {
   const [isBuilding, setIsBuilding] = useState(false);
   const [showSavePopup, setShowSavePopup] = useState(false);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isScrolling, setIsScrolling] = useState(false);
 
   useEffect(() => {
     let scrollTimeout;
     const handleScroll = () => {
+      setIsScrolling(true);
       if (isOpen) setIsOpen(false); // close chat window on scroll
       clearTimeout(scrollTimeout);
       scrollTimeout = setTimeout(() => {
-        // keep chat button visible
+        setIsScrolling(false);
       }, 400);
     };
 
@@ -283,10 +285,6 @@ User: ${hiddenPrompt}`;
 
 
   const handleSaveBuild = async () => {
-    if (!isLoggedIn) {
-      setShowLoginPopup(true);
-      return;
-    }
     try {
       const payload = {
         name: "Rig AI Custom Build",
@@ -374,8 +372,8 @@ User: ${userText}`;
     }
   };
 
-  // Hide on auth pages and when dropdown is open
-  if (location.pathname === '/login' || location.pathname === '/register' || isDropdownOpen) {
+  // Hide on auth pages, when dropdown is open, or when scrolling
+  if (location.pathname === '/login' || location.pathname === '/register' || isDropdownOpen || isScrolling) {
     return null;
   }
 
@@ -392,7 +390,11 @@ User: ${userText}`;
   };
 
   const handleChatbotClick = () => {
-    setIsOpen(!isOpen);
+    if (!isLoggedIn) {
+      setShowLoginPopup(true);
+    } else {
+      setIsOpen(!isOpen);
+    }
   };
 
   return (

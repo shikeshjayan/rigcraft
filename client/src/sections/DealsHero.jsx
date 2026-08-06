@@ -41,7 +41,7 @@ const DealsHero = () => {
           <p className="text-[16px] sm:text-[18px] font-medium text-[#64748B] mb-10 max-w-xl leading-relaxed">
             We're cooking up exclusive offers on gaming components and prebuilt PCs. Check back soon to grab some serious savings.
           </p>
-          <Link to="/components" className="inline-block bg-[var(--color-primary)] text-white font-bold text-sm px-8 py-3.5 rounded-sm uppercase tracking-wide hover:opacity-90 transition-opacity">
+          <Link to="/products" className="inline-block bg-[var(--color-primary)] text-white font-bold text-sm px-8 py-3.5 rounded-sm uppercase tracking-wide hover:opacity-90 transition-opacity">
             Browse Products
           </Link>
         </div>

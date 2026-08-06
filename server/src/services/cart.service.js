@@ -121,15 +121,11 @@ const saveAndPopulate = async (cart) => {
   await cart.populate([
     {
       path: "items.item",
-      populate: [
-        { path: "brand", model: "Brand", strictPopulate: false },
-        {
-          path: "components.product",
-          model: "Product",
-          strictPopulate: false,
-          populate: { path: "brand", model: "Brand" }
-        }
-      ]
+      populate: {
+        path: "components.product",
+        model: "Product",
+        strictPopulate: false
+      }
     },
     { path: "coupon" }
   ]);
@@ -141,15 +137,11 @@ export const getCart = async (userId) => {
   await cart.populate([
     {
       path: "items.item",
-      populate: [
-        { path: "brand", model: "Brand", strictPopulate: false },
-        {
-          path: "components.product",
-          model: "Product",
-          strictPopulate: false,
-          populate: { path: "brand", model: "Brand" }
-        }
-      ]
+      populate: {
+        path: "components.product",
+        model: "Product",
+        strictPopulate: false
+      }
     },
     { path: "coupon" }
   ]);

@@ -16,7 +16,6 @@ const Wishlist = () => {
   const { addToCart } = useCart();
   const { isLoggedIn } = useAuth();
   
-  const [page, setPage] = useState(1);
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [flyingItem, setFlyingItem] = useState(null);
@@ -104,34 +103,31 @@ const Wishlist = () => {
                   </svg>
                 </button>
 
-                <Link 
-                  to={`/detail/${item.id}`}
-                  onClick={(e) => e.stopPropagation()}
-                  className="block w-full group/link"
-                >
-                  {/* Product Image */}
-                  <div className="w-full aspect-[3/4] bg-[#F5F6F6] overflow-hidden">
-                    <img 
-                      id={`wishlist-img-${item.id}`}
-                      src={item.image || (typeof item.images?.[0] === 'string' ? item.images[0] : item.images?.[0]?.url) || '/placeholder.png'} 
-                      alt={item.title || item.name} 
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                  </div>
+                {/* Product Image */}
+                <div className="w-full aspect-[3/4] bg-[#F5F6F6] overflow-hidden">
+                  <img 
+                    id={`wishlist-img-${item.id}`}
+                    src={item.image || (typeof item.images?.[0] === 'string' ? item.images[0] : item.images?.[0]?.url) || '/placeholder.png'} 
+                    alt={item.title || item.name} 
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                </div>
 
-                  {/* Product Info */}
-                  <div className="p-3 pb-0 flex flex-col flex-grow">
-                    <span className="text-[14px] text-[#282C3F] font-normal truncate mb-2 block">
-                      {item.title || item.name}
-                    </span>
+                {/* Product Info */}
+                <div className="p-3 pb-0 flex flex-col flex-grow">
+                  <Link 
+                    to={`/detail/${item.id}`}
+                    className="text-[14px] text-[#282C3F] hover:text-[var(--color-primary)] font-normal truncate mb-2 transition-colors cursor-pointer block"
+                  >
+                    {item.title || item.name}
+                  </Link>
 
-                    <div className="flex items-baseline gap-2 mb-4">
-                      <span className="text-[14px] font-[800] text-[#282C3F]">Rs.{String(item.price || item.pricing?.price || item.pricing?.salePrice || 0).replace('₹', '')}</span>
-                      <span className="text-[12px] text-[#7E818C] line-through">{item.mrp || item.pricing?.price || 'Rs.0'}</span>
-                      <span className="text-[12px] text-[#FF905A] font-bold">({item.discount || '0% OFF'})</span>
-                    </div>
+                  <div className="flex items-baseline gap-2 mb-4">
+                    <span className="text-[14px] font-[800] text-[#282C3F]">Rs.{String(item.price || item.pricing?.price || item.pricing?.salePrice || 0).replace('₹', '')}</span>
+                    <span className="text-[12px] text-[#7E818C] line-through">{item.mrp || item.pricing?.price || 'Rs.0'}</span>
+                    <span className="text-[12px] text-[#FF905A] font-bold">({item.discount || '0% OFF'})</span>
                   </div>
-                </Link>
+                </div>
 
                 {/* Move to Bag Button */}
                 <div className="w-full border-t border-[#EAEAEC] mt-auto">
@@ -146,7 +142,7 @@ const Wishlist = () => {
                     </button>
                   ) : (
                     <button 
-                      onClick={(e) => { e.stopPropagation(); handleAddToCart(e, item); }}
+                      onClick={(e) => handleAddToCart(e, item)}
                       className="w-full py-3.5 text-[14px] font-[700] text-white bg-[var(--color-primary)] tracking-wide hover:opacity-90 transition-opacity cursor-pointer"
                     >
                       ADD TO CART
