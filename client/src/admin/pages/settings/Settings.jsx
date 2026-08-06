@@ -212,6 +212,7 @@ const Settings = () => {
         <Tab label="Shipping" />
         <Tab label="Notifications" />
         <Tab label="PC Builder" />
+        <Tab label="Inventory" />
       </Tabs>
 
       {/* ── General Tab ── */}
@@ -483,6 +484,60 @@ const Settings = () => {
               caption="Notify admin when a new order is placed"
               checked={settings.notification.newOrderAlerts}
               onChange={(e) => handleNestedChange("notification", "newOrderAlerts", e.target.checked)}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, mt: 2 }}>
+            <AdminButton variant="primary" onClick={handleSave} loading={saving}>Save Settings</AdminButton>
+          </Grid>
+        </Grid>
+      </TabPanel>
+
+      {/* ── Inventory Tab ── */}
+      <TabPanel value={tab} index={5}>
+        <Grid container spacing={3} maxWidth={600}>
+          <Grid size={{ xs: 12 }}>
+            <SectionHeader title="Stock Visibility" subtitle="How out-of-stock and low-stock items are handled across the store" />
+          </Grid>
+          <Grid size={{ xs: 12 }}>
+            <SwitchField
+              label="Hide Out of Stock"
+              caption="Hide out-of-stock products and prebuilt PCs from public storefronts. Out-of-stock items are only shown to administrators."
+              checked={settings.inventory?.hideOutOfStock ?? false}
+              onChange={(e) => handleNestedChange("inventory", "hideOutOfStock", e.target.checked)}
+            />
+          </Grid>
+          <Grid size={{ xs: 12 }}>
+            <SwitchField
+              label="Allow Backorders"
+              caption="Let customers purchase items even when stock is 0"
+              checked={settings.inventory?.allowBackorders ?? false}
+              onChange={(e) => handleNestedChange("inventory", "allowBackorders", e.target.checked)}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12 }}>
+            <Box sx={{ height: 1, backgroundColor: "var(--color-admin-border)", my: 1 }} />
+          </Grid>
+          <Grid size={{ xs: 12 }}>
+            <SectionHeader title="Stock Thresholds" subtitle="Low-stock warnings" />
+          </Grid>
+          <Grid size={{ xs: 6 }}>
+            <AdminInput
+              label="Low Stock Threshold"
+              type="number"
+              inputProps={{ min: 0 }}
+              value={settings.inventory?.lowStockThreshold ?? 10}
+              onChange={(e) => handleNestedChange("inventory", "lowStockThreshold", Number(e.target.value))}
+              helperText="When stock reaches this level, low-stock alerts fire"
+            />
+          </Grid>
+          <Grid size={{ xs: 12 }}>
+            <SwitchField
+              label="Auto-update Inventory"
+              caption="Automatically reduce stock when orders are placed (recommended unless you manage stock externally)"
+              checked={settings.inventory?.autoUpdateInventory ?? true}
+              onChange={(e) => handleNestedChange("inventory", "autoUpdateInventory", e.target.checked)}
             />
           </Grid>
 

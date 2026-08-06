@@ -17,7 +17,7 @@ const cartItemSchema = new mongoose.Schema(
 
     itemTypeModel: {
       type: String,
-      enum: ["Product", "PrebuiltPC", "SavedBuild"],
+      enum: ["Product", "PrebuiltPC", "SavedBuild", "Bundle"],
       required: true,
     },
 

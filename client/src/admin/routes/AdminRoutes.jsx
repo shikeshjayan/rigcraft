@@ -31,6 +31,9 @@ import NewsletterList from "../pages/newsletter/NewsletterList";
 import DealList from "../pages/deals/DealList";
 import DealCreate from "../pages/deals/DealCreate";
 import DealEdit from "../pages/deals/DealEdit";
+import BundleList from "../pages/bundles/BundleList";
+import BundleCreate from "../pages/bundles/BundleCreate";
+import BundleEdit from "../pages/bundles/BundleEdit";
 import FaqList from "../pages/faqs/FaqList";
 import FaqCreate from "../pages/faqs/FaqCreate";
 import FaqEdit from "../pages/faqs/FaqEdit";
@@ -89,6 +92,10 @@ const AdminRoutes = () => {
         <Route path="deals" element={<DealList />} />
         <Route path="deals/new" element={<DealCreate />} />
         <Route path="deals/:id/edit" element={<DealEdit />} />
+
+        <Route path="bundles" element={<BundleList />} />
+        <Route path="bundles/new" element={<BundleCreate />} />
+        <Route path="bundles/:id/edit" element={<BundleEdit />} />
 
         <Route path="faqs" element={<FaqList />} />
         <Route path="faqs/new" element={<FaqCreate />} />

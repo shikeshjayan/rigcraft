@@ -22,12 +22,19 @@ export const CartProvider = ({ children }) => {
       if (!(data.success && data.data?.items)) return [];
       return data.data.items.filter(itemObj => itemObj.item).map(itemObj => {
         const product = itemObj.item;
+        const imageUrl =
+          (typeof product.image === 'string' ? product.image : product.image?.url) ||
+          (typeof product.images?.[0] === 'string' ? product.images[0] : product.images?.[0]?.url) ||
+          null;
         return {
           ...product,
           id: product._id,
           cartItemId: itemObj._id,
           qty: itemObj.quantity || 1,
-          itemType: itemObj.itemType
+          itemType: itemObj.itemType,
+          price: itemObj.price,
+          totalPrice: itemObj.totalPrice,
+          image: imageUrl,
         };
       });
     },

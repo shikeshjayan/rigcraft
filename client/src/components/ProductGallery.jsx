@@ -5,7 +5,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseIcon from '@mui/icons-material/Close';
 
-const ProductGallery = ({ images, title, onActiveChange }) => {
+const ProductGallery = ({ images, title, onActiveChange, fill }) => {
   const safeImages = images && images.length > 0 ? images : ['/fallback.png'];
   const [activeIndex, setActiveIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
@@ -71,7 +71,7 @@ const ProductGallery = ({ images, title, onActiveChange }) => {
             type="button"
             onClick={openLightbox}
             aria-label="View images full screen"
-            className="w-full aspect-[4/3] flex items-center justify-center overflow-hidden cursor-zoom-in"
+            className={`w-full flex items-center justify-center overflow-hidden cursor-zoom-in ${fill ? 'h-full' : 'aspect-[4/3]'}`}
           >
             <motion.img
               key={activeIndex}

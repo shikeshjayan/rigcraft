@@ -12,6 +12,9 @@ import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import apiClient from '../api/client';
 import { useToast } from '../components/toast/useToast';
+import Pagination from '../components/Pagination';
+
+const ITEMS_PER_PAGE = 5;
 
 const ORDER_STATUSES = [
   { label: 'Order Confirmed', icon: <CheckCircleIcon fontSize="small" /> },
@@ -40,6 +43,7 @@ const Orders = ({ embedded = false }) => {
   const { toast } = useToast();
   const [orders, setOrders] = useState([]);
   const [filter, setFilter] = useState('All');
+  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
   
   // Modal state
@@ -83,7 +87,6 @@ const Orders = ({ embedded = false }) => {
   const filteredOrders = orders.filter(order => {
     if (filter === 'Delivered') return order.status === 'Delivered';
     if (filter === 'Live') return order.status !== 'Delivered' && order.status !== 'Cancelled';
-    // Naive month/year filters for demonstration
     if (filter === 'Last 30 Days') {
       const orderDate = new Date(order.date);
       const thirtyDaysAgo = new Date();
@@ -92,8 +95,18 @@ const Orders = ({ embedded = false }) => {
     }
     if (filter === '2026') return order.date.includes('2026');
     if (filter === '2025') return order.date.includes('2025');
-    return true; // 'All'
+    return true;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ITEMS_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedOrders = filteredOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const handlePageChange = (nextPage) => {
+    if (nextPage < 1 || nextPage > totalPages) return;
+    setPage(nextPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleCancelClick = (order) => {
     setOrderToCancel(order);
@@ -188,10 +201,11 @@ const Orders = ({ embedded = false }) => {
                   <p className="text-gray-500 text-sm">You have no orders matching the selected filters.</p>
                 </div>
               ) : (
-                filteredOrders.map(order => {
-                  const currentIndex = getStatusIndex(order.status);
-                  
-                  return (
+                <>
+                  {pagedOrders.map(order => {
+                    const currentIndex = getStatusIndex(order.status);
+                    
+                    return (
                     <div key={order.id} className="bg-white border border-gray-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden" style={{ borderRadius: 'var(--radius-sm)' }}>
                       {/* Order Header */}
                       <div className="bg-gray-50 px-6 py-4 border-b border-gray-200 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -285,7 +299,13 @@ const Orders = ({ embedded = false }) => {
                       </div>
                     </div>
                   );
-                })
+                })}
+                  <Pagination
+                    page={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                  />
+                </>
               )}
             </div>
 

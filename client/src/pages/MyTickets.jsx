@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import apiClient from '../api/client';
@@ -9,6 +9,9 @@ import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
 import { issueTypeLabel } from '../utils/supportLabels';
+import Pagination from '../components/Pagination';
+
+const ITEMS_PER_PAGE = 5;
 
 const STATUS_LABELS = {
   open: 'Open',
@@ -32,6 +35,7 @@ const formatDate = (date) =>
 const MyTickets = () => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
+  const [page, setPage] = useState(1);
 
   const { data: tickets, isLoading, isError } = useQuery({
     queryKey: ['myTickets'],
@@ -41,6 +45,16 @@ const MyTickets = () => {
     },
     enabled: isLoggedIn
   });
+
+  const totalPages = Math.max(1, Math.ceil((tickets || []).length / ITEMS_PER_PAGE));
+  const currentPage = Math.min(page, totalPages);
+  const pagedTickets = (tickets || []).slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
+
+  const handlePageChange = (nextPage) => {
+    if (nextPage < 1 || nextPage > totalPages) return;
+    setPage(nextPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const content = isLoggedIn ? (
     <FadeUp>
@@ -93,7 +107,7 @@ const MyTickets = () => {
           </div>
         ) : (
           <div className="flex flex-col gap-4">
-            {tickets.map((ticket) => (
+            {pagedTickets.map((ticket) => (
               <button
                 key={ticket._id}
                 onClick={() => navigate(`/my-tickets/${ticket._id}`)}
@@ -125,6 +139,12 @@ const MyTickets = () => {
                 </div>
               </button>
             ))}
+
+            <Pagination
+              page={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </div>
         )}
       </div>

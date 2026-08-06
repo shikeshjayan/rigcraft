@@ -27,3 +27,4 @@ server/vitest.config.js
 
 package-lock.json
 package.json
+client/CLIENT_MODULE.md
