@@ -32,7 +32,7 @@ const CartSuggestions = () => {
     <section className="w-full py-16" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <div className="max-w-[1200px] mx-auto px-4 lg:px-8">
         
-        <h2 className="text-[18px] font-bold text-[#0F172A] mb-6 border-b border-[#E2E8F0] pb-2">
+        <h2 className="text-[18px] font-bold text-[var(--color-text)] mb-6 border-b border-[var(--color-border)] pb-2">
           You May Also Like
         </h2>
 

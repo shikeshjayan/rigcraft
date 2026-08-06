@@ -50,7 +50,7 @@ const ReturnsAndRefunds = () => {
               {/* Custom PCs Policy */}
               <div className="bg-white p-8 border border-gray-200 shadow-sm" style={{ borderRadius: 'var(--radius-sm)' }}>
                 <div className="flex items-center gap-3 mb-4">
-                  <ComputerIcon sx={{ fontSize: 28, color: '#2563EB' }} />
+                  <ComputerIcon sx={{ fontSize: 28, color: 'var(--color-primary)' }} />
                   <h3 className="text-xl font-bold text-gray-900 uppercase">Custom Built PCs</h3>
                 </div>
                 <p className="text-sm text-gray-600 font-medium leading-relaxed mb-4">
@@ -75,7 +75,7 @@ const ReturnsAndRefunds = () => {
               {/* Individual Components Policy */}
               <div className="bg-white p-8 border border-gray-200 shadow-sm" style={{ borderRadius: 'var(--radius-sm)' }}>
                 <div className="flex items-center gap-3 mb-4">
-                  <MemoryIcon sx={{ fontSize: 28, color: '#2563EB' }} />
+                  <MemoryIcon sx={{ fontSize: 28, color: 'var(--color-primary)' }} />
                   <h3 className="text-xl font-bold text-gray-900 uppercase">Individual Components</h3>
                 </div>
                 <p className="text-sm text-gray-600 font-medium leading-relaxed mb-4">
@@ -102,7 +102,7 @@ const ReturnsAndRefunds = () => {
             {/* Refund Process Timeline */}
             <div className="bg-white p-8 md:p-10 border border-gray-200 shadow-sm" style={{ borderRadius: 'var(--radius-sm)' }}>
               <div className="flex items-center gap-3 mb-8 justify-center">
-                <CurrencyExchangeIcon sx={{ fontSize: 32, color: '#2563EB' }} />
+                <CurrencyExchangeIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
                 <h3 className="text-2xl font-black text-gray-900 uppercase">Refund Process</h3>
               </div>
 
@@ -138,22 +138,22 @@ const ReturnsAndRefunds = () => {
                 <h4 className="text-[15px] font-bold text-gray-900 uppercase mb-4">Non-Returnable Items</h4>
                 <ul className="text-sm text-gray-600 flex flex-col gap-3 font-medium">
                   <li className="flex items-center gap-2">
-                    <CheckCircleOutlineIcon sx={{ fontSize: 18, color: '#64748B' }} /> Digital software licenses and OS keys.
+                    <CheckCircleOutlineIcon sx={{ fontSize: 18, color: 'var(--color-text-secondary)' }} /> Digital software licenses and OS keys.
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircleOutlineIcon sx={{ fontSize: 18, color: '#64748B' }} /> Gift cards and promotional credits.
+                    <CheckCircleOutlineIcon sx={{ fontSize: 18, color: 'var(--color-text-secondary)' }} /> Gift cards and promotional credits.
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircleOutlineIcon sx={{ fontSize: 18, color: '#64748B' }} /> Items damaged due to user overclocking or mishandling.
+                    <CheckCircleOutlineIcon sx={{ fontSize: 18, color: 'var(--color-text-secondary)' }} /> Items damaged due to user overclocking or mishandling.
                   </li>
                   <li className="flex items-center gap-2">
-                    <CheckCircleOutlineIcon sx={{ fontSize: 18, color: '#64748B' }} /> "Final Sale" clearance items.
+                    <CheckCircleOutlineIcon sx={{ fontSize: 18, color: 'var(--color-text-secondary)' }} /> "Final Sale" clearance items.
                   </li>
                 </ul>
               </div>
 
               <div className="bg-blue-50 p-8 border border-blue-100 flex flex-col justify-center items-center text-center" style={{ borderRadius: 'var(--radius-sm)' }}>
-                <ContactSupportIcon sx={{ fontSize: 48, color: '#2563EB' }} className="mb-4" />
+                <ContactSupportIcon sx={{ fontSize: 48, color: 'var(--color-primary)' }} className="mb-4" />
                 <h4 className="text-[18px] font-black text-gray-900 uppercase mb-2">Ready to Start a Return?</h4>
                 <p className="text-sm text-gray-600 font-medium mb-6">
                   Have your Order ID ready and contact our support team to get your RMA number.

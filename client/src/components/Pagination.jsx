@@ -10,7 +10,7 @@ const Pagination = ({ page, totalPages, onPageChange }) => {
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       viewport={{ once: true }}
-      className="w-full flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-16 border-t border-[#E2E8F0] pt-8"
+      className="w-full flex flex-wrap items-center justify-center gap-3 md:gap-6 mt-16 border-t border-[var(--color-border)] pt-8"
     >
       <button
         type="button"

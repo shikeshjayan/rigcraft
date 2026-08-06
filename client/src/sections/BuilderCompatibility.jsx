@@ -15,9 +15,9 @@ const STATUS_STYLES = {
     text: 'text-[#991B1B]'
   },
   pending: {
-    container: 'bg-[#F8FAFC] border-[#E2E8F0]',
+    container: 'bg-[var(--color-surface)] border-[var(--color-border)]',
     icon: 'bg-[#CBD5E1] text-[#475569]',
-    text: 'text-[#64748B]'
+    text: 'text-[var(--color-text-secondary)]'
   }
 };
 
@@ -62,8 +62,8 @@ const BuilderCompatibility = () => {
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-[24px] font-bold text-[#0F172A]">Compatibility Check</h2>
-            <p className="text-[14px] text-[#64748B] mt-1">Live verification of your selected components as you build.</p>
+            <h2 className="text-[24px] font-bold text-[var(--color-text)]">Compatibility Check</h2>
+            <p className="text-[14px] text-[var(--color-text-secondary)] mt-1">Live verification of your selected components as you build.</p>
           </div>
           <div className="flex items-center gap-3">
             <span className={`px-4 py-2 border text-[13px] font-bold ${hasFail ? 'bg-[#FEE2E2] border-[#FCA5A5] text-[#991B1B]' : counts.pass > 0 && counts.fail === 0 && evaluated === report.checks.length ? 'bg-[#E6F4EA] border-[#A8D5B5] text-[#137333]' : 'bg-[#EFF6FF] border-[#BFDBFE] text-[#1E3A8A]'}`} style={{ borderRadius: 'var(--radius-sm)' }}>
@@ -100,14 +100,14 @@ const BuilderCompatibility = () => {
           })}
         </div>
 
-        <div className="mt-6 flex flex-col sm:flex-row gap-3 text-[13px] font-medium text-[#64748B]">
+        <div className="mt-6 flex flex-col sm:flex-row gap-3 text-[13px] font-medium text-[var(--color-text-secondary)]">
           <span>{counts.pass} passed</span>
           <span className="hidden sm:block text-[#CBD5E1]">|</span>
           <span>{counts.fail} issues</span>
           <span className="hidden sm:block text-[#CBD5E1]">|</span>
           <span>{counts.pending} pending selection</span>
           <span className="hidden sm:block text-[#CBD5E1]">|</span>
-          <span>Estimated power draw: <span className="font-bold text-[#0F172A]">{estWattage}W</span></span>
+          <span>Estimated power draw: <span className="font-bold text-[var(--color-text)]">{estWattage}W</span></span>
         </div>
       </div>
     </section>

@@ -235,7 +235,7 @@ const HeroReview = () => {
             </p>
             <h2
               className="text-[32px] md:text-[44px] font-extrabold tracking-tight"
-              style={{ color: "var(--color-text, #0f172a)" }}>
+              style={{ color: "var(--color-text)" }}>
               What Our Customers Say
             </h2>
           </div>
@@ -296,7 +296,7 @@ const HeroReview = () => {
             <StarIcon sx={{ fontSize: 40, color: "#F59E0B" }} />
             <p
               className="mt-4 text-[16px] font-bold"
-              style={{ color: "var(--color-text, #0f172a)" }}>
+              style={{ color: "var(--color-text)" }}>
               No testimonials yet
             </p>
             <p className="mt-1 text-[14px]" style={{ color: "#6B7280" }}>
@@ -442,7 +442,7 @@ const HeroReview = () => {
 
               <h3
                 className="text-[22px] font-extrabold mb-2"
-                style={{ color: "var(--color-text, #0f172a)" }}>
+                style={{ color: "var(--color-text)" }}>
                 Share Your Experience
               </h3>
               <p className="text-[14px] mb-6" style={{ color: "#6B7280" }}>
@@ -453,7 +453,7 @@ const HeroReview = () => {
                 <div>
                   <label
                     className="block text-[14px] font-semibold mb-2"
-                    style={{ color: "var(--color-text, #0f172a)" }}>
+                    style={{ color: "var(--color-text)" }}>
                     Rating
                   </label>
                   <div className="flex gap-1 cursor-pointer">
@@ -472,7 +472,7 @@ const HeroReview = () => {
                 <div>
                   <label
                     className="block text-[14px] font-semibold mb-2"
-                    style={{ color: "var(--color-text, #0f172a)" }}>
+                    style={{ color: "var(--color-text)" }}>
                     Comment
                   </label>
                   <textarea
@@ -482,7 +482,7 @@ const HeroReview = () => {
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
                     className="w-full border border-gray-300 rounded-md p-2 text-[14px] placeholder:text-gray-400 focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
-                    style={{ color: "#0f172a", backgroundColor: "#ffffff" }}
+                    style={{ color: "var(--color-text)", backgroundColor: "#ffffff" }}
                     placeholder="How was your experience with RigCraft?"
                   />
                 </div>

@@ -13,10 +13,10 @@ const RESOLUTIONS = [
 
 const ScoreBar = ({ score, color }) => (
   <div className="flex items-center gap-3">
-    <div className="flex-1 h-2 bg-[#E2E8F0] rounded-full overflow-hidden">
+    <div className="flex-1 h-2 bg-[var(--color-border)] rounded-full overflow-hidden">
       <div className="h-full rounded-full transition-all duration-500" style={{ width: `${score}%`, backgroundColor: color }}></div>
     </div>
-    <span className="w-16 text-right text-[12px] font-bold text-[#0F172A]">{score}/100</span>
+    <span className="w-16 text-right text-[12px] font-bold text-[var(--color-text)]">{score}/100</span>
   </div>
 );
 
@@ -30,18 +30,18 @@ const BuilderPerformance = () => {
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
           <div>
-            <h2 className="text-[24px] font-bold text-[#0F172A]">Estimated Performance</h2>
-            <p className="text-[14px] text-[#64748B] mt-1">Tier-based estimate from your selected components.</p>
+            <h2 className="text-[24px] font-bold text-[var(--color-text)]">Estimated Performance</h2>
+            <p className="text-[14px] text-[var(--color-text-secondary)] mt-1">Tier-based estimate from your selected components.</p>
           </div>
-          <span className="text-[12px] font-bold text-[#64748B] bg-white border border-[#CBD5E1] px-3 py-1.5 uppercase tracking-wider" style={{ borderRadius: 'var(--radius-sm)' }}>
+          <span className="text-[12px] font-bold text-[var(--color-text-secondary)] bg-white border border-[#CBD5E1] px-3 py-1.5 uppercase tracking-wider" style={{ borderRadius: 'var(--radius-sm)' }}>
             Estimated · Not benchmarked
           </span>
         </div>
 
         {!estimate.ready ? (
           <div className="bg-white border border-[#CBD5E1] p-8 text-center" style={{ borderRadius: 'var(--radius-sm)' }}>
-            <div className="text-[15px] font-bold text-[#0F172A] mb-1">Performance estimate will appear as you build.</div>
-            <p className="text-[13px] text-[#64748B]">Select a CPU, RAM and a GPU (or a CPU with integrated graphics) to get a gaming and productivity estimate.</p>
+            <div className="text-[15px] font-bold text-[var(--color-text)] mb-1">Performance estimate will appear as you build.</div>
+            <p className="text-[13px] text-[var(--color-text-secondary)]">Select a CPU, RAM and a GPU (or a CPU with integrated graphics) to get a gaming and productivity estimate.</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -54,7 +54,7 @@ const BuilderPerformance = () => {
             >
               <div className="flex items-center gap-2 mb-5">
                 <SportsEsportsIcon sx={{ fontSize: 22, color: 'var(--color-primary)' }} />
-                <h3 className="text-[16px] font-bold text-[#0F172A]">Gaming</h3>
+                <h3 className="text-[16px] font-bold text-[var(--color-text)]">Gaming</h3>
               </div>
               <div className="flex flex-col gap-4">
                 {RESOLUTIONS.map(res => {
@@ -82,7 +82,7 @@ const BuilderPerformance = () => {
             >
               <div className="flex items-center gap-2 mb-5">
                 <WorkIcon sx={{ fontSize: 22, color: 'var(--color-primary)' }} />
-                <h3 className="text-[16px] font-bold text-[#0F172A]">Productivity</h3>
+                <h3 className="text-[16px] font-bold text-[var(--color-text)]">Productivity</h3>
               </div>
               <div className="flex flex-col gap-4">
                 <div>
@@ -100,7 +100,7 @@ const BuilderPerformance = () => {
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="bg-[#0F172A] p-6 flex flex-col justify-center"
+              className="bg-[var(--color-text)] p-6 flex flex-col justify-center"
               style={{ borderRadius: 'var(--radius-sm)' }}
             >
               <div className="text-[13px] font-bold text-[#94A3B8] uppercase tracking-wider mb-2">Overall Score</div>

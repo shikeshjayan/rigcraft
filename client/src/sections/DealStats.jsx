@@ -11,14 +11,14 @@ const DAY_MS = 1000 * 60 * 60 * 24;
 const MOUNT_TIME = Date.now();
 
 const StatBlock = ({ icon, value, label, highlight }) => (
-  <div className="flex flex-col items-center text-center px-4 py-6 bg-white border border-[#E2E8F0] hover:shadow-md transition-shadow" style={{ borderRadius: 'var(--radius-sm)' }}>
+  <div className="flex flex-col items-center text-center px-4 py-6 bg-white border border-[var(--color-border)] hover:shadow-md transition-shadow" style={{ borderRadius: 'var(--radius-sm)' }}>
     <div
       className={`w-11 h-11 rounded-full flex items-center justify-center mb-3 ${highlight ? 'bg-[#FEE2E2] text-[#EF4444]' : 'bg-[#F0F6FF] text-[#0052FF]'}`}
     >
       {icon}
     </div>
-    <span className="text-[24px] md:text-[28px] font-extrabold text-[#0F172A] leading-none">{value}</span>
-    <span className="text-[11px] md:text-[12px] font-bold text-[#64748B] uppercase tracking-wider mt-1.5">{label}</span>
+    <span className="text-[24px] md:text-[28px] font-extrabold text-[var(--color-text)] leading-none">{value}</span>
+    <span className="text-[11px] md:text-[12px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider mt-1.5">{label}</span>
   </div>
 );
 
@@ -86,7 +86,7 @@ const DealStats = () => {
   if (dealsLoading || bundlesLoading || !stats || (stats.activeDeals === 0 && stats.bundles === 0)) return null;
 
   return (
-    <section className="w-full py-12 border-t border-[#E2E8F0]" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+    <section className="w-full py-12 border-t border-[var(--color-border)]" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-5">
           <StatBlock

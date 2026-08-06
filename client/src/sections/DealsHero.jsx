@@ -33,12 +33,12 @@ const DealsHero = () => {
         <div className="relative z-10 flex flex-col items-center w-full max-w-2xl">
           <div className="border border-[#CBD5E1] rounded-full px-4 py-1.5 mb-6 flex items-center gap-2 bg-white/80 backdrop-blur-sm shadow-sm">
             <span className="w-2 h-2 rounded-full bg-[#EF4444] animate-pulse"></span>
-            <span className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider">Stay Tuned</span>
+            <span className="text-[12px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">Stay Tuned</span>
           </div>
-          <h1 className="text-[40px] sm:text-[52px] md:text-[64px] font-extrabold text-[#0F172A] leading-[1.1] mb-6 tracking-tight">
+          <h1 className="text-[40px] sm:text-[52px] md:text-[64px] font-extrabold text-[var(--color-text)] leading-[1.1] mb-6 tracking-tight">
             Deals <span className="text-[var(--color-primary)]">Coming Soon</span>
           </h1>
-          <p className="text-[16px] sm:text-[18px] font-medium text-[#64748B] mb-10 max-w-xl leading-relaxed">
+          <p className="text-[16px] sm:text-[18px] font-medium text-[var(--color-text-secondary)] mb-10 max-w-xl leading-relaxed">
             We're cooking up exclusive offers on gaming components and prebuilt PCs. Check back soon to grab some serious savings.
           </p>
           <Link to="/products" className="inline-block bg-[var(--color-primary)] text-white font-bold text-sm px-8 py-3.5 rounded-sm uppercase tracking-wide hover:opacity-90 transition-opacity">
@@ -140,7 +140,7 @@ const DealsHero = () => {
                 <button
                   type="button"
                   onClick={handleCta}
-                  className="inline-block bg-white text-[#0F172A] font-bold text-xs md:text-sm px-6 py-3 rounded-sm uppercase tracking-wide hover:opacity-90 transition-opacity cursor-pointer"
+                  className="inline-block bg-white text-[var(--color-text)] font-bold text-xs md:text-sm px-6 py-3 rounded-sm uppercase tracking-wide hover:opacity-90 transition-opacity cursor-pointer"
                 >
                   {ctaText}
                 </button>
@@ -168,16 +168,16 @@ const DealsHero = () => {
         <motion.div variants={itemVariants} className="flex items-center gap-3 mb-8 flex-wrap justify-center">
           <span className="border border-[#CBD5E1] rounded-full px-4 py-1.5 flex items-center gap-2 bg-white/80 backdrop-blur-sm shadow-sm">
             <span className="w-2 h-2 rounded-full bg-[#EF4444] animate-pulse"></span>
-            <span className="text-[12px] font-bold text-[#64748B] uppercase tracking-wider">Flash Sale — Limited Time Only</span>
+            <span className="text-[12px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">Flash Sale — Limited Time Only</span>
           </span>
           {activeDealCount > 0 && (
-            <span className="border border-[#CBD5E1] rounded-full px-4 py-1.5 bg-white/80 backdrop-blur-sm shadow-sm text-[12px] font-bold text-[#64748B] uppercase tracking-wider">
+            <span className="border border-[#CBD5E1] rounded-full px-4 py-1.5 bg-white/80 backdrop-blur-sm shadow-sm text-[12px] font-bold text-[var(--color-text-secondary)] uppercase tracking-wider">
               {activeDealCount} Active Deals
             </span>
           )}
         </motion.div>
 
-        <motion.h1 variants={itemVariants} className="text-[52px] sm:text-[64px] md:text-[88px] font-extrabold text-[#0F172A] leading-[1.1] mb-6 tracking-tight">
+        <motion.h1 variants={itemVariants} className="text-[52px] sm:text-[64px] md:text-[88px] font-extrabold text-[var(--color-text)] leading-[1.1] mb-6 tracking-tight">
           {firstPart} <br className="hidden sm:block" />
           <span className="text-[var(--color-primary)] relative inline-block">
             {lastWord}
@@ -190,7 +190,7 @@ const DealsHero = () => {
           </span>
         </motion.h1>
 
-        <motion.p variants={itemVariants} className="text-[16px] sm:text-[18px] md:text-[20px] font-medium text-[#64748B] mb-16 max-w-2xl leading-relaxed">
+        <motion.p variants={itemVariants} className="text-[16px] sm:text-[18px] md:text-[20px] font-medium text-[var(--color-text-secondary)] mb-16 max-w-2xl leading-relaxed">
           {description}
         </motion.p>
 

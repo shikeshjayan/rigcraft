@@ -47,7 +47,7 @@ const DealsNewsletter = () => {
   };
 
   return (
-    <section className="w-full py-16 border-t border-[#E2E8F0] bg-gradient-to-r from-[#0052FF] to-[#0047AB] overflow-hidden">
+    <section className="w-full py-16 border-t border-[var(--color-border)] bg-gradient-to-r from-[#0052FF] to-[#0047AB] overflow-hidden">
       <div className="relative max-w-[1500px] mx-auto px-4 lg:px-8">
         <div className="absolute top-[-30%] right-[-5%] w-72 h-72 bg-white/10 rounded-full blur-3xl pointer-events-none"></div>
         <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">

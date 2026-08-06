@@ -184,7 +184,7 @@ const FirstOrderCoupon = () => {
                   </AnimatePresence>
                 </div>
 
-                <p className="text-[12px] text-[#64748B] mt-1 italic font-medium">
+                <p className="text-[12px] text-[var(--color-text-secondary)] mt-1 italic font-medium">
                   Applicable on your very first order
                 </p>
               </div>

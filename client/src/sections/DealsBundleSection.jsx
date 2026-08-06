@@ -208,24 +208,24 @@ const DealsBundleSection = () => {
         <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         <div className="flex justify-between items-end mb-8">
           <div>
-            <h2 className="text-[24px] md:text-[32px] font-extrabold text-[#0F172A] tracking-tight uppercase">
+            <h2 className="text-[24px] md:text-[32px] font-extrabold text-[var(--color-text)] tracking-tight uppercase">
               Bundle Deals
             </h2>
-            <p className="text-[13px] text-[#64748B] font-medium mt-1">
+            <p className="text-[13px] text-[var(--color-text-secondary)] font-medium mt-1">
               Buy the whole combo together — save more than building it piece by piece
             </p>
             <div className="w-16 h-1 bg-[#0052FF] mt-2"></div>
           </div>
           <Link
             to="/alldeals"
-            className="text-[12px] font-bold text-[#0F172A] border border-[#CBD5E1] py-2 px-6 rounded-sm hover:border-[#0F172A] transition-colors uppercase tracking-wide cursor-pointer bg-white text-center whitespace-nowrap"
+            className="text-[12px] font-bold text-[var(--color-text)] border border-[#CBD5E1] py-2 px-6 rounded-sm hover:border-[var(--color-text)] transition-colors uppercase tracking-wide cursor-pointer bg-white text-center whitespace-nowrap"
           >
             VIEW ALL
           </Link>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="bg-white border border-[#E2E8F0] h-80 animate-pulse" style={{ borderRadius: 'var(--radius-sm)' }}></div>
+            <div key={i} className="bg-white border border-[var(--color-border)] h-80 animate-pulse" style={{ borderRadius: 'var(--radius-sm)' }}></div>
           ))}
         </div>
         </div>
@@ -238,17 +238,17 @@ const DealsBundleSection = () => {
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         <div className="flex justify-between items-end mb-8">
           <div>
-            <h2 className="text-[24px] md:text-[32px] font-extrabold text-[#0F172A] tracking-tight uppercase">
+            <h2 className="text-[24px] md:text-[32px] font-extrabold text-[var(--color-text)] tracking-tight uppercase">
               Bundle Deals
             </h2>
-            <p className="text-[13px] text-[#64748B] font-medium mt-1">
+            <p className="text-[13px] text-[var(--color-text-secondary)] font-medium mt-1">
               Buy the whole combo together — save more than building it piece by piece
             </p>
             <div className="w-16 h-1 bg-[#0052FF] mt-2"></div>
           </div>
           <Link
             to="/alldeals"
-            className="text-[12px] font-bold text-[#0F172A] border border-[#CBD5E1] py-2 px-6 rounded-sm hover:border-[#0F172A] transition-colors uppercase tracking-wide cursor-pointer bg-white text-center whitespace-nowrap"
+            className="text-[12px] font-bold text-[var(--color-text)] border border-[#CBD5E1] py-2 px-6 rounded-sm hover:border-[var(--color-text)] transition-colors uppercase tracking-wide cursor-pointer bg-white text-center whitespace-nowrap"
           >
             VIEW ALL
           </Link>

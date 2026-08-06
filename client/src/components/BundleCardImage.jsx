@@ -65,7 +65,7 @@ const BundleCardImage = ({ bundle, thumbnails, name }) => {
             aria-label="Previous image"
             onClick={(e) => go(e, safeIndex - 1)}
             onKeyDown={(e) => e.stopPropagation()}
-            className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center bg-white/85 text-[#0F172A] shadow-md hover:bg-white cursor-pointer rounded-full transition-colors z-10"
+            className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center bg-white/85 text-[var(--color-text)] shadow-md hover:bg-white cursor-pointer rounded-full transition-colors z-10"
           >
             <ChevronLeftIcon sx={{ fontSize: 18 }} />
           </button>
@@ -74,7 +74,7 @@ const BundleCardImage = ({ bundle, thumbnails, name }) => {
             aria-label="Next image"
             onClick={(e) => go(e, safeIndex + 1)}
             onKeyDown={(e) => e.stopPropagation()}
-            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center bg-white/85 text-[#0F172A] shadow-md hover:bg-white cursor-pointer rounded-full transition-colors z-10"
+            className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 flex items-center justify-center bg-white/85 text-[var(--color-text)] shadow-md hover:bg-white cursor-pointer rounded-full transition-colors z-10"
           >
             <ChevronRightIcon sx={{ fontSize: 18 }} />
           </button>
