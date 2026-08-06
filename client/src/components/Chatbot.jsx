@@ -8,6 +8,7 @@ import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
 import SmartToyIcon from '@mui/icons-material/SmartToy'; // Fallback icon
 import apiClient from '../api/client';
+import { useToast } from '../components/toast/useToast';
 
 // Initialize Gemini
 const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
@@ -30,6 +31,7 @@ const mapCategoryToEnum = (cat) => {
 const Chatbot = () => {
   const { user, isLoggedIn } = useAuth();
   const { addToCart } = useCart();
+  const { toast } = useToast();
   const location = useLocation();
   const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
@@ -302,6 +304,7 @@ User: ${hiddenPrompt}`;
       setMessages(prev => [...prev, { role: 'ai', text: "Success! Your custom PC has been saved to your profile under 'Your Builds'." }]);
     } catch (error) {
       console.error("Failed to save build to profile.", error);
+      toast("Failed to save your build. Please try again.", 'error');
     }
   };
 
@@ -435,7 +438,7 @@ User: ${userText}`;
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-[140px] right-6 w-[350px] md:w-[400px] h-[550px] bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] z-50 flex flex-col border border-gray-200 overflow-hidden"
+            className="fixed bottom-[140px] right-4 w-[350px] md:w-[400px] max-w-[calc(100vw-2rem)] h-[550px] bg-white rounded-xl shadow-[0_10px_40px_rgba(0,0,0,0.15)] z-50 flex flex-col border border-gray-200 overflow-hidden"
           >
             {/* Header */}
             <div className="bg-[var(--color-primary)] p-4 flex justify-between items-center text-white">

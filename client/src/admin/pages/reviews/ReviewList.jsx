@@ -51,6 +51,7 @@ const ReviewList = () => {
     data: reviews,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("reviewList", reviewService, {
     page,
@@ -252,7 +253,7 @@ const ReviewList = () => {
         </Tabs>
       </Box>
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
-      <DataTable columns={columns} rows={reviews} loading={loading} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/reviews/${row.id}?tab=${activeTab}`)} rowsPerPageOptions={[10, 25, 50, 100]} />
+      <DataTable columns={columns} rows={reviews} loading={loading} error={error} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/reviews/${row.id}?tab=${activeTab}`)} rowsPerPageOptions={[10, 25, 50, 100]} />
     </Box>
   );
 };

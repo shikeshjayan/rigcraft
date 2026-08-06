@@ -46,6 +46,7 @@ const UserList = () => {
     data: users,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("userList", userService, { page, pageSize, search, ...filters });
 
@@ -140,6 +141,7 @@ const UserList = () => {
         columns={columns}
         rows={users}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}
