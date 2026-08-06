@@ -87,14 +87,20 @@ export const WishlistProvider = ({ children }) => {
   };
 
   const removeFromWishlist = async (id) => {
+    const item = wishlist.find(w => w.id === id || w._id === id);
+    const name = item?.title || item?.name || 'item';
+
     if (user) {
       try {
         await removeMutation.mutateAsync(id);
+        toast(`Removed ${name} from wishlist!`);
       } catch (err) {
         console.error("Failed to remove from wishlist:", err);
+        toast("Failed to remove item from wishlist! Please try again.", 'error');
       }
     } else {
       setGuestWishlist(prev => prev.filter(item => item.id !== id && item._id !== id));
+      toast(`Removed ${name} from wishlist!`);
     }
   };
 

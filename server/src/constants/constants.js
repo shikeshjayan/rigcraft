@@ -51,6 +51,7 @@ export const CART_ITEM_TYPES = {
   PRODUCT: 'product',
   PREBUILT: 'prebuilt',
   SAVED_BUILD: 'savedBuild',
+  BUNDLE: 'bundle',
 };
 
 export const DISCOUNT_TYPES = {
