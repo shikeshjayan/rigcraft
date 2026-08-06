@@ -3,7 +3,7 @@ import React from 'react';
 const SkeletonCard = ({ compact }) => {
   return (
     <div 
-      className="flex flex-col h-full bg-white rounded-xl shadow-sm border border-[#E2E8F0] overflow-hidden"
+      className="flex flex-col h-full bg-white rounded-xl shadow-sm border border-[var(--color-border)] overflow-hidden"
       style={{
         height: compact ? '375px' : '480px'
       }}

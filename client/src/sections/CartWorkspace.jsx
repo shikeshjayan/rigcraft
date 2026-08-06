@@ -475,8 +475,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
     }
     return (
       <section className="w-full py-20 min-h-[50vh] flex flex-col items-center justify-center text-center px-4" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
-        <h1 className="text-[28px] md:text-[36px] font-extrabold text-[#0F172A] mb-4">Hey, it feel so dark!</h1>
-        <p className="text-[16px] text-[#64748B] mb-8">There is nothing in your bag Let's add some items.</p>
+        <h1 className="text-[28px] md:text-[36px] font-extrabold text-[var(--color-text)] mb-4">Hey, it feel so dark!</h1>
+        <p className="text-[16px] text-[var(--color-text-secondary)] mb-8">There is nothing in your bag Let's add some items.</p>
         <Link to="/wishlist" className="bg-[#0052FF] text-white font-bold py-3 px-8 rounded-sm hover:opacity-90 transition-opacity">
           ADD ITEMS FROM WISHLIST
         </Link>
@@ -506,10 +506,10 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                     />
                     {selectedItemIds.length}/{cartItems.length} ITEMS SELECTED
                   </div>
-                  <div className="flex items-center gap-4 text-[13px] font-bold text-[#64748B]">
-                    <button onClick={() => { if (selectedItemIds.length > 0) { setItemToDelete({ type: 'bulk' }); setShowDeleteConfirm(true); } }} className="hover:text-[#0F172A] cursor-pointer transition-colors">REMOVE</button>
+                  <div className="flex items-center gap-4 text-[13px] font-bold text-[var(--color-text-secondary)]">
+                    <button onClick={() => { if (selectedItemIds.length > 0) { setItemToDelete({ type: 'bulk' }); setShowDeleteConfirm(true); } }} className="hover:text-[var(--color-text)] cursor-pointer transition-colors">REMOVE</button>
                     <div className="w-[1px] h-4 bg-[#CBD5E1]"></div>
-                    <button onClick={handleBulkMoveToWishlist} className="hover:text-[#0F172A] cursor-pointer transition-colors">MOVE TO WISHLIST</button>
+                    <button onClick={handleBulkMoveToWishlist} className="hover:text-[var(--color-text)] cursor-pointer transition-colors">MOVE TO WISHLIST</button>
                   </div>
                 </div>
 
@@ -521,7 +521,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                     if (item.type === 'custom-build' || item.itemType === 'savedBuild') {
                       const components = item.components || item.item?.components || [];
                       return (
-                        <div key={uniqueId || index} className="bg-white border-2 border-[#E2E8F0] p-4 rounded-sm relative flex flex-col gap-4 shadow-sm hover:border-[#2563EB] transition-colors">
+                        <div key={uniqueId || index} className="bg-white border-2 border-[var(--color-border)] p-4 rounded-sm relative flex flex-col gap-4 shadow-sm hover:border-[var(--color-primary)] transition-colors">
                           <div className="flex justify-between items-start">
                             <div className="flex gap-4 items-start">
                               <input
@@ -531,9 +531,9 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                                 className="w-4 h-4 accent-[#0052FF] cursor-pointer mt-1"
                               />
                               <div>
-                                <h3 className="text-[16px] font-black text-[#0F172A] mb-1 uppercase tracking-tight">{item.title || item.name || 'Rigcraft AI Custom Build'}</h3>
-                                <p className="text-[13px] text-[#64748B] mb-2 font-medium">{components.length || 0} Custom Components Included</p>
-                                <div className="text-[12px] text-[#0F172A] flex items-center gap-1">
+                                <h3 className="text-[16px] font-black text-[var(--color-text)] mb-1 uppercase tracking-tight">{item.title || item.name || 'Rigcraft AI Custom Build'}</h3>
+                                <p className="text-[13px] text-[var(--color-text-secondary)] mb-2 font-medium">{components.length || 0} Custom Components Included</p>
+                                <div className="text-[12px] text-[var(--color-text)] flex items-center gap-1">
                                   <span className="font-bold">14 days</span> return available
                                 </div>
                               </div>
@@ -542,7 +542,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                               <button onClick={() => { setItemToDelete({ type: 'single', id: uniqueId }); setShowDeleteConfirm(true); }} className="text-red-500 hover:text-red-700 cursor-pointer transition-colors">
                                 <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                               </button>
-                              <div className="text-[18px] font-black text-[#2563EB]">{formatPrice(getItemPrice(item))}</div>
+                              <div className="text-[18px] font-black text-[var(--color-primary)]">{formatPrice(getItemPrice(item))}</div>
                             </div>
                           </div>
 
@@ -565,12 +565,12 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                     }
 
                     return (
-                      <div key={uniqueId || index} className="bg-white border border-[#E2E8F0] p-4 rounded-sm relative flex gap-4 hover:shadow-sm transition-shadow">
+                      <div key={uniqueId || index} className="bg-white border border-[var(--color-border)] p-4 rounded-sm relative flex gap-4 hover:shadow-sm transition-shadow">
                         <button onClick={() => { setItemToDelete({ type: 'single', id: uniqueId }); setShowDeleteConfirm(true); }} className="absolute top-4 right-4 text-red-500 hover:text-red-700 cursor-pointer transition-colors">
                           <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                         </button>
 
-                        <div className="w-28 h-36 bg-[#F8FAFC] shrink-0 p-2 relative">
+                        <div className="w-28 h-36 bg-[var(--color-surface)] shrink-0 p-2 relative">
                           <input
                             type="checkbox"
                             checked={selectedItemIds.includes(uniqueId)}
@@ -581,12 +581,12 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                         </div>
 
                         <div className="flex flex-col flex-grow py-1">
-                          <h3 className="text-[15px] font-bold text-[#0F172A] mb-1">{item.brand ? getTypeName(item.brand) : 'Rigcraft'}</h3>
-                          <p className="text-[14px] text-[#64748B] mb-2 pr-6 line-clamp-1">{item.title || item.name}</p>
+                          <h3 className="text-[15px] font-bold text-[var(--color-text)] mb-1">{item.brand ? getTypeName(item.brand) : 'Rigcraft'}</h3>
+                          <p className="text-[14px] text-[var(--color-text-secondary)] mb-2 pr-6 line-clamp-1">{item.title || item.name}</p>
                           <p className="text-[12px] text-[#94A3B8] mb-3">Sold by: RetailNet</p>
 
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="text-[15px] font-bold text-[#0F172A]">{formatPrice(getItemPrice(item))}</span>
+                            <span className="text-[15px] font-bold text-[var(--color-text)]">{formatPrice(getItemPrice(item))}</span>
                             {getItemMrp(item) > getItemPrice(item) && (
                               <span className="text-[13px] text-[#94A3B8] line-through">{formatPrice(getItemMrp(item))}</span>
                             )}
@@ -594,7 +594,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                               <span className="text-[13px] font-bold text-[#FF905A]">{item.discount}</span>
                             )}
                           </div>
-                          <div className="text-[12px] text-[#0F172A] flex items-center gap-1">
+                          <div className="text-[12px] text-[var(--color-text)] flex items-center gap-1">
                             <span className="font-bold">14 days</span> return available
                           </div>
                         </div>
@@ -604,13 +604,13 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                 </div>
 
                 {/* Wishlist Add More Accordion */}
-                {/* <div className="mt-2 bg-white border border-[#E2E8F0] rounded-sm overflow-hidden">
+                {/* <div className="mt-2 bg-white border border-[var(--color-border)] rounded-sm overflow-hidden">
                   <div onClick={toggleWishlistAccordion} className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center gap-2 font-bold text-[14px] text-[#0F172A]">
+                    <div className="flex items-center gap-2 font-bold text-[14px] text-[var(--color-text)]">
                       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
                       Add More From Wishlist
                     </div>
-                    <KeyboardArrowDownIcon className={`text-[#64748B] transition-transform ${isWishlistOpen ? 'rotate-180' : ''}`} />
+                    <KeyboardArrowDownIcon className={`text-[var(--color-text-secondary)] transition-transform ${isWishlistOpen ? 'rotate-180' : ''}`} />
                   </div>
                   <AnimatePresence>
                     {isWishlistOpen && (
@@ -618,7 +618,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-[#E2E8F0]"
+                        className="border-t border-[var(--color-border)]"
                       >
                         {wishlistItems.length > 0 ? (
                           <div className="p-4 flex flex-col gap-3 max-h-[300px] overflow-y-auto">
@@ -629,7 +629,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                                     <img src={wishlistItem.item.image || (typeof wishlistItem.item.images?.[0] === 'string' ? wishlistItem.item.images[0] : wishlistItem.item.images?.[0]?.url) || '/placeholder.png'} alt={wishlistItem.item.name || wishlistItem.item.title} className="w-full h-full object-contain" />
                                   </div>
                                   <div className="flex flex-col">
-                                    <span className="text-[13px] font-bold text-[#0F172A] line-clamp-1">{wishlistItem.item.name || wishlistItem.item.title}</span>
+                                    <span className="text-[13px] font-bold text-[var(--color-text)] line-clamp-1">{wishlistItem.item.name || wishlistItem.item.title}</span>
                                     <span className="text-[12px] font-bold text-[#0052FF]">{formatPrice(getItemPrice(wishlistItem.item))}</span>
                                   </div>
                                 </div>
@@ -644,7 +644,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                             ))}
                           </div>
                         ) : (
-                          <div className="p-6 text-center text-[#64748B] text-[13px]">
+                          <div className="p-6 text-center text-[var(--color-text-secondary)] text-[13px]">
                             Your wishlist is empty.
                           </div>
                         )}
@@ -655,59 +655,59 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               </>
             ) : checkoutStep === 'address' && isAddingAddress ? (
               /* Address Form Step */
-              <div className="bg-white border border-[#E2E8F0] p-6 rounded-sm mb-4">
+              <div className="bg-white border border-[var(--color-border)] p-6 rounded-sm mb-4">
                 <div className="flex items-center gap-2 mb-6">
                   <div className="bg-[#EFF6FF] text-[#0052FF] p-1 rounded-sm"><PersonOutlineIcon fontSize="small" /></div>
-                  <span className="font-bold text-[14px] text-[#0F172A]">CONTACT DETAILS</span>
+                  <span className="font-bold text-[14px] text-[var(--color-text)]">CONTACT DETAILS</span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Full Name*</label>
-                    <input type="text" placeholder="Full Name (e.g. Ravi Sharma)" value={addressForm.fullName} onChange={e => setAddressForm({ ...addressForm, fullName: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Full Name (e.g. Ravi Sharma)" value={addressForm.fullName} onChange={e => setAddressForm({ ...addressForm, fullName: e.target.value })} className="w-full border border-[#CBD5E1] bg-[var(--color-surface)] rounded-sm p-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Mobile No*</label>
-                    <input type="text" placeholder="Phone (e.g. 9876543210)" value={addressForm.phone} onChange={e => setAddressForm({ ...addressForm, phone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Phone (e.g. 9876543210)" value={addressForm.phone} onChange={e => setAddressForm({ ...addressForm, phone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) })} className="w-full border border-[#CBD5E1] bg-[var(--color-surface)] rounded-sm p-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-6">
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Alternate Phone</label>
-                    <input type="text" placeholder="Alternate Phone (e.g. 9988776655)" value={addressForm.alternatePhone} onChange={e => setAddressForm({ ...addressForm, alternatePhone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Alternate Phone (e.g. 9988776655)" value={addressForm.alternatePhone} onChange={e => setAddressForm({ ...addressForm, alternatePhone: e.target.value.replace(/[^0-9]/g, '').slice(0, 10) })} className="w-full border border-[#CBD5E1] bg-[var(--color-surface)] rounded-sm p-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Pin Code*</label>
-                    <input type="text" placeholder="Postal Code (e.g. 400004)" value={addressForm.postalCode} onChange={e => setAddressForm({ ...addressForm, postalCode: e.target.value.replace(/[^0-9]/g, '').slice(0, 6) })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Postal Code (e.g. 400004)" value={addressForm.postalCode} onChange={e => setAddressForm({ ...addressForm, postalCode: e.target.value.replace(/[^0-9]/g, '').slice(0, 6) })} className="w-full border border-[#CBD5E1] bg-[var(--color-surface)] rounded-sm p-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                 </div>
 
-                <div className="border-t border-[#E2E8F0] my-6"></div>
+                <div className="border-t border-[var(--color-border)] my-6"></div>
 
                 <div className="flex items-center gap-2 mb-6">
                   <div className="bg-[#EFF6FF] text-[#0052FF] p-1 rounded-sm"><LocationOnOutlinedIcon fontSize="small" /></div>
-                  <span className="font-bold text-[14px] text-[#0F172A]">SHIPPING ADDRESS</span>
+                  <span className="font-bold text-[14px] text-[var(--color-text)]">SHIPPING ADDRESS</span>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-4">
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Address Line 1*</label>
-                    <input type="text" placeholder="Address Line 1 (e.g. 42, Girgaon Road)" value={addressForm.addressLine1} onChange={e => setAddressForm({ ...addressForm, addressLine1: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Address Line 1 (e.g. 42, Girgaon Road)" value={addressForm.addressLine1} onChange={e => setAddressForm({ ...addressForm, addressLine1: e.target.value })} className="w-full border border-[#CBD5E1] bg-[var(--color-surface)] rounded-sm p-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Address Line 2</label>
-                    <input type="text" placeholder="Address Line 2 (e.g. Near Chandan Cinema)" value={addressForm.addressLine2} onChange={e => setAddressForm({ ...addressForm, addressLine2: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Address Line 2 (e.g. Near Chandan Cinema)" value={addressForm.addressLine2} onChange={e => setAddressForm({ ...addressForm, addressLine2: e.target.value })} className="w-full border border-[#CBD5E1] bg-[var(--color-surface)] rounded-sm p-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-4 mb-4">
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">Landmark</label>
-                    <input type="text" placeholder="Landmark (e.g. Opposite City Mall)" value={addressForm.landmark} onChange={e => setAddressForm({ ...addressForm, landmark: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Landmark (e.g. Opposite City Mall)" value={addressForm.landmark} onChange={e => setAddressForm({ ...addressForm, landmark: e.target.value })} className="w-full border border-[#CBD5E1] bg-[var(--color-surface)] rounded-sm p-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                   <div className="flex-1">
                     <label className="text-[10px] font-bold text-[#94A3B8] uppercase block mb-1">City / District*</label>
-                    <input type="text" placeholder="City (e.g. Mumbai)" value={addressForm.city} onChange={e => setAddressForm({ ...addressForm, city: e.target.value })} className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="City (e.g. Mumbai)" value={addressForm.city} onChange={e => setAddressForm({ ...addressForm, city: e.target.value })} className="w-full border border-[#CBD5E1] bg-[var(--color-surface)] rounded-sm p-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                 </div>
 
@@ -717,7 +717,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                     <select
                       value={addressForm.state}
                       onChange={e => setAddressForm({ ...addressForm, state: e.target.value })}
-                      className="w-full border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors cursor-pointer"
+                      className="w-full border border-[#CBD5E1] bg-[var(--color-surface)] rounded-sm p-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:border-[#0052FF] transition-colors cursor-pointer"
                     >
                       <option value="" disabled>Select State</option>
                       {statesList.map(st => (
@@ -731,7 +731,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                   </div>
                 </div>
 
-                <div className="border-t border-[#E2E8F0] my-6"></div>
+                <div className="border-t border-[var(--color-border)] my-6"></div>
 
                 <div className="flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4 mb-8">
                   <div>
@@ -740,23 +740,23 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                       <button
                         type="button"
                         onClick={() => setAddressForm({ ...addressForm, label: 'Home' })}
-                        className={`flex items-center gap-2 px-5 py-2 rounded-sm text-[13px] font-bold cursor-pointer transition-colors ${addressForm.label === 'Home' ? 'bg-[#0052FF] text-white border border-[#0052FF]' : 'bg-white border border-[#CBD5E1] text-[#0F172A] hover:border-[#0052FF]'}`}
+                        className={`flex items-center gap-2 px-5 py-2 rounded-sm text-[13px] font-bold cursor-pointer transition-colors ${addressForm.label === 'Home' ? 'bg-[#0052FF] text-white border border-[#0052FF]' : 'bg-white border border-[#CBD5E1] text-[var(--color-text)] hover:border-[#0052FF]'}`}
                       >
                         Home
                       </button>
                       <button
                         type="button"
                         onClick={() => setAddressForm({ ...addressForm, label: 'Office' })}
-                        className={`flex items-center gap-2 px-5 py-2 rounded-sm text-[13px] font-bold cursor-pointer transition-colors ${addressForm.label === 'Office' ? 'bg-[#0052FF] text-white border border-[#0052FF]' : 'bg-white border border-[#CBD5E1] text-[#0F172A] hover:border-[#0052FF]'}`}
+                        className={`flex items-center gap-2 px-5 py-2 rounded-sm text-[13px] font-bold cursor-pointer transition-colors ${addressForm.label === 'Office' ? 'bg-[#0052FF] text-white border border-[#0052FF]' : 'bg-white border border-[#CBD5E1] text-[var(--color-text)] hover:border-[#0052FF]'}`}
                       >
                         Office
                       </button>
                     </div>
-                    <input type="text" placeholder="Or type custom label (e.g. parent's home)" value={addressForm.label} onChange={e => setAddressForm({ ...addressForm, label: e.target.value })} className="w-full sm:w-[250px] border border-[#CBD5E1] bg-[#F8FAFC] rounded-sm p-3 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
+                    <input type="text" placeholder="Or type custom label (e.g. parent's home)" value={addressForm.label} onChange={e => setAddressForm({ ...addressForm, label: e.target.value })} className="w-full sm:w-[250px] border border-[#CBD5E1] bg-[var(--color-surface)] rounded-sm p-3 text-[14px] text-[var(--color-text)] focus:outline-none focus:border-[#0052FF] transition-colors placeholder-gray-500" />
                   </div>
                   <label className="flex-1 flex items-center gap-2 cursor-pointer pb-3 sm:pb-3 sm:justify-end">
                     <input type="checkbox" checked={addressForm.isDefault} onChange={e => setAddressForm({ ...addressForm, isDefault: e.target.checked })} className="w-4 h-4 accent-[#0052FF] cursor-pointer" />
-                    <span className="text-[13px] text-[#0F172A] font-bold flex flex-col">
+                    <span className="text-[13px] text-[var(--color-text)] font-bold flex flex-col">
                       <span>Set as default</span>
                     </span>
                   </label>
@@ -777,33 +777,33 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                 </div>
               </div>
             ) : checkoutStep === 'payment' ? (
-              <div className="bg-white border border-[#E2E8F0] p-6 rounded-sm mb-4">
+              <div className="bg-white border border-[var(--color-border)] p-6 rounded-sm mb-4">
                 <div className="flex items-center gap-2 mb-6">
                   <div className="bg-[#EFF6FF] text-[#0052FF] p-1 rounded-sm"><VerifiedUserIcon fontSize="small" /></div>
-                  <span className="font-bold text-[14px] text-[#0F172A]">PAYMENT OPTIONS</span>
+                  <span className="font-bold text-[14px] text-[var(--color-text)]">PAYMENT OPTIONS</span>
                 </div>
                 <div className="flex flex-col gap-4">
                   <div
                     onClick={() => setPaymentMethod('razorpay')}
-                    className={`border rounded-sm p-4 cursor-pointer transition-colors ${paymentMethod === 'razorpay' ? 'border-[#0052FF] bg-[#EFF6FF]' : 'border-[#CBD5E1] bg-[#F8FAFC] hover:border-[#0052FF]'}`}
+                    className={`border rounded-sm p-4 cursor-pointer transition-colors ${paymentMethod === 'razorpay' ? 'border-[#0052FF] bg-[#EFF6FF]' : 'border-[#CBD5E1] bg-[var(--color-surface)] hover:border-[#0052FF]'}`}
                   >
                     <label className="flex items-center gap-3 cursor-pointer">
                       <input type="radio" checked={paymentMethod === 'razorpay'} readOnly className="w-4 h-4 accent-[#0052FF]" />
-                      <span className="font-bold text-[15px] text-[#0F172A]">Pay with Razorpay (Cards, UPI, NetBanking)</span>
+                      <span className="font-bold text-[15px] text-[var(--color-text)]">Pay with Razorpay (Cards, UPI, NetBanking)</span>
                     </label>
-                    <p className="text-[12px] text-[#64748B] mt-2 ml-7">
+                    <p className="text-[12px] text-[var(--color-text-secondary)] mt-2 ml-7">
                       Secure payments via Razorpay. You will be redirected to the payment gateway.
                     </p>
                   </div>
                   <div
                     onClick={() => setPaymentMethod('cod')}
-                    className={`border rounded-sm p-4 cursor-pointer transition-colors ${paymentMethod === 'cod' ? 'border-[#0052FF] bg-[#EFF6FF]' : 'border-[#CBD5E1] bg-[#F8FAFC] hover:border-[#0052FF]'}`}
+                    className={`border rounded-sm p-4 cursor-pointer transition-colors ${paymentMethod === 'cod' ? 'border-[#0052FF] bg-[#EFF6FF]' : 'border-[#CBD5E1] bg-[var(--color-surface)] hover:border-[#0052FF]'}`}
                   >
                     <label className="flex items-center gap-3 cursor-pointer">
                       <input type="radio" checked={paymentMethod === 'cod'} readOnly className="w-4 h-4 accent-[#0052FF]" />
-                      <span className="font-bold text-[15px] text-[#0F172A]">Cash on Delivery (Cash/UPI)</span>
+                      <span className="font-bold text-[15px] text-[var(--color-text)]">Cash on Delivery (Cash/UPI)</span>
                     </label>
-                    <p className="text-[12px] text-[#64748B] mt-2 ml-7">
+                    <p className="text-[12px] text-[var(--color-text-secondary)] mt-2 ml-7">
                       Pay at your doorstep. A ₹60 fee is applied for COD orders.
                     </p>
                   </div>
@@ -814,8 +814,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               <div>
                 <div className="flex justify-between items-center mb-6">
                   <div>
-                    <h2 className="text-[18px] font-bold text-[#0F172A]">Select Delivery Address</h2>
-                    <div className="text-[10px] font-bold text-[#64748B] tracking-[1px] uppercase mt-1">DEFAULT ADDRESS</div>
+                    <h2 className="text-[18px] font-bold text-[var(--color-text)]">Select Delivery Address</h2>
+                    <div className="text-[10px] font-bold text-[var(--color-text-secondary)] tracking-[1px] uppercase mt-1">DEFAULT ADDRESS</div>
                   </div>
                   <button onClick={() => { setIsAddingAddress(true); setEditingAddressId(null); setAddressForm({ fullName: '', phone: '', alternatePhone: '', addressLine1: '', addressLine2: '', landmark: '', city: '', state: '', country: 'India', postalCode: '', label: '', isDefault: false }); }} className="text-[12px] font-bold text-[#0052FF] border border-[#0052FF] py-2 px-4 rounded-sm hover:bg-[#EFF6FF] transition-colors cursor-pointer">
                     ADD NEW ADDRESS
@@ -823,7 +823,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                 </div>
 
                 {savedAddresses.map((addr, index) => (
-                  <div key={index} className="bg-white border border-[#E2E8F0] p-6 rounded-sm mb-4">
+                  <div key={index} className="bg-white border border-[var(--color-border)] p-6 rounded-sm mb-4">
                     <div className="flex items-start gap-4">
                       <input
                         type="radio"
@@ -834,24 +834,24 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                       />
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-2">
-                          <span className="font-bold text-[15px] text-[#0F172A]">{addr.fullName}</span>
+                          <span className="font-bold text-[15px] text-[var(--color-text)]">{addr.fullName}</span>
                           <span className="bg-[#DCFCE7] text-[#166534] text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase">{addr.label}</span>
                           {addr.isDefault && <span className="bg-[#DBEAFE] text-[#1D4ED8] text-[10px] font-bold px-2 py-0.5 rounded-sm uppercase">DEFAULT</span>}
                         </div>
-                        <div className="text-[13px] text-[#64748B] mb-2 leading-relaxed">
+                        <div className="text-[13px] text-[var(--color-text-secondary)] mb-2 leading-relaxed">
                           {addr.addressLine1}{addr.addressLine2 ? `, ${addr.addressLine2}` : ''},<br />
                           {addr.landmark ? `Landmark: ${addr.landmark}, ` : ''}{addr.city}, {addr.state} - {addr.postalCode}
                         </div>
-                        <div className="text-[13px] text-[#0F172A] mb-4 flex flex-col gap-1">
+                        <div className="text-[13px] text-[var(--color-text)] mb-4 flex flex-col gap-1">
                           <span>Mobile: <span className="font-bold">{addr.phone}</span></span>
                           {addr.alternatePhone && <span>Alt Mobile: <span className="font-bold">{addr.alternatePhone}</span></span>}
                         </div>
-                        <ul className="text-[12px] text-[#64748B] list-disc ml-4 mb-6">
+                        <ul className="text-[12px] text-[var(--color-text-secondary)] list-disc ml-4 mb-6">
                           <li>Cash on Delivery available</li>
                         </ul>
                         <div className="flex gap-4">
-                          <button onClick={() => { setAddressToRemove(index); setShowRemoveConfirm(true); }} className="text-[12px] font-bold text-[#0F172A] border border-[#CBD5E1] py-2 px-6 rounded-sm hover:border-[#0F172A] transition-colors cursor-pointer">REMOVE</button>
-                          <button onClick={() => handleEditAddress(index)} className="text-[12px] font-bold text-[#0F172A] border border-[#CBD5E1] py-2 px-6 rounded-sm hover:border-[#0F172A] transition-colors cursor-pointer">EDIT</button>
+                          <button onClick={() => { setAddressToRemove(index); setShowRemoveConfirm(true); }} className="text-[12px] font-bold text-[var(--color-text)] border border-[#CBD5E1] py-2 px-6 rounded-sm hover:border-[var(--color-text)] transition-colors cursor-pointer">REMOVE</button>
+                          <button onClick={() => handleEditAddress(index)} className="text-[12px] font-bold text-[var(--color-text)] border border-[#CBD5E1] py-2 px-6 rounded-sm hover:border-[var(--color-text)] transition-colors cursor-pointer">EDIT</button>
                         </div>
                       </div>
                     </div>
@@ -860,7 +860,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
                 <div
                   onClick={() => { setIsAddingAddress(true); setEditingAddressId(null); setAddressForm({ fullName: '', phone: '', alternatePhone: '', addressLine1: '', addressLine2: '', landmark: '', city: '', state: '', country: 'India', postalCode: '', label: '', isDefault: false }); }}
-                  className="border border-dashed border-[#94A3B8] bg-white py-4 rounded-sm flex items-center justify-center gap-2 cursor-pointer hover:border-[#0052FF] hover:text-[#0052FF] transition-colors text-[14px] font-bold text-[#0F172A]"
+                  className="border border-dashed border-[#94A3B8] bg-white py-4 rounded-sm flex items-center justify-center gap-2 cursor-pointer hover:border-[#0052FF] hover:text-[#0052FF] transition-colors text-[14px] font-bold text-[var(--color-text)]"
                 >
                   <span className="text-[#0052FF] text-[18px]">+</span> Add New Address
                 </div>
@@ -876,11 +876,11 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               {checkoutStep === 'bag' ? (
                 <>
                   {/* Coupons */}
-                  <div className="bg-white border border-[#E2E8F0] rounded-sm p-4">
-                    <div className="text-[12px] font-bold text-[#64748B] mb-3 uppercase">Coupons</div>
+                  <div className="bg-white border border-[var(--color-border)] rounded-sm p-4">
+                    <div className="text-[12px] font-bold text-[var(--color-text-secondary)] mb-3 uppercase">Coupons</div>
                     <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3 text-[14px] font-bold text-[#0F172A]">
-                        <LocalOfferOutlinedIcon sx={{ fontSize: 20 }} className="text-[#64748B]" /> Apply Coupons
+                      <div className="flex items-center gap-3 text-[14px] font-bold text-[var(--color-text)]">
+                        <LocalOfferOutlinedIcon sx={{ fontSize: 20 }} className="text-[var(--color-text-secondary)]" /> Apply Coupons
                       </div>
                       <button
                         onClick={() => setShowCouponPopup(true)}
@@ -892,10 +892,10 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                   </div>
 
                   {/* Price Details */}
-                  <div className="bg-white border border-[#E2E8F0] rounded-sm p-4">
-                    <div className="text-[12px] font-bold text-[#64748B] mb-4 uppercase">Price Details ({checkoutItems.length} Items)</div>
+                  <div className="bg-white border border-[var(--color-border)] rounded-sm p-4">
+                    <div className="text-[12px] font-bold text-[var(--color-text-secondary)] mb-4 uppercase">Price Details ({checkoutItems.length} Items)</div>
 
-                    <div className="flex flex-col gap-3 text-[14px] text-[#0F172A] mb-4 border-b border-[#E2E8F0] pb-4">
+                    <div className="flex flex-col gap-3 text-[14px] text-[var(--color-text)] mb-4 border-b border-[var(--color-border)] pb-4">
                       <div className="flex justify-between items-center relative">
                         <span>Total MRP</span>
                         <span>{formatPrice(totalMRP)}</span>
@@ -914,12 +914,12 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                       </div>
                     </div>
 
-                    <div className="flex justify-between items-center font-extrabold text-[18px] text-[#0F172A] mb-4">
+                    <div className="flex justify-between items-center font-extrabold text-[18px] text-[var(--color-text)] mb-4">
                       <span>Total Amount</span>
                       <span>{formatPrice(finalTotal)}</span>
                     </div>
 
-                    <p className="text-[11px] text-[#64748B] mb-4 leading-tight">
+                    <p className="text-[11px] text-[var(--color-text-secondary)] mb-4 leading-tight">
                       By placing this order, you agree to Rigcraft's{' '}
                       <Link to="/terms-of-service" className="text-[#0052FF] font-bold hover:underline cursor-pointer">Terms of Use</Link> and{' '}
                       <Link to="/privacy-policy" className="text-[#0052FF] font-bold hover:underline cursor-pointer">Privacy Policy</Link>.
@@ -937,47 +937,47 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                 /* Address Order Summary / List Summary */
                 <>
                   {!isAddingAddress && (
-                    <div className="bg-white border border-[#E2E8F0] rounded-sm mb-4">
-                      <div className="text-[11px] font-bold text-[#94A3B8] uppercase p-3 border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                    <div className="bg-white border border-[var(--color-border)] rounded-sm mb-4">
+                      <div className="text-[11px] font-bold text-[#94A3B8] uppercase p-3 border-b border-[var(--color-border)] bg-[var(--color-surface)]">
                         Delivery Estimates
                       </div>
                       <div className="p-4 flex gap-4 items-center">
-                        <div className="w-12 h-16 bg-[#F8FAFC] border border-[#E2E8F0] p-1 flex-shrink-0">
+                        <div className="w-12 h-16 bg-[var(--color-surface)] border border-[var(--color-border)] p-1 flex-shrink-0">
                           <img src={checkoutItems[0]?.image || '/placeholder.png'} className="w-full h-full object-contain mix-blend-multiply" alt="" />
                         </div>
-                        <div className="text-[12px] text-[#0F172A]">
-                          <span className="text-[#64748B] block mb-1">Delivery between</span>
+                        <div className="text-[12px] text-[var(--color-text)]">
+                          <span className="text-[var(--color-text-secondary)] block mb-1">Delivery between</span>
                           <span className="font-bold">1 Aug - 3 Aug</span>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  <div className="bg-white border border-[#E2E8F0] rounded-sm">
-                    <div className="text-[11px] font-bold text-[#94A3B8] uppercase p-4 border-b border-[#E2E8F0] bg-[#F8FAFC]">
+                  <div className="bg-white border border-[var(--color-border)] rounded-sm">
+                    <div className="text-[11px] font-bold text-[#94A3B8] uppercase p-4 border-b border-[var(--color-border)] bg-[var(--color-surface)]">
                       Price Details ({checkoutItems.length} Item{checkoutItems.length !== 1 && 's'})
                     </div>
                     <div className="p-4">
-                      <div className="flex justify-between items-center text-[13px] text-[#64748B] mb-2">
+                      <div className="flex justify-between items-center text-[13px] text-[var(--color-text-secondary)] mb-2">
                         <span>Total</span>
-                        <span className="text-[#0F172A] font-bold">{formatPrice(totalMRP)}</span>
+                        <span className="text-[var(--color-text)] font-bold">{formatPrice(totalMRP)}</span>
                       </div>
-                      <div className="flex justify-between items-center text-[13px] text-[#64748B] mb-2">
+                      <div className="flex justify-between items-center text-[13px] text-[var(--color-text-secondary)] mb-2">
                         <span className="flex flex-col"><span>MRP</span><span>Discount on MRP</span> <span className="text-[#0052FF] text-[10px] font-bold uppercase cursor-pointer">Know More</span></span>
                         <span className="text-[#10B981] font-bold">- {formatPrice(totalDiscount)}</span>
                       </div>
-                      <div className="flex justify-between items-center text-[13px] text-[#64748B] mb-2">
+                      <div className="flex justify-between items-center text-[13px] text-[var(--color-text-secondary)] mb-2">
                         <span className="flex flex-col"><span>Platform Fee</span> <span className="text-[#0052FF] text-[10px] font-bold uppercase cursor-pointer">Know More</span></span>
                         <span className="text-[#10B981] font-bold uppercase">Free</span>
                       </div>
 
-                      <div className="border-t border-[#E2E8F0] my-4"></div>
+                      <div className="border-t border-[var(--color-border)] my-4"></div>
 
                       <div className="flex justify-between items-start">
                         <div className="flex flex-col">
-                          <span className="text-[16px] font-extrabold text-[#0F172A] leading-tight">Total<br />Amount</span>
+                          <span className="text-[16px] font-extrabold text-[var(--color-text)] leading-tight">Total<br />Amount</span>
                         </div>
-                        <span className="text-[16px] font-extrabold text-[#0F172A]">{formatPrice(finalTotal)}</span>
+                        <span className="text-[16px] font-extrabold text-[var(--color-text)]">{formatPrice(finalTotal)}</span>
                       </div>
 
                       {checkoutStep === 'payment' ? (
@@ -1032,8 +1032,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               className="bg-white w-full max-w-[400px] p-6 shadow-xl relative text-center"
               style={{ borderRadius: 'var(--radius-sm)' }}
             >
-              <h2 className="text-[18px] font-bold text-[#0F172A] mb-2">Remove Address</h2>
-              <p className="text-[14px] text-[#64748B] mb-6">Are you sure you want to remove this address?</p>
+              <h2 className="text-[18px] font-bold text-[var(--color-text)] mb-2">Remove Address</h2>
+              <p className="text-[14px] text-[var(--color-text-secondary)] mb-6">Are you sure you want to remove this address?</p>
 
               <div className="flex gap-4">
                 <button
@@ -1076,11 +1076,11 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
             >
               <button
                 onClick={() => setShowCouponPopup(false)}
-                className="absolute top-4 cursor-pointer right-4 text-[#94A3B8] hover:text-[#0F172A]"
+                className="absolute top-4 cursor-pointer right-4 text-[#94A3B8] hover:text-[var(--color-text)]"
               >
                 <CloseIcon />
               </button>
-              <h2 className="text-[18px] font-bold text-[#0F172A] mb-4">Apply Coupon</h2>
+              <h2 className="text-[18px] font-bold text-[var(--color-text)] mb-4">Apply Coupon</h2>
 
               <div className="flex gap-2 mb-6">
                 <input
@@ -1089,7 +1089,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                   onChange={e => setCouponInput(e.target.value)}
                   placeholder="Enter coupon code"
                   autoFocus
-                  className="flex-grow border border-[#CBD5E1] rounded-sm px-3 py-2 text-[14px] text-[#0F172A] focus:outline-none focus:border-[#0052FF] bg-white z-10"
+                  className="flex-grow border border-[#CBD5E1] rounded-sm px-3 py-2 text-[14px] text-[var(--color-text)] focus:outline-none focus:border-[#0052FF] bg-white z-10"
                 />
                 <button
                   onClick={handleApplyCoupon}
@@ -1100,25 +1100,25 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               </div>
 
               <div className="flex flex-col gap-3">
-                <div className="text-[12px] font-bold text-[#64748B]">AVAILABLE COUPONS</div>
+                <div className="text-[12px] font-bold text-[var(--color-text-secondary)]">AVAILABLE COUPONS</div>
                 {availableCoupons.length > 0 ? (
                   availableCoupons.map((coupon, idx) => (
                     <div
                       key={idx}
-                      className="bg-[#F8FAFC] border border-[#E2E8F0] rounded-sm p-3 cursor-pointer hover:border-[#0052FF] transition-colors"
+                      className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-sm p-3 cursor-pointer hover:border-[#0052FF] transition-colors"
                       onClick={() => handleSelectAvailableCoupon(coupon.code)}
                     >
                       <div className="flex justify-between items-center mb-1">
-                        <div className="font-bold text-[#0F172A] border-dashed border border-[#94A3B8] px-2 py-1 bg-white text-[13px] uppercase">{coupon.code}</div>
+                        <div className="font-bold text-[var(--color-text)] border-dashed border border-[#94A3B8] px-2 py-1 bg-white text-[13px] uppercase">{coupon.code}</div>
                         <div className="text-[12px] text-[#10B981] font-bold">
                           {coupon.discountType === 'percentage' ? `${coupon.discountValue}% OFF` : `Save ₹${coupon.discountValue}`}
                         </div>
                       </div>
-                      <div className="text-[11px] text-[#64748B] text-left mt-2">{coupon.name}</div>
+                      <div className="text-[11px] text-[var(--color-text-secondary)] text-left mt-2">{coupon.name}</div>
                     </div>
                   ))
                 ) : (
-                  <div className="text-[13px] text-[#64748B] bg-gray-50 p-3 rounded-sm border border-gray-100">No active coupons available right now.</div>
+                  <div className="text-[13px] text-[var(--color-text-secondary)] bg-gray-50 p-3 rounded-sm border border-gray-100">No active coupons available right now.</div>
                 )}
               </div>
             </motion.div>
@@ -1139,7 +1139,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-sm w-full max-w-sm p-6 shadow-2xl flex flex-col gap-4 border border-[#E2E8F0]"
+              className="bg-white rounded-sm w-full max-w-sm p-6 shadow-2xl flex flex-col gap-4 border border-[var(--color-border)]"
               style={{ borderRadius: 'var(--radius-sm)' }}
             >
               <div className="flex items-center gap-3">
@@ -1147,15 +1147,15 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                   <DeleteOutlineIcon />
                 </div>
                 <div>
-                  <h3 className="text-[16px] font-bold text-[#0F172A]">Delete item from cart</h3>
-                  <p className="text-[13px] text-[#64748B] mt-1">Are you sure you want to remove {itemToDelete?.type === 'bulk' ? 'selected items' : 'this item'}?</p>
+                  <h3 className="text-[16px] font-bold text-[var(--color-text)]">Delete item from cart</h3>
+                  <p className="text-[13px] text-[var(--color-text-secondary)] mt-1">Are you sure you want to remove {itemToDelete?.type === 'bulk' ? 'selected items' : 'this item'}?</p>
                 </div>
               </div>
               
               <div className="flex gap-3 mt-2">
                 <button
                   onClick={() => { setShowDeleteConfirm(false); setItemToDelete(null); }}
-                  className="flex-1 py-2 border border-[#CBD5E1] text-[#0F172A] font-bold text-[13px] rounded-sm hover:bg-gray-50 transition-colors cursor-pointer"
+                  className="flex-1 py-2 border border-[#CBD5E1] text-[var(--color-text)] font-bold text-[13px] rounded-sm hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   CANCEL
                 </button>
@@ -1181,12 +1181,12 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
             className="fixed inset-0 z-[300] flex items-center justify-center pointer-events-none"
           >
             <div 
-              className="bg-white px-8 py-6 shadow-2xl flex flex-col items-center gap-3 border border-[#E2E8F0]"
+              className="bg-white px-8 py-6 shadow-2xl flex flex-col items-center gap-3 border border-[var(--color-border)]"
               style={{ borderRadius: 'var(--radius-sm)' }}
             >
               <CheckCircleIcon sx={{ fontSize: 48, color: '#10B981' }} />
-              <h2 className="text-xl font-black text-[#0F172A] tracking-wide">Order Successful!</h2>
-              <p className="text-sm font-bold text-[#64748B]">Redirecting to your orders...</p>
+              <h2 className="text-xl font-black text-[var(--color-text)] tracking-wide">Order Successful!</h2>
+              <p className="text-sm font-bold text-[var(--color-text-secondary)]">Redirecting to your orders...</p>
             </div>
           </motion.div>
         )}

@@ -16,7 +16,7 @@ const AllActiveDeals = () => {
     <div className="w-full py-12 min-h-screen" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Active Deals' }]} />
-        <h1 className="text-[32px] font-extrabold text-[#0F172A] mb-8 uppercase">All Active Deals</h1>
+        <h1 className="text-[32px] font-extrabold text-[var(--color-text)] mb-8 uppercase">All Active Deals</h1>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
           {deals.map(product => (
             <div key={product.id} className="transform scale-[0.95] origin-top">

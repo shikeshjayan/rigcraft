@@ -172,18 +172,18 @@ const DealsCatalog = () => {
       <div className="mb-14 last:mb-0">
         <div className="flex justify-between items-end mb-8">
           <div>
-            <h3 className="text-[20px] md:text-[26px] font-extrabold text-[#0F172A] tracking-tight uppercase">
+            <h3 className="text-[20px] md:text-[26px] font-extrabold text-[var(--color-text)] tracking-tight uppercase">
               {title}
             </h3>
             {subTitle && (
-              <p className="text-[13px] text-[#64748B] font-medium mt-1">{subTitle}</p>
+              <p className="text-[13px] text-[var(--color-text-secondary)] font-medium mt-1">{subTitle}</p>
             )}
             <div className="w-16 h-1 bg-[#0052FF] mt-2"></div>
           </div>
           {viewAllTo && (
             <Link
               to={viewAllTo}
-              className="text-[12px] font-bold text-[#0F172A] border border-[#CBD5E1] py-2 px-6 rounded-sm hover:border-[#0F172A] transition-colors uppercase tracking-wide cursor-pointer bg-white text-center whitespace-nowrap"
+              className="text-[12px] font-bold text-[var(--color-text)] border border-[#CBD5E1] py-2 px-6 rounded-sm hover:border-[var(--color-text)] transition-colors uppercase tracking-wide cursor-pointer bg-white text-center whitespace-nowrap"
             >
               VIEW ALL
             </Link>
@@ -198,17 +198,17 @@ const DealsCatalog = () => {
   return (
     <section
       id="deals-catalog"
-      className="w-full py-16 border-t border-[#E2E8F0] scroll-mt-24"
+      className="w-full py-16 border-t border-[var(--color-border)] scroll-mt-24"
       style={{ backgroundColor: 'var(--color-bg-secondary)' }}
     >
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         {/* Header */}
         <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-[24px] md:text-[32px] font-extrabold text-[#0F172A] tracking-tight uppercase">
+            <h2 className="text-[24px] md:text-[32px] font-extrabold text-[var(--color-text)] tracking-tight uppercase">
               Shop Deals
             </h2>
-            <p className="text-[14px] text-[#64748B] font-medium mt-1">
+            <p className="text-[14px] text-[var(--color-text-secondary)] font-medium mt-1">
               {components.length + prebuilts.length + (Array.isArray(bundlesData?.data) ? bundlesData.data.length : 0)} products on sale right now
             </p>
             <div className="w-16 h-1 bg-[#0052FF] mt-2"></div>
@@ -219,7 +219,7 @@ const DealsCatalog = () => {
             <button
               type="button"
               onClick={() => setSortOpen(!sortOpen)}
-              className="flex items-center justify-center gap-2 w-52 px-4 py-2.5 bg-white border border-[#CBD5E1] rounded-sm text-[13px] font-bold text-[#0F172A] hover:border-[#0F172A] transition-colors cursor-pointer shadow-sm"
+              className="flex items-center justify-center gap-2 w-52 px-4 py-2.5 bg-white border border-[#CBD5E1] rounded-sm text-[13px] font-bold text-[var(--color-text)] hover:border-[var(--color-text)] transition-colors cursor-pointer shadow-sm"
             >
               <span className="flex items-center gap-2">
                 <SwapVertIcon sx={{ fontSize: 18 }} />
@@ -236,7 +236,7 @@ const DealsCatalog = () => {
                       setSortBy(opt.key);
                       setSortOpen(false);
                     }}
-                    className={`w-full text-center px-4 py-2.5 text-[13px] font-medium hover:bg-[#F0F6FF] transition-colors cursor-pointer ${sortBy === opt.key ? 'text-[var(--color-primary)] font-bold bg-[#F0F6FF]' : 'text-[#0F172A]'}`}
+                    className={`w-full text-center px-4 py-2.5 text-[13px] font-medium hover:bg-[#F0F6FF] transition-colors cursor-pointer ${sortBy === opt.key ? 'text-[var(--color-primary)] font-bold bg-[#F0F6FF]' : 'text-[var(--color-text)]'}`}
                   >
                     {opt.label}
                   </button>

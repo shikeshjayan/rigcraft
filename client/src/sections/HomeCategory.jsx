@@ -67,7 +67,7 @@ const CategoryCard = ({ cat }) => (
 const MobileCategoryCard = ({ cat }) => (
   <Link
     to={`/components/${cat.path}`}
-    className="flex items-center w-full bg-[#F8FAFC] rounded-[var(--radius-sm)] p-4 relative mt-3"
+    className="flex items-center w-full bg-[var(--color-surface)] rounded-[var(--radius-sm)] p-4 relative mt-3"
   >
     {/* Optional Tag */}
     {cat.tag && (

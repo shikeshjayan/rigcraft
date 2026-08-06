@@ -287,7 +287,7 @@ const Profile = () => {
               
               {/* Profile Header Box */}
               <div className="bg-white p-4 shadow-sm flex items-center gap-4 border border-gray-100 rounded-sm">
-                <AccountCircleIcon sx={{ fontSize: 48, color: '#2563EB' }} />
+                <AccountCircleIcon sx={{ fontSize: 48, color: 'var(--color-primary)' }} />
                 <div>
                   <div className="text-[11px] text-gray-500 uppercase tracking-wider font-bold">Hello,</div>
                   <div className="text-[16px] font-black text-gray-900 leading-tight">
@@ -305,8 +305,8 @@ const Profile = () => {
                   onClick={() => setActiveTab('orders')}
                 >
                   <div className="flex items-center gap-4">
-                    <Inventory2OutlinedIcon sx={{ color: '#2563EB' }} />
-                    <span className="font-bold text-gray-600 group-hover:text-[#2563EB]">MY ORDERS</span>
+                    <Inventory2OutlinedIcon sx={{ color: 'var(--color-primary)' }} />
+                    <span className="font-bold text-gray-600 group-hover:text-[var(--color-primary)]">MY ORDERS</span>
                   </div>
                   <span className="text-gray-400 font-bold">&gt;</span>
                 </div>
@@ -314,18 +314,18 @@ const Profile = () => {
                 {/* Account Settings */}
                 <div className="border-b border-gray-100">
                   <div className="p-4 flex items-center gap-4">
-                    <PersonOutlineOutlinedIcon sx={{ color: '#2563EB' }} />
+                    <PersonOutlineOutlinedIcon sx={{ color: 'var(--color-primary)' }} />
                     <span className="font-bold text-gray-500 uppercase text-[14px]">Account Settings</span>
                   </div>
                   <div className="flex flex-col pb-2">
                     <div 
-                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'profile' ? 'bg-[#F0F7FF] text-[#2563EB] border-[#2563EB]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[#2563EB]'}`}
+                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'profile' ? 'bg-[#F0F7FF] text-[var(--color-primary)] border-[var(--color-primary)]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[var(--color-primary)]'}`}
                       onClick={() => setActiveTab('profile')}
                     >
                       Profile Information
                     </div>
                     <div 
-                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'addresses' ? 'bg-[#F0F7FF] text-[#2563EB] border-[#2563EB]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[#2563EB]'}`}
+                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'addresses' ? 'bg-[#F0F7FF] text-[var(--color-primary)] border-[var(--color-primary)]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[var(--color-primary)]'}`}
                       onClick={() => { setActiveTab('addresses'); setIsAddingAddress(false); }}
                     >
                       Manage Addresses
@@ -336,30 +336,30 @@ const Profile = () => {
                 {/* My Stuff */}
                 <div className="border-b border-gray-100">
                   <div className="p-4 flex items-center gap-4">
-                    <FavoriteBorderIcon sx={{ color: '#2563EB' }} />
+                    <FavoriteBorderIcon sx={{ color: 'var(--color-primary)' }} />
                     <span className="font-bold text-gray-500 uppercase text-[14px]">My Stuff</span>
                   </div>
                   <div className="flex flex-col pb-2">
                     <div 
-                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'orders' ? 'bg-[#F0F7FF] text-[#2563EB] border-[#2563EB]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[#2563EB]'}`}
+                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'orders' ? 'bg-[#F0F7FF] text-[var(--color-primary)] border-[var(--color-primary)]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[var(--color-primary)]'}`}
                       onClick={() => setActiveTab('orders')}
                     >
                       Track Order
                     </div>
                     <div 
-                      className="pl-14 pr-4 py-2.5 text-gray-600 font-bold text-[14px] hover:bg-gray-50 hover:text-[#2563EB] cursor-pointer transition-colors border-l-4 border-transparent"
+                      className="pl-14 pr-4 py-2.5 text-gray-600 font-bold text-[14px] hover:bg-gray-50 hover:text-[var(--color-primary)] cursor-pointer transition-colors border-l-4 border-transparent"
                       onClick={() => navigate('/wishlist')}
                     >
                       My Wishlist
                     </div>
                     <div 
-                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'coupons' ? 'bg-[#F0F7FF] text-[#2563EB] border-[#2563EB]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[#2563EB]'}`}
+                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'coupons' ? 'bg-[#F0F7FF] text-[var(--color-primary)] border-[var(--color-primary)]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[var(--color-primary)]'}`}
                       onClick={() => setActiveTab('coupons')}
                     >
                       Coupons
                     </div>
                     <div 
-                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'builds' ? 'bg-[#F0F7FF] text-[#2563EB] border-[#2563EB]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[#2563EB]'}`}
+                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'builds' ? 'bg-[#F0F7FF] text-[var(--color-primary)] border-[var(--color-primary)]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[var(--color-primary)]'}`}
                       onClick={() => setActiveTab('builds')}
                     >
                       Your Builds
@@ -372,7 +372,7 @@ const Profile = () => {
                   className="p-4 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors group"
                   onClick={handleLogout}
                 >
-                  <LogoutOutlinedIcon sx={{ color: '#64748B' }} className="group-hover:text-red-500 transition-colors" />
+                  <LogoutOutlinedIcon sx={{ color: 'var(--color-text-secondary)' }} className="group-hover:text-red-500 transition-colors" />
                   <span className="font-bold text-gray-600 group-hover:text-red-500 transition-colors">Logout</span>
                 </div>
               </div>
@@ -502,8 +502,8 @@ const Profile = () => {
                         </div>
                       </div>
                     ) : (
-                      <div className="bg-[#F8FAFC] p-6 border border-gray-200 rounded-sm">
-                        <h3 className="font-bold text-[#2563EB] uppercase text-[14px] mb-6">{editingAddressId ? 'Edit Address' : 'Add a new address'}</h3>
+                      <div className="bg-[var(--color-surface)] p-6 border border-gray-200 rounded-sm">
+                        <h3 className="font-bold text-[var(--color-primary)] uppercase text-[14px] mb-6">{editingAddressId ? 'Edit Address' : 'Add a new address'}</h3>
                         <form onSubmit={handleSaveAddress} className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <input type="text" name="fullName" value={addressForm.fullName} onChange={handleAddressChange} placeholder="Name" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
                           <input type="text" name="phone" value={addressForm.phone} onChange={(e) => {
@@ -546,7 +546,7 @@ const Profile = () => {
                           </div>
 
                           <div className="md:col-span-2 flex gap-4 mt-4">
-                            <button type="submit" className="bg-[#2563EB] text-white px-8 py-3 font-bold rounded-sm hover:opacity-90 transition-opacity uppercase text-[14px]">
+                            <button type="submit" className="bg-[var(--color-primary)] text-white px-8 py-3 font-bold rounded-sm hover:opacity-90 transition-opacity uppercase text-[14px]">
                               Save Address
                             </button>
                             <button type="button" onClick={() => setIsAddingAddress(false)} className="text-gray-600 px-8 py-3 font-bold rounded-sm hover:bg-gray-200 transition-colors uppercase text-[14px]">
@@ -609,7 +609,7 @@ const Profile = () => {
                     )}
 
                     {builds.length === 0 && Object.keys(draftBuild).length === 0 ? (
-                      <div className="bg-[#F8FAFC] border border-gray-200 p-12 rounded-sm flex flex-col items-center justify-center text-center">
+                      <div className="bg-[var(--color-surface)] border border-gray-200 p-12 rounded-sm flex flex-col items-center justify-center text-center">
                         <DesktopWindowsOutlinedIcon sx={{ fontSize: 64, color: '#94A3B8', mb: 2 }} />
                         <h3 className="text-xl font-bold text-gray-900 mb-2">No custom builds yet</h3>
                         <p className="text-gray-500 mb-6 max-w-md">You haven't saved any PC configurations. Head over to our PC Builder to design your dream machine.</p>
@@ -634,11 +634,11 @@ const Profile = () => {
                               )}
                               <div className="flex justify-between items-start mb-4">
                                 <div>
-                                  <h3 className="font-bold text-gray-900 group-hover:text-[#2563EB] transition-colors">{build.name}</h3>
+                                  <h3 className="font-bold text-gray-900 group-hover:text-[var(--color-primary)] transition-colors">{build.name}</h3>
                                   <div className="text-xs text-gray-500 mt-1">{build.components?.length || 0} Components • {new Date(build.createdAt).toLocaleDateString()}</div>
                                 </div>
                                 <div className="text-right">
-                                  <div className="font-black text-[#0F172A] text-lg">₹{buildPrice.toLocaleString()}</div>
+                                  <div className="font-black text-[var(--color-text)] text-lg">₹{buildPrice.toLocaleString()}</div>
                                   <div className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm mt-1 inline-block ${build.compatibility?.status === 'compatible' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>
                                     {build.compatibility?.status || 'Unknown'}
                                   </div>
@@ -698,7 +698,7 @@ const Profile = () => {
                     ) : (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {coupons.map((coupon) => (
-                          <div key={coupon._id} className="border border-blue-100 bg-[#F8FAFC] rounded-lg p-5 shadow-sm relative overflow-hidden group">
+                          <div key={coupon._id} className="border border-blue-100 bg-[var(--color-surface)] rounded-lg p-5 shadow-sm relative overflow-hidden group">
                             <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500 rotate-45 transform translate-x-8 -translate-y-8 group-hover:bg-blue-600 transition-colors"></div>
                             <ConfirmationNumberOutlinedIcon className="absolute top-2 right-2 text-white z-10 w-4 h-4" />
                             
@@ -791,14 +791,14 @@ const Profile = () => {
               <div className="p-6 border-t border-gray-100 bg-gray-50 rounded-b-lg flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div>
                   <div className="text-xs text-gray-500 font-bold uppercase mb-1">Total Build Price</div>
-                  <div className="text-2xl font-black text-[#2563EB]">
+                  <div className="text-2xl font-black text-[var(--color-primary)]">
                     ₹{(selectedBuildPopup.components?.reduce((sum, comp) => sum + (comp.product?.priceVal || comp.product?.price || comp.product?.salePrice || 0), 0) || 0).toLocaleString()}
                   </div>
                 </div>
                 {selectedBuildPopup._id ? (
                   <button 
                     onClick={() => handleAddBuildToCart(selectedBuildPopup)}
-                    className="px-8 py-3 font-bold transition-colors uppercase shadow-md rounded-sm w-full sm:w-auto bg-[#2563EB] text-white hover:bg-blue-700"
+                    className="px-8 py-3 font-bold transition-colors uppercase shadow-md rounded-sm w-full sm:w-auto bg-[var(--color-primary)] text-white hover:bg-blue-700"
                   >
                     Add Build to Cart
                   </button>

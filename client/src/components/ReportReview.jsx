@@ -131,7 +131,7 @@ const ReportReview = ({ itemId, authorId }) => {
                     value={note}
                     onChange={(e) => setNote(e.target.value)}
                     className="w-full border border-gray-300 rounded-md p-2 text-[14px] placeholder:text-gray-400 focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
-                    style={{ color: "#0f172a", backgroundColor: "#ffffff" }}
+                    style={{ color: "var(--color-text)", backgroundColor: "var(--color-bg-primary)" }}
                     placeholder="Add any details about the issue..."
                   />
                 </div>

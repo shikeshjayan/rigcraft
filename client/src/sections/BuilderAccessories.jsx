@@ -69,7 +69,7 @@ const BuilderAccessories = () => {
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
-          <h2 className="text-[20px] font-bold text-[#0F172A]">
+          <h2 className="text-[20px] font-bold text-[var(--color-text)]">
             Recommended Accessories
           </h2>
 

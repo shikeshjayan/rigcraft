@@ -19,7 +19,7 @@ const DealsBrands = () => {
   if (isLoading || brands.length === 0) return null;
 
   return (
-    <section className="w-full py-16 border-t border-[#E2E8F0] overflow-hidden" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+    <section className="w-full py-16 border-t border-[var(--color-border)] overflow-hidden" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
       <div className="flex items-center gap-16 whitespace-nowrap animate-marquee">
         {[...brands, ...brands, ...brands].map((brand, i) => (
           <div key={`${brand._id || brand.name}-${i}`} className="text-[28px] md:text-[42px] font-extrabold text-[#CBD5E1] tracking-widest uppercase hover:text-[var(--color-primary)] transition-colors duration-300 cursor-default">

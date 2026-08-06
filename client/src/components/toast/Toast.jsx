@@ -70,7 +70,7 @@ const Toast = ({ toast, onClose }) => {
       </div>
       <div className="flex-1 min-w-0 flex flex-col justify-center gap-0.5 py-0.5 pr-1">
         {toast.title && (
-          <span className="text-sm font-bold" style={{ color: "var(--color-text, #0f172a)" }}>
+          <span className="text-sm font-bold" style={{ color: "var(--color-text)" }}>
             {toast.title}
           </span>
         )}

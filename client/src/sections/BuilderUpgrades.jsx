@@ -133,10 +133,10 @@ const BuilderUpgrades = () => {
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
           <div>
-            <h2 className="text-[24px] font-bold text-[#0F172A] mb-1">
+            <h2 className="text-[24px] font-bold text-[var(--color-text)] mb-1">
               Recommended Upgrades
             </h2>
-            <p className="text-[14px] text-[#64748B]">
+            <p className="text-[14px] text-[var(--color-text-secondary)]">
               Smart suggestions based on your current build — missing parts first, then value upgrades.
             </p>
           </div>
@@ -165,8 +165,8 @@ const BuilderUpgrades = () => {
 
         {recommendations.length === 0 ? (
           <div className="bg-white border border-[#CBD5E1] p-8 text-center" style={{ borderRadius: 'var(--radius-sm)' }}>
-            <div className="text-[15px] font-bold text-[#0F172A] mb-1">No recommendations yet.</div>
-            <p className="text-[13px] text-[#64748B]">Select some components above and we'll suggest the best next parts and upgrades.</p>
+            <div className="text-[15px] font-bold text-[var(--color-text)] mb-1">No recommendations yet.</div>
+            <p className="text-[13px] text-[var(--color-text-secondary)]">Select some components above and we'll suggest the best next parts and upgrades.</p>
           </div>
         ) : (
           <div

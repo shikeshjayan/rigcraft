@@ -267,7 +267,7 @@ const AllDeals = () => {
           style={{ backgroundColor: 'rgba(241, 245, 249, 0.95)' }}
         >
           <div className="text-center md:text-left">
-            <h1 className="text-[28px] md:text-[32px] font-extrabold text-[#0F172A] uppercase">All Deals</h1>
+            <h1 className="text-[28px] md:text-[32px] font-extrabold text-[var(--color-text)] uppercase">All Deals</h1>
             <p className="text-[14px] text-[#565959]">Showing {sortedItems.length} results</p>
           </div>
 
@@ -276,7 +276,7 @@ const AllDeals = () => {
             <button
               type="button"
               onClick={() => setSortOpen(!sortOpen)}
-              className="flex items-center justify-center gap-2 w-full md:w-52 px-4 py-2.5 bg-white border border-[#CBD5E1] rounded-sm text-[13px] font-bold text-[#0F172A] hover:border-[#0F172A] transition-colors cursor-pointer shadow-sm"
+              className="flex items-center justify-center gap-2 w-full md:w-52 px-4 py-2.5 bg-white border border-[#CBD5E1] rounded-sm text-[13px] font-bold text-[var(--color-text)] hover:border-[var(--color-text)] transition-colors cursor-pointer shadow-sm"
             >
               <span className="flex items-center gap-2">
                 <SwapVertIcon sx={{ fontSize: 18 }} />
@@ -294,7 +294,7 @@ const AllDeals = () => {
                       setSortOpen(false);
                       setCurrentPage(1);
                     }}
-                    className={`w-full text-center px-4 py-2.5 text-[13px] font-medium hover:bg-[#F0F6FF] transition-colors cursor-pointer ${sortBy === opt.key ? 'text-[var(--color-primary)] font-bold bg-[#F0F6FF]' : 'text-[#0F172A]'}`}
+                    className={`w-full text-center px-4 py-2.5 text-[13px] font-medium hover:bg-[#F0F6FF] transition-colors cursor-pointer ${sortBy === opt.key ? 'text-[var(--color-primary)] font-bold bg-[#F0F6FF]' : 'text-[var(--color-text)]'}`}
                   >
                     {opt.label}
                   </button>
@@ -320,7 +320,7 @@ const AllDeals = () => {
                 className={`flex items-center gap-2 whitespace-nowrap px-5 py-2.5 text-[13px] font-bold uppercase tracking-wide transition-colors cursor-pointer border ${
                   active
                     ? 'bg-[var(--color-primary)] text-white border-[var(--color-primary)]'
-                    : 'bg-white text-[#0F172A] border-[#CBD5E1] hover:border-[#0F172A]'
+                    : 'bg-white text-[var(--color-text)] border-[#CBD5E1] hover:border-[var(--color-text)]'
                 }`}
                 style={{ borderRadius: 'var(--radius-sm)' }}
               >
@@ -342,7 +342,7 @@ const AllDeals = () => {
           <button
             type="button"
             onClick={() => setCatOpen(!catOpen)}
-            className="flex items-center justify-between gap-2 w-full px-4 py-2.5 bg-white border border-[#CBD5E1] text-[13px] font-bold text-[#0F172A] hover:border-[#0F172A] transition-colors cursor-pointer shadow-sm"
+            className="flex items-center justify-between gap-2 w-full px-4 py-2.5 bg-white border border-[#CBD5E1] text-[13px] font-bold text-[var(--color-text)] hover:border-[var(--color-text)] transition-colors cursor-pointer shadow-sm"
             style={{ borderRadius: 'var(--radius-sm)' }}
           >
             <span className="flex items-center gap-2">
@@ -374,7 +374,7 @@ const AllDeals = () => {
                       setCatOpen(false);
                     }}
                     className={`w-full flex items-center justify-center gap-2 px-4 py-2.5 text-[13px] font-medium transition-colors cursor-pointer ${
-                      active ? 'text-[var(--color-primary)] font-bold bg-[#F0F6FF]' : 'text-[#0F172A] hover:bg-[#F0F6FF]'
+                      active ? 'text-[var(--color-primary)] font-bold bg-[#F0F6FF]' : 'text-[var(--color-text)] hover:bg-[#F0F6FF]'
                     }`}
                   >
                     {tab.label}
