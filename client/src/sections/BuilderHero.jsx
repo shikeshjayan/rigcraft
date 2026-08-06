@@ -1,9 +1,22 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
+import VerifiedIcon from '@mui/icons-material/Verified';
+import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 
 const BuilderHero = () => {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
+
+  const scrollToBuilder = () => {
+    document.getElementById('builder-workspace')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
+  const BENEFITS = [
+    { icon: <VerifiedIcon sx={{ fontSize: 16 }} />, label: 'Compatibility Checked' },
+    { icon: <VerifiedUserIcon sx={{ fontSize: 16 }} />, label: 'Genuine Components' },
+    { icon: <AutoAwesomeIcon sx={{ fontSize: 16 }} />, label: 'Expert Recommendations' }
+  ];
 
   return (
     <section className="relative w-full h-[60vh] md:h-screen min-h-[500px] flex items-center justify-center overflow-hidden bg-[#0F1111]">
@@ -49,6 +62,31 @@ const BuilderHero = () => {
           <p className="text-[16px] md:text-[18px] text-gray-300 leading-relaxed max-w-2xl">
             Select components to start your build. We'll handle compatibility checks automatically.
           </p>
+        </div>
+
+        {/* CTA + Benefits */}
+        <div className="flex flex-col gap-6">
+          <button
+            onClick={scrollToBuilder}
+            className="flex items-center gap-2 bg-[var(--color-primary)] hover:bg-[#1E3A8A] text-white font-bold px-8 py-3.5 text-[15px] transition-colors cursor-pointer w-fit"
+            style={{ borderRadius: 'var(--radius-sm)' }}
+          >
+            Start Building
+            <KeyboardArrowRightIcon sx={{ fontSize: 20 }} />
+          </button>
+
+          <div className="flex flex-wrap gap-3">
+            {BENEFITS.map((benefit) => (
+              <div
+                key={benefit.label}
+                className="flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 text-[13px] font-bold text-white px-3.5 py-2"
+                style={{ borderRadius: 'var(--radius-sm)' }}
+              >
+                <span className="text-[var(--color-primary)]">{benefit.icon}</span>
+                {benefit.label}
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

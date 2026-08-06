@@ -34,6 +34,7 @@ const ProductList = () => {
     data: products,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("productList", productService, { page, pageSize, search, ...filters });
 
@@ -170,6 +171,7 @@ const ProductList = () => {
         columns={columns}
         rows={products}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}

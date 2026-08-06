@@ -1,106 +1,56 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useCart } from '../context/CartContext';
-import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/client';
-import { normalizeBuilderProduct, normalizeDraftBuild, BUILDER_CATEGORIES } from '../utils/builderProducts';
-import { validateBuilderBuild, estimateWattage } from '../utils/builderCompatibility';
+import { normalizeBuilderProduct } from '../utils/builderProducts';
+import {
+  useBuilder,
+  STEPS,
+  MULTI_SLOT_CATEGORIES,
+  MAX_QUANTITY,
+  MAX_ENTRIES
+} from '../context/BuilderContext';
 import SearchIcon from '@mui/icons-material/Search';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import CloseIcon from '@mui/icons-material/Close';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { useToast } from '../components/toast/useToast';
-
-const STEPS = [
-  { id: 1, label: 'CPU', category: 'cpu' },
-  { id: 2, label: 'Motherboard', category: 'motherboard' },
-  { id: 3, label: 'Memory', category: 'ram' },
-  { id: 4, label: 'Storage', category: 'ssd' },
-  { id: 5, label: 'GPU', category: 'gpu' },
-  { id: 6, label: 'Case', category: 'cabinet' },
-  { id: 7, label: 'Power', category: 'psu' },
-  { id: 8, label: 'Cooling', category: 'cooling' },
-  { id: 9, label: 'Review', category: null },
-];
+import SelectDropdown from '../components/SelectDropdown';
 
 const getTypeName = (type) => typeof type === 'string' ? type : type?.name || 'UNKNOWN';
 
-const MULTI_SLOT_CATEGORIES = ['ram', 'ssd'];
-const MAX_QUANTITY = 4;
-const MAX_ENTRIES = 4;
+const INITIAL_VISIBLE = 6;
+const VISIBLE_STEP = 6;
 
 const BuilderWorkspace = () => {
-  const [currentStep, setCurrentStep] = useState(1);
+  const {
+    selectedParts,
+    currentStep,
+    setCurrentStep,
+    assemblyMode,
+    setAssemblyMode,
+    builderSettings,
+    selectPart,
+    removePart,
+    updateEntryQuantity,
+    resetBuild,
+    assemblyFee,
+    totalPrice,
+    estWattage,
+    compatibility,
+    incompleteBlocked,
+    progressPercent,
+    slotLimits,
+    getCategoryUnits
+  } = useBuilder();
+
   const [allItems, setAllItems] = useState([]);
-  const [selectedParts, setSelectedParts] = useState({
-    cpu: null,
-    motherboard: null,
-    ram: [],
-    ssd: [],
-    gpu: null,
-    cabinet: null,
-    psu: null,
-    cooling: null
-  });
 
   const [searchQuery, setSearchQuery] = useState('');
   const [brandFilter, setBrandFilter] = useState('All Brands');
   const [activePopupItem, setActivePopupItem] = useState(null);
-  const [assemblyMode, setAssemblyMode] = useState('parts');
   const [buildPopupMessage, setBuildPopupMessage] = useState(null);
-  const [builderSettings, setBuilderSettings] = useState({
-    enabled: true,
-    assemblyFeeEnabled: false,
-    assemblyFeeType: 'percent',
-    assemblyFeeValue: 0.5,
-    requireCompleteBuild: true
-  });
-  const { addToCart } = useCart();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const [visibleCount, setVisibleCount] = useState(INITIAL_VISIBLE);
   const { toast } = useToast();
-
-  useEffect(() => {
-    const rawDraft = location.state?.draftBuild || JSON.parse(localStorage.getItem('draftBuild') || 'null');
-    if (!rawDraft) return;
-
-    const mappedDraftBuild = normalizeDraftBuild(rawDraft);
-
-    if (Object.keys(mappedDraftBuild).length === 0) return;
-
-    const wrappedDraftBuild = { ...mappedDraftBuild };
-    for (const cat of MULTI_SLOT_CATEGORIES) {
-      if (mappedDraftBuild[cat]) {
-        wrappedDraftBuild[cat] = Array.isArray(mappedDraftBuild[cat])
-          ? mappedDraftBuild[cat].map(e => ({ item: e.item || e, quantity: e.quantity || 1 }))
-          : [{ item: mappedDraftBuild[cat], quantity: 1 }];
-      }
-    }
-
-    setSelectedParts(prev => ({
-      ...prev,
-      ...wrappedDraftBuild
-    }));
-    localStorage.removeItem('draftBuild');
-
-    // Navigate to the next empty step
-    let nextStep = 1;
-    for (let i = 0; i < BUILDER_CATEGORIES.length; i++) {
-      const key = BUILDER_CATEGORIES[i];
-      const value = wrappedDraftBuild[key];
-      const isFilled = MULTI_SLOT_CATEGORIES.includes(key)
-        ? (Array.isArray(value) ? value.length > 0 : value != null)
-        : value != null;
-      if (!isFilled) {
-        nextStep = i + 1;
-        break;
-      }
-    }
-    setCurrentStep(nextStep);
-
-    // Clean up location state using React Router so refresh doesn't trigger it again
-    navigate('.', { replace: true, state: {} });
-  }, [location.state, navigate]);
 
   const handleSaveBuild = async () => {
     const typeMapping = {
@@ -156,19 +106,8 @@ const BuilderWorkspace = () => {
       if (data.success) {
         setBuildPopupMessage('Build Added Successfully!');
         setTimeout(() => setBuildPopupMessage(null), 4000);
-        
-        // Reset builder state
-        setSelectedParts({
-          cpu: null,
-          motherboard: null,
-          ram: [],
-          ssd: [],
-          gpu: null,
-          cabinet: null,
-          psu: null,
-          cooling: null
-        });
-        setCurrentStep(1);
+
+        resetBuild();
       }
     } catch (error) {
       console.error('Failed to save build', error);
@@ -177,13 +116,19 @@ const BuilderWorkspace = () => {
     }
   };
 
+  const activeCategory = STEPS.find(s => s.id === currentStep)?.category;
+
   // Reset filters when step changes
+  /* eslint-disable react-hooks/set-state-in-effect */
   useEffect(() => {
     setSearchQuery('');
     setBrandFilter('All Brands');
   }, [currentStep]);
 
-  const activeCategory = STEPS.find(s => s.id === currentStep)?.category;
+  // Reset visible count when filters or search change
+  useEffect(() => {
+    setVisibleCount(INITIAL_VISIBLE);
+  }, [activeCategory, searchQuery, brandFilter]);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -203,20 +148,6 @@ const BuilderWorkspace = () => {
     fetchProducts();
   }, []);
 
-  useEffect(() => {
-    const fetchBuilderSettings = async () => {
-      try {
-        const { data } = await apiClient.get('/builds/settings');
-        if (data && data.data) {
-          setBuilderSettings(prev => ({ ...prev, ...data.data }));
-        }
-      } catch (error) {
-        console.error('Failed to fetch builder settings', error);
-      }
-    };
-    fetchBuilderSettings();
-  }, []);
-
   // Filter components based on current step and search/filters
   const availableComponents = useMemo(() => {
     if (!activeCategory) return [];
@@ -226,7 +157,7 @@ const BuilderWorkspace = () => {
       
       if (brandFilter !== 'All Brands') {
         const itemBrand = (item.brand || '').toLowerCase();
-        if (!itemBrand.includes(brandFilter.toLowerCase())) return false;
+        if (itemBrand !== brandFilter.toLowerCase()) return false;
       }
 
       if (searchQuery) {
@@ -239,72 +170,26 @@ const BuilderWorkspace = () => {
     });
   }, [activeCategory, searchQuery, brandFilter, allItems]);
 
-  // Derived state for summary
-  const basePrice = useMemo(() => {
-    return Object.entries(selectedParts).reduce((sum, [category, item]) => {
-      if (!item) return sum;
-      if (MULTI_SLOT_CATEGORIES.includes(category)) {
-        return sum + item.reduce((s, entry) => s + (entry.item?.priceVal || 0) * (Math.max(1, Number(entry.quantity) || 1)), 0);
-      }
-      return sum + (item.priceVal || 0);
-    }, 0);
-  }, [selectedParts]);
+  // Brand options derived from products available in the active category
+  const brandOptions = useMemo(() => {
+    if (!activeCategory) return [{ value: 'All Brands', label: 'All Brands' }];
 
-  const assemblyFee = useMemo(() => {
-    if (assemblyMode !== 'assembled' || !builderSettings.assemblyFeeEnabled) return 0;
-    const feeValue = Number(builderSettings.assemblyFeeValue) || 0;
-    return builderSettings.assemblyFeeType === 'fixed' ? feeValue : basePrice * (feeValue / 100);
-  }, [assemblyMode, builderSettings, basePrice]);
+    const brands = new Set();
+    allItems.forEach(item => {
+      if (item.category !== activeCategory) return;
+      const brand = (item.brand || '').trim();
+      if (brand && brand !== 'Unknown' && brand !== 'Generic') brands.add(brand);
+    });
 
-  const totalPrice = basePrice + assemblyFee;
-
-  const estWattage = useMemo(() => estimateWattage(selectedParts), [selectedParts]);
-
-  const compatibility = useMemo(() => validateBuilderBuild(selectedParts), [selectedParts]);
-
-  const incompleteBlocked = builderSettings.requireCompleteBuild && compatibility.status === 'incomplete';
+    return [
+      { value: 'All Brands', label: 'All Brands' },
+      ...Array.from(brands).sort().map(brand => ({ value: brand, label: brand }))
+    ];
+  }, [activeCategory, allItems]);
 
   const handleSelectPart = (item) => {
-    if (MULTI_SLOT_CATEGORIES.includes(item.category)) {
-      const entries = selectedParts[item.category] || [];
-      const exists = entries.some(e => e.item?.id === item.id);
-      if (!exists && entries.length < MAX_ENTRIES) {
-        setSelectedParts(prev => ({
-          ...prev,
-          [item.category]: [...(prev[item.category] || []), { item, quantity: 1 }]
-        }));
-      }
-      setActivePopupItem(null);
-      return;
-    }
-    setSelectedParts(prev => ({ ...prev, [item.category]: item }));
     setActivePopupItem(null);
-    const currentStepObj = STEPS.find(s => s.category === item.category);
-    if (currentStepObj && currentStepObj.id < 9) {
-      setCurrentStep(currentStepObj.id + 1);
-    }
-  };
-
-  const handleRemovePart = (category, itemId) => {
-    if (MULTI_SLOT_CATEGORIES.includes(category)) {
-      setSelectedParts(prev => ({
-        ...prev,
-        [category]: (prev[category] || []).filter(e => e.item?.id !== itemId)
-      }));
-    } else {
-      setSelectedParts(prev => ({ ...prev, [category]: null }));
-    }
-  };
-
-  const updateEntryQuantity = (category, itemId, delta) => {
-    setSelectedParts(prev => ({
-      ...prev,
-      [category]: (prev[category] || []).map(e => {
-        if (e.item?.id !== itemId) return e;
-        const next = Math.max(1, Math.min(MAX_QUANTITY, (Number(e.quantity) || 1) + delta));
-        return { ...e, quantity: next };
-      })
-    }));
+    selectPart(item);
   };
 
   const handleNextStep = () => {
@@ -318,11 +203,24 @@ const BuilderWorkspace = () => {
   const isReviewStep = currentStep === 9;
 
   return (
-    <section className="w-full pb-20" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+    <section id="builder-workspace" className="w-full pb-20" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
       
       {/* 1. Progress Stepper Bar */}
       <div className="w-full bg-white border-b border-[#E2E8F0] py-4 md:py-9 sticky top-[96px] md:top-[108px] z-30 shadow-sm">
         <div className="max-w-[1500px] mx-auto px-2 md:px-4 lg:px-[100px]">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[12px] md:text-[13px] font-bold text-[#0F172A]">
+              {progressPercent}% Complete
+            </span>
+            <span className="text-[11px] md:text-[12px] font-medium text-[#64748B]">
+              {STEPS.filter(s => s.category && (MULTI_SLOT_CATEGORIES.includes(s.category)
+                ? (selectedParts[s.category]?.length || 0) > 0
+                : selectedParts[s.category] != null)).length}/{STEPS.length - 1} categories selected
+            </span>
+          </div>
+          <div className="w-full h-1.5 bg-[#E2E8F0] rounded-full overflow-hidden mb-4">
+            <div className="h-full bg-[var(--color-primary)] transition-all duration-500" style={{ width: `${progressPercent}%` }}></div>
+          </div>
           <div className="grid grid-cols-5 gap-y-4 gap-x-1 lg:flex lg:items-center lg:justify-between lg:overflow-x-auto hide-scrollbar lg:gap-2">
             {STEPS.map((step, index) => {
               const isActive = currentStep === step.id;
@@ -348,7 +246,13 @@ const BuilderWorkspace = () => {
               return (
                 <div key={step.id} className="flex flex-col lg:flex-row items-center lg:justify-center gap-1 lg:gap-1.5 shrink-0 cursor-pointer text-center lg:text-left" onClick={() => setCurrentStep(step.id)}>
                   <div className={`w-7 h-7 lg:w-7 lg:h-7 rounded-full flex items-center justify-center font-bold text-[11px] lg:text-[12px] transition-colors mx-auto lg:mx-0 ${stepBg}`}>
-                    {step.id}
+                    {hasItem && !isActive ? (
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      step.id
+                    )}
                   </div>
                   <span className={`text-[10px] lg:text-[13px] leading-tight lg:leading-normal font-bold ${isActive ? 'text-[#0F172A]' : 'text-[#64748B]'}`}>
                     {step.label}
@@ -374,21 +278,14 @@ const BuilderWorkspace = () => {
               <>
                 {/* Filter & Search Bar Container */}
                 <div className="bg-white border border-[#CBD5E1] p-3 flex flex-col sm:flex-row gap-3 mb-6" style={{ borderRadius: 'var(--radius-sm)' }}>
-                  <select 
-                    value={brandFilter}
-                    onChange={(e) => setBrandFilter(e.target.value)}
-                    className="h-10 border border-[#CBD5E1] px-3 bg-white text-[#0F172A] text-[14px] font-medium focus:outline-none focus:border-[#0052FF]"
-                    style={{ borderRadius: 'var(--radius-sm)' }}
-                  >
-                    <option value="All Brands">All Brands</option>
-                    <option value="intel">Intel</option>
-                    <option value="amd">AMD</option>
-                    <option value="nvidia">NVIDIA</option>
-                    <option value="asus">ASUS</option>
-                    <option value="msi">MSI</option>
-                    <option value="gigabyte">Gigabyte</option>
-                    <option value="corsair">Corsair</option>
-                  </select>
+                  <div className="w-full sm:w-[220px] shrink-0">
+                    <SelectDropdown
+                      value={brandFilter}
+                      onChange={setBrandFilter}
+                      placeholder="Brand"
+                      options={brandOptions}
+                    />
+                  </div>
 
                   <div className="relative flex-grow">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#64748B]">
@@ -422,12 +319,23 @@ const BuilderWorkspace = () => {
 
                 {/* Component Card Container */}
                 <div className="flex flex-col gap-4">
-                  {availableComponents.map(item => {
+                  {availableComponents.slice(0, visibleCount).map(item => {
                     const isMultiSlot = MULTI_SLOT_CATEGORIES.includes(activeCategory);
+                    const slotLimit = isMultiSlot ? (slotLimits[activeCategory] || MAX_ENTRIES) : MAX_ENTRIES;
+                    const categoryUnits = isMultiSlot ? getCategoryUnits(activeCategory) : 0;
+                    const selectedEntry = isMultiSlot
+                      ? (selectedParts[activeCategory] || []).find(e => e.item?.id === item.id)
+                      : null;
                     const isSelected = isMultiSlot
-                      ? (selectedParts[activeCategory] || []).some(e => e.item?.id === item.id)
+                      ? !!selectedEntry
                       : selectedParts[activeCategory]?.id === item.id;
-                    const isFull = isMultiSlot && (selectedParts[activeCategory]?.length || 0) >= MAX_ENTRIES;
+                    const selectedQty = selectedEntry ? Math.max(1, Number(selectedEntry.quantity) || 1) : 0;
+                    const canBump = isMultiSlot && selectedQty > 0 && selectedQty < MAX_QUANTITY && categoryUnits < slotLimit;
+                    const isSlotFull = isMultiSlot && categoryUnits >= slotLimit;
+                    const isDistinctFull = isMultiSlot && (selectedParts[activeCategory]?.length || 0) >= MAX_ENTRIES;
+                    const isActionDisabled = isMultiSlot
+                      ? (isSelected ? !canBump : isSlotFull || isDistinctFull)
+                      : isSelected;
                     
                     return (
                       <div 
@@ -436,7 +344,7 @@ const BuilderWorkspace = () => {
                         style={{ borderRadius: 'var(--radius-sm)' }}
                       >
                         {/* Thumbnail */}
-                        <div className="w-32 h-32 shrink-0 bg-[#F8FAFC] flex items-center justify-center p-2 rounded-md">
+                        <div className="w-full h-40 sm:w-32 sm:h-32 shrink-0 bg-[#F8FAFC] flex items-center justify-center p-2 rounded-md">
                           <img src={item.image} alt={item.title} className="max-w-full max-h-full object-contain mix-blend-multiply" />
                         </div>
                         
@@ -474,11 +382,13 @@ const BuilderWorkspace = () => {
                             
                             <button 
                               onClick={() => handleSelectPart(item)}
-                              disabled={isSelected || (isMultiSlot && isFull)}
-                              className={`font-bold py-2 px-4 text-[14px] transition-colors ${isSelected || (isMultiSlot && isFull) ? 'bg-white border-2 border-[var(--color-primary)] text-[var(--color-primary)] opacity-60 cursor-not-allowed' : 'bg-[var(--color-primary)] border-2 border-[var(--color-primary)] text-white hover:opacity-90 cursor-pointer'}`}
+                              disabled={isActionDisabled}
+                              className={`font-bold py-2 px-4 text-[14px] transition-colors ${isActionDisabled ? 'bg-white border-2 border-[var(--color-primary)] text-[var(--color-primary)] opacity-60 cursor-not-allowed' : 'bg-[var(--color-primary)] border-2 border-[var(--color-primary)] text-white hover:opacity-90 cursor-pointer'}`}
                               style={{ borderRadius: 'var(--radius-sm)' }}
                             >
-                              {isMultiSlot ? (isSelected ? 'Added' : isFull ? 'Max 4 added' : 'Add to Build') : (isSelected ? 'Selected' : 'Add to Build')}
+                              {isMultiSlot
+                                ? (isSelected ? (canBump ? 'Add Another' : `Max ${slotLimit} slots used`) : (isSlotFull || isDistinctFull ? `Max ${slotLimit} slots used` : 'Add to Build'))
+                                : (isSelected ? 'Selected' : 'Add to Build')}
                             </button>
                           </div>
                         </div>
@@ -490,63 +400,85 @@ const BuilderWorkspace = () => {
                       No components found matching your criteria.
                     </div>
                   )}
+
+                  {availableComponents.length > visibleCount && (
+                    <div className="flex flex-col items-center gap-3 py-4">
+                      <span className="text-[13px] text-[#64748B] font-medium">
+                        Showing {Math.min(visibleCount, availableComponents.length)} of {availableComponents.length} components
+                      </span>
+                      <button
+                        onClick={() => setVisibleCount(c => c + VISIBLE_STEP)}
+                        className="px-8 py-3 border border-[#CBD5E1] bg-white text-[#0F172A] font-bold text-[14px] hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors cursor-pointer"
+                        style={{ borderRadius: 'var(--radius-sm)' }}
+                      >
+                        Load More
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* Selected parts list for multi-capable categories (RAM / Storage) */}
-                {MULTI_SLOT_CATEGORIES.includes(activeCategory) && (
-                  <div className="bg-white border border-[#CBD5E1] p-4 mt-4" style={{ borderRadius: 'var(--radius-sm)' }}>
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <div className="text-[14px] font-bold text-[#0F172A]">Selected {STEPS.find(s => s.category === activeCategory)?.label}</div>
-                        <div className="text-[12px] text-[#64748B]">Add up to {MAX_ENTRIES} different {STEPS.find(s => s.category === activeCategory)?.label.toLowerCase()} parts (max {MAX_QUANTITY} of each)</div>
+                {MULTI_SLOT_CATEGORIES.includes(activeCategory) && (() => {
+                  const slotLimit = slotLimits[activeCategory] || MAX_ENTRIES;
+                  const categoryUnits = getCategoryUnits(activeCategory);
+                  const categoryLabel = STEPS.find(s => s.category === activeCategory)?.label;
+                  return (
+                    <div className="bg-white border border-[#CBD5E1] p-4 mt-4" style={{ borderRadius: 'var(--radius-sm)' }}>
+                      <div className="flex items-center justify-between mb-3">
+                        <div>
+                          <div className="text-[14px] font-bold text-[#0F172A]">Selected {categoryLabel}</div>
+                          <div className="text-[12px] text-[#64748B]">
+                            Motherboard supports {slotLimit} {categoryLabel?.toLowerCase()} slot(s) (max {MAX_QUANTITY} of each part)
+                          </div>
+                        </div>
+                        <span className="text-[13px] font-bold text-[var(--color-primary)] shrink-0 ml-2">{categoryUnits}/{slotLimit}</span>
                       </div>
-                      <span className="text-[13px] font-bold text-[var(--color-primary)] shrink-0 ml-2">{(selectedParts[activeCategory] || []).length}/{MAX_ENTRIES}</span>
+                      {(selectedParts[activeCategory] || []).length === 0 ? (
+                        <div className="text-[13px] text-[#64748B] py-2">No {categoryLabel?.toLowerCase()} selected yet. Pick from the list above.</div>
+                      ) : (
+                        <div className="flex flex-col gap-3">
+                          {(selectedParts[activeCategory] || []).map(entry => {
+                            const qty = Math.max(1, Number(entry.quantity) || 1);
+                            return (
+                              <div key={entry.item?.id} className="flex items-center gap-3 border border-[#E2E8F0] p-3" style={{ borderRadius: 'var(--radius-sm)' }}>
+                                <div className="w-12 h-12 shrink-0 bg-[#F8FAFC] border border-[#E2E8F0] p-1 flex items-center justify-center rounded">
+                                  <img src={entry.item?.image} alt={entry.item?.title} className="max-w-full max-h-full object-contain mix-blend-multiply" />
+                                </div>
+                                <div className="flex-grow min-w-0">
+                                  <div className="text-[13px] font-bold text-[#0F172A] truncate">{entry.item?.title}</div>
+                                  <div className="text-[12px] text-[#64748B]">{getTypeName(entry.item?.brand)}</div>
+                                </div>
+                                <div className="flex items-center gap-2 shrink-0">
+                                  <button
+                                    onClick={() => updateEntryQuantity(activeCategory, entry.item?.id, -1)}
+                                    disabled={qty <= 1}
+                                    className="w-8 h-8 flex items-center justify-center text-[18px] font-bold border border-[#CBD5E1] bg-white text-[#0F172A] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors"
+                                    style={{ borderRadius: 'var(--radius-sm)' }}
+                                  >−</button>
+                                  <span className="text-[16px] font-extrabold text-[#0F172A] w-7 text-center">{qty}</span>
+                                  <button
+                                    onClick={() => updateEntryQuantity(activeCategory, entry.item?.id, 1)}
+                                    disabled={qty >= MAX_QUANTITY || categoryUnits >= slotLimit}
+                                    className="w-8 h-8 flex items-center justify-center text-[18px] font-bold border border-[#CBD5E1] bg-white text-[#0F172A] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors"
+                                    style={{ borderRadius: 'var(--radius-sm)' }}
+                                  >+</button>
+                                  <div className="w-[92px] text-right text-[14px] font-bold text-[#0F172A] whitespace-nowrap">{formatPrice((entry.item?.priceVal || 0) * qty)}</div>
+                                  <button
+                                    onClick={() => removePart(activeCategory, entry.item?.id)}
+                                    className="text-[#EF4444] hover:text-[#B91C1C] ml-1 cursor-pointer"
+                                    title="Remove"
+                                  >
+                                    <CloseIcon sx={{ fontSize: 18 }} />
+                                  </button>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
-                    {(selectedParts[activeCategory] || []).length === 0 ? (
-                      <div className="text-[13px] text-[#64748B] py-2">No {STEPS.find(s => s.category === activeCategory)?.label.toLowerCase()} selected yet. Pick from the list above.</div>
-                    ) : (
-                      <div className="flex flex-col gap-3">
-                        {(selectedParts[activeCategory] || []).map(entry => {
-                          const qty = Math.max(1, Number(entry.quantity) || 1);
-                          return (
-                            <div key={entry.item?.id} className="flex items-center gap-3 border border-[#E2E8F0] p-3" style={{ borderRadius: 'var(--radius-sm)' }}>
-                              <div className="w-12 h-12 shrink-0 bg-[#F8FAFC] border border-[#E2E8F0] p-1 flex items-center justify-center rounded">
-                                <img src={entry.item?.image} alt={entry.item?.title} className="max-w-full max-h-full object-contain mix-blend-multiply" />
-                              </div>
-                              <div className="flex-grow min-w-0">
-                                <div className="text-[13px] font-bold text-[#0F172A] truncate">{entry.item?.title}</div>
-                                <div className="text-[12px] text-[#64748B]">{getTypeName(entry.item?.brand)}</div>
-                              </div>
-                              <div className="flex items-center gap-2 shrink-0">
-                                <button
-                                  onClick={() => updateEntryQuantity(activeCategory, entry.item?.id, -1)}
-                                  disabled={qty <= 1}
-                                  className="w-8 h-8 flex items-center justify-center text-[18px] font-bold border border-[#CBD5E1] bg-white text-[#0F172A] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors"
-                                  style={{ borderRadius: 'var(--radius-sm)' }}
-                                >−</button>
-                                <span className="text-[16px] font-extrabold text-[#0F172A] w-7 text-center">{qty}</span>
-                                <button
-                                  onClick={() => updateEntryQuantity(activeCategory, entry.item?.id, 1)}
-                                  disabled={qty >= MAX_QUANTITY}
-                                  className="w-8 h-8 flex items-center justify-center text-[18px] font-bold border border-[#CBD5E1] bg-white text-[#0F172A] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] transition-colors"
-                                  style={{ borderRadius: 'var(--radius-sm)' }}
-                                >+</button>
-                                <div className="w-[92px] text-right text-[14px] font-bold text-[#0F172A] whitespace-nowrap">{formatPrice((entry.item?.priceVal || 0) * qty)}</div>
-                                <button
-                                  onClick={() => handleRemovePart(activeCategory, entry.item?.id)}
-                                  className="text-[#EF4444] hover:text-[#B91C1C] ml-1 cursor-pointer"
-                                  title="Remove"
-                                >
-                                  <CloseIcon sx={{ fontSize: 18 }} />
-                                </button>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </div>
-                )}
+                  );
+                })()}
               </>
             )}
 
@@ -673,15 +605,21 @@ const BuilderWorkspace = () => {
 
           {/* Right Column (35%) - Sticky Sidebar */}
           <div className="lg:w-[35%] w-full">
-            <div className="sticky top-[210px] bg-white border border-[#CBD5E1] flex flex-col" style={{ borderRadius: 'var(--radius-sm)' }}>
+            <div className="bg-white border border-[#CBD5E1] flex flex-col" style={{ borderRadius: 'var(--radius-sm)' }}>
               
               {/* Header */}
               <div className="p-4 border-b border-[#CBD5E1] bg-[#F8FAFC] rounded-t-md">
-                <h2 className="text-[18px] font-bold text-[#0F172A]">Build Summary</h2>
+                <div className="flex items-center justify-between">
+                  <h2 className="text-[18px] font-bold text-[#0F172A]">Build Summary</h2>
+                  <span className="text-[12px] font-bold text-[var(--color-primary)]">{progressPercent}%</span>
+                </div>
+                <div className="w-full h-1 bg-[#E2E8F0] rounded-full overflow-hidden mt-2">
+                  <div className="h-full bg-[var(--color-primary)] transition-all duration-500" style={{ width: `${progressPercent}%` }}></div>
+                </div>
               </div>
               
               {/* Selected List */}
-              <div className="p-4 flex flex-col gap-4 max-h-[32vh] overflow-y-auto">
+              <div className="p-4 flex flex-col gap-4">
                 {STEPS.filter(s => s.category !== null).map(step => {
                   const value = selectedParts[step.category];
                   const isMultiSlot = MULTI_SLOT_CATEGORIES.includes(step.category);
@@ -720,7 +658,7 @@ const BuilderWorkspace = () => {
                             {item ? (typeof item.priceVal === 'number' ? formatPrice(item.priceVal * qty) : typeof item.price === 'number' ? formatPrice(item.price * qty) : item.price) : '---'}
                           </div>
                           {item && (
-                            <button onClick={() => handleRemovePart(step.category, item?.id)} className="text-[11px] text-[#EF4444] font-bold hover:underline cursor-pointer">
+                            <button onClick={() => removePart(step.category, item?.id)} className="text-[11px] text-[#EF4444] font-bold hover:underline cursor-pointer">
                               Remove
                             </button>
                           )}
@@ -755,7 +693,7 @@ const BuilderWorkspace = () => {
               </div>
 
               {/* Bottom Totals Zone */}
-              <div className="bg-[#0F172A] p-5 text-white rounded-b-md mt-auto">
+              <div className="bg-[#0F172A] p-5 text-white rounded-b mt-auto">
                 <div className="flex justify-between items-center mb-3 text-[14px]">
                   <span className="text-[#94A3B8]">Est. Wattage</span>
                   <span className="font-bold">{estWattage}W</span>

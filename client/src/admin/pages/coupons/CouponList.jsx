@@ -31,6 +31,7 @@ const CouponList = () => {
     data: coupons,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("couponList", couponService, { page, pageSize, search, ...filters });
 
@@ -100,6 +101,7 @@ const CouponList = () => {
         columns={columns}
         rows={coupons}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}

@@ -2,15 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import Card from '../components/Card';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import apiClient from '../api/client';
-import { useCart } from '../context/CartContext';
-import { normalizeBuilderProduct, normalizeCategory, getRawCategory } from '../utils/builderProducts';
+import { useBuilder } from '../context/BuilderContext';
 
-const BuilderAccessories = () => {
-  const [accessories, setAccessories] = useState([]);
+const BuilderRecentlyViewed = () => {
+  const { recentViewed, selectPart } = useBuilder();
   const [canScroll, setCanScroll] = useState(false);
   const carouselRef = useRef(null);
-  const { addToCart } = useCart();
 
   const scrollLeft = () => {
     if (carouselRef.current) {
@@ -25,31 +22,6 @@ const BuilderAccessories = () => {
   };
 
   useEffect(() => {
-    const fetchAccessories = async () => {
-      try {
-        const { data } = await apiClient.get('/products?limit=1000');
-        if (data && data.data) {
-          const docs = data.data.docs || data.data;
-          const pcArray = Array.isArray(docs) ? docs : [];
-
-          // Keep only accessories
-          const accessoryItems = pcArray
-            .filter(p => {
-              const type = (p.categoryType || p.productType || '').toLowerCase();
-              return type === 'accessory' || type === 'accessories' || normalizeCategory(getRawCategory(p)) === 'accessory';
-            })
-            .map(p => normalizeBuilderProduct(p));
-
-          setAccessories(accessoryItems);
-        }
-      } catch (error) {
-        console.error('Failed to fetch accessories', error);
-      }
-    };
-    fetchAccessories();
-  }, []);
-
-  useEffect(() => {
     const measure = () => {
       if (carouselRef.current) {
         setCanScroll(carouselRef.current.scrollWidth > carouselRef.current.clientWidth + 1);
@@ -58,19 +30,16 @@ const BuilderAccessories = () => {
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
-  }, [accessories.length]);
+  }, [recentViewed.length]);
 
-  const handleAddToCart = (item) => {
-    addToCart(item);
-  };
+  if (!recentViewed || recentViewed.length === 0) return null;
 
   return (
     <section className="w-full py-16" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
-
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
-          <h2 className="text-[20px] font-bold text-[#0F172A]">
-            Recommended Accessories
+          <h2 className="text-[24px] font-bold text-[#0F172A]">
+            Recently Viewed Components
           </h2>
 
           {canScroll && (
@@ -100,31 +69,30 @@ const BuilderAccessories = () => {
           className="flex overflow-x-auto gap-6 pb-2 snap-x snap-mandatory hide-scrollbar"
           style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
         >
-          {accessories.map(item => (
+          {recentViewed.slice(0, 8).map(item => (
             <div key={item.id} className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex flex-col snap-start">
               <Card
                 id={item.id}
                 image={item.image}
                 title={item.title}
                 specs={item.specs}
-                description={item.description}
                 price={item.price}
                 mrp={item.mrp}
                 discount={item.discount}
                 category={item.category}
-                tag="ACCESSORY"
+                tag="REVIEWED"
                 tagColor="var(--color-primary)"
-                buttonText="Add to Cart"
-                onButtonClick={() => handleAddToCart(item)}
+                compact
+                buttonText="Add to Build"
+                onButtonClick={() => selectPart(item)}
                 stock={item.stock}
               />
             </div>
           ))}
         </div>
-
       </div>
     </section>
   );
 };
 
-export default BuilderAccessories;
+export default BuilderRecentlyViewed;
