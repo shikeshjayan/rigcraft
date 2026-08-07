@@ -195,12 +195,19 @@ const calculatePower = (components) => {
 const calculatePrice = (components) => {
   let totalPrice = 0;
   let totalSalePrice = 0;
+  
+  const parseNum = (val) => {
+    if (!val) return 0;
+    if (typeof val === 'number') return val;
+    const numericStr = String(val).replace(/[^0-9.]/g, '');
+    return parseFloat(numericStr) || 0;
+  };
 
   for (const component of components) {
     const product = component.product || component;
     const qty = component.quantity || 1;
-    const price = product.price || 0;
-    const salePrice = product.salePrice || price;
+    const price = parseNum(product.price);
+    const salePrice = parseNum(product.salePrice) || price;
     totalPrice += price * qty;
     totalSalePrice += salePrice * qty;
   }

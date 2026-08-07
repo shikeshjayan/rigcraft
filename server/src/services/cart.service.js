@@ -69,6 +69,35 @@ const resolveItemPrice = async (itemType, itemId, quantity) => {
   if (itemType === CART_ITEM_TYPES.SAVED_BUILD) {
     const build = await buildRepository.findById(itemId);
     effectivePrice = build.totalSalePrice || build.totalPrice;
+    
+    if (!effectivePrice || effectivePrice === 0) {
+      await build.populate({
+        path: "components.product",
+        model: "Product"
+      });
+      effectivePrice = build.components.reduce((sum, comp) => {
+        const p = comp.product;
+        if (!p) return sum;
+        
+        const parseNum = (val) => {
+          if (!val) return 0;
+          if (typeof val === 'number') return val;
+          const numericStr = String(val).replace(/[^0-9.]/g, '');
+          return parseFloat(numericStr) || 0;
+        };
+        
+        const itemPrice = parseNum(p.salePrice) || parseNum(p.price) || 0;
+        return sum + (itemPrice * (comp.quantity || 1));
+      }, 0);
+      
+      // Optionally update the build in the database to fix it permanently
+      if (effectivePrice > 0) {
+        build.totalPrice = effectivePrice;
+        build.totalSalePrice = effectivePrice;
+        await build.save({ validateBeforeSave: false });
+      }
+    }
+
     return {
       itemType,
       item: build._id,

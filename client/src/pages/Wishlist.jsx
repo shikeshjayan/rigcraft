@@ -62,15 +62,6 @@ const Wishlist = () => {
   const [loginMessage, setLoginMessage] = useState('');
   const [flyingItem, setFlyingItem] = useState(null);
   const [page, setPage] = useState(1);
-  const [sortKey, setSortKey] = useState('recent');
-  const [filterKey, setFilterKey] = useState('all');
-  const [sortOpen, setSortOpen] = useState(false);
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const [removeConfirmItem, setRemoveConfirmItem] = useState(null);
-  const [isMovingAll, setIsMovingAll] = useState(false);
-  const sortRef = useRef(null);
-  const carouselRef = useRef(null);
-  const [canScroll, setCanScroll] = useState(false);
 
   useEffect(() => {
     window.scrollTo(0, 0);

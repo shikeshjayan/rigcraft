@@ -12,6 +12,7 @@ import * as cartService from "./cart.service.js";
 import ApiError from "../utils/ApiError.js";
 import Order from "../models/order.model.js";
 import Cart from "../models/cart.model.js";
+import fs from "fs";
 import { getSettings } from "../models/settings.model.js";
 import { createNotification } from "./notification.service.js";
 
@@ -151,30 +152,60 @@ const pushHistory = (order, status, user, note) => {
   });
 };
 
-const clearCartAfterOrder = async (userId) => {
-  const cart = await Cart.findOne({ user: userId });
+const clearCartAfterOrder = async (userId, orderItems = []) => {
+  const cart = await Cart.findOne({ user: userId }).populate("items.item");
   if (!cart) return;
 
-  cart.items = [];
-  cart.coupon = null;
-  cart.discount = 0;
+  if (orderItems.length > 0) {
+    const productIds = orderItems.map(item => (item.item._id || item.item).toString());
+    const itemsToRemove = cart.items.filter(cartItem => {
+      const cartProductStr = (cartItem.item._id || cartItem.item).toString();
+      return productIds.includes(cartProductStr);
+    });
+    
+    itemsToRemove.forEach(item => {
+      cart.items.pull(item._id);
+    });
+  } else {
+    cart.items = [];
+  }
+
+  if (cart.items.length === 0) {
+    cart.coupon = null;
+    cart.discount = 0;
+  }
 
   const totals = await pricingService.recalculateCart(cart);
   cart.subtotal = totals.subtotal;
   cart.shippingCharge = totals.shippingCharge;
   cart.tax = totals.tax;
   cart.total = totals.total;
+  if (cart.items.length > 0) {
+    cart.discount = totals.discount || 0;
+  }
 
   await cart.save({ validateBeforeSave: false });
 };
 
-export const checkout = async (userId, { addressId, paymentMethod }, user) => {
+export const checkout = async (userId, { addressId, paymentMethod, selectedItemIds }, user) => {
   const cart = await Cart.findOne({ user: userId })
     .populate("items.item")
     .populate("coupon");
 
-  if (!cart || cart.items.length === 0) {
-    throw ApiError.badRequest("Cart is empty");
+  let orderItems = cart?.items || [];
+  fs.appendFileSync('error.log', `CHECKOUT DB Cart Items length: ${orderItems.length}\n`);
+  fs.appendFileSync('error.log', `CHECKOUT DB Cart Items: ${JSON.stringify(orderItems)}\n`);
+  fs.appendFileSync('error.log', `CHECKOUT selectedItemIds: ${JSON.stringify(selectedItemIds)}\n`);
+  if (selectedItemIds && selectedItemIds.length > 0) {
+    orderItems = orderItems.filter(item => 
+      selectedItemIds.includes(item._id.toString()) || 
+      selectedItemIds.includes((item.item._id || item.item).toString())
+    );
+  }
+  fs.appendFileSync('error.log', `CHECKOUT final orderItems length: ${orderItems.length}\n`);
+
+  if (!cart || orderItems.length === 0) {
+    throw ApiError.badRequest("Cart is empty or no items selected");
   }
 
   const stockCheck = await cartService.validateStock(userId);
@@ -209,12 +240,15 @@ export const checkout = async (userId, { addressId, paymentMethod }, user) => {
     throw ApiError.notFound("Address not found");
   }
 
+  const orderCart = { items: orderItems, coupon: cart.coupon };
+  const orderTotals = await pricingService.recalculateCart(orderCart);
+
   const totals = {
-    subtotal: cart.subtotal,
-    discount: cart.discount,
-    shippingCharge: cart.shippingCharge,
-    tax: cart.tax,
-    total: cart.total,
+    subtotal: orderTotals.subtotal,
+    discount: orderTotals.discount,
+    shippingCharge: orderTotals.shippingCharge,
+    tax: orderTotals.tax,
+    total: orderTotals.total,
   };
 
   if (paymentMethod === "cod" && settings.payment?.minOrderAmount > 0 && totals.total < settings.payment.minOrderAmount) {
@@ -230,7 +264,7 @@ export const checkout = async (userId, { addressId, paymentMethod }, user) => {
   const orderData = {
     orderNumber,
     user: userId,
-    items: buildOrderItems(cart.items),
+    items: buildOrderItems(orderItems),
     shippingAddress: {
       fullName: address.fullName,
       phone: address.phone,
@@ -302,7 +336,7 @@ export const checkout = async (userId, { addressId, paymentMethod }, user) => {
       await couponService.incrementUsage(coupon._id);
     }
 
-    await clearCartAfterOrder(userId);
+    await clearCartAfterOrder(userId, order.items);
 
     return { order };
   }
@@ -349,7 +383,7 @@ export const confirmPayment = async (orderId, razorpayPaymentId, user) => {
     }
   }
 
-  await clearCartAfterOrder(order.user);
+  await clearCartAfterOrder(order.user, order.items);
 
   return order;
 };

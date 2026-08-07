@@ -202,7 +202,18 @@ const Profile = () => {
   };
 
   const handleAddBuildToCart = (build) => {
-    const buildPrice = build.components?.reduce((sum, comp) => sum + (comp.product?.priceVal || comp.product?.price || comp.product?.salePrice || 0), 0) || 0;
+    const parseNum = (val) => {
+      if (!val) return 0;
+      if (typeof val === 'number') return val;
+      const numericStr = String(val).replace(/[^0-9.]/g, '');
+      return parseFloat(numericStr) || 0;
+    };
+    
+    const buildPrice = build.components?.reduce((sum, comp) => {
+      const p = comp.product;
+      const itemPrice = parseNum(p?.priceVal) || parseNum(p?.salePrice) || parseNum(p?.price) || 0;
+      return sum + (itemPrice * (comp.quantity || 1));
+    }, 0) || 0;
     
     addToCart({
       id: build._id,

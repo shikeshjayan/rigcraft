@@ -170,8 +170,10 @@ export const CartProvider = ({ children }) => {
     }
   };
 
+  const refreshCart = () => invalidateCart();
+
   return (
-    <CartContext.Provider value={{ cartItems, isLoading, addToCart, removeFromCart, updateQuantity, clearCart }}>
+    <CartContext.Provider value={{ cartItems, isLoading, addToCart, removeFromCart, updateQuantity, clearCart, refreshCart }}>
       {children}
     </CartContext.Provider>
   );
