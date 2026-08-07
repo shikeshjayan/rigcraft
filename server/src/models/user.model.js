@@ -60,6 +60,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    deactivatedAt: {
+      type: Date,
+      default: null,
+    },
     lastLogin: {
       type: Date,
     },

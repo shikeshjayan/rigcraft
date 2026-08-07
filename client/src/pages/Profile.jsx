@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { getProfile } from '../api/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/client';
+import { clearToken } from '../shared/auth/token';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
@@ -51,7 +52,7 @@ const Profile = () => {
   const firstName = userData.firstName || '';
   const lastName = userData.lastName || '';
   const email = userData.email || '';
-  const mobile = userData.phone || userData.mobile || ''; 
+  const mobile = userData.phone || userData.mobile || '';
 
   const [isEditingName, setIsEditingName] = useState(false);
   const [isEditingEmail, setIsEditingEmail] = useState(false);
@@ -119,6 +120,8 @@ const Profile = () => {
   }, []);
   const [selectedBuildPopup, setSelectedBuildPopup] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, buildId: null, isDraft: false });
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
   const { addToCart, cartItems } = useCart();
   const { toast } = useToast();
   
@@ -198,6 +201,29 @@ const Profile = () => {
     } catch (error) {
       console.error('Failed to delete build', error);
       toast('Failed to delete build', 'error');
+    }
+  };
+
+  const handleDeactivateAccount = async () => {
+    setIsDeactivating(true);
+    try {
+      await apiClient.post('/auth/deactivate');
+      clearToken();
+      localStorage.removeItem('rigcraft_auth');
+      localStorage.removeItem('rigcraft_user');
+      localStorage.removeItem('admin-auth-storage');
+      localStorage.removeItem('rigcraft_cart_guest');
+      localStorage.removeItem('rigcraft_wishlist_guest');
+      sessionStorage.setItem(
+        'rigcraft_pending_toast',
+        JSON.stringify({ message: 'Account deactivated.', type: 'success' })
+      );
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Failed to deactivate account', error);
+      setIsDeactivating(false);
+      setShowDeactivateModal(false);
+      toast('Failed to deactivate account', 'error');
     }
   };
 
@@ -296,16 +322,16 @@ const Profile = () => {
             {/* LEFT SIDEBAR */}
             <div className="lg:w-1/4 flex flex-col gap-4">
               
-              {/* Profile Header Box */}
-              <div className="bg-white p-4 shadow-sm flex items-center gap-4 border border-gray-100 rounded-sm">
-                <AccountCircleIcon sx={{ fontSize: 48, color: 'var(--color-primary)' }} />
-                <div>
-                  <div className="text-[11px] text-gray-500 uppercase tracking-wider font-bold">Hello,</div>
-                  <div className="text-[16px] font-black text-gray-900 leading-tight">
-                    {firstName} <br/> {lastName}
+                {/* Profile Header Box */}
+                <div className="bg-white p-4 shadow-sm flex items-center gap-4 border border-gray-100 rounded-sm">
+                  <AccountCircleIcon sx={{ fontSize: 48, color: 'var(--color-primary)' }} />
+                  <div>
+                    <div className="text-[11px] text-gray-500 uppercase tracking-wider font-bold">Hello,</div>
+                    <div className="text-[16px] font-black text-gray-900 leading-tight">
+                      {firstName} <br/> {lastName}
+                    </div>
                   </div>
                 </div>
-              </div>
 
               {/* Navigation Box */}
               <div className="bg-white shadow-sm flex flex-col overflow-hidden border border-gray-100 rounded-sm">
@@ -390,72 +416,71 @@ const Profile = () => {
             </div>
 
             {/* RIGHT CONTENT AREA */}
-            <div className="lg:w-3/4">
+            <div className="lg:w-2/3">
               <div className="bg-white shadow-sm p-8 border border-gray-100 rounded-sm">
-                
                 {activeTab === 'profile' && (
                   <FadeUp>
-                    <div className="mb-10">
-                      <div className="flex items-center gap-6 mb-4">
-                        <h2 className="text-xl font-bold text-gray-900">Personal Information</h2>
-                        {!isEditingName ? (
-                          <button onClick={() => setIsEditingName(true)} className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
-                        ) : (
-                          <div className="flex gap-2">
-                            <button onClick={() => handleSavePersonalInfo('name')} className="text-[14px] font-bold text-green-600 hover:text-green-700">Save</button>
-                            <button onClick={() => { setIsEditingName(false); setPersonalInfoForm(prev => ({...prev, firstName, lastName})); }} className="text-[14px] font-bold text-gray-600 hover:text-gray-700">Cancel</button>
-                          </div>
-                        )}
-                      </div>
+                     <div className="mb-10">
+                       <div className="flex items-center gap-6 mb-4">
+                         <h2 className="text-xl font-bold text-gray-900">Personal Information</h2>
+                         {!isEditingName ? (
+                           <button onClick={() => setIsEditingName(true)} className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
+                         ) : (
+                           <div className="flex gap-2">
+                             <button onClick={() => handleSavePersonalInfo('name')} className="text-[14px] font-bold text-green-600 hover:text-green-700">Save</button>
+                             <button onClick={() => { setIsEditingName(false); setPersonalInfoForm(prev => ({...prev, firstName, lastName})); }} className="text-[14px] font-bold text-gray-600 hover:text-gray-700">Cancel</button>
+                           </div>
+                         )}
+                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mb-4">
-                        <div>
-                          <input type="text" value={isEditingName ? personalInfoForm.firstName : firstName} onChange={(e) => setPersonalInfoForm({...personalInfoForm, firstName: e.target.value})} readOnly={!isEditingName} className={`w-full ${isEditingName ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="First Name" />
-                        </div>
-                        <div>
-                          <input type="text" value={isEditingName ? personalInfoForm.lastName : lastName} onChange={(e) => setPersonalInfoForm({...personalInfoForm, lastName: e.target.value})} readOnly={!isEditingName} className={`w-full ${isEditingName ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="Last Name" />
-                        </div>
-                      </div>
-                    </div>
+                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mb-4">
+                         <div>
+                           <input type="text" value={isEditingName ? personalInfoForm.firstName : firstName} onChange={(e) => setPersonalInfoForm({...personalInfoForm, firstName: e.target.value})} readOnly={!isEditingName} className={`w-full ${isEditingName ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="First Name" />
+                         </div>
+                         <div>
+                           <input type="text" value={isEditingName ? personalInfoForm.lastName : lastName} onChange={(e) => setPersonalInfoForm({...personalInfoForm, lastName: e.target.value})} readOnly={!isEditingName} className={`w-full ${isEditingName ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="Last Name" />
+                         </div>
+                       </div>
+                     </div>
 
-                    <div className="mb-10">
-                      <div className="flex items-center gap-6 mb-4">
-                        <h2 className="text-xl font-bold text-gray-900">Email Address</h2>
-                        {!isEditingEmail ? (
-                          <button onClick={() => setIsEditingEmail(true)} className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
-                        ) : (
-                          <div className="flex gap-2">
-                            <button onClick={() => handleSavePersonalInfo('email')} className="text-[14px] font-bold text-green-600 hover:text-green-700">Save</button>
-                            <button onClick={() => { setIsEditingEmail(false); setPersonalInfoForm(prev => ({...prev, email})); }} className="text-[14px] font-bold text-gray-600 hover:text-gray-700">Cancel</button>
-                          </div>
-                        )}
-                      </div>
-                      <div className="max-w-md">
-                        <input type="email" value={isEditingEmail ? personalInfoForm.email : email} onChange={(e) => setPersonalInfoForm({...personalInfoForm, email: e.target.value})} readOnly={!isEditingEmail} className={`w-full ${isEditingEmail ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="Email Address" />
-                      </div>
-                    </div>
+                     <div className="mb-10">
+                       <div className="flex items-center gap-6 mb-4">
+                         <h2 className="text-xl font-bold text-gray-900">Email Address</h2>
+                         {!isEditingEmail ? (
+                           <button onClick={() => setIsEditingEmail(true)} className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
+                         ) : (
+                           <div className="flex gap-2">
+                             <button onClick={() => handleSavePersonalInfo('email')} className="text-[14px] font-bold text-green-600 hover:text-green-700">Save</button>
+                             <button onClick={() => { setIsEditingEmail(false); setPersonalInfoForm(prev => ({...prev, email})); }} className="text-[14px] font-bold text-gray-600 hover:text-gray-700">Cancel</button>
+                           </div>
+                         )}
+                       </div>
+                       <div className="max-w-md">
+                         <input type="email" value={isEditingEmail ? personalInfoForm.email : email} onChange={(e) => setPersonalInfoForm({...personalInfoForm, email: e.target.value})} readOnly={!isEditingEmail} className={`w-full ${isEditingEmail ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="Email Address" />
+                       </div>
+                     </div>
 
-                    <div className="mb-12">
-                      <div className="flex items-center gap-6 mb-4">
-                        <h2 className="text-xl font-bold text-gray-900">Mobile Number</h2>
-                        {!isEditingPhone ? (
-                          <button onClick={() => setIsEditingPhone(true)} className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
-                        ) : (
-                          <div className="flex gap-2">
-                            <button onClick={() => handleSavePersonalInfo('phone')} className="text-[14px] font-bold text-green-600 hover:text-green-700">Save</button>
-                            <button onClick={() => { setIsEditingPhone(false); setPersonalInfoForm(prev => ({...prev, phone: mobile})); }} className="text-[14px] font-bold text-gray-600 hover:text-gray-700">Cancel</button>
-                          </div>
-                        )}
-                      </div>
-                      <div className="max-w-md">
-                        <input type="text" value={isEditingPhone ? personalInfoForm.phone : mobile} onChange={(e) => setPersonalInfoForm({...personalInfoForm, phone: e.target.value})} readOnly={!isEditingPhone} className={`w-full ${isEditingPhone ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="Mobile Number" />
-                      </div>
-                    </div>
+                     <div className="mb-12">
+                       <div className="flex items-center gap-6 mb-4">
+                         <h2 className="text-xl font-bold text-gray-900">Mobile Number</h2>
+                         {!isEditingPhone ? (
+                           <button onClick={() => setIsEditingPhone(true)} className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
+                         ) : (
+                           <div className="flex gap-2">
+                             <button onClick={() => handleSavePersonalInfo('phone')} className="text-[14px] font-bold text-green-600 hover:text-green-700">Save</button>
+                             <button onClick={() => { setIsEditingPhone(false); setPersonalInfoForm(prev => ({...prev, phone: mobile})); }} className="text-[14px] font-bold text-gray-600 hover:text-gray-700">Cancel</button>
+                           </div>
+                         )}
+                       </div>
+                       <div className="max-w-md">
+                         <input type="text" value={isEditingPhone ? personalInfoForm.phone : mobile} onChange={(e) => setPersonalInfoForm({...personalInfoForm, phone: e.target.value})} readOnly={!isEditingPhone} className={`w-full ${isEditingPhone ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="Mobile Number" />
+                       </div>
+                     </div>
 
-                    <hr className="border-gray-200 mb-8" />
+                     <hr className="border-gray-200 mb-8" />
 
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-900 mb-6">FAQs</h2>
+                     <div>
+                       <h2 className="text-xl font-bold text-gray-900 mb-6">FAQs</h2>
                       <div className="mb-6">
                         <h4 className="font-bold text-gray-800 text-[14px] mb-2">What happens when I update my email address (or mobile number)?</h4>
                         <p className="text-gray-600 text-[13px] leading-relaxed">Your login identity will be updated to the new email address (or mobile number). You will need to use the updated credentials for future logins and order tracking.</p>
@@ -468,10 +493,10 @@ const Profile = () => {
                         <h4 className="font-bold text-gray-800 text-[14px] mb-2">Why do I need to verify my account?</h4>
                         <p className="text-gray-600 text-[13px] leading-relaxed">Verification ensures that hardware warranty claims and high-value orders are securely linked to your identity, preventing unauthorized engineering configuration changes.</p>
                       </div>
-                      <button className="text-[13px] font-bold text-red-500 hover:text-red-600">Deactivate Account</button>
-                    </div>
-                  </FadeUp>
-                )}
+                       <button onClick={() => setShowDeactivateModal(true)} className="text-[13px] font-bold text-red-500 hover:text-red-600">Deactivate Account</button>
+                     </div>
+                   </FadeUp>
+                 )}
 
                 {activeTab === 'addresses' && (
                   <FadeUp>
@@ -863,6 +888,51 @@ const Profile = () => {
                   className="px-6 py-2.5 font-bold text-white bg-red-500 hover:bg-red-600 rounded-sm transition-colors flex-1"
                 >
                   Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Deactivate Account Confirmation Modal */}
+      <AnimatePresence>
+        {showDeactivateModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => !isDeactivating && setShowDeactivateModal(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white max-w-sm w-full p-6 shadow-2xl relative text-center"
+              style={{ borderRadius: 'var(--radius-sm)' }}
+            >
+              <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <DeleteOutlineIcon fontSize="large" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Deactivate Account</h3>
+              <p className="text-gray-500 mb-6">Are you sure you want to deactivate your account? This action cannot be undone and your account can only be restored by an administrator.</p>
+              
+              <div className="flex gap-3 justify-center">
+                <button 
+                  onClick={() => setShowDeactivateModal(false)}
+                  disabled={isDeactivating}
+                  className="px-6 py-2.5 font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-sm transition-colors flex-1 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleDeactivateAccount}
+                  disabled={isDeactivating}
+                  className="px-6 py-2.5 font-bold text-white bg-red-500 hover:bg-red-600 rounded-sm transition-colors flex-1 disabled:opacity-50"
+                >
+                  {isDeactivating ? 'Deactivating...' : 'Deactivate'}
                 </button>
               </div>
             </motion.div>

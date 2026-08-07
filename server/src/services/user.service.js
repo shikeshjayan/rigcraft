@@ -12,6 +12,9 @@ import wishlistRepository from "../repositories/wishlist.repository.js";
 import * as uploadService from "./upload.service.js";
 import ApiError from "../utils/ApiError.js";
 
+const getStatus = (u) =>
+  u.deactivatedAt ? "deactivated" : u.isBlocked ? "blocked" : "active";
+
 export const createUser = async (data) => {
   const { firstName, lastName, email, password, phone, role } = data;
 
@@ -37,8 +40,12 @@ export const list = async (query = {}) => {
   const filter = {};
 
   if (role) filter.role = role;
-  if (status === "active") filter.isBlocked = false;
+  if (status === "active") {
+    filter.isBlocked = false;
+    filter.deactivatedAt = null;
+  }
   if (status === "blocked") filter.isBlocked = true;
+  if (status === "deactivated") filter.deactivatedAt = { $ne: null };
   if (search) {
     const regex = { $regex: search, $options: "i" };
     filter.$or = [
@@ -102,7 +109,8 @@ export const list = async (query = {}) => {
     email: u.email,
     role: u.role,
     isBlocked: u.isBlocked,
-    status: u.isBlocked ? "blocked" : "active",
+    deactivatedAt: u.deactivatedAt || null,
+    status: getStatus(u),
     avatar: u.avatar?.url || null,
     orders: statsMap[u._id.toString()]?.orders || 0,
     totalSpent: statsMap[u._id.toString()]?.totalSpent || 0,
@@ -160,6 +168,16 @@ export const blockUser = async (id) => {
   return userRepository.updateById(id, { isBlocked: !user.isBlocked });
 };
 
+export const toggleDeactivate = async (id) => {
+  const user = await userRepository.findById(id);
+  if (!user) throw ApiError.notFound("User not found");
+
+  if (user.deactivatedAt) {
+    return userRepository.updateById(id, { deactivatedAt: null });
+  }
+  return userRepository.updateById(id, { deactivatedAt: new Date() });
+};
+
 export const getById = async (id) => {
   const u = await User.findById(id).lean();
   if (!u) throw ApiError.notFound("User not found");
@@ -185,7 +203,8 @@ export const getById = async (id) => {
     phone: u.phone,
     role: u.role,
     isBlocked: u.isBlocked,
-    status: u.isBlocked ? "blocked" : "active",
+    deactivatedAt: u.deactivatedAt || null,
+    status: getStatus(u),
     avatar: u.avatar?.url || null,
     isEmailVerified: u.isEmailVerified,
     registeredAt: u.createdAt,

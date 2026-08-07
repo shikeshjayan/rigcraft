@@ -71,3 +71,9 @@ export const logout = asyncHandler(async (req, res) => {
   await authService.logout(res);
   ApiResponse.ok(null, 'Logged out successfully').send(res);
 });
+
+export const deactivate = asyncHandler(async (req, res) => {
+  await authService.deactivateAccount(req.user.id);
+  await authService.logout(res);
+  ApiResponse.ok(null, 'Account deactivated').send(res);
+});

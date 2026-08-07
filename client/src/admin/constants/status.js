@@ -45,6 +45,7 @@ export const REVIEW_STATUS_COLOR = {
 export const USER_STATUS_COLOR = {
   active: "success",
   blocked: "error",
+  deactivated: "warning",
 };
 
 export const COUPON_STATUS = {

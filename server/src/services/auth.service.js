@@ -73,6 +73,9 @@ export const refreshToken = async (token, res) => {
   const user = await userRepository.findByIdWithRefreshToken(decoded.id);
   if (!user || user.refreshToken !== token)
     throw ApiError.unauthorized('Invalid or expired refresh token');
+  if (user.isBlocked) throw ApiError.forbidden('Account is blocked');
+  if (user.deactivatedAt)
+    throw ApiError.forbidden('This account has been deactivated');
 
   return createTokenResponse(user, 200, res, true);
 };
@@ -128,6 +131,8 @@ export const login = async (body, res) => {
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) throw ApiError.unauthorized('Invalid credentials');
+    if (user.deactivatedAt)
+      throw ApiError.forbidden('This account has been deactivated');
 
     user.lastLogin = new Date();
     await user.save({ validateBeforeSave: false });
@@ -142,6 +147,8 @@ export const login = async (body, res) => {
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) throw ApiError.unauthorized('Invalid credentials');
+    if (user.deactivatedAt)
+      throw ApiError.forbidden('This account has been deactivated');
 
     user.lastLogin = new Date();
     await user.save({ validateBeforeSave: false });
@@ -153,6 +160,8 @@ export const login = async (body, res) => {
   if (phone && !password && !otp) {
     const user = await userRepository.findByPhone(phone);
     if (!user) throw ApiError.notFound('No account found with this phone number');
+    if (user.deactivatedAt)
+      throw ApiError.forbidden('This account has been deactivated');
 
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
     user.otp = otpCode;
@@ -177,6 +186,8 @@ export const login = async (body, res) => {
     const user = await userRepository.findByPhoneWithOtp(phone);
     if (!user) throw ApiError.notFound('No account found with this phone number');
 
+    if (user.deactivatedAt)
+      throw ApiError.forbidden('This account has been deactivated');
     if (!user.otp || user.otp !== otp) throw ApiError.badRequest('Invalid OTP');
     if (user.otpExpire < Date.now()) throw ApiError.badRequest('OTP has expired');
 
@@ -218,6 +229,8 @@ export const googleLogin = async (idToken, res) => {
     throw ApiError.conflict('This email is linked to a different Google account');
   }
   if (user?.isBlocked) throw ApiError.forbidden('Account is blocked');
+  if (user?.deactivatedAt)
+    throw ApiError.forbidden('This account has been deactivated');
 
   if (user) {
     if (!user.googleId) user.googleId = googleId;
@@ -316,4 +329,17 @@ export const resetPassword = async (token, password) => {
   user.resetPasswordToken = undefined;
   user.resetPasswordExpire = undefined;
   await user.save();
+};
+
+export const deactivateAccount = async (userId) => {
+  const user = await userRepository.findByIdWithRefreshToken(userId);
+  if (!user) throw ApiError.notFound('User not found');
+  if (user.deactivatedAt)
+    throw ApiError.conflict('Account is already deactivated');
+
+  user.deactivatedAt = new Date();
+  user.refreshToken = null;
+  await user.save({ validateBeforeSave: false });
+
+  return user;
 };
