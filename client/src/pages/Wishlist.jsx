@@ -6,7 +6,6 @@ import { useAuth } from '../context/AuthContext';
 import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 import LoginPrompt from '../components/LoginPrompt';
-import Pagination from '../components/Pagination';
 import WishlistCard from '../components/WishlistCard';
 import WishlistRecommendations from '../sections/WishlistRecommendations';
 import StorefrontConfirm from '../components/StorefrontConfirm';
@@ -21,7 +20,7 @@ import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlin
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 
-const ITEMS_PER_PAGE = 20;
+const ITEMS_PER_PAGE = 10;
 
 const SORT_OPTIONS = [
   { key: 'recent', label: 'Recently Added' },
@@ -58,10 +57,19 @@ const Wishlist = () => {
   const { isLoggedIn } = useAuth();
   const { toast } = useToast();
 
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef(null);
+  const [sortKey, setSortKey] = useState('recent');
+  const [filterKey, setFilterKey] = useState('all');
+
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginMessage, setLoginMessage] = useState('');
   const [flyingItem, setFlyingItem] = useState(null);
   const [page, setPage] = useState(1);
+
+  const [isMovingAll, setIsMovingAll] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+  const [removeConfirmItem, setRemoveConfirmItem] = useState(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -115,23 +123,6 @@ const Wishlist = () => {
 
   const availableCount = wishlist.filter((item) => !isOutOfStock(item)).length;
   const outOfStockCount = wishlist.filter((item) => isOutOfStock(item)).length;
-
-  const scrollCarouselLeft = () => {
-    if (carouselRef.current) carouselRef.current.scrollBy({ left: -carouselRef.current.clientWidth * 0.8, behavior: 'smooth' });
-  };
-  const scrollCarouselRight = () => {
-    if (carouselRef.current) carouselRef.current.scrollBy({ left: carouselRef.current.clientWidth * 0.8, behavior: 'smooth' });
-  };
-
-  useEffect(() => {
-    const el = carouselRef.current;
-    if (!el) return;
-    const update = () => setCanScroll(el.scrollWidth > el.clientWidth + 1);
-    update();
-    const observer = new ResizeObserver(update);
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [currentItems.length, page, filterKey, sortKey]);
 
   const handlePageChange = (nextPage) => {
     if (nextPage < 1 || nextPage > totalPages) return;
@@ -360,39 +351,13 @@ const Wishlist = () => {
                 </span>
               </div>
 
-              {canScroll && (
-                <div className="flex items-center gap-2 ml-auto">
-                  <button
-                    type="button"
-                    onClick={scrollCarouselLeft}
-                    aria-label="Previous wishlist items"
-                    className="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors shadow-sm cursor-pointer"
-                    style={{ borderRadius: 'var(--radius-sm)' }}
-                  >
-                    <ChevronLeftIcon />
-                  </button>
-                  <button
-                    type="button"
-                    onClick={scrollCarouselRight}
-                    aria-label="Next wishlist items"
-                    className="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors shadow-sm cursor-pointer"
-                    style={{ borderRadius: 'var(--radius-sm)' }}
-                  >
-                    <ChevronRightIcon />
-                  </button>
-                </div>
-              )}
             </div>
 
-            <div
-              ref={carouselRef}
-              className="flex overflow-x-auto gap-4 lg:gap-6 pb-4 snap-x snap-mandatory hide-scrollbar"
-              style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 lg:gap-6 pb-4">
               {currentItems.map((item) => (
                 <div
                   key={item.id || item._id}
-                  className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] xl:w-[calc(20%-19.2px)] snap-start flex flex-col"
+                  className="flex flex-col"
                 >
                   <WishlistCard
                     item={item}
@@ -405,11 +370,31 @@ const Wishlist = () => {
             </div>
 
             {sortedWishlist.length > ITEMS_PER_PAGE && (
-              <Pagination
-                page={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
+              <div className="flex items-center justify-center gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage <= 1}
+                  aria-label="Previous page"
+                  className="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ borderRadius: 'var(--radius-sm)' }}
+                >
+                  <ChevronLeftIcon />
+                </button>
+                <span className="text-[13px] font-bold text-[#696E79] whitespace-nowrap">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage >= totalPages}
+                  aria-label="Next page"
+                  className="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors shadow-sm cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+                  style={{ borderRadius: 'var(--radius-sm)' }}
+                >
+                  <ChevronRightIcon />
+                </button>
+              </div>
             )}
           </>
         )}

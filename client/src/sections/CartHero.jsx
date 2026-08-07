@@ -1,7 +1,6 @@
-import React from 'react';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 
-const CartHero = ({ checkoutStep = 'bag', setCheckoutStep }) => {
+const CartHero = ({ checkoutStep = 'bag', setCheckoutStep, isLoggedIn = true, onRequireLogin }) => {
   return (
     <section className="w-full border-b border-[var(--color-border)]" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8 py-5 flex items-center justify-between">
@@ -19,14 +18,14 @@ const CartHero = ({ checkoutStep = 'bag', setCheckoutStep }) => {
           </div>
           <div className="w-8 md:w-16 border-t border-dashed border-[#94A3B8]"></div>
           <div 
-            onClick={() => setCheckoutStep?.('address')}
+            onClick={() => (isLoggedIn ? setCheckoutStep?.('address') : onRequireLogin?.())}
             className={`text-[12px] md:text-[14px] font-bold tracking-[2px] pb-1 cursor-pointer transition-colors hover:text-[#0052FF] ${checkoutStep === 'address' ? 'text-[#0052FF] border-b-2 border-[#0052FF]' : 'text-[var(--color-text-secondary)]'}`}
           >
             ADDRESS
           </div>
           <div className="w-8 md:w-16 border-t border-dashed border-[#94A3B8]"></div>
           <div 
-            onClick={() => setCheckoutStep?.('payment')}
+            onClick={() => (isLoggedIn ? setCheckoutStep?.('payment') : onRequireLogin?.())}
             className={`text-[12px] md:text-[14px] font-bold tracking-[2px] pb-1 cursor-pointer transition-colors hover:text-[#0052FF] ${checkoutStep === 'payment' ? 'text-[#0052FF] border-b-2 border-[#0052FF]' : 'text-[var(--color-text-secondary)]'}`}
           >
             PAYMENT
