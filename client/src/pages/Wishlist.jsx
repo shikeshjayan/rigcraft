@@ -19,6 +19,7 @@ const Wishlist = () => {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [flyingItem, setFlyingItem] = useState(null);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     window.scrollTo(0, 0);

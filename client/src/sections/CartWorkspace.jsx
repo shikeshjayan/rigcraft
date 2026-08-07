@@ -1,7 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
+import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
 import apiClient from '../api/client';
 import CloseIcon from '@mui/icons-material/Close';
@@ -23,8 +24,11 @@ import { friendlyStockMessage } from '../utils/stockMessages';
 const getTypeName = (type) => typeof type === 'string' ? type : type?.name || 'UNKNOWN';
 
 const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
-  const { cartItems, isLoading, removeFromCart, clearCart } = useCart();
-  const { isLoggedIn } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { cartItems, removeFromCart, updateQuantity, isLoading, clearCart, refreshCart } = useCart();
+  const { addToWishlist } = useWishlist();
+  const { isLoggedIn, user } = useAuth();
 
   // Track selected items by cartItemId (or id for legacy items)
   const [selectedItemIds, setSelectedItemIds] = useState(cartItems.map(item => item.cartItemId || item.id));
@@ -37,13 +41,21 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
     }
   }, [cartItems]);
 
+  useEffect(() => {
+    // Keep selectedItemIds in sync with cartItems, prune stale IDs
+    setSelectedItemIds(prev => {
+      const validIds = prev.filter(id => cartItems.some(item => (item.cartItemId || item.id) === id));
+      if (validIds.length !== prev.length) return validIds;
+      return prev;
+    });
+  }, [cartItems]);
+
   const [showCouponPopup, setShowCouponPopup] = useState(false);
   const [couponInput, setCouponInput] = useState('');
   const [isCouponApplied, setIsCouponApplied] = useState(false);
   const [donationAmount, setDonationAmount] = useState(10);
   const [isDonating, setIsDonating] = useState(false);
   const [showStateDropdown, setShowStateDropdown] = useState(false);
-  const navigate = useNavigate();
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
@@ -130,17 +142,26 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       const isSynced = await syncCartToBackend();
       if (!isSynced) return;
 
+      const finalSelectedItemIds = cartItems
+        .filter(item => selectedItemIds.includes(item.cartItemId || item.id))
+        .map(item => {
+          const itemId = item.item?._id || item.item || item.id || item._id;
+          return typeof itemId === 'object' ? itemId.toString() : String(itemId);
+        });
+
       if (paymentMethod === 'cod') {
         const orderData = {
           addressId: selectedAddress._id || selectedAddress.id,
-          paymentMethod: 'cod'
+          paymentMethod: 'cod',
+          selectedItemIds: finalSelectedItemIds
         };
         const orderResponse = await apiClient.post('/orders/checkout', orderData);
         if (!orderResponse.data.success) {
           toast('Failed to place order', 'error');
           return;
         }
-        clearCart();
+        refreshCart();
+        setSelectedItemIds([]);
         setShowSuccessPopup(true);
         setTimeout(() => {
           setShowSuccessPopup(false);
@@ -158,7 +179,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       // Step 1: Create Order in Backend
       const orderData = {
         addressId: selectedAddress._id || selectedAddress.id,
-        paymentMethod: 'razorpay'
+        paymentMethod: 'razorpay',
+        selectedItemIds: finalSelectedItemIds
       };
       const orderResponse = await apiClient.post('/orders/checkout', orderData);
 
@@ -196,7 +218,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
             });
 
             if (verifyResponse.data.success) {
-              clearCart();
+              refreshCart();
+              setSelectedItemIds([]);
               toast('Payment successful! Your order has been placed.');
               navigate('/orders');
             } else {
@@ -313,8 +336,10 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
     try {
       const checkoutItems = cartItems.filter(item => selectedItemIds.includes(item.cartItemId || item.id));
       for (const item of checkoutItems) {
-        if (item.itemType === 'product' && item.item) {
-           await apiClient.post('/wishlist/items', { productId: item.item._id || item.item }).catch(() => {});
+        const productId = item.item?._id || item.item?.id || item.item || item._id || item.id;
+        const productType = item.itemType || item.type || 'product';
+        if (productId) {
+           await addToWishlist({ _id: productId, itemType: productType, title: item.title, name: item.name }).catch(() => {});
         }
         removeFromCart(item.cartItemId || item.id);
       }
@@ -460,7 +485,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
   const couponDiscount = calculatedCouponDiscount;
   const platformFee = 0;
-  const codFee = (checkoutStep === 'payment' && paymentMethod === 'cod') ? 60 : 0;
+  const codFee = (checkoutStep === 'payment' && paymentMethod === 'cod' && checkoutItems.length > 0) ? 60 : 0;
   const finalTotal = totalMRP - totalDiscount - couponDiscount + (isDonating ? donationAmount : 0) + platformFee + codFee;
 
   const formatPrice = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
@@ -517,6 +542,10 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                 <div className="flex flex-col gap-4 mt-2">
                   {cartItems.map((item, index) => {
                     const uniqueId = item.cartItemId || item.id;
+                    const itemId = item.item?._id || item.item || item.id || item._id;
+                    const isBundle = item.type === 'bundle' || item.itemType === 'bundle';
+                    const isPrebuilt = item.type === 'PC' || item.type === 'prebuilt' || item.itemType === 'prebuilt';
+                    const linkUrl = isBundle ? `/bundle/${itemId}` : `/detail/${itemId}${isPrebuilt ? '?type=prebuilt' : ''}`;
 
                     if (item.type === 'custom-build' || item.itemType === 'savedBuild') {
                       const components = item.components || item.item?.components || [];
@@ -543,22 +572,30 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                                 <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                               </button>
                               <div className="text-[18px] font-black text-[var(--color-primary)]">{formatPrice(getItemPrice(item))}</div>
+                              <div className="flex items-center border border-[#E7E7E7] rounded-sm bg-white mt-1">
+                                <button onClick={() => updateQuantity(uniqueId, (item.qty || 1) - 1)} disabled={(item.qty || 1) <= 1} className="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 cursor-pointer transition-colors">-</button>
+                                <span className="w-8 text-center text-[13px] font-bold text-[#0F1111] border-x border-[#E7E7E7]">{item.qty || 1}</span>
+                                <button onClick={() => updateQuantity(uniqueId, (item.qty || 1) + 1)} className="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-50 cursor-pointer transition-colors">+</button>
+                              </div>
                             </div>
                           </div>
 
                           <div className="flex gap-2 overflow-x-auto items-center py-3 border-t border-gray-100 mt-2">
-                            {components.map((comp, idx) => (
-                              <div key={idx} className="w-14 h-14 bg-gray-50 flex flex-col items-center justify-center rounded-sm shrink-0 border border-gray-100 p-1 relative group" title={comp.product?.title || comp.product?.name}>
-                                {comp.product?.image || comp.product?.images?.[0] ? (
-                                  <img src={comp.product.image || (typeof comp.product.images?.[0] === 'string' ? comp.product.images[0] : comp.product.images?.[0]?.url)} alt={getTypeName(comp.type)} className="w-full h-full object-contain mix-blend-multiply" />
-                                ) : (
-                                  <span className="text-[8px] text-gray-400 font-bold uppercase">{getTypeName(comp.type).substring(0, 3)}</span>
-                                )}
-                                <div className="absolute -bottom-2 opacity-0 group-hover:opacity-100 bg-black text-white text-[9px] px-1 rounded whitespace-nowrap transition-opacity z-10 font-bold">
-                                  {getTypeName(comp.type)}
-                                </div>
-                              </div>
-                            ))}
+                            {components.map((comp, idx) => {
+                              const compId = comp.product?._id || comp.product?.id || (typeof comp.product === 'string' ? comp.product : null);
+                              return (
+                                <Link to={compId ? `/detail/${compId}` : '#'} key={idx} className="w-14 h-14 bg-gray-50 flex flex-col items-center justify-center rounded-sm shrink-0 border border-gray-100 p-1 relative group cursor-pointer hover:border-[var(--color-primary)] transition-colors" title={comp.product?.title || comp.product?.name}>
+                                  {comp.product?.image || comp.product?.images?.[0] ? (
+                                    <img src={comp.product.image || (typeof comp.product.images?.[0] === 'string' ? comp.product.images[0] : comp.product.images?.[0]?.url)} alt={getTypeName(comp.type)} className="w-full h-full object-contain mix-blend-multiply" />
+                                  ) : (
+                                    <span className="text-[8px] text-gray-400 font-bold uppercase">{getTypeName(comp.type).substring(0, 3)}</span>
+                                  )}
+                                  <div className="absolute -bottom-2 opacity-0 group-hover:opacity-100 bg-black text-white text-[9px] px-1 rounded whitespace-nowrap transition-opacity z-10 font-bold">
+                                    {getTypeName(comp.type)}
+                                  </div>
+                                </Link>
+                              );
+                            })}
                           </div>
                         </div>
                       );
@@ -577,12 +614,16 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                             onChange={() => toggleItemSelection(uniqueId)}
                             className="absolute top-2 left-2 z-10 w-4 h-4 accent-[#0052FF] cursor-pointer"
                           />
-                          <img src={item.image || (typeof item.images?.[0] === 'string' ? item.images[0] : item.images?.[0]?.url) || '/placeholder.png'} alt={item.title || item.name} className="w-full h-full object-contain mix-blend-multiply" />
+                          <Link to={linkUrl} className="block w-full h-full">
+                            <img src={item.image || (typeof item.images?.[0] === 'string' ? item.images[0] : item.images?.[0]?.url) || '/placeholder.png'} alt={item.title || item.name} className="w-full h-full object-contain mix-blend-multiply hover:scale-105 transition-transform" />
+                          </Link>
                         </div>
 
                         <div className="flex flex-col flex-grow py-1">
-                          <h3 className="text-[15px] font-bold text-[var(--color-text)] mb-1">{item.brand ? getTypeName(item.brand) : 'Rigcraft'}</h3>
-                          <p className="text-[14px] text-[var(--color-text-secondary)] mb-2 pr-6 line-clamp-1">{item.title || item.name}</p>
+                          <Link to={linkUrl} className="group block w-fit">
+                            <h3 className="text-[15px] font-bold text-[var(--color-text)] mb-1 group-hover:text-[var(--color-primary)] transition-colors">{item.brand ? getTypeName(item.brand) : 'Rigcraft'}</h3>
+                            <p className="text-[14px] text-[var(--color-text-secondary)] mb-2 pr-6 line-clamp-1 group-hover:text-[var(--color-primary)] transition-colors">{item.title || item.name}</p>
+                          </Link>
                           <p className="text-[12px] text-[#94A3B8] mb-3">Sold by: RetailNet</p>
 
                           <div className="flex items-center gap-2 mb-2">
@@ -594,8 +635,17 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                               <span className="text-[13px] font-bold text-[#FF905A]">{item.discount}</span>
                             )}
                           </div>
-                          <div className="text-[12px] text-[var(--color-text)] flex items-center gap-1">
-                            <span className="font-bold">14 days</span> return available
+                          
+                          <div className="flex items-center gap-4 mt-auto">
+                            <div className="text-[12px] text-[var(--color-text)] flex items-center gap-1">
+                              <span className="font-bold">14 days</span> return available
+                            </div>
+                            
+                            <div className="ml-auto flex items-center border border-[#E7E7E7] rounded-sm bg-white">
+                              <button onClick={() => updateQuantity(uniqueId, (item.qty || 1) - 1)} disabled={(item.qty || 1) <= 1} className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 cursor-pointer transition-colors">-</button>
+                              <span className="w-10 text-center text-[13px] font-bold text-[#0F1111] border-x border-[#E7E7E7]">{item.qty || 1}</span>
+                              <button onClick={() => updateQuantity(uniqueId, (item.qty || 1) + 1)} className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 cursor-pointer transition-colors">+</button>
+                            </div>
                           </div>
                         </div>
                       </div>
@@ -892,7 +942,8 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                   </div>
 
                   {/* Price Details */}
-                  <div className="bg-white border border-[var(--color-border)] rounded-sm p-4">
+                  {checkoutItems.length > 0 && (
+                  <div className="bg-white border border-[var(--color-border)] rounded-sm p-4 sticky top-4">
                     <div className="text-[12px] font-bold text-[var(--color-text-secondary)] mb-4 uppercase">Price Details ({checkoutItems.length} Items)</div>
 
                     <div className="flex flex-col gap-3 text-[14px] text-[var(--color-text)] mb-4 border-b border-[var(--color-border)] pb-4">
@@ -932,6 +983,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                       PLACE ORDER
                     </button>
                   </div>
+                  )}
                 </>
               ) : (
                 /* Address Order Summary / List Summary */
@@ -953,6 +1005,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                     </div>
                   )}
 
+                  {checkoutItems.length > 0 && (
                   <div className="bg-white border border-[var(--color-border)] rounded-sm">
                     <div className="text-[11px] font-bold text-[#94A3B8] uppercase p-4 border-b border-[var(--color-border)] bg-[var(--color-surface)]">
                       Price Details ({checkoutItems.length} Item{checkoutItems.length !== 1 && 's'})
@@ -1003,6 +1056,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                       )}
                     </div>
                   </div>
+                  )}
                 </>
               )}
 

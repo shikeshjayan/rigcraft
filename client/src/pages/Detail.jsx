@@ -243,7 +243,8 @@ const Detail = () => {
             isMock: true
           });
         } else {
-          console.error("Failed to load product details", err);
+          // Log a clean warning instead of the full error object to avoid massive React fiber stack traces
+          console.warn(`Product not found (404): ${id}`);
           setError(true);
         }
       } finally {

@@ -68,8 +68,10 @@ const Orders = ({ embedded = false }) => {
               price: order.total,
               image: order.items[0]?.item?.image || '/placeholder.png',
               title: order.items.length > 1 ? `${order.items[0]?.name || 'Item'} + ${order.items.length - 1} more` : order.items[0]?.name || 'Unknown Item',
-              id: order.items[0]?.item?._id || ''
-            }
+              id: order.items[0]?.item?._id || '',
+              quantity: order.items[0]?.quantity || 1
+            },
+            quantity: order.items[0]?.quantity || 1
           }));
           setOrders(formattedOrders);
         }
@@ -236,7 +238,7 @@ const Orders = ({ embedded = false }) => {
                             <div className="flex flex-col justify-between py-1">
                               <div>
                                 <h3 className="text-[16px] font-bold text-gray-900 leading-tight mb-1 line-clamp-2">{order.item.title}</h3>
-                                <p className="text-[13px] text-gray-500 font-medium">Qty: 1</p>
+                                <p className="text-[13px] text-gray-500 font-medium">Qty: {order.quantity || order.item?.quantity || 1}</p>
                               </div>
                               <div className="flex gap-4 mt-4">
                                 <button 
