@@ -47,6 +47,11 @@ const MyTickets = () => {
   });
 
   const totalPages = Math.max(1, Math.ceil((tickets || []).length / ITEMS_PER_PAGE));
+  const [prevTotalPages, setPrevTotalPages] = useState(totalPages);
+  if (prevTotalPages !== totalPages) {
+    setPrevTotalPages(totalPages);
+    setPage((prev) => Math.min(prev, totalPages));
+  }
   const currentPage = Math.min(page, totalPages);
   const pagedTickets = (tickets || []).slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 

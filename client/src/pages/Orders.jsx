@@ -101,6 +101,11 @@ const Orders = ({ embedded = false }) => {
   });
 
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / ITEMS_PER_PAGE));
+  const [prevTotalPages, setPrevTotalPages] = useState(totalPages);
+  if (prevTotalPages !== totalPages) {
+    setPrevTotalPages(totalPages);
+    setPage((prev) => Math.min(prev, totalPages));
+  }
   const currentPage = Math.min(page, totalPages);
   const pagedOrders = filteredOrders.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 

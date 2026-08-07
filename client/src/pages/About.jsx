@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import Breadcrumb from '../components/Breadcrumb';
@@ -25,12 +25,13 @@ const About = () => {
         
         <div className="relative z-10 text-center px-4 w-full max-w-[1400px] mx-auto mt-16">
           <div className="mb-4 flex justify-center">
-             {/* Using a custom breadcrumb layout here since background is dark */}
-             <div className="flex items-center text-[13px] font-medium text-gray-300">
-               <Link to="/" className="hover:text-white transition-colors">Home</Link>
-               <span className="mx-2">›</span>
-               <span className="text-[var(--color-primary)] font-bold">About RigCraft</span>
-             </div>
+            <Breadcrumb
+              variant="dark"
+              items={[
+                { label: 'Home', path: '/' },
+                { label: 'About RigCraft' }
+              ]}
+            />
           </div>
           <motion.h1 
             initial={{ opacity: 0, y: 30 }}
