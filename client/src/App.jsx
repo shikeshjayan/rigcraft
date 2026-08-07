@@ -20,6 +20,7 @@ import Profile from './pages/Profile';
 import Orders from './pages/Orders';
 import MyTickets from './pages/MyTickets';
 import TicketDetail from './pages/TicketDetail';
+import Notifications from './pages/Notifications';
 import Warranty from './pages/Warranty';
 import ReturnsAndRefunds from './pages/ReturnsAndRefunds';
 import PcBuilderGuide from './pages/PcBuilderGuide';
@@ -30,6 +31,7 @@ import Terms from './pages/Terms';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Error from './pages/Error';
+import { NotificationProvider } from './context/NotificationContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { PublicSettingsProvider } from './context/PublicSettingsContext';
 import AdminRoutes from './admin/routes/AdminRoutes';
@@ -83,8 +85,10 @@ const App = () => {
         <AuthProvider>
           <CartProvider>
             <WishlistProvider>
-              <PublicSettingsProvider>
-              <Routes>
+              <NotificationProvider>
+                <PublicSettingsProvider>
+                  <Routes>
+
                 <Route path="/admin/*" element={<AdminRoutes />} />
                 <Route element={<PublicLayout />}>
                   <Route path="/" element={<Home />} />
@@ -95,6 +99,7 @@ const App = () => {
                   <Route path="/detail/:id" element={<Detail />} />
                   <Route path="/detail/:productName/:id" element={<Detail />} />
                   <Route path="/wishlist" element={<Wishlist />} />
+                  <Route path="/notifications" element={<Notifications />} />
                   <Route path="/cart" element={<Cart />} />
                   <Route path="/deals" element={<Deals />} />
                   <Route path="/alldeals" element={<AllDeals />} />
@@ -119,6 +124,7 @@ const App = () => {
                 </Route>
               </Routes>
               </PublicSettingsProvider>
+              </NotificationProvider>
             </WishlistProvider>
           </CartProvider>
         </AuthProvider>

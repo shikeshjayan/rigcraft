@@ -13,6 +13,31 @@ import ApiError from "../utils/ApiError.js";
 import Order from "../models/order.model.js";
 import Cart from "../models/cart.model.js";
 import { getSettings } from "../models/settings.model.js";
+import { createNotification } from "./notification.service.js";
+
+const notifyCustomer = async (order, type, module, title, message) => {
+  try {
+    await createNotification({
+      recipient: order.user,
+      recipientRole: "customer",
+      type,
+      module,
+      reference: order._id,
+      referenceModel: "Order",
+      title,
+      message,
+      actionUrl: "/orders",
+      metadata: {
+        orderId: order._id,
+        orderNumber: order.orderNumber,
+        orderStatus: order.orderStatus,
+        paymentStatus: order.paymentStatus,
+      },
+    });
+  } catch (err) {
+    console.warn("[order] notification failed:", err.message);
+  }
+};
 
 const CHECKOUT_EXPIRY_MINUTES = 30;
 const ORDER_NUMBER_RETRIES = 5;
@@ -241,6 +266,14 @@ export const checkout = async (userId, { addressId, paymentMethod }, user) => {
     pushHistory(order, "pending", user, "Order created, awaiting payment");
     await order.save({ validateBeforeSave: false });
 
+    await notifyCustomer(
+      order,
+      "order",
+      "Order",
+      "Order placed",
+      `Your order ${order.orderNumber} is placed. Complete the payment to confirm it.`
+    );
+
     return { order };
   }
 
@@ -252,6 +285,14 @@ export const checkout = async (userId, { addressId, paymentMethod }, user) => {
 
     pushHistory(order, "confirmed", user, "Order placed via COD");
     await order.save({ validateBeforeSave: false });
+
+    await notifyCustomer(
+      order,
+      "order",
+      "Order",
+      "Order placed",
+      `Your order ${order.orderNumber} is confirmed. Pay on delivery.`
+    );
 
     if (settings.inventory?.autoUpdateInventory !== false) {
       await reduceStock(order.items);
@@ -287,6 +328,14 @@ export const confirmPayment = async (orderId, razorpayPaymentId, user) => {
 
   pushHistory(order, "confirmed", user, "Payment confirmed via Razorpay");
   await order.save({ validateBeforeSave: false });
+
+  await notifyCustomer(
+    order,
+    "payment",
+    "Payment",
+    "Payment received",
+    `Payment received for order ${order.orderNumber}. It is now confirmed.`
+  );
 
   const settings = await getSettings();
   if (settings.inventory?.autoUpdateInventory !== false) {
@@ -378,6 +427,14 @@ export const cancelOrder = async (orderId, userId, user, reason) => {
 
   pushHistory(order, "cancelled", user, reason || "Cancelled by user");
   await order.save({ validateBeforeSave: false });
+
+  await notifyCustomer(
+    order,
+    "order",
+    "Order",
+    "Order cancelled",
+    `Your order ${order.orderNumber} has been cancelled.`
+  );
 
   return order;
 };
@@ -484,6 +541,14 @@ export const updateOrderStatus = async (orderId, orderStatus, user) => {
   pushHistory(order, orderStatus, user);
   await order.save({ validateBeforeSave: false });
 
+  await notifyCustomer(
+    order,
+    "order",
+    "Order",
+    `Order ${orderStatus}`,
+    `Your order ${order.orderNumber} is now ${orderStatus}.`
+  );
+
   return order;
 };
 
@@ -494,6 +559,16 @@ export const updatePaymentStatus = async (orderId, paymentStatus, user) => {
 
   pushHistory(order, order.orderStatus, user, `Payment status changed to "${paymentStatus}"`);
   await order.save({ validateBeforeSave: false });
+
+  if (paymentStatus === "paid") {
+    await notifyCustomer(
+      order,
+      "payment",
+      "Payment",
+      "Payment received",
+      `Payment received for order ${order.orderNumber}.`
+    );
+  }
 
   return order;
 };
