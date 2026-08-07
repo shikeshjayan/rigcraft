@@ -1,31 +1,46 @@
-import api from "../shared/api/axios";
-import { ENDPOINTS } from "../shared/api/endpoints";
+import apiClient from "../api/client";
+
+const normalizeNotification = (n) => ({
+  ...n,
+  id: n._id,
+});
 
 export const notificationService = {
   getNotifications: async ({ page = 1, limit = 20 } = {}) => {
-    const { data } = await api.get(ENDPOINTS.NOTIFICATION.LIST, {
+    const { data } = await apiClient.get("/notifications", {
       params: { page, limit },
     });
-    return data;
+    return {
+      notifications: (data.data?.notifications || []).map(normalizeNotification),
+      unreadCount: data.data?.unreadCount || 0,
+      pagination: data.data?.pagination || {
+        page,
+        limit,
+        total: 0,
+        pages: 1,
+      },
+    };
   },
 
   getUnreadCount: async () => {
-    const { data } = await api.get(ENDPOINTS.NOTIFICATION.UNREAD);
-    return data;
+    const { data } = await apiClient.get("/notifications/unread");
+    return data.data?.count ?? 0;
   },
 
   markAsRead: async (id) => {
-    const { data } = await api.put(ENDPOINTS.NOTIFICATION.MARK_READ(id));
-    return data;
+    const { data } = await apiClient.put(`/notifications/${id}/read`);
+    return data.data;
   },
 
   markAllAsRead: async () => {
-    const { data } = await api.put(ENDPOINTS.NOTIFICATION.MARK_ALL_READ);
-    return data;
+    const { data } = await apiClient.put("/notifications/read-all");
+    return data.data;
   },
 
   delete: async (id) => {
-    const { data } = await api.delete(ENDPOINTS.NOTIFICATION.DELETE(id));
-    return data;
+    const { data } = await apiClient.delete(`/notifications/${id}`);
+    return data.data;
   },
 };
+
+export default notificationService;

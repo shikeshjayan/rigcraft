@@ -41,7 +41,7 @@ const SearchBar = ({ search, variant = 'desktop' }) => {
         onFocus={handleFocus}
         onKeyDown={handleSearchKeyDown}
         placeholder="Search products..."
-        className="pl-5 pr-10 py-2 rounded-[var(--radius-sm)] text-[14px] font-medium outline-none transition-all w-[320px] focus:w-[320px] focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-opacity-20 placeholder:text-[var(--color-muted)]"
+        className="pl-5 pr-10 py-2 rounded-[var(--radius-sm)] text-[14px] font-medium outline-none transition-all w-[400px] focus:w-[400px] focus:ring-2 focus:ring-[var(--color-primary)] focus:ring-opacity-20 placeholder:text-[var(--color-muted)]"
         style={{
           backgroundColor: 'var(--color-bg-secondary)',
           color: 'var(--color-text)',

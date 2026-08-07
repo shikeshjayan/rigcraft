@@ -19,6 +19,7 @@ import MegaMenu from './Navbar/MegaMenu';
 import ProfileMenu from './Navbar/ProfileMenu';
 import MobileDrawer from './Navbar/MobileDrawer';
 import ConfirmDialog from './Navbar/ConfirmDialog';
+import NotificationBell from './NotificationBell';
 
 const Navbar = () => {
   const location = useLocation();
@@ -237,6 +238,8 @@ const wishlistCount = wishlist.length;
                   </div>
                   <span className="text-[12px] font-bold mt-0.5">Wishlist</span>
                 </Link>
+
+                <NotificationBell />
 
                 {/* Cart (Desktop Only) */}
                 <Link to="/cart" aria-label="Cart" className="hidden lg:flex hover:text-[var(--color-primary)] transition-colors flex-col items-center justify-center cursor-pointer relative pb-1 pt-1">

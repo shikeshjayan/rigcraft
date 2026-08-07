@@ -6,6 +6,8 @@ import productRepository from "../repositories/product.repository.js";
 import ApiError from "../utils/ApiError.js";
 import * as uploadService from "./upload.service.js";
 import { getSettings } from "../models/settings.model.js";
+import { CART_ITEM_TYPES } from "../constants/constants.js";
+import { notifyRestockIfNeeded } from "./stockAlert.service.js";
 
 const FOLDER = "prebuilt-pcs";
 
@@ -153,6 +155,7 @@ export const create = async (data, files) => {
 
 export const update = async (id, data, files) => {
   const prebuilt = await prebuiltPCRepository.findById(id);
+  const previousStock = prebuilt.stock;
 
   if (data.components) {
     await validateComponents(data.components);
@@ -197,6 +200,18 @@ export const update = async (id, data, files) => {
 
   const updated = await prebuiltPCRepository.updateById(id, data);
   await updated.populate("components.product");
+
+  try {
+    await notifyRestockIfNeeded(
+      CART_ITEM_TYPES.PREBUILT,
+      id,
+      previousStock,
+      updated.stock
+    );
+  } catch (err) {
+    console.warn("[prebuilt] restock check failed:", err.message);
+  }
+
   return updated;
 };
 
