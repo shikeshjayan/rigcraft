@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import VerifiedIcon from '@mui/icons-material/Verified';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
+import Breadcrumb from '../components/Breadcrumb';
 
 const BuilderHero = () => {
   const [isVideoLoaded, setIsVideoLoaded] = useState(false);
@@ -48,10 +48,14 @@ const BuilderHero = () => {
       <div className="relative z-10 w-full max-w-[1500px] mx-auto px-4 lg:px-[100px] flex flex-col justify-start items-start h-full pt-16 md:pt-24">
         
         {/* Breadcrumb Navigation */}
-        <div className="flex items-center text-[12px] text-gray-300 font-medium mb-6">
-          <Link to="/" className="hover:text-white transition-colors">Home</Link>
-          <KeyboardArrowRightIcon sx={{ fontSize: 16, marginX: 0.5 }} />
-          <span className="text-white font-bold">Build PC</span>
+        <div className="mb-6">
+          <Breadcrumb
+            variant="dark"
+            items={[
+              { label: 'Home', path: '/' },
+              { label: 'Build PC' }
+            ]}
+          />
         </div>
 
         {/* Header Content */}

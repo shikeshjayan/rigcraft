@@ -19,12 +19,18 @@ const Wishlist = () => {
   const [showLoginPrompt, setShowLoginPrompt] = useState(false);
   const [loginMessage, setLoginMessage] = useState("");
   const [flyingItem, setFlyingItem] = useState(null);
+  const [page, setPage] = useState(1);
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
 
   const totalPages = Math.max(1, Math.ceil(wishlist.length / ITEMS_PER_PAGE));
+  const [prevTotalPages, setPrevTotalPages] = useState(totalPages);
+  if (prevTotalPages !== totalPages) {
+    setPrevTotalPages(totalPages);
+    setPage((prev) => Math.min(prev, totalPages));
+  }
   const currentPage = Math.min(page, totalPages);
   const currentItems = wishlist.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
 
