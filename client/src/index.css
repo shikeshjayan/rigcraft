@@ -144,6 +144,30 @@
   animation: fadeInUp 1s cubic-bezier(0.16, 1, 0.3, 1) 0.1s forwards;
 }
 
+@keyframes logo-marquee {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-logo-marquee {
+  animation: logo-marquee 30s linear infinite;
+}
+
+.animate-logo-marquee:hover {
+  animation-play-state: paused;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-logo-marquee {
+    animation: none;
+  }
+}
+
 /* Hide scrollbars globally */
 ::-webkit-scrollbar {
   display: none;

@@ -481,7 +481,7 @@ const HeroReview = () => {
                     maxLength={1000}
                     value={comment}
                     onChange={(e) => setComment(e.target.value)}
-                    className="w-full border border-gray-300 rounded-md p-2 text-[14px] placeholder:text-gray-400 focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
+                    className="w-full border border-gray-300 rounded p-2 text-[14px] placeholder:text-gray-400 focus:ring-1 focus:ring-[var(--color-primary)] focus:border-[var(--color-primary)]"
                     style={{ color: "var(--color-text)", backgroundColor: "#ffffff" }}
                     placeholder="How was your experience with RigCraft?"
                   />
