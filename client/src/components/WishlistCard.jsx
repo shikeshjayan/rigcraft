@@ -31,6 +31,13 @@ const getItemTitle = (item) => item.title || item.name || '';
 
 const getItemId = (item) => item.id || item._id;
 
+const getBrandName = (brand) => {
+  if (!brand) return 'Rigcraft';
+  if (typeof brand === 'object' && brand !== null) return brand.name || brand.title || 'Rigcraft';
+  if (/^[a-fA-F0-9]{24}$/.test(String(brand))) return 'Rigcraft';
+  return brand;
+};
+
 const formatAddedDate = (addedAt) => {
   if (!addedAt) return null;
   const date = new Date(addedAt);
@@ -57,7 +64,7 @@ const WishlistCard = ({ item, onAddToCart, onRequestRemove, onNotifyMe }) => {
   const id = getItemId(item);
   const title = getItemTitle(item);
   const image = getItemImage(item);
-  const brand = item.brand?.name || item.brand || '';
+  const brand = getBrandName(item.brand);
   const priceNum = parsePrice(item.price || item.pricing?.salePrice || item.selling);
   const mrpNum = parsePrice(item.mrp || item.pricing?.price);
   const hasDiscount = mrpNum > priceNum && priceNum > 0;
@@ -73,7 +80,7 @@ const WishlistCard = ({ item, onAddToCart, onRequestRemove, onNotifyMe }) => {
   const isLowStock = typeof item.stock === 'number' && item.stock > 0 && item.stock <= 5;
 
   return (
-    <div className="flex flex-col bg-white border border-[#EAEAEC] rounded-[var(--radius-sm)] shadow-sm hover:shadow-md transition-shadow group">
+    <div className="flex flex-col h-full bg-white border border-[#EAEAEC] rounded-[var(--radius-sm)] shadow-sm hover:shadow-md transition-shadow group">
       {/* Product Image */}
       <Link to={linkTo} className="block w-full aspect-[3/4] bg-[#F5F6F6] overflow-hidden relative rounded-t-[var(--radius-sm)]">
         {image ? (

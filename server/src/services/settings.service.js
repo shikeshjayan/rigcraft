@@ -65,6 +65,7 @@ export const getPublic = async () => {
     },
     shipping: {
       freeShippingAbove: s.shipping?.freeShippingThreshold || 0,
+      standardRate: s.shipping?.standardRate || 0,
       estimatedDelivery: s.shipping?.estimatedDelivery || '',
     },
     tax: {

@@ -10,6 +10,11 @@ const ITEM_MODEL_MAP = {
   [CART_ITEM_TYPES.PREBUILT]: "PrebuiltPC",
 };
 
+const POPULATE_ITEM_BRAND = {
+  path: "items.item",
+  populate: { path: "brand", select: "name slug logo", strictPopulate: false },
+};
+
 const resolveItem = async (itemType, itemId) => {
   if (itemType === CART_ITEM_TYPES.PRODUCT) {
     const product = await productRepository.findById(itemId);
@@ -42,14 +47,18 @@ const getOrCreateWishlist = async (userId) => {
 
 export const getWishlist = async (userId) => {
   const wishlist = await getOrCreateWishlist(userId);
-  await wishlist.populate("items.item");
+  
+  // Filter out items that are null or undefined
+  wishlist.items = wishlist.items.filter(i => i.item);
+
+  await wishlist.populate(POPULATE_ITEM_BRAND);
   return wishlist;
 };
 
 export const adminGetUserWishlist = async (userId) => {
   let wishlist = await wishlistRepository.findByUser(userId);
   if (!wishlist) return { user: userId, items: [] };
-  await wishlist.populate("items.item");
+  await wishlist.populate(POPULATE_ITEM_BRAND);
   return wishlist;
 };
 
@@ -67,7 +76,7 @@ export const addToWishlist = async (userId, { itemType, itemId }) => {
 
   wishlist.items.push(resolved);
   await wishlist.save();
-  await wishlist.populate("items.item");
+  await wishlist.populate(POPULATE_ITEM_BRAND);
   return wishlist;
 };
 

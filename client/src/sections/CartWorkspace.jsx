@@ -1,34 +1,39 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useWishlist } from '../context/WishlistContext';
 import { useAuth } from '../context/AuthContext';
+import { usePublicSettings } from '../context/PublicSettingsContext';
 import apiClient from '../api/client';
 import CloseIcon from '@mui/icons-material/Close';
 import LocalOfferOutlinedIcon from '@mui/icons-material/LocalOfferOutlined';
-import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutlineOutlined';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
-import HomeIcon from '@mui/icons-material/Home';
-import BusinessIcon from '@mui/icons-material/Business';
-import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
+import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
-import ShoppingCartOutlinedIcon from '@mui/icons-material/ShoppingCartOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useToast } from '../components/toast/useToast';
+import Pagination from '../components/Pagination';
 import { friendlyStockMessage } from '../utils/stockMessages';
 
 const getTypeName = (type) => typeof type === 'string' ? type : type?.name || 'UNKNOWN';
 
-const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
+const getBrandName = (brand) => {
+  if (!brand) return 'Rigcraft';
+  if (typeof brand === 'string') return /^[a-fA-F0-9]{24}$/.test(brand) ? 'Rigcraft' : brand;
+  return brand.name || brand.title || 'Rigcraft';
+};
+
+const CART_ITEMS_PER_PAGE = 5;
+
+const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep, onRequireLogin }) => {
   const navigate = useNavigate();
-  const location = useLocation();
-  const { cartItems, removeFromCart, updateQuantity, isLoading, clearCart, refreshCart } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, isLoading, refreshCart } = useCart();
   const { addToWishlist } = useWishlist();
-  const { isLoggedIn, user } = useAuth();
+  const { isLoggedIn } = useAuth();
+  const { settings, freeShippingAbove } = usePublicSettings();
 
   // Track selected items by cartItemId (or id for legacy items)
   const [selectedItemIds, setSelectedItemIds] = useState(cartItems.map(item => item.cartItemId || item.id));
@@ -43,6 +48,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
   useEffect(() => {
     // Keep selectedItemIds in sync with cartItems, prune stale IDs
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- deliberate state sync derived from cartItems
     setSelectedItemIds(prev => {
       const validIds = prev.filter(id => cartItems.some(item => (item.cartItemId || item.id) === id));
       if (validIds.length !== prev.length) return validIds;
@@ -53,20 +59,20 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   const [showCouponPopup, setShowCouponPopup] = useState(false);
   const [couponInput, setCouponInput] = useState('');
   const [isCouponApplied, setIsCouponApplied] = useState(false);
-  const [donationAmount, setDonationAmount] = useState(10);
-  const [isDonating, setIsDonating] = useState(false);
-  const [showStateDropdown, setShowStateDropdown] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState('razorpay');
   const [showSuccessPopup, setShowSuccessPopup] = useState(false);
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null); // null, or { type: 'single' | 'bulk', id?: string }
-  const [isWishlistOpen, setIsWishlistOpen] = useState(false);
-  const [wishlistItems, setWishlistItems] = useState([]);
   const [availableCoupons, setAvailableCoupons] = useState([]);
   const [appliedCoupon, setAppliedCoupon] = useState(null); // The full coupon object
-  const { addToCart } = useCart();
+  const [cartPage, setCartPage] = useState(1);
   const { toast } = useToast();
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset pagination when cart size changes
+    setCartPage(1);
+  }, [cartItems.length]);
 
   useEffect(() => {
     const fetchCoupons = async () => {
@@ -112,6 +118,10 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       if (syncedCount === 0) {
         throw new Error("No valid items selected for checkout.");
       }
+
+      if (isLoggedIn && isCouponApplied && appliedCoupon) {
+        await apiClient.post('/cart/apply-coupon', { code: appliedCoupon.code });
+      }
       return true;
     } catch (error) {
       console.error('Failed to sync cart', error);
@@ -132,6 +142,10 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   };
 
   const handleCheckout = async () => {
+    if (!isLoggedIn) {
+      onRequireLogin?.();
+      return;
+    }
     try {
       const selectedAddress = savedAddresses[selectedAddressId];
       if (!selectedAddress) {
@@ -285,13 +299,16 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
   useEffect(() => {
     if (isLoggedIn) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- fetchAddresses loads state on login
       fetchAddresses();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fetchAddresses is recreated each render; calling once on login is intended
   }, [isLoggedIn]);
 
   // If we open Address step and we have saved addresses, show list by default
   useEffect(() => {
     if (checkoutStep === 'address' && savedAddresses.length > 0 && !editingAddressId) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- sync form visibility when the address step opens
       setIsAddingAddress(false);
       // Auto-select the default address
       if (selectedAddressId === null) {
@@ -301,23 +318,41 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
     } else if (checkoutStep === 'address' && savedAddresses.length === 0) {
       setIsAddingAddress(true);
     }
-  }, [checkoutStep, savedAddresses.length, editingAddressId, selectedAddressId]);
+  }, [checkoutStep, savedAddresses, editingAddressId, selectedAddressId]);
 
-  const handleApplyCoupon = () => {
-    const code = couponInput.trim().toUpperCase();
-    const foundCoupon = availableCoupons.find(c => c.code.toUpperCase() === code);
-    if (foundCoupon) {
-      setAppliedCoupon(foundCoupon);
-      setIsCouponApplied(true);
-      setShowCouponPopup(false);
-      toast('Coupon applied successfully!');
-    } else {
+  const handleApplyCoupon = async (code) => {
+    const normalizedCode = (code || couponInput).trim().toUpperCase();
+    const foundCoupon = availableCoupons.find(c => c.code.toUpperCase() === normalizedCode);
+    if (!foundCoupon) {
       toast('Invalid coupon code!', 'warning');
+      return;
     }
+    if (isLoggedIn) {
+      try {
+        await apiClient.post('/cart/apply-coupon', { code: normalizedCode });
+      } catch (error) {
+        toast(error.response?.data?.message || 'Coupon could not be applied', 'error');
+        return;
+      }
+    }
+    setAppliedCoupon(foundCoupon);
+    setIsCouponApplied(true);
+    setShowCouponPopup(false);
+    toast('Coupon applied successfully!');
   };
 
-  const handleSelectAvailableCoupon = (couponCode) => {
-    setCouponInput(couponCode);
+  const handleRemoveCoupon = async () => {
+    setAppliedCoupon(null);
+    setIsCouponApplied(false);
+    setCouponInput('');
+    if (isLoggedIn) {
+      try {
+        await apiClient.delete('/cart/remove-coupon');
+      } catch (error) {
+        console.error('Failed to remove coupon from server cart', error);
+      }
+    }
+    toast('Coupon removed');
   };
 
   const confirmDelete = () => {
@@ -335,6 +370,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
     if (selectedItemIds.length === 0) return;
     try {
       const checkoutItems = cartItems.filter(item => selectedItemIds.includes(item.cartItemId || item.id));
+
       for (const item of checkoutItems) {
         const productId = item.item?._id || item.item?.id || item.item || item._id || item.id;
         const productType = item.itemType || item.type || 'product';
@@ -348,35 +384,6 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
       console.error(err);
       toast('Failed to move items to wishlist', 'error');
     }
-  };
-
-  const toggleWishlistAccordion = async () => {
-    if (!isWishlistOpen) {
-      try {
-        const { data } = await apiClient.get('/wishlist');
-        if (data.success) setWishlistItems(data.data.items || []);
-      } catch (e) {
-        console.error(e);
-        toast('Failed to load wishlist', 'error');
-      }
-    }
-    setIsWishlistOpen(!isWishlistOpen);
-  };
-
-  const handleWishlistAddToCart = (wishlistItem) => {
-    const product = wishlistItem.item || wishlistItem.product;
-    const itemType = wishlistItem.itemType || product?.type || 'product';
-
-    addToCart({
-      id: product?._id,
-      item: product,
-      type: itemType,
-      itemType,
-      title: product?.name || product?.title,
-      price: product?.price || product?.pricing?.price || product?.salePrice,
-      mrp: product?.mrp || product?.pricing?.price,
-      image: product?.image || product?.images?.[0]?.url || product?.images?.[0]
-    });
   };
 
   const toggleItemSelection = (cartItemId) => {
@@ -396,6 +403,10 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
   };
 
   const handleSaveAddress = async () => {
+    if (!isLoggedIn) {
+      onRequireLogin?.();
+      return;
+    }
     if (!addressForm.fullName || !addressForm.phone || !addressForm.addressLine1 || !addressForm.city || !addressForm.state || !addressForm.postalCode) {
       toast("Please fill out all required fields (*).", 'warning');
       return;
@@ -465,6 +476,10 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
   const checkoutItems = cartItems.filter(item => selectedItemIds.includes(item.cartItemId || item.id));
 
+  const totalPages = Math.max(1, Math.ceil(cartItems.length / CART_ITEMS_PER_PAGE));
+  const currentPage = Math.min(cartPage, totalPages);
+  const pagedItems = cartItems.slice((currentPage - 1) * CART_ITEMS_PER_PAGE, currentPage * CART_ITEMS_PER_PAGE);
+
   const getItemPrice = (item) => parsePrice(item.priceVal || item.totalPrice || item.price || item.pricing?.price || item.pricing?.salePrice);
   const getItemMrp = (item) => parsePrice(item.mrp || item.priceVal || item.totalPrice || item.pricing?.price || item.price);
 
@@ -479,14 +494,22 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
         calculatedCouponDiscount = Math.min(calculatedCouponDiscount, appliedCoupon.maximumDiscount);
       }
     } else {
-      calculatedCouponDiscount = appliedCoupon.discountValue;
+      calculatedCouponDiscount = Math.min(appliedCoupon.discountValue, subtotal);
     }
   }
 
   const couponDiscount = calculatedCouponDiscount;
-  const platformFee = 0;
-  const codFee = (checkoutStep === 'payment' && paymentMethod === 'cod' && checkoutItems.length > 0) ? 60 : 0;
-  const finalTotal = totalMRP - totalDiscount - couponDiscount + (isDonating ? donationAmount : 0) + platformFee + codFee;
+  const standardRate = Number(settings?.shipping?.standardRate) || 0;
+  const isFreeShippingCoupon = appliedCoupon?.discountType === 'free_shipping';
+  const shippingCharge = (isFreeShippingCoupon || (freeShippingAbove > 0 && subtotal >= freeShippingAbove))
+    ? 0
+    : standardRate;
+  const taxRate = Number(settings?.tax?.rate) || 0;
+  const taxRatePct = Math.round(taxRate * 100);
+  const taxAmount = (!taxRate || settings?.tax?.pricesIncludeTax)
+    ? 0
+    : Math.round(((subtotal - couponDiscount) * taxRate) * 100) / 100;
+  const finalTotal = Math.round((subtotal - couponDiscount + shippingCharge + taxAmount) * 100) / 100;
 
   const formatPrice = (val) => new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(val);
 
@@ -520,6 +543,20 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
             {checkoutStep === 'bag' ? (
               <>
+                {/* Free Shipping Progress Banner */}
+                {freeShippingAbove > 0 && checkoutItems.length > 0 && (
+                  <div className={`mt-4 flex items-center gap-3 px-4 py-3 rounded-sm border text-[13px] font-bold ${subtotal >= freeShippingAbove ? 'bg-[var(--color-bg-secondary)] border-[var(--color-success)] text-[var(--color-success)]' : 'bg-[var(--color-bg-secondary)] border-[var(--color-primary-light)] text-[var(--color-primary)]'}`}>
+                    <LocalShippingOutlinedIcon sx={{ fontSize: 22 }} />
+                    {subtotal >= freeShippingAbove ? (
+                      <span>You've unlocked <span className="uppercase">FREE Shipping</span> on this order!</span>
+                    ) : (
+                      <span>
+                        Add <span className="text-[var(--color-primary)]">{formatPrice(freeShippingAbove - subtotal)}</span> more to get <span className="uppercase">FREE Shipping</span>!
+                      </span>
+                    )}
+                  </div>
+                )}
+
                 {/* Item Header */}
                 <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
                   <div className="flex items-center gap-2 font-bold text-[15px] text-[var(--color-text)]">
@@ -540,7 +577,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
                 {/* Cart Items */}
                 <div className="flex flex-col gap-4 mt-2">
-                  {cartItems.map((item, index) => {
+                  {pagedItems.map((item, index) => {
                     const uniqueId = item.cartItemId || item.id;
                     const itemId = item.item?._id || item.item || item.id || item._id;
                     const isBundle = item.type === 'bundle' || item.itemType === 'bundle';
@@ -572,19 +609,19 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                                 <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                               </button>
                               <div className="text-[18px] font-black text-[var(--color-primary)]">{formatPrice(getItemPrice(item))}</div>
-                              <div className="flex items-center border border-[#E7E7E7] rounded-sm bg-white mt-1">
+                              <div className="flex items-center border border-[var(--color-border)] rounded-sm bg-white mt-1">
                                 <button onClick={() => updateQuantity(uniqueId, (item.qty || 1) - 1)} disabled={(item.qty || 1) <= 1} className="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 cursor-pointer transition-colors">-</button>
-                                <span className="w-8 text-center text-[13px] font-bold text-[#0F1111] border-x border-[#E7E7E7]">{item.qty || 1}</span>
+                                <span className="w-8 text-center text-[13px] font-bold text-[var(--color-text)] border-x border-[var(--color-border)]">{item.qty || 1}</span>
                                 <button onClick={() => updateQuantity(uniqueId, (item.qty || 1) + 1)} className="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-50 cursor-pointer transition-colors">+</button>
                               </div>
                             </div>
                           </div>
 
-                          <div className="flex gap-2 overflow-x-auto items-center py-3 border-t border-gray-100 mt-2">
+                          <div className="flex gap-2 overflow-x-auto items-center py-2 border-t border-gray-100 mt-2">
                             {components.map((comp, idx) => {
                               const compId = comp.product?._id || comp.product?.id || (typeof comp.product === 'string' ? comp.product : null);
                               return (
-                                <Link to={compId ? `/detail/${compId}` : '#'} key={idx} className="w-14 h-14 bg-gray-50 flex flex-col items-center justify-center rounded-sm shrink-0 border border-gray-100 p-1 relative group cursor-pointer hover:border-[var(--color-primary)] transition-colors" title={comp.product?.title || comp.product?.name}>
+                                <Link to={compId ? `/detail/${compId}` : '#'} key={idx} className="w-12 h-12 bg-gray-50 flex flex-col items-center justify-center rounded-sm shrink-0 border border-gray-100 p-1 relative group cursor-pointer hover:border-[var(--color-primary)] transition-colors" title={comp.product?.title || comp.product?.name}>
                                   {comp.product?.image || comp.product?.images?.[0] ? (
                                     <img src={comp.product.image || (typeof comp.product.images?.[0] === 'string' ? comp.product.images[0] : comp.product.images?.[0]?.url)} alt={getTypeName(comp.type)} className="w-full h-full object-contain mix-blend-multiply" />
                                   ) : (
@@ -602,12 +639,12 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                     }
 
                     return (
-                      <div key={uniqueId || index} className="bg-white border border-[var(--color-border)] p-4 rounded-sm relative flex gap-4 hover:shadow-sm transition-shadow">
+                      <div key={uniqueId || index} className="bg-white border border-[var(--color-border)] p-3.5 rounded-sm relative flex gap-3 hover:shadow-sm transition-shadow">
                         <button onClick={() => { setItemToDelete({ type: 'single', id: uniqueId }); setShowDeleteConfirm(true); }} className="absolute top-4 right-4 text-red-500 hover:text-red-700 cursor-pointer transition-colors">
                           <DeleteOutlineIcon sx={{ fontSize: 20 }} />
                         </button>
 
-                        <div className="w-28 h-36 bg-[var(--color-surface)] shrink-0 p-2 relative">
+                        <div className="w-24 h-32 bg-[var(--color-surface)] shrink-0 p-1.5 relative">
                           <input
                             type="checkbox"
                             checked={selectedItemIds.includes(uniqueId)}
@@ -621,7 +658,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
 
                         <div className="flex flex-col flex-grow py-1">
                           <Link to={linkUrl} className="group block w-fit">
-                            <h3 className="text-[15px] font-bold text-[var(--color-text)] mb-1 group-hover:text-[var(--color-primary)] transition-colors">{item.brand ? getTypeName(item.brand) : 'Rigcraft'}</h3>
+                            <h3 className="text-[15px] font-bold text-[var(--color-text)] mb-1 group-hover:text-[var(--color-primary)] transition-colors">{getBrandName(item.brand)}</h3>
                             <p className="text-[14px] text-[var(--color-text-secondary)] mb-2 pr-6 line-clamp-1 group-hover:text-[var(--color-primary)] transition-colors">{item.title || item.name}</p>
                           </Link>
                           <p className="text-[12px] text-[#94A3B8] mb-3">Sold by: RetailNet</p>
@@ -629,10 +666,10 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                           <div className="flex items-center gap-2 mb-2">
                             <span className="text-[15px] font-bold text-[var(--color-text)]">{formatPrice(getItemPrice(item))}</span>
                             {getItemMrp(item) > getItemPrice(item) && (
-                              <span className="text-[13px] text-[#94A3B8] line-through">{formatPrice(getItemMrp(item))}</span>
-                            )}
-                            {item.discount && (
-                              <span className="text-[13px] font-bold text-[#FF905A]">{item.discount}</span>
+                              <>
+                                <span className="text-[13px] text-[#94A3B8] line-through">{formatPrice(getItemMrp(item))}</span>
+                                <span className="text-[12px] font-bold text-[#16A34A]">Save {formatPrice(getItemMrp(item) - getItemPrice(item))}</span>
+                              </>
                             )}
                           </div>
                           
@@ -641,10 +678,10 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                               <span className="font-bold">14 days</span> return available
                             </div>
                             
-                            <div className="ml-auto flex items-center border border-[#E7E7E7] rounded-sm bg-white">
-                              <button onClick={() => updateQuantity(uniqueId, (item.qty || 1) - 1)} disabled={(item.qty || 1) <= 1} className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 cursor-pointer transition-colors">-</button>
-                              <span className="w-10 text-center text-[13px] font-bold text-[#0F1111] border-x border-[#E7E7E7]">{item.qty || 1}</span>
-                              <button onClick={() => updateQuantity(uniqueId, (item.qty || 1) + 1)} className="w-8 h-8 flex items-center justify-center text-gray-500 hover:bg-gray-50 cursor-pointer transition-colors">+</button>
+                            <div className="ml-auto flex items-center border border-[var(--color-border)] rounded-sm bg-white">
+                              <button onClick={() => updateQuantity(uniqueId, (item.qty || 1) - 1)} disabled={(item.qty || 1) <= 1} className="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 cursor-pointer transition-colors">-</button>
+                              <span className="w-8 text-center text-[13px] font-bold text-[var(--color-text)] border-x border-[var(--color-border)]">{item.qty || 1}</span>
+                              <button onClick={() => updateQuantity(uniqueId, (item.qty || 1) + 1)} className="w-7 h-7 flex items-center justify-center text-gray-500 hover:bg-gray-50 cursor-pointer transition-colors">+</button>
                             </div>
                           </div>
                         </div>
@@ -653,55 +690,13 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                   })}
                 </div>
 
-                {/* Wishlist Add More Accordion */}
-                {/* <div className="mt-2 bg-white border border-[var(--color-border)] rounded-sm overflow-hidden">
-                  <div onClick={toggleWishlistAccordion} className="p-4 flex items-center justify-between cursor-pointer hover:bg-gray-50 transition-colors">
-                    <div className="flex items-center gap-2 font-bold text-[14px] text-[var(--color-text)]">
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
-                      Add More From Wishlist
-                    </div>
-                    <KeyboardArrowDownIcon className={`text-[var(--color-text-secondary)] transition-transform ${isWishlistOpen ? 'rotate-180' : ''}`} />
-                  </div>
-                  <AnimatePresence>
-                    {isWishlistOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        className="border-t border-[var(--color-border)]"
-                      >
-                        {wishlistItems.length > 0 ? (
-                          <div className="p-4 flex flex-col gap-3 max-h-[300px] overflow-y-auto">
-                            {wishlistItems.map((wishlistItem, idx) => (
-                              <div key={idx} className="flex items-center justify-between border border-gray-100 p-2 rounded-sm bg-gray-50">
-                                <div className="flex items-center gap-3">
-                                  <div className="w-12 h-12 bg-white rounded p-1 shrink-0">
-                                    <img src={wishlistItem.item.image || (typeof wishlistItem.item.images?.[0] === 'string' ? wishlistItem.item.images[0] : wishlistItem.item.images?.[0]?.url) || '/placeholder.png'} alt={wishlistItem.item.name || wishlistItem.item.title} className="w-full h-full object-contain" />
-                                  </div>
-                                  <div className="flex flex-col">
-                                    <span className="text-[13px] font-bold text-[var(--color-text)] line-clamp-1">{wishlistItem.item.name || wishlistItem.item.title}</span>
-                                    <span className="text-[12px] font-bold text-[#0052FF]">{formatPrice(getItemPrice(wishlistItem.item))}</span>
-                                  </div>
-                                </div>
-                                <button
-                                  onClick={() => handleWishlistAddToCart(wishlistItem)}
-                                  className="bg-white text-[#0052FF] border border-[#0052FF] rounded-sm p-1.5 hover:bg-[#EFF6FF] transition-colors cursor-pointer"
-                                  title="Add to Cart"
-                                >
-                                  <ShoppingCartOutlinedIcon sx={{ fontSize: 18 }} />
-                                </button>
-                              </div>
-                            ))}
-                          </div>
-                        ) : (
-                          <div className="p-6 text-center text-[var(--color-text-secondary)] text-[13px]">
-                            Your wishlist is empty.
-                          </div>
-                        )}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div> */}
+                {cartItems.length > CART_ITEMS_PER_PAGE && (
+                  <Pagination
+                    page={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={setCartPage}
+                  />
+                )}
               </>
             ) : checkoutStep === 'address' && isAddingAddress ? (
               /* Address Form Step */
@@ -854,7 +849,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                       <span className="font-bold text-[15px] text-[var(--color-text)]">Cash on Delivery (Cash/UPI)</span>
                     </label>
                     <p className="text-[12px] text-[var(--color-text-secondary)] mt-2 ml-7">
-                      Pay at your doorstep. A ₹60 fee is applied for COD orders.
+                      Pay at your doorstep after delivery.
                     </p>
                   </div>
                 </div>
@@ -926,19 +921,34 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               {checkoutStep === 'bag' ? (
                 <>
                   {/* Coupons */}
-                  <div className="bg-white border border-[var(--color-border)] rounded-sm p-4">
+                  <div className="bg-white border border-[var(--color-border)] rounded-sm p-3.5">
                     <div className="text-[12px] font-bold text-[var(--color-text-secondary)] mb-3 uppercase">Coupons</div>
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3 text-[14px] font-bold text-[var(--color-text)]">
-                        <LocalOfferOutlinedIcon sx={{ fontSize: 20 }} className="text-[var(--color-text-secondary)]" /> Apply Coupons
+                    {isCouponApplied && appliedCoupon ? (
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-2 text-[14px] font-bold text-[#10B981]">
+                          <LocalOfferOutlinedIcon sx={{ fontSize: 20 }} />
+                          <span className="uppercase">{appliedCoupon.code}</span>
+                        </div>
+                        <button
+                          onClick={handleRemoveCoupon}
+                          className="text-[12px] font-bold text-[var(--color-text-secondary)] hover:text-[#EF4444] cursor-pointer underline transition-colors"
+                        >
+                          REMOVE
+                        </button>
                       </div>
-                      <button
-                        onClick={() => setShowCouponPopup(true)}
-                        className={`text-[13px] font-bold py-1.5 cursor-pointer px-4 border rounded-sm transition-colors ${isCouponApplied ? 'border-[#10B981] text-[#10B981]' : 'border-[#0052FF] text-[#0052FF] hover:bg-[#EFF6FF]'}`}
-                      >
-                        {isCouponApplied ? 'APPLIED' : 'APPLY'}
-                      </button>
-                    </div>
+                    ) : (
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3 text-[14px] font-bold text-[var(--color-text)]">
+                          <LocalOfferOutlinedIcon sx={{ fontSize: 20 }} className="text-[var(--color-text-secondary)]" /> Apply Coupons
+                        </div>
+                        <button
+                          onClick={() => setShowCouponPopup(true)}
+                          className="text-[13px] font-bold py-1.5 cursor-pointer px-4 border border-[#0052FF] text-[#0052FF] rounded-sm hover:bg-[#EFF6FF] transition-colors"
+                        >
+                          APPLY
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   {/* Price Details */}
@@ -946,7 +956,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                   <div className="bg-white border border-[var(--color-border)] rounded-sm p-4 sticky top-4">
                     <div className="text-[12px] font-bold text-[var(--color-text-secondary)] mb-4 uppercase">Price Details ({checkoutItems.length} Items)</div>
 
-                    <div className="flex flex-col gap-3 text-[14px] text-[var(--color-text)] mb-4 border-b border-[var(--color-border)] pb-4">
+                    <div className="flex flex-col gap-2.5 text-[14px] text-[var(--color-text)] mb-4 border-b border-[var(--color-border)] pb-4">
                       <div className="flex justify-between items-center relative">
                         <span>Total MRP</span>
                         <span>{formatPrice(totalMRP)}</span>
@@ -957,12 +967,22 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                       </div>
                       <div className="flex justify-between items-center relative">
                         <span>Coupon Discount</span>
-                        {isCouponApplied ? (
-                          <span className="text-[#10B981]">- {formatPrice(couponDiscount)}</span>
+                        <span className={isCouponApplied ? 'text-[#10B981]' : ''}>{isCouponApplied ? formatPrice(couponDiscount) : '—'}</span>
+                      </div>
+                      <div className="flex justify-between items-center relative">
+                        <span>Delivery Fee</span>
+                        {shippingCharge > 0 ? (
+                          <span>{formatPrice(shippingCharge)}</span>
                         ) : (
-                          <button onClick={() => setShowCouponPopup(true)} className="text-[#0052FF] text-[12px] font-bold cursor-pointer hover:underline">APPLY COUPON</button>
+                          <span className="text-[#10B981] font-bold">FREE</span>
                         )}
                       </div>
+                      {taxAmount > 0 && (
+                        <div className="flex justify-between items-center relative">
+                          <span>Tax ({settings?.tax?.name || 'GST'} {taxRatePct}%)</span>
+                          <span>{formatPrice(taxAmount)}</span>
+                        </div>
+                      )}
                     </div>
 
                     <div className="flex justify-between items-center font-extrabold text-[18px] text-[var(--color-text)] mb-4">
@@ -977,11 +997,26 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                     </p>
 
                     <button
-                      onClick={() => setCheckoutStep('address')}
+                      onClick={() => (isLoggedIn ? setCheckoutStep('address') : onRequireLogin?.())}
                       className="w-full bg-[#0052FF] text-white font-bold py-3.5 rounded-sm hover:bg-[#1E3A8A] transition-colors tracking-wide cursor-pointer"
                     >
                       PLACE ORDER
                     </button>
+
+                    <div className="grid grid-cols-3 gap-2 mt-3">
+                      <div className="flex flex-col items-center gap-1 text-center">
+                        <VerifiedUserIcon sx={{ fontSize: 18, color: 'var(--color-primary)' }} />
+                        <span className="text-[10px] font-bold text-[var(--color-text-secondary)]">Genuine Products</span>
+                      </div>
+                      <div className="flex flex-col items-center gap-1 text-center">
+                        <CheckCircleIcon sx={{ fontSize: 18, color: 'var(--color-primary)' }} />
+                        <span className="text-[10px] font-bold text-[var(--color-text-secondary)]">14-Day Returns</span>
+                      </div>
+                      <div className="flex flex-col items-center gap-1 text-center">
+                        <LocalShippingOutlinedIcon sx={{ fontSize: 18, color: 'var(--color-primary)' }} />
+                        <span className="text-[10px] font-bold text-[var(--color-text-secondary)]">Secure Checkout</span>
+                      </div>
+                    </div>
                   </div>
                   )}
                 </>
@@ -999,7 +1034,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                         </div>
                         <div className="text-[12px] text-[var(--color-text)]">
                           <span className="text-[var(--color-text-secondary)] block mb-1">Delivery between</span>
-                          <span className="font-bold">1 Aug - 3 Aug</span>
+                          <span className="font-bold">{settings?.shipping?.estimatedDelivery || '3-5 Business Days'}</span>
                         </div>
                       </div>
                     </div>
@@ -1012,17 +1047,33 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                     </div>
                     <div className="p-4">
                       <div className="flex justify-between items-center text-[13px] text-[var(--color-text-secondary)] mb-2">
-                        <span>Total</span>
+                        <span>Total MRP</span>
                         <span className="text-[var(--color-text)] font-bold">{formatPrice(totalMRP)}</span>
                       </div>
                       <div className="flex justify-between items-center text-[13px] text-[var(--color-text-secondary)] mb-2">
-                        <span className="flex flex-col"><span>MRP</span><span>Discount on MRP</span> <span className="text-[#0052FF] text-[10px] font-bold uppercase cursor-pointer">Know More</span></span>
+                        <span>Discount on MRP</span>
                         <span className="text-[#10B981] font-bold">- {formatPrice(totalDiscount)}</span>
                       </div>
+                      {isCouponApplied && (
+                        <div className="flex justify-between items-center text-[13px] text-[var(--color-text-secondary)] mb-2">
+                          <span>Coupon Discount</span>
+                          <span className="text-[#10B981] font-bold">- {formatPrice(couponDiscount)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between items-center text-[13px] text-[var(--color-text-secondary)] mb-2">
-                        <span className="flex flex-col"><span>Platform Fee</span> <span className="text-[#0052FF] text-[10px] font-bold uppercase cursor-pointer">Know More</span></span>
-                        <span className="text-[#10B981] font-bold uppercase">Free</span>
+                        <span>Delivery Fee</span>
+                        {shippingCharge > 0 ? (
+                          <span className="text-[var(--color-text)] font-bold">{formatPrice(shippingCharge)}</span>
+                        ) : (
+                          <span className="text-[#10B981] font-bold uppercase">Free</span>
+                        )}
                       </div>
+                      {taxAmount > 0 && (
+                        <div className="flex justify-between items-center text-[13px] text-[var(--color-text-secondary)] mb-2">
+                          <span>Tax ({settings?.tax?.name || 'GST'} {taxRatePct}%)</span>
+                          <span className="text-[var(--color-text)] font-bold">{formatPrice(taxAmount)}</span>
+                        </div>
+                      )}
 
                       <div className="border-t border-[var(--color-border)] my-4"></div>
 
@@ -1043,7 +1094,9 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                       ) : !isAddingAddress && (
                         <button
                           onClick={() => {
-                            if (selectedAddressId !== null) {
+                            if (!isLoggedIn) {
+                              onRequireLogin?.();
+                            } else if (selectedAddressId !== null) {
                               setCheckoutStep('payment');
                             } else {
                               toast("Please select a delivery address.", 'warning');
@@ -1125,7 +1178,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={e => e.stopPropagation()}
-              className="bg-white w-full max-w-[400px] p-6 shadow-xl relative"
+              className="bg-white w-full max-w-[400px] p-4 sm:p-6 shadow-xl relative max-h-[80vh] overflow-y-auto"
               style={{ borderRadius: 'var(--radius-sm)' }}
             >
               <button
@@ -1153,24 +1206,30 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep }) => {
                 </button>
               </div>
 
-              <div className="flex flex-col gap-3">
+              <div className="flex flex-col gap-3 max-h-[45vh] overflow-y-auto">
                 <div className="text-[12px] font-bold text-[var(--color-text-secondary)]">AVAILABLE COUPONS</div>
                 {availableCoupons.length > 0 ? (
-                  availableCoupons.map((coupon, idx) => (
-                    <div
-                      key={idx}
-                      className="bg-[var(--color-surface)] border border-[var(--color-border)] rounded-sm p-3 cursor-pointer hover:border-[#0052FF] transition-colors"
-                      onClick={() => handleSelectAvailableCoupon(coupon.code)}
-                    >
-                      <div className="flex justify-between items-center mb-1">
-                        <div className="font-bold text-[var(--color-text)] border-dashed border border-[#94A3B8] px-2 py-1 bg-white text-[13px] uppercase">{coupon.code}</div>
-                        <div className="text-[12px] text-[#10B981] font-bold">
-                          {coupon.discountType === 'percentage' ? `${coupon.discountValue}% OFF` : `Save ₹${coupon.discountValue}`}
+                  availableCoupons.map((coupon, idx) => {
+                    const minMet = !coupon.minimumPurchase || subtotal >= coupon.minimumPurchase;
+                    return (
+                      <div
+                        key={idx}
+                        className={`bg-[var(--color-surface)] border border-[var(--color-border)] rounded-sm p-3 transition-colors ${minMet ? 'cursor-pointer hover:border-[#0052FF]' : 'opacity-60 cursor-not-allowed'}`}
+                        onClick={() => minMet && handleApplyCoupon(coupon.code)}
+                      >
+                        <div className="flex justify-between items-center mb-1">
+                          <div className="font-bold text-[var(--color-text)] border-dashed border border-[#94A3B8] px-2 py-1 bg-white text-[13px] uppercase">{coupon.code}</div>
+                          <div className="text-[12px] text-[#10B981] font-bold">
+                            {coupon.discountType === 'percentage' ? `${coupon.discountValue}% OFF` : `Save ₹${coupon.discountValue}`}
+                          </div>
                         </div>
+                        <div className="text-[11px] text-[var(--color-text-secondary)] text-left mt-2">{coupon.name}</div>
+                        {!minMet && (
+                          <div className="text-[10px] text-[var(--color-warning)] font-bold mt-1">Min order {formatPrice(coupon.minimumPurchase)}</div>
+                        )}
                       </div>
-                      <div className="text-[11px] text-[var(--color-text-secondary)] text-left mt-2">{coupon.name}</div>
-                    </div>
-                  ))
+                    );
+                  })
                 ) : (
                   <div className="text-[13px] text-[var(--color-text-secondary)] bg-gray-50 p-3 rounded-sm border border-gray-100">No active coupons available right now.</div>
                 )}
