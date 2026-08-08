@@ -267,11 +267,27 @@ export const getProfile = async (userId) => {
 };
 
 export const updateProfile = async (userId, data, file) => {
+  const user = await userRepository.findByIdWithPassword(userId);
+
+  const changingContact =
+    data.email !== undefined || data.phone !== undefined;
+  if (changingContact) {
+    if (!user.password)
+      throw ApiError.badRequest(
+        "This account uses Google sign-in and cannot change email or phone here"
+      );
+    const isMatch = await user.comparePassword(data.currentPassword || "");
+    if (!isMatch) throw ApiError.badRequest("Current password is incorrect");
+  }
+
+  const updateData = { ...data };
+  delete updateData.currentPassword;
+
   if (file) {
     const avatar = await uploadService.uploadImage(file, 'avatars');
-    data.avatar = avatar;
+    updateData.avatar = avatar;
   }
-  return userRepository.updateById(userId, data);
+  return userRepository.updateById(userId, updateData);
 };
 
 export const updateCart = async (userId, cart) => {

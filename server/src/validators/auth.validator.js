@@ -31,22 +31,35 @@ export const registerSchema = z
     path: ["confirmPassword"],
   });
 
-export const updateProfileSchema = z.object({
-  firstName: z.string().min(1).max(50).trim().optional(),
-  lastName: z.string().min(1).max(50).trim().optional(),
-  email: z
-    .string()
-    .email("Invalid email address")
-    .trim()
-    .toLowerCase()
-    .optional(),
-  phone: z
-    .string()
-    .trim()
-    .regex(phoneRegex, "Invalid phone number")
-    .or(z.literal(""))
-    .optional(),
-});
+export const updateProfileSchema = z
+  .object({
+    firstName: z.string().min(1).max(50).trim().optional(),
+    lastName: z.string().min(1).max(50).trim().optional(),
+    email: z
+      .string()
+      .email("Invalid email address")
+      .trim()
+      .toLowerCase()
+      .optional(),
+    phone: z
+      .string()
+      .trim()
+      .regex(phoneRegex, "Invalid phone number")
+      .or(z.literal(""))
+      .optional(),
+    currentPassword: z.string().optional(),
+  })
+  .refine(
+    (data) => {
+      const changingContact =
+        data.email !== undefined || data.phone !== undefined;
+      return !changingContact || !!data.currentPassword;
+    },
+    {
+      message: "Current password is required to change email or phone",
+      path: ["currentPassword"],
+    }
+  );
 
 export const loginSchema = z
   .object({
