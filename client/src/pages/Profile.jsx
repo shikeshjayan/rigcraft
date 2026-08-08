@@ -4,10 +4,9 @@ import { useAuth } from '../context/AuthContext';
 import { getProfile } from '../api/auth';
 import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/client';
-import AccountCircleIcon from '@mui/icons-material/AccountCircle';
-import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import { clearToken } from '../shared/auth/token';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
-import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 import DesktopWindowsOutlinedIcon from '@mui/icons-material/DesktopWindowsOutlined';
@@ -15,6 +14,10 @@ import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import PhotoCameraIcon from '@mui/icons-material/PhotoCamera';
+import SupportAgentIcon from '@mui/icons-material/SupportAgent';
+import StarRateRoundedIcon from '@mui/icons-material/StarRateRounded';
+import StarOutlineRoundedIcon from '@mui/icons-material/StarOutlineRounded';
 import FadeUp from '../components/FadeUp';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
@@ -27,6 +30,83 @@ const getTypeName = (type) => {
   if (type && type.name) return type.name;
   return 'UNKNOWN';
 };
+
+const VerificationBadge = ({ verified, onVerify }) => {
+  if (verified) {
+    return (
+      <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full uppercase tracking-wide">
+        ✓ Verified
+      </span>
+    );
+  }
+  return (
+    <button
+      onClick={onVerify}
+      className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full uppercase tracking-wide hover:bg-amber-100 transition-colors"
+    >
+      ⚠ Not Verified
+    </button>
+  );
+};
+
+const getPasswordStrength = (pwd) => {
+  let score = 0;
+  if (!pwd) return { strength: 0, label: '', color: '', textColor: '' };
+  if (pwd.length >= 8) score += 1;
+  if (/[A-Z]/.test(pwd) && /[a-z]/.test(pwd)) score += 1;
+  if (/\d/.test(pwd)) score += 1;
+  if (/[^A-Za-z0-9]/.test(pwd)) score += 1;
+  const levels = [
+    { strength: 0, label: 'Too weak', color: 'bg-red-500', textColor: 'text-red-500' },
+    { strength: 1, label: 'Weak', color: 'bg-red-500', textColor: 'text-red-500' },
+    { strength: 2, label: 'Fair', color: 'bg-amber-500', textColor: 'text-amber-600' },
+    { strength: 3, label: 'Good', color: 'bg-blue-500', textColor: 'text-blue-600' },
+    { strength: 4, label: 'Strong', color: 'bg-green-500', textColor: 'text-green-600' },
+  ];
+  return levels[score];
+};
+
+const StarRating = ({ rating }) => (
+  <div className="flex items-center gap-0.5">
+    {[1, 2, 3, 4, 5].map((i) => (
+      i <= (rating || 0) ? (
+        <StarRateRoundedIcon key={i} sx={{ fontSize: 16, color: '#f59e0b' }} />
+      ) : (
+        <StarOutlineRoundedIcon key={i} sx={{ fontSize: 16, color: '#cbd5e1' }} />
+      )
+    ))}
+  </div>
+);
+
+const navLinkClass = (active) =>
+  `w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors mb-0.5 ${
+    active
+      ? 'bg-sidebar-active text-sidebar-text-active'
+      : 'text-sidebar-text hover:bg-sidebar-hover hover:text-white'
+  }`;
+
+const SidebarGroup = ({ icon, label, open, onToggle, children }) => (
+  <div className="border-b border-sidebar-divider">
+    <button
+      onClick={onToggle}
+      className="w-full flex items-center gap-3 px-3 py-2.5 text-xs font-bold uppercase tracking-wider transition-colors hover:bg-sidebar-hover"
+      style={{ color: 'var(--color-sidebar-text)', borderRadius: 'var(--radius-sm)' }}
+    >
+      <span className="shrink-0">{icon}</span>
+      <span className="flex-1 text-left">{label}</span>
+      <ExpandMoreIcon
+        sx={{
+          fontSize: 18,
+          color: 'var(--color-sidebar-text)',
+          transition: 'transform 0.2s',
+          transform: open ? 'rotate(180deg)' : 'rotate(0deg)',
+        }}
+        className="shrink-0"
+      />
+    </button>
+    <div className={`flex flex-col pb-2 ${open ? '' : 'hidden'}`}>{children}</div>
+  </div>
+);
 
 const Profile = () => {
   const { isLoggedIn, user, logout } = useAuth();
@@ -47,15 +127,27 @@ const Profile = () => {
     retry: false
   });
 
+  const { data: reviewsData, isLoading: reviewsLoading } = useQuery({
+    queryKey: ['myReviews'],
+    queryFn: async () => {
+      const { data } = await apiClient.get('/reviews/me');
+      return data.data?.docs || data.data?.reviews || [];
+    },
+    enabled: isLoggedIn,
+    retry: false
+  });
+
   const userData = profileData?.data || user || {};
   const firstName = userData.firstName || '';
   const lastName = userData.lastName || '';
   const email = userData.email || '';
-  const mobile = userData.phone || userData.mobile || ''; 
+  const mobile = userData.phone || userData.mobile || '';
 
-  const [isEditingName, setIsEditingName] = useState(false);
-  const [isEditingEmail, setIsEditingEmail] = useState(false);
-  const [isEditingPhone, setIsEditingPhone] = useState(false);
+const [isEditing, setIsEditing] = useState(false);
+const [openFaq, setOpenFaq] = useState(0);
+const [sidebarGroups, setSidebarGroups] = useState({ account: true, stuff: true, support: true });
+
+const toggleSidebarGroup = (key) => setSidebarGroups(prev => ({ ...prev, [key]: !prev[key] }));
 
   const [personalInfoForm, setPersonalInfoForm] = useState({
     firstName: '',
@@ -75,17 +167,42 @@ const Profile = () => {
     }
   }, [profileData, user]);
 
-  const handleSavePersonalInfo = async (section) => {
+const handleSavePersonalInfo = async () => {
+  try {
+    await apiClient.put('/auth/profile', personalInfoForm);
+    setIsEditing(false);
+    queryClient.invalidateQueries({ queryKey: ['profile'] });
+    toast('Profile updated successfully');
+  } catch (error) {
+    console.error('Failed to update profile', error);
+    toast('Failed to update profile', 'error');
+  }
+};
+
+const handleCancelEdit = () => {
+  setIsEditing(false);
+  setPersonalInfoForm({ firstName, lastName, email, phone: mobile });
+};
+
+  const handleChangePassword = async () => {
+    if (passwordForm.newPassword !== passwordForm.confirmPassword) {
+      toast('New passwords do not match.', 'error');
+      return;
+    }
+    setIsSavingPassword(true);
     try {
-      await apiClient.put('/auth/profile', personalInfoForm);
-      if (section === 'name') setIsEditingName(false);
-      if (section === 'email') setIsEditingEmail(false);
-      if (section === 'phone') setIsEditingPhone(false);
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
-      toast('Profile updated successfully');
+      await apiClient.put('/auth/password', {
+        currentPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+      });
+      toast('Password updated successfully!');
+      setPasswordOpen(false);
+      setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {
-      console.error('Failed to update profile', error);
-      toast('Failed to update profile', 'error');
+      console.error('Failed to update password:', error);
+      toast(error.response?.data?.message || 'Failed to update password.', 'error');
+    } finally {
+      setIsSavingPassword(false);
     }
   };
   const location = useLocation();
@@ -119,6 +236,13 @@ const Profile = () => {
   }, []);
   const [selectedBuildPopup, setSelectedBuildPopup] = useState(null);
   const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, buildId: null, isDraft: false });
+  const [showDeactivateModal, setShowDeactivateModal] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
+  const passwordStrength = getPasswordStrength(passwordForm.newPassword);
+  const [isSavingPassword, setIsSavingPassword] = useState(false);
+  const [isDeactivating, setIsDeactivating] = useState(false);
   const { addToCart, cartItems } = useCart();
   const { toast } = useToast();
   
@@ -201,6 +325,29 @@ const Profile = () => {
     }
   };
 
+  const handleDeactivateAccount = async () => {
+    setIsDeactivating(true);
+    try {
+      await apiClient.post('/auth/deactivate');
+      clearToken();
+      localStorage.removeItem('rigcraft_auth');
+      localStorage.removeItem('rigcraft_user');
+      localStorage.removeItem('admin-auth-storage');
+      localStorage.removeItem('rigcraft_cart_guest');
+      localStorage.removeItem('rigcraft_wishlist_guest');
+      sessionStorage.setItem(
+        'rigcraft_pending_toast',
+        JSON.stringify({ message: 'Account deactivated.', type: 'success' })
+      );
+      window.location.href = '/';
+    } catch (error) {
+      console.error('Failed to deactivate account', error);
+      setIsDeactivating(false);
+      setShowDeactivateModal(false);
+      toast('Failed to deactivate account', 'error');
+    }
+  };
+
   const handleAddBuildToCart = (build) => {
     const parseNum = (val) => {
       if (!val) return 0;
@@ -237,6 +384,31 @@ const Profile = () => {
   const handleLogout = () => {
     logout();
     navigate('/');
+  };
+
+  const handleVerifyComingSoon = (target) => {
+    toast(`${target} verification is coming soon.`, 'warning');
+  };
+
+  const handleAvatarChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    formData.append('avatar', file);
+    formData.append('firstName', firstName || '');
+    formData.append('lastName', lastName || '');
+    formData.append('email', email || '');
+    formData.append('phone', mobile || '');
+    try {
+      await apiClient.put('/auth/profile', formData);
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      toast('Profile photo updated successfully');
+    } catch (error) {
+      console.error('Failed to update avatar', error);
+      toast('Failed to update profile photo', 'error');
+    } finally {
+      if (e.target) e.target.value = '';
+    }
   };
 
   const handleAddressChange = (e) => {
@@ -289,189 +461,340 @@ const Profile = () => {
   return (
     <>
       <section className="w-full py-8 min-h-screen bg-gray-50 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-6xl mx-auto">
+        <div className="max-w-7xl mx-auto">
           <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Profile' }]} />
           <div className="flex flex-col lg:flex-row gap-6">
             
             {/* LEFT SIDEBAR */}
             <div className="lg:w-1/4 flex flex-col gap-4">
               
-              {/* Profile Header Box */}
-              <div className="bg-white p-4 shadow-sm flex items-center gap-4 border border-gray-100 rounded-sm">
-                <AccountCircleIcon sx={{ fontSize: 48, color: 'var(--color-primary)' }} />
-                <div>
-                  <div className="text-[11px] text-gray-500 uppercase tracking-wider font-bold">Hello,</div>
-                  <div className="text-[16px] font-black text-gray-900 leading-tight">
-                    {firstName} <br/> {lastName}
+                {/* Profile Header Box */}
+                <div className="bg-sidebar p-4 shadow-sm flex items-center gap-4 rounded-sm" style={{ border: '1px solid var(--color-sidebar-divider)' }}>
+                  <div className="relative shrink-0">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-[var(--color-primary)] to-purple-600 flex items-center justify-center text-white font-bold text-lg uppercase overflow-hidden">
+                      {userData?.avatar?.url ? (
+                        <img src={userData.avatar.url} alt="Profile" className="w-full h-full object-cover" />
+                      ) : (
+                        <span>{(firstName[0] || 'U')}{(lastName[0] || '')}</span>
+                      )}
+                    </div>
+                    <label
+                      title="Change profile photo"
+                      className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-[var(--color-primary)] text-white flex items-center justify-center cursor-pointer hover:opacity-90 transition-opacity shadow-md"
+                    >
+                      <PhotoCameraIcon sx={{ fontSize: 14 }} />
+                      <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                    </label>
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] uppercase tracking-wider font-bold" style={{ color: 'var(--color-sidebar-text)' }}>Hello,</div>
+                    <div className="text-[16px] font-black leading-tight truncate" style={{ color: 'var(--color-sidebar-text-active)' }}>
+                      {firstName} {lastName}
+                    </div>
+                    <div className="text-[12px] truncate" style={{ color: 'var(--color-sidebar-text)' }}>{email || '—'}</div>
+                    <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <VerificationBadge verified={!!userData?.isEmailVerified} onVerify={() => handleVerifyComingSoon('Email')} />
+                      <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: 'var(--color-sidebar-text)' }}>
+                        Member since {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Aug 2026'}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
 
               {/* Navigation Box */}
-              <div className="bg-white shadow-sm flex flex-col overflow-hidden border border-gray-100 rounded-sm">
-                
-                {/* Orders */}
-                <div 
-                  className={`p-4 border-b border-gray-100 flex items-center justify-between cursor-pointer transition-colors group ${activeTab === 'orders' ? 'bg-[#F0F7FF]' : 'hover:bg-gray-50'}`}
-                  onClick={() => setActiveTab('orders')}
-                >
-                  <div className="flex items-center gap-4">
-                    <Inventory2OutlinedIcon sx={{ color: 'var(--color-primary)' }} />
-                    <span className="font-bold text-gray-600 group-hover:text-[var(--color-primary)]">MY ORDERS</span>
-                  </div>
-                  <span className="text-gray-400 font-bold">&gt;</span>
-                </div>
+              <div className="bg-sidebar shadow-sm flex flex-col overflow-hidden rounded-sm" style={{ border: '1px solid var(--color-sidebar-divider)' }}>
 
                 {/* Account Settings */}
-                <div className="border-b border-gray-100">
-                  <div className="p-4 flex items-center gap-4">
-                    <PersonOutlineOutlinedIcon sx={{ color: 'var(--color-primary)' }} />
-                    <span className="font-bold text-gray-500 uppercase text-[14px]">Account Settings</span>
+                <SidebarGroup
+                  icon={<PersonOutlineOutlinedIcon fontSize="small" sx={{ color: 'var(--color-sidebar-text)' }} />}
+                  label="Account Settings"
+                  open={sidebarGroups.account}
+                  onToggle={() => toggleSidebarGroup('account')}
+                >
+                  <div
+                    className={`${navLinkClass(activeTab === 'profile')} pl-9`}
+                    onClick={() => setActiveTab('profile')}
+                  >
+                    Profile Information
                   </div>
-                  <div className="flex flex-col pb-2">
-                    <div 
-                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'profile' ? 'bg-[#F0F7FF] text-[var(--color-primary)] border-[var(--color-primary)]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[var(--color-primary)]'}`}
-                      onClick={() => setActiveTab('profile')}
-                    >
-                      Profile Information
-                    </div>
-                    <div 
-                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'addresses' ? 'bg-[#F0F7FF] text-[var(--color-primary)] border-[var(--color-primary)]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[var(--color-primary)]'}`}
-                      onClick={() => { setActiveTab('addresses'); setIsAddingAddress(false); }}
-                    >
-                      Manage Addresses
-                    </div>
+                  <div
+                    className={`${navLinkClass(activeTab === 'addresses')} pl-9`}
+                    onClick={() => { setActiveTab('addresses'); setIsAddingAddress(false); }}
+                  >
+                    Manage Addresses
                   </div>
-                </div>
+                </SidebarGroup>
 
                 {/* My Stuff */}
-                <div className="border-b border-gray-100">
-                  <div className="p-4 flex items-center gap-4">
-                    <FavoriteBorderIcon sx={{ color: 'var(--color-primary)' }} />
-                    <span className="font-bold text-gray-500 uppercase text-[14px]">My Stuff</span>
+                <SidebarGroup
+                  icon={<FavoriteBorderIcon fontSize="small" sx={{ color: 'var(--color-sidebar-text)' }} />}
+                  label="My Stuff"
+                  open={sidebarGroups.stuff}
+                  onToggle={() => toggleSidebarGroup('stuff')}
+                >
+                  <div
+                    className={`${navLinkClass(activeTab === 'orders')} pl-9`}
+                    onClick={() => setActiveTab('orders')}
+                  >
+                    Track Order
                   </div>
-                  <div className="flex flex-col pb-2">
-                    <div 
-                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'orders' ? 'bg-[#F0F7FF] text-[var(--color-primary)] border-[var(--color-primary)]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[var(--color-primary)]'}`}
-                      onClick={() => setActiveTab('orders')}
-                    >
-                      Track Order
-                    </div>
-                    <div 
-                      className="pl-14 pr-4 py-2.5 text-gray-600 font-bold text-[14px] hover:bg-gray-50 hover:text-[var(--color-primary)] cursor-pointer transition-colors border-l-4 border-transparent"
-                      onClick={() => navigate('/wishlist')}
-                    >
-                      My Wishlist
-                    </div>
-                    <div 
-                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'coupons' ? 'bg-[#F0F7FF] text-[var(--color-primary)] border-[var(--color-primary)]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[var(--color-primary)]'}`}
-                      onClick={() => setActiveTab('coupons')}
-                    >
-                      Coupons
-                    </div>
-                    <div 
-                      className={`pl-14 pr-4 py-2 text-[14px] font-bold cursor-pointer transition-colors border-l-4 ${activeTab === 'builds' ? 'bg-[#F0F7FF] text-[var(--color-primary)] border-[var(--color-primary)]' : 'text-gray-600 border-transparent hover:bg-gray-50 hover:text-[var(--color-primary)]'}`}
-                      onClick={() => setActiveTab('builds')}
-                    >
-                      Your Builds
-                    </div>
+                  <div
+                    className={`${navLinkClass(false)} pl-9`}
+                    onClick={() => navigate('/wishlist')}
+                  >
+                    My Wishlist
                   </div>
-                </div>
+                  <div
+                    className={`${navLinkClass(activeTab === 'coupons')} pl-9`}
+                    onClick={() => setActiveTab('coupons')}
+                  >
+                    Coupons
+                  </div>
+                  <div
+                    className={`${navLinkClass(activeTab === 'builds')} pl-9`}
+                    onClick={() => setActiveTab('builds')}
+                  >
+                    Your Builds
+                  </div>
+                  <div
+                    className={`${navLinkClass(activeTab === 'reviews')} pl-9`}
+                    onClick={() => setActiveTab('reviews')}
+                  >
+                    My Reviews
+                  </div>
+                </SidebarGroup>
+
+                {/* Support */}
+                <SidebarGroup
+                  icon={<SupportAgentIcon fontSize="small" sx={{ color: 'var(--color-sidebar-text)' }} />}
+                  label="Support"
+                  open={sidebarGroups.support}
+                  onToggle={() => toggleSidebarGroup('support')}
+                >
+                  <div
+                    className={`${navLinkClass(false)} pl-9`}
+                    onClick={() => navigate('/my-tickets')}
+                  >
+                    My Support Tickets
+                  </div>
+                  <div
+                    className={`${navLinkClass(false)} pl-9`}
+                    onClick={() => navigate('/help')}
+                  >
+                    Help Center
+                  </div>
+                </SidebarGroup>
 
                 {/* Logout */}
-                <div 
-                  className="p-4 flex items-center gap-4 cursor-pointer hover:bg-red-50 transition-colors group"
-                  onClick={handleLogout}
-                >
-                  <LogoutOutlinedIcon sx={{ color: 'var(--color-text-secondary)' }} className="group-hover:text-red-500 transition-colors" />
-                  <span className="font-bold text-gray-600 group-hover:text-red-500 transition-colors">Logout</span>
+                <div className="border-t border-sidebar-divider p-2">
+                  <button
+                    onClick={() => setShowLogoutModal(true)}
+                    className="w-full flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-colors"
+                    style={{ borderRadius: 'var(--radius-sm)', color: 'var(--color-sidebar-text)' }}
+                    onMouseEnter={(e) => { e.currentTarget.style.backgroundColor = 'var(--color-sidebar-hover)'; e.currentTarget.style.color = '#f87171'; }}
+                    onMouseLeave={(e) => { e.currentTarget.style.backgroundColor = 'transparent'; e.currentTarget.style.color = 'var(--color-sidebar-text)'; }}
+                  >
+                    <LogoutOutlinedIcon fontSize="small" sx={{ color: 'inherit' }} />
+                    <span className="flex-1 text-left">Logout</span>
+                  </button>
                 </div>
               </div>
             </div>
 
             {/* RIGHT CONTENT AREA */}
-            <div className="lg:w-3/4">
+            <div className="lg:w-2/3">
               <div className="bg-white shadow-sm p-8 border border-gray-100 rounded-sm">
-                
-                {activeTab === 'profile' && (
+{activeTab === 'profile' && (
                   <FadeUp>
-                    <div className="mb-10">
-                      <div className="flex items-center gap-6 mb-4">
-                        <h2 className="text-xl font-bold text-gray-900">Personal Information</h2>
-                        {!isEditingName ? (
-                          <button onClick={() => setIsEditingName(true)} className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
-                        ) : (
-                          <div className="flex gap-2">
-                            <button onClick={() => handleSavePersonalInfo('name')} className="text-[14px] font-bold text-green-600 hover:text-green-700">Save</button>
-                            <button onClick={() => { setIsEditingName(false); setPersonalInfoForm(prev => ({...prev, firstName, lastName})); }} className="text-[14px] font-bold text-gray-600 hover:text-gray-700">Cancel</button>
+                    {/* Personal Information */}
+                    <div className="mb-8">
+                      <div className="w-full">
+                        <div className="bg-white border border-gray-100 rounded-sm shadow-sm p-6">
+                          <div className="flex items-center justify-between flex-wrap gap-4 mb-6 pb-4 border-b border-gray-100">
+                            <div>
+                              <h2 className="text-xl font-bold text-gray-900">Personal Information</h2>
+                              <p className="text-[13px] text-gray-500 mt-1">Manage your account name, email and mobile number.</p>
+                            </div>
+                            {!isEditing ? (
+                              <button
+                                onClick={() => setIsEditing(true)}
+                                className="px-4 py-2 bg-[var(--color-primary)] text-white text-[13px] font-bold rounded-sm hover:opacity-90 transition-opacity uppercase"
+                              >
+                                Edit Profile
+                              </button>
+                            ) : (
+                              <div className="flex gap-2">
+                                <button
+                                  onClick={handleSavePersonalInfo}
+                                  className="px-4 py-2 bg-green-600 text-white text-[13px] font-bold rounded-sm hover:bg-green-700 transition-colors uppercase"
+                                >
+                                  Save Changes
+                                </button>
+                                <button
+                                  onClick={handleCancelEdit}
+                                  className="px-4 py-2 bg-gray-200 text-gray-700 text-[13px] font-bold rounded-sm hover:bg-gray-300 transition-colors uppercase"
+                                >
+                                  Cancel
+                                </button>
+                              </div>
+                            )}
                           </div>
-                        )}
-                      </div>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mb-4">
-                        <div>
-                          <input type="text" value={isEditingName ? personalInfoForm.firstName : firstName} onChange={(e) => setPersonalInfoForm({...personalInfoForm, firstName: e.target.value})} readOnly={!isEditingName} className={`w-full ${isEditingName ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="First Name" />
-                        </div>
-                        <div>
-                          <input type="text" value={isEditingName ? personalInfoForm.lastName : lastName} onChange={(e) => setPersonalInfoForm({...personalInfoForm, lastName: e.target.value})} readOnly={!isEditingName} className={`w-full ${isEditingName ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="Last Name" />
-                        </div>
-                      </div>
-                    </div>
 
-                    <div className="mb-10">
-                      <div className="flex items-center gap-6 mb-4">
-                        <h2 className="text-xl font-bold text-gray-900">Email Address</h2>
-                        {!isEditingEmail ? (
-                          <button onClick={() => setIsEditingEmail(true)} className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
-                        ) : (
-                          <div className="flex gap-2">
-                            <button onClick={() => handleSavePersonalInfo('email')} className="text-[14px] font-bold text-green-600 hover:text-green-700">Save</button>
-                            <button onClick={() => { setIsEditingEmail(false); setPersonalInfoForm(prev => ({...prev, email})); }} className="text-[14px] font-bold text-gray-600 hover:text-gray-700">Cancel</button>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">First Name</label>
+                              <input
+                                type="text"
+                                value={isEditing ? personalInfoForm.firstName : firstName}
+                                onChange={(e) => setPersonalInfoForm({ ...personalInfoForm, firstName: e.target.value })}
+                                readOnly={!isEditing}
+                                className={`w-full ${isEditing ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`}
+                                placeholder="First Name"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Last Name</label>
+                              <input
+                                type="text"
+                                value={isEditing ? personalInfoForm.lastName : lastName}
+                                onChange={(e) => setPersonalInfoForm({ ...personalInfoForm, lastName: e.target.value })}
+                                readOnly={!isEditing}
+                                className={`w-full ${isEditing ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`}
+                                placeholder="Last Name"
+                              />
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Email Address</label>
+                              <div className="relative">
+                                <input
+                                  type="email"
+                                  value={isEditing ? personalInfoForm.email : email}
+                                  onChange={(e) => setPersonalInfoForm({ ...personalInfoForm, email: e.target.value })}
+                                  readOnly={!isEditing}
+                                  className={`w-full ${isEditing ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 pr-16 focus:outline-none rounded-sm font-medium`}
+                                  placeholder="Email Address"
+                                />
+                                {userData?.isEmailVerified ? (
+                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-green-600">✓ Verified</span>
+                                ) : (
+                                  <button
+                                    onClick={() => handleVerifyComingSoon('Email')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-amber-600 hover:underline"
+                                  >
+                                    Verify
+                                  </button>
+                                )}
+                              </div>
+                            </div>
+                            <div>
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Mobile Number</label>
+                              <div className="relative">
+                                <input
+                                  type="text"
+                                  value={isEditing ? personalInfoForm.phone : mobile}
+                                  onChange={(e) => setPersonalInfoForm({ ...personalInfoForm, phone: e.target.value })}
+                                  readOnly={!isEditing}
+                                  className={`w-full ${isEditing ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 pr-16 focus:outline-none rounded-sm font-medium`}
+                                  placeholder="Mobile Number"
+                                />
+                                {userData?.isPhoneVerified ? (
+                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-green-600">✓ Verified</span>
+                                ) : (
+                                  <button
+                                    onClick={() => handleVerifyComingSoon('Mobile')}
+                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-amber-600 hover:underline"
+                                  >
+                                    Verify
+                                  </button>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                        )}
-                      </div>
-                      <div className="max-w-md">
-                        <input type="email" value={isEditingEmail ? personalInfoForm.email : email} onChange={(e) => setPersonalInfoForm({...personalInfoForm, email: e.target.value})} readOnly={!isEditingEmail} className={`w-full ${isEditingEmail ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="Email Address" />
-                      </div>
-                    </div>
-
-                    <div className="mb-12">
-                      <div className="flex items-center gap-6 mb-4">
-                        <h2 className="text-xl font-bold text-gray-900">Mobile Number</h2>
-                        {!isEditingPhone ? (
-                          <button onClick={() => setIsEditingPhone(true)} className="text-[14px] font-bold text-blue-600 hover:text-blue-700">Edit</button>
-                        ) : (
-                          <div className="flex gap-2">
-                            <button onClick={() => handleSavePersonalInfo('phone')} className="text-[14px] font-bold text-green-600 hover:text-green-700">Save</button>
-                            <button onClick={() => { setIsEditingPhone(false); setPersonalInfoForm(prev => ({...prev, phone: mobile})); }} className="text-[14px] font-bold text-gray-600 hover:text-gray-700">Cancel</button>
-                          </div>
-                        )}
-                      </div>
-                      <div className="max-w-md">
-                        <input type="text" value={isEditingPhone ? personalInfoForm.phone : mobile} onChange={(e) => setPersonalInfoForm({...personalInfoForm, phone: e.target.value})} readOnly={!isEditingPhone} className={`w-full ${isEditingPhone ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`} placeholder="Mobile Number" />
+                        </div>
                       </div>
                     </div>
 
                     <hr className="border-gray-200 mb-8" />
 
+                    {/* Security Settings */}
+                    <div className="bg-white border border-gray-100 rounded-sm shadow-sm p-6">
+                      <h2 className="text-xl font-bold text-gray-900 mb-6">Security Settings</h2>
+
+                      <div className="flex items-center justify-between mb-8">
+                        <div>
+                          <h3 className="text-[16px] font-bold text-gray-800">Password</h3>
+                          <p className="text-gray-500 text-[14px] mt-1">••••••••••••</p>
+                          {userData?.passwordChangedAt && (
+                            <p className="text-gray-400 text-[12px] mt-0.5">
+                              Last changed {new Date(userData.passwordChangedAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                            </p>
+                          )}
+                        </div>
+                        <button
+                          onClick={() => setPasswordOpen(true)}
+                          className="px-4 py-2 bg-[var(--color-primary)] text-white text-[13px] font-bold rounded-sm hover:opacity-90 transition-opacity uppercase"
+                        >
+                          Change Password
+                        </button>
+                      </div>
+
+                      <div className="border border-red-100 bg-red-50 p-4 rounded-sm">
+                        <h3 className="text-[16px] font-bold text-red-600 mb-4">Danger Zone</h3>
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <p className="font-bold text-gray-800">Deactivate Account</p>
+                            <p className="text-gray-500 text-[13px]">This action cannot be undone.</p>
+                          </div>
+                          <button
+                            onClick={() => setShowDeactivateModal(true)}
+                            className="px-4 py-2 bg-red-500 text-white text-[13px] font-bold rounded-sm hover:bg-red-600 transition-colors uppercase"
+                          >
+                            Deactivate
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    <hr className="border-gray-200 mb-8" />
+
+                    {/* FAQs */}
                     <div>
                       <h2 className="text-xl font-bold text-gray-900 mb-6">FAQs</h2>
-                      <div className="mb-6">
-                        <h4 className="font-bold text-gray-800 text-[14px] mb-2">What happens when I update my email address (or mobile number)?</h4>
-                        <p className="text-gray-600 text-[13px] leading-relaxed">Your login identity will be updated to the new email address (or mobile number). You will need to use the updated credentials for future logins and order tracking.</p>
+                      <div className="divide-y divide-gray-100 border border-gray-100 rounded-sm overflow-hidden">
+                        {[
+                          {
+                            q: 'What happens when I update my email address (or mobile number)?',
+                            a: 'Your login identity will be updated to the new email address (or mobile number). You will need to use the updated credentials for future logins and order tracking.'
+                          },
+                          {
+                            q: 'Does my RigCraft account get deactivated if I change my email?',
+                            a: 'No, account data remains persistent. All configurations, order history, and saved compatibility alerts will be transferred to your new primary identifier instantly.'
+                          },
+                          {
+                            q: 'Why do I need to verify my account?',
+                            a: 'Verification ensures that hardware warranty claims and high-value orders are securely linked to your identity, preventing unauthorized engineering configuration changes.'
+                          },
+                        ].map((faq, i) => (
+                          <div key={i} className="bg-white">
+                            <button
+                              onClick={() => setOpenFaq(openFaq === i ? -1 : i)}
+                              className="w-full flex items-center justify-between gap-4 py-4 px-4 text-left hover:bg-gray-50 transition-colors"
+                            >
+                              <span className="font-bold text-gray-800 text-[14px]">{faq.q}</span>
+                              <ExpandMoreIcon
+                                sx={{ fontSize: 20, color: 'var(--color-primary)' }}
+                                className={`shrink-0 transition-transform ${openFaq === i ? 'rotate-180' : ''}`}
+                              />
+                            </button>
+                            {openFaq === i && (
+                              <p className="text-gray-600 text-[13px] leading-relaxed px-4 pb-4">{faq.a}</p>
+                            )}
+                          </div>
+                        ))}
                       </div>
-                      <div className="mb-6">
-                        <h4 className="font-bold text-gray-800 text-[14px] mb-2">Does my RigCraft account get deactivated if I change my email?</h4>
-                        <p className="text-gray-600 text-[13px] leading-relaxed">No, account data remains persistent. All configurations, order history, and saved compatibility alerts will be transferred to your new primary identifier instantly.</p>
-                      </div>
-                      <div className="mb-8">
-                        <h4 className="font-bold text-gray-800 text-[14px] mb-2">Why do I need to verify my account?</h4>
-                        <p className="text-gray-600 text-[13px] leading-relaxed">Verification ensures that hardware warranty claims and high-value orders are securely linked to your identity, preventing unauthorized engineering configuration changes.</p>
-                      </div>
-                      <button className="text-[13px] font-bold text-red-500 hover:text-red-600">Deactivate Account</button>
                     </div>
-                  </FadeUp>
-                )}
+                   </FadeUp>
+                 )}
 
                 {activeTab === 'addresses' && (
                   <FadeUp>
@@ -739,6 +1062,56 @@ const Profile = () => {
                   </FadeUp>
                 )}
 
+                {activeTab === 'reviews' && (
+                  <FadeUp>
+                    <div className="mb-6 flex justify-between items-center">
+                      <h2 className="text-xl font-bold text-gray-900">My Reviews</h2>
+                    </div>
+                    {reviewsLoading ? (
+                      <div className="text-center py-12 text-gray-400">Loading reviews...</div>
+                    ) : (reviewsData || []).length === 0 ? (
+                      <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-200">
+                        <StarOutlineRoundedIcon sx={{ fontSize: 48, color: '#94A3B8', mb: 2 }} />
+                        <h3 className="text-lg font-bold text-gray-700">No Reviews Yet</h3>
+                        <p className="text-gray-500 mt-2 mb-6">You haven't reviewed any products yet.</p>
+                        <button
+                          onClick={() => navigate('/')}
+                          className="bg-[var(--color-primary)] text-white font-bold py-2.5 px-6 rounded-sm hover:opacity-90 transition-opacity uppercase text-[13px]"
+                        >
+                          Browse Products
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-4">
+                        {(reviewsData || []).map((review) => (
+                          <div key={review._id} className="border border-gray-200 p-5 rounded-sm bg-white hover:shadow-md transition-shadow">
+                            <div className="flex items-start justify-between gap-4 mb-3">
+                              <div className="min-w-0">
+                                <div className="flex items-center gap-2 mb-1">
+                                  <StarRating rating={review.rating} />
+                                  <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm ${review.status === 'approved' ? 'bg-green-100 text-green-700' : review.status === 'rejected' ? 'bg-red-100 text-red-600' : 'bg-amber-100 text-amber-700'}`}>
+                                    {review.status || 'pending'}
+                                  </span>
+                                </div>
+                                <div className="text-[13px] font-bold text-gray-900 truncate">
+                                  {review.item?.name || review.item?.title || 'Product review'}
+                                </div>
+                              </div>
+                              <span className="text-[11px] text-gray-400 shrink-0">
+                                {new Date(review.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                              </span>
+                            </div>
+                            {review.title && (
+                              <h4 className="font-bold text-gray-800 text-[14px] mb-1">{review.title}</h4>
+                            )}
+                            <p className="text-gray-600 text-[13px] leading-relaxed">{review.comment}</p>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </FadeUp>
+                )}
+
               </div>
             </div>
             
@@ -863,6 +1236,180 @@ const Profile = () => {
                   className="px-6 py-2.5 font-bold text-white bg-red-500 hover:bg-red-600 rounded-sm transition-colors flex-1"
                 >
                   Delete
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Change Password Modal */}
+      <AnimatePresence>
+        {passwordOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setPasswordOpen(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white max-w-sm w-full p-6 shadow-2xl relative"
+              style={{ borderRadius: 'var(--radius-sm)' }}
+            >
+              <div className="flex items-center justify-between mb-5">
+                <h3 className="text-xl font-bold text-gray-900">Change Password</h3>
+                <button onClick={() => setPasswordOpen(false)} className="text-gray-400 hover:text-gray-800">
+                  <CloseIcon />
+                </button>
+              </div>
+              <div className="flex flex-col gap-4">
+                <input
+                  type="password"
+                  placeholder="Current Password"
+                  value={passwordForm.currentPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, currentPassword: e.target.value })}
+                  className="w-full border border-gray-200 text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium"
+                />
+                <input
+                  type="password"
+                  placeholder="New Password"
+                  value={passwordForm.newPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, newPassword: e.target.value })}
+                  className="w-full border border-gray-200 text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium"
+                />
+                {passwordForm.newPassword && (
+                  <div>
+                    <div className="flex gap-1.5 mb-1">
+                      {[1, 2, 3, 4].map((bar) => (
+                        <div
+                          key={bar}
+                          className={`h-1.5 flex-1 rounded-full ${bar <= passwordStrength.strength ? passwordStrength.color : 'bg-gray-200'}`}
+                        />
+                      ))}
+                    </div>
+                    <span className={`text-[11px] font-bold uppercase tracking-wide ${passwordStrength.textColor}`}>
+                      {passwordStrength.label}
+                    </span>
+                  </div>
+                )}
+                <input
+                  type="password"
+                  placeholder="Confirm New Password"
+                  value={passwordForm.confirmPassword}
+                  onChange={(e) => setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })}
+                  className="w-full border border-gray-200 text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium"
+                />
+                {passwordForm.newPassword !== passwordForm.confirmPassword && (
+                  <span className="text-xs font-bold text-red-500">Passwords do not match</span>
+                )}
+              </div>
+              <div className="flex gap-3 mt-6 justify-end">
+                <button
+                  onClick={() => setPasswordOpen(false)}
+                  className="px-6 py-2.5 font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleChangePassword}
+                  disabled={isSavingPassword}
+                  className="px-6 py-2.5 font-bold text-white bg-[var(--color-primary)] hover:opacity-90 rounded-sm transition-colors disabled:opacity-50"
+                >
+                  {isSavingPassword ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+
+      {/* Deactivate Account Confirmation Modal */}
+      <AnimatePresence>
+        {showDeactivateModal && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => !isDeactivating && setShowDeactivateModal(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white max-w-sm w-full p-6 shadow-2xl relative text-center"
+              style={{ borderRadius: 'var(--radius-sm)' }}
+            >
+              <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+                <DeleteOutlineIcon fontSize="large" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Deactivate Account</h3>
+              <p className="text-gray-500 mb-6">Are you sure you want to deactivate your account? This action cannot be undone and your account can only be restored by an administrator.</p>
+              
+              <div className="flex gap-3 justify-center">
+                <button 
+                  onClick={() => setShowDeactivateModal(false)}
+                  disabled={isDeactivating}
+                  className="px-6 py-2.5 font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-sm transition-colors flex-1 disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+                <button 
+                  onClick={handleDeactivateAccount}
+                  disabled={isDeactivating}
+                  className="px-6 py-2.5 font-bold text-white bg-red-500 hover:bg-red-600 rounded-sm transition-colors flex-1 disabled:opacity-50"
+                >
+                  {isDeactivating ? 'Deactivating...' : 'Deactivate'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Logout Confirmation Modal */}
+      <AnimatePresence>
+        {showLogoutModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setShowLogoutModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="bg-white max-w-sm w-full p-6 shadow-2xl relative text-center"
+              style={{ borderRadius: 'var(--radius-sm)' }}
+            >
+              <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                <LogoutOutlinedIcon fontSize="large" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Logout</h3>
+              <p className="text-gray-500 mb-6">Are you sure you want to log out of your account?</p>
+
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => setShowLogoutModal(false)}
+                  className="px-6 py-2.5 font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-sm transition-colors flex-1"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => { setShowLogoutModal(false); handleLogout(); }}
+                  className="px-6 py-2.5 font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-sm transition-colors flex-1"
+                >
+                  Logout
                 </button>
               </div>
             </motion.div>

@@ -38,6 +38,7 @@ class ReviewRepository extends BaseRepository {
         page,
         limit,
         sort,
+        populate: [{ path: "item", select: "name slug title sku images" }],
       }
     );
   }

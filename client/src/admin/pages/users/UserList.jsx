@@ -69,6 +69,7 @@ const UserList = () => {
         { value: "", label: "All" },
         { value: "active", label: "Active" },
         { value: "blocked", label: "Blocked" },
+        { value: "deactivated", label: "Deactivated" },
       ],
     },
   ];

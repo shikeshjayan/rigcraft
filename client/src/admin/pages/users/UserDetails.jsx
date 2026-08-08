@@ -10,6 +10,8 @@ import {
   Check as CheckIcon,
   Block as BlockIcon,
   Delete as DeleteIcon,
+  PersonOff as PersonOffIcon,
+  Restore as RestoreIcon,
   ShoppingBag as OrdersIcon,
   RateReview as ReviewsIcon,
   LocationOn as AddressesIcon,
@@ -172,6 +174,20 @@ const UserDetails = () => {
     setConfirmAction(null);
   };
 
+  const handleDeactivateToggle = async () => {
+    try {
+      const updated = await userService.toggleDeactivate(id);
+      setUser((prev) => ({
+        ...prev,
+        status: updated.deactivatedAt ? "deactivated" : updated.isBlocked ? "blocked" : "active",
+      }));
+      toast(updated.deactivatedAt ? "User deactivated" : "User restored");
+    } catch (err) {
+      toast(extractError(err, "Failed to update user"), "error");
+    }
+    setConfirmAction(null);
+  };
+
   const handleDelete = async () => {
     try {
       await userService.remove(id);
@@ -207,6 +223,7 @@ const UserDetails = () => {
   if (!user) return null;
 
   const isBlocked = user.status === "blocked";
+  const isDeactivated = user.status === "deactivated";
   const s = user.stats || {};
 
   return (
@@ -484,8 +501,11 @@ const UserDetails = () => {
 
             {isBlocked ? "Unblock" : "Block"}
           </AdminButton>
+          <AdminButton variant={isDeactivated ? "success" : "warning"} size="small" icon={isDeactivated ? <RestoreIcon /> : <PersonOffIcon />} onClick={() => setConfirmAction(isDeactivated ? "restore" : "deactivate")}>
+            {isDeactivated ? "Restore Account" : "Deactivate"}
+          </AdminButton>
           <AdminButton variant="danger" size="small" icon={<DeleteIcon />} onClick={() => setConfirmAction("delete")}>
-            Soft Delete
+            Delete Permanently
           </AdminButton>
         </Box>
       </Box>
@@ -493,12 +513,12 @@ const UserDetails = () => {
 
       <ConfirmDialog
         open={!!confirmAction}
-        title={confirmAction === "block" ? "Block User" : confirmAction === "unblock" ? "Unblock User" : "Delete User"}
-        message={confirmAction === "block" ? "Are you sure you want to block this user? They will not be able to access their account." : confirmAction === "unblock" ? "Are you sure you want to unblock this user?" : "Are you sure you want to delete this user? This will permanently remove all their data including orders, reviews, cart, wishlist, and addresses."}
-        confirmLabel={confirmAction === "block" ? "Block" : confirmAction === "unblock" ? "Unblock" : "Delete"}
-        severity={confirmAction === "delete" ? "danger" : "warning"}
+        title={confirmAction === "block" ? "Block User" : confirmAction === "unblock" ? "Unblock User" : confirmAction === "deactivate" ? "Deactivate User" : confirmAction === "restore" ? "Restore User" : "Delete User Permanently"}
+        message={confirmAction === "block" ? "Are you sure you want to block this user? They will not be able to access their account." : confirmAction === "unblock" ? "Are you sure you want to unblock this user?" : confirmAction === "deactivate" ? "Are you sure you want to deactivate this user's account? They will not be able to sign in until it is restored." : confirmAction === "restore" ? "Are you sure you want to restore this user's account? They will regain access to it." : "Are you sure you want to PERMANENTLY DELETE this user? This action is irreversible and will destroy all their data including orders, reviews, cart, wishlist, builds, and addresses."}
+        confirmLabel={confirmAction === "block" ? "Block" : confirmAction === "unblock" ? "Unblock" : confirmAction === "deactivate" ? "Deactivate" : confirmAction === "restore" ? "Restore" : "Delete Permanently"}
+        severity={confirmAction === "delete" || confirmAction === "deactivate" ? "danger" : "warning"}
         loading={saving}
-        onConfirm={() => { if (confirmAction === "delete") handleDelete(); else handleBlockToggle(); }}
+        onConfirm={() => { if (confirmAction === "delete") handleDelete(); else if (confirmAction === "deactivate" || confirmAction === "restore") handleDeactivateToggle(); else handleBlockToggle(); }}
         onCancel={() => setConfirmAction(null)}
       />
     </Box>

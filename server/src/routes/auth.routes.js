@@ -38,6 +38,7 @@ router.put('/cart', protect, authController.updateCart);
 router.put('/wishlist', protect, authController.updateWishlist);
 router.put('/password', protect, validate(updatePasswordSchema), authController.updatePassword);
 router.post('/logout', protect, authController.logout);
+router.post('/deactivate', protect, authController.deactivate);
 
 router.patch('/users/:id/role', protect, authorize(USER_ROLES.ADMIN), validate(updateRoleSchema), authController.updateUserRole);
 

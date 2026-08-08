@@ -10,9 +10,11 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import CancelIcon from '@mui/icons-material/Cancel';
 import SupportAgentIcon from '@mui/icons-material/SupportAgent';
 import WarningAmberIcon from '@mui/icons-material/WarningAmber';
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import apiClient from '../api/client';
 import { useToast } from '../components/toast/useToast';
 import Pagination from '../components/Pagination';
+import SelectDropdown from '../components/SelectDropdown';
 
 const ITEMS_PER_PAGE = 5;
 
@@ -37,6 +39,12 @@ const mapBackendStatus = (status) => {
   }
 };
 
+const getItemLink = (it) => {
+  if (it.itemType === 'bundle') return `/bundle/${it.slug || it.id}`;
+  if (it.itemType === 'prebuilt') return `/detail/${it.id}?type=prebuilt`;
+  return `/detail/${it.id}`;
+};
+
 const Orders = ({ embedded = false }) => {
   const navigate = useNavigate();
   const { isLoggedIn } = useAuth();
@@ -49,6 +57,9 @@ const Orders = ({ embedded = false }) => {
   // Modal state
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [orderToCancel, setOrderToCancel] = useState(null);
+  const [expandedOrders, setExpandedOrders] = useState({});
+
+  const toggleItems = (orderId) => setExpandedOrders(prev => ({ ...prev, [orderId]: !prev[orderId] }));
 
   useEffect(() => {
     if (!isLoggedIn) {
@@ -64,14 +75,14 @@ const Orders = ({ embedded = false }) => {
             rawStatus: order.orderStatus,
             status: mapBackendStatus(order.orderStatus),
             date: new Date(order.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-            item: {
-              price: order.total,
-              image: order.items[0]?.item?.image || '/placeholder.png',
-              title: order.items.length > 1 ? `${order.items[0]?.name || 'Item'} + ${order.items.length - 1} more` : order.items[0]?.name || 'Unknown Item',
-              id: order.items[0]?.item?._id || '',
-              quantity: order.items[0]?.quantity || 1
-            },
-            quantity: order.items[0]?.quantity || 1
+            total: order.total,
+            items: (order.items || []).map(it => ({
+              id: it.item?._id || '',
+              title: it.name || it.item?.name || it.item?.title || 'Unknown Item',
+              quantity: it.quantity || 1,
+              itemType: it.itemType,
+              slug: it.item?.slug,
+            })),
           }));
           setOrders(formattedOrders);
         }
@@ -138,68 +149,27 @@ const Orders = ({ embedded = false }) => {
 
   const content = isLoggedIn ? (
     <FadeUp>
-          <div className="flex flex-col lg:flex-row gap-8">
-            
-            {/* LEFT SIDEBAR: FILTERS & CONTACT */}
-            <div className="lg:w-1/4 flex flex-col gap-6">
-              
-              {/* Filter Box */}
-              <div className="bg-white p-5 border border-gray-200 shadow-sm" style={{ borderRadius: 'var(--radius-sm)' }}>
-                <h2 className="text-[16px] font-black text-gray-900 mb-4 uppercase tracking-wider border-b border-gray-100 pb-2">Filters</h2>
-                
-                <div className="flex flex-col gap-3">
-                  <h3 className="text-[12px] font-bold text-gray-500 uppercase tracking-widest mt-2">Order Status</h3>
-                  {['All', 'Live', 'Delivered'].map(f => (
-                    <label key={f} className="flex items-center gap-3 cursor-pointer group">
-                      <input 
-                        type="radio" 
-                        name="status_filter" 
-                        checked={filter === f} 
-                        onChange={() => setFilter(f)}
-                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className={`text-[14px] font-medium transition-colors ${filter === f ? 'text-blue-600 font-bold' : 'text-gray-600 group-hover:text-blue-600'}`}>{f} Orders</span>
-                    </label>
-                  ))}
-
-                  <h3 className="text-[12px] font-bold text-gray-500 uppercase tracking-widest mt-4">Time Period</h3>
-                  {['Last 30 Days', '2026', '2025'].map(f => (
-                    <label key={f} className="flex items-center gap-3 cursor-pointer group">
-                      <input 
-                        type="radio" 
-                        name="time_filter" 
-                        checked={filter === f} 
-                        onChange={() => setFilter(f)}
-                        className="w-4 h-4 text-blue-600 focus:ring-blue-500"
-                      />
-                      <span className={`text-[14px] font-medium transition-colors ${filter === f ? 'text-blue-600 font-bold' : 'text-gray-600 group-hover:text-blue-600'}`}>{f}</span>
-                    </label>
-                  ))}
-                </div>
-              </div>
-
-              {/* Contact Us Box */}
-              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 border border-blue-100 shadow-sm" style={{ borderRadius: 'var(--radius-sm)' }}>
-                <div className="flex items-center gap-3 mb-3 text-blue-700">
-                  <SupportAgentIcon />
-                  <h2 className="text-[15px] font-black uppercase tracking-wider">Need Help?</h2>
-                </div>
-                <p className="text-[13px] text-gray-700 font-medium mb-4 leading-relaxed">
-                  Have an issue with your order? Our support team is available 24/7 to assist you.
-                </p>
-                <button 
-                  onClick={() => navigate('/contact?type=order')}
-                  className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-sm hover:bg-blue-700 transition-colors text-[13px] tracking-wide uppercase"
-                >
-                  Contact Us
-                </button>
-              </div>
-
-            </div>
-
+          <div className="flex flex-col gap-6">
             {/* RIGHT SIDE: ORDER LIST */}
-            <div className="lg:w-3/4 flex flex-col gap-6">
-              <h1 className="text-2xl font-black text-gray-900 mb-2">My Orders</h1>
+            <div className="w-full flex flex-col gap-6">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                <h1 className="text-2xl font-black text-gray-900 mb-2 sm:mb-0">My Orders</h1>
+                <div className="w-full sm:w-[220px] shrink-0">
+                  <SelectDropdown
+                    value={filter}
+                    onChange={setFilter}
+                    placeholder="Filter"
+                    options={[
+                      { value: 'All', label: 'All Orders' },
+                      { value: 'Live', label: 'Live Orders' },
+                      { value: 'Delivered', label: 'Delivered' },
+                      { value: 'Last 30 Days', label: 'Last 30 Days' },
+                      { value: '2026', label: '2026' },
+                      { value: '2025', label: '2025' },
+                    ]}
+                  />
+                </div>
+              </div>
 
               {filteredOrders.length === 0 ? (
                 <div className="bg-white p-10 text-center border border-gray-200 shadow-sm" style={{ borderRadius: 'var(--radius-sm)' }}>
@@ -223,7 +193,7 @@ const Orders = ({ embedded = false }) => {
                           </div>
                           <div>
                             <div className="text-[11px] text-gray-500 font-bold uppercase tracking-wider">Total</div>
-                            <div className="text-[14px] text-gray-900 font-bold">${order.item.price.toFixed(2)}</div>
+                            <div className="text-[14px] text-gray-900 font-bold">${order.total?.toFixed(2) ?? '0.00'}</div>
                           </div>
                         </div>
                         <div className="text-[13px] font-medium text-gray-600 text-right sm:text-left">
@@ -235,36 +205,52 @@ const Orders = ({ embedded = false }) => {
                       <div className="p-6">
                         <div className="flex flex-col md:flex-row gap-6">
                           
-                          {/* Item Image & Details */}
-                          <div className="flex gap-4 flex-1">
-                            {/* <div className="w-24 h-24 flex-shrink-0 bg-white border border-gray-100 rounded-md overflow-hidden p-2">
-                              <img src={order.item.image} alt={order.item.title} className="w-full h-full object-contain mix-blend-multiply" />
-                            </div> */}
-                            <div className="flex flex-col justify-between py-1">
-                              <div>
-                                <h3 className="text-[16px] font-bold text-gray-900 leading-tight mb-1 line-clamp-2">{order.item.title}</h3>
-                                <p className="text-[13px] text-gray-500 font-medium">Qty: {order.quantity || order.item?.quantity || 1}</p>
-                              </div>
-                              <div className="flex gap-4 mt-4">
-                                <button 
-                                  onClick={() => navigate(`/detail/${order.item.id}`)}
-                                  className="text-[13px] font-bold text-blue-600 hover:text-blue-800 transition-colors uppercase tracking-wide"
-                                >
-                                  View Item
-                                </button>
-                                {order.status === 'Delivered' ? (
-                                  <div className="text-[13px] font-bold text-green-600 uppercase tracking-wide flex items-center gap-1 bg-green-50 px-3 py-1 rounded-sm border border-green-200">
-                                    <CheckCircleIcon fontSize="small" /> Product Delivered
-                                  </div>
+                          {/* Item Details */}
+                          <div className="flex flex-col gap-3 flex-1">
+                            {(order.items || []).slice(0, expandedOrders[order.id] ? order.items.length : 1).map((it, idx) => (
+                              <div key={idx} className="flex items-center justify-between gap-4">
+                                <div className="min-w-0">
+                                  <h3 className="text-[16px] font-bold text-gray-900 leading-tight line-clamp-2">{it.title}</h3>
+                                  <p className="text-[13px] text-gray-500 font-medium mt-0.5">Qty: {it.quantity}</p>
+                                </div>
+                                {it.itemType === 'savedBuild' ? (
+                                  <span className="text-[12px] font-bold text-gray-400 uppercase tracking-wide shrink-0">Custom Build</span>
                                 ) : (
                                   <button 
-                                    onClick={() => handleCancelClick(order)}
-                                    className="text-[12px] font-bold text-red-500 border border-gray-300 rounded-sm px-3 py-1.5 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all uppercase tracking-wide flex items-center gap-1 shadow-sm"
+                                    onClick={() => navigate(getItemLink(it))}
+                                    className="text-[13px] font-bold text-blue-600 hover:text-blue-800 transition-colors uppercase tracking-wide shrink-0"
                                   >
-                                    <CancelIcon fontSize="small" /> Cancel Order
+                                    View Item
                                   </button>
                                 )}
                               </div>
+                            ))}
+                            {(order.items || []).length > 1 && (
+                              <button
+                                onClick={() => toggleItems(order.id)}
+                                className="w-fit flex items-center gap-1 text-[12px] font-bold text-blue-600 hover:text-blue-800 transition-colors uppercase tracking-wide mt-1"
+                              >
+                                <ExpandMoreIcon
+                                  sx={{ fontSize: 16, transition: 'transform 0.2s', transform: expandedOrders[order.id] ? 'rotate(180deg)' : 'rotate(0deg)' }}
+                                />
+                                {expandedOrders[order.id]
+                                  ? `Show fewer (${order.items.length})`
+                                  : `${order.items.length - 1} more item${order.items.length - 1 > 1 ? 's' : ''}`}
+                              </button>
+                            )}
+                            <div className="mt-2">
+                              {order.status === 'Delivered' ? (
+                                <div className="text-[13px] font-bold text-green-600 uppercase tracking-wide flex items-center gap-1 bg-green-50 px-3 py-1 rounded-sm border border-green-200 w-fit">
+                                  <CheckCircleIcon fontSize="small" /> Product Delivered
+                                </div>
+                              ) : (
+                                <button 
+                                  onClick={() => handleCancelClick(order)}
+                                  className="text-[12px] font-bold text-red-500 border border-gray-300 rounded-sm px-3 py-1.5 hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-all uppercase tracking-wide flex items-center gap-1 shadow-sm"
+                                >
+                                  <CancelIcon fontSize="small" /> Cancel Order
+                                </button>
+                              )}
                             </div>
                           </div>
 
@@ -314,6 +300,23 @@ const Orders = ({ embedded = false }) => {
                   />
                 </>
               )}
+
+              {/* Contact Us Box */}
+              <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 border border-blue-100 shadow-sm" style={{ borderRadius: 'var(--radius-sm)' }}>
+                <div className="flex items-center gap-3 mb-3 text-blue-700">
+                  <SupportAgentIcon />
+                  <h2 className="text-[15px] font-black uppercase tracking-wider">Need Help?</h2>
+                </div>
+                <p className="text-[13px] text-gray-700 font-medium mb-4 leading-relaxed">
+                  Have an issue with your order? Our support team is available 24/7 to assist you.
+                </p>
+                <button 
+                  onClick={() => navigate('/contact?type=order')}
+                  className="w-full bg-blue-600 text-white font-bold py-2.5 rounded-sm hover:bg-blue-700 transition-colors text-[13px] tracking-wide uppercase"
+                >
+                  Contact Us
+                </button>
+              </div>
             </div>
 
           </div>
