@@ -62,6 +62,14 @@
   /* Border */
   --color-border: #e2e8f0;
 
+  /* Sidebar (storefront) */
+  --color-sidebar: #0f172a;
+  --color-sidebar-hover: #1e293b;
+  --color-sidebar-active: #2563eb;
+  --color-sidebar-text: #cbd5e1;
+  --color-sidebar-text-active: #ffffff;
+  --color-sidebar-divider: #1e293b;
+
   /* Radius */
   --radius-sm: 3px;
   --radius-card: 3px;

@@ -399,7 +399,7 @@ export const getOrders = async (userId, query = {}) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(Number(limit))
-      .populate("items.item", "name image images title price"),
+      .populate("items.item", "name image images title price slug"),
     orderRepository.countByUser(userId)
   ]);
 
