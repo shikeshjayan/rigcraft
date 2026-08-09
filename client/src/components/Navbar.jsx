@@ -18,7 +18,7 @@ import SearchBar from './Navbar/SearchBar';
 import MegaMenu from './Navbar/MegaMenu';
 import ProfileMenu from './Navbar/ProfileMenu';
 import MobileDrawer from './Navbar/MobileDrawer';
-import ConfirmDialog from './Navbar/ConfirmDialog';
+import ConfirmModal from './ConfirmModal';
 import NotificationBell from './NotificationBell';
 
 const Navbar = () => {
@@ -302,12 +302,14 @@ const wishlistCount = wishlist.length;
       />
 
       {/* Logout Confirmation Modal */}
-      <ConfirmDialog
-        open={showLogoutConfirm}
-        title="Confirm Logout"
+      <ConfirmModal
+        isOpen={showLogoutConfirm}
+        title="Logout?"
         message="Are you sure you want to log out of your account?"
-        confirmLabel="Confirm"
-        cancelLabel="Cancel"
+        confirmLabel="Yes, Log out"
+        cancelLabel="No, Stay logged in"
+        danger={false}
+        confirmDangerHover
         onConfirm={() => {
           logout();
           setShowLogoutConfirm(false);

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useRef } from 'react';
 import Card from '../components/Card';
-import ConfirmDialog from '../components/Navbar/ConfirmDialog';
+import ConfirmModal from '../components/ConfirmModal';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import apiClient from '../api/client';
@@ -200,14 +200,15 @@ const BuilderUpgrades = () => {
         )}
       </div>
 
-      <ConfirmDialog
-        open={!!pendingReplace}
+      <ConfirmModal
+        isOpen={!!pendingReplace}
         title="Replace component?"
         message={pendingReplace
           ? `Replace your current ${STEPS.find(s => s.category === pendingReplace.incoming.category)?.label || 'component'} (${pendingReplace.current.title}) with (${pendingReplace.incoming.title})?`
           : ''}
         confirmLabel="Replace"
         cancelLabel="Keep Current"
+        danger={false}
         onConfirm={confirmReplace}
         onCancel={() => setPendingReplace(null)}
       />

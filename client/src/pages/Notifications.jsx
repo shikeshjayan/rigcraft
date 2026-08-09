@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext';
 import FadeUp from '../components/FadeUp';
 import Breadcrumb from '../components/Breadcrumb';
 import Pagination from '../components/Pagination';
+import ConfirmModal from '../components/ConfirmModal';
 import { useToast } from '../components/toast/useToast';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
@@ -33,6 +34,7 @@ const Notifications = () => {
   const { refetchUnreadCount } = useNotifications();
   const { toast } = useToast();
   const [page, setPage] = useState(1);
+  const [notificationToDelete, setNotificationToDelete] = useState(null);
 
   const { data, isLoading, isError, isFetching } = useQuery({
     queryKey: ['notifications', { page, limit: ITEMS_PER_PAGE }],
@@ -71,6 +73,13 @@ const Notifications = () => {
   const totalPages = Math.max(1, data?.pagination?.pages || 1);
   const unreadCount = data?.unreadCount || 0;
 
+  const confirmDeleteNotification = () => {
+    if (notificationToDelete) {
+      deleteMutation.mutate(notificationToDelete.id);
+      setNotificationToDelete(null);
+    }
+  };
+
   const handlePageChange = (nextPage) => {
     if (nextPage < 1 || nextPage > totalPages) return;
     setPage(nextPage);
@@ -82,6 +91,7 @@ const Notifications = () => {
   };
 
   return (
+    <>
     <FadeUp delay={0.1}>
       <div className="w-full min-h-screen bg-white py-12 px-6 lg:px-8">
         <div className="max-w-[1400px] mx-auto">
@@ -195,7 +205,7 @@ const Notifications = () => {
                               <button
                                 type="button"
                                 aria-label="Delete notification"
-                                onClick={() => deleteMutation.mutate(notification.id)}
+                                onClick={() => setNotificationToDelete(notification)}
                                 className="opacity-0 group-hover:opacity-100 transition-opacity p-1.5 rounded-sm hover:bg-gray-100 text-gray-400 hover:text-red-600 cursor-pointer flex-shrink-0"
                               >
                                 <DeleteOutlinedIcon sx={{ fontSize: 18 }} />
@@ -223,6 +233,18 @@ const Notifications = () => {
         </div>
       </div>
     </FadeUp>
+
+      <ConfirmModal
+        isOpen={!!notificationToDelete}
+        title="Delete Notification?"
+        message={notificationToDelete ? `Delete "${notificationToDelete.title}"? This action cannot be undone.` : ''}
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
+        danger
+        onConfirm={confirmDeleteNotification}
+        onCancel={() => setNotificationToDelete(null)}
+      />
+    </>
   );
 };
 

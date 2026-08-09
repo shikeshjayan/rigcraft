@@ -31,7 +31,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import LockIcon from '@mui/icons-material/Lock';
 import HistoryIcon from '@mui/icons-material/History';
-import ConfirmDialog from '../components/Navbar/ConfirmDialog';
+import ConfirmModal from '../components/ConfirmModal';
 
 const formatINR = (num) => {
   const value = Number(num) || 0;
@@ -55,6 +55,7 @@ const Detail = () => {
   const [flyingItem, setFlyingItem] = useState(null);
   const [isHammering, setIsHammering] = useState(false);
   const [pendingReplaceCategory, setPendingReplaceCategory] = useState(null);
+  const [showRemoveWishlistConfirm, setShowRemoveWishlistConfirm] = useState(false);
   const [related, setRelated] = useState([]);
   const [relatedScrollable, setRelatedScrollable] = useState(false);
   const [recentlyViewed, setRecentlyViewed] = useState([]);
@@ -140,6 +141,11 @@ const Detail = () => {
     commitComponentToBuild(categoryKey);
   };
 
+  const confirmRemoveFromWishlist = () => {
+    removeFromWishlist(pc._id);
+    setShowRemoveWishlistConfirm(false);
+  };
+
   const commitComponentToBuild = (categoryKey) => {
     const currentDraft = JSON.parse(localStorage.getItem('draftBuild')) || {};
     currentDraft[categoryKey] = pc;
@@ -158,7 +164,7 @@ const Detail = () => {
   const images = pc.images && pc.images.length > 0 ? pc.images.map(img => img.url) : ['/fallback.png'];
     const title = pc.name;
     if (isWishlisted) {
-      removeFromWishlist(wishlistId);
+      setShowRemoveWishlistConfirm(true);
     } else {
       addToWishlist({
         id: wishlistId,
@@ -1038,14 +1044,26 @@ const Detail = () => {
         message={loginMessage}
       />
 
-      <ConfirmDialog
-        open={!!pendingReplaceCategory}
+      <ConfirmModal
+        isOpen={!!pendingReplaceCategory}
         title={`Replace ${pendingReplaceCategory}?`}
         message={`You already have a ${pendingReplaceCategory} in your active build. Replace it with ${title}?`}
         confirmLabel="Replace"
         cancelLabel="Keep Current"
+        danger={false}
         onConfirm={() => commitComponentToBuild(pendingReplaceCategory)}
         onCancel={() => setPendingReplaceCategory(null)}
+      />
+
+      <ConfirmModal
+        isOpen={showRemoveWishlistConfirm}
+        title="Remove from Wishlist?"
+        message={`Remove "${pc.name}" from your wishlist?`}
+        confirmLabel="Yes, Remove"
+        cancelLabel="No, Keep it"
+        danger
+        onConfirm={confirmRemoveFromWishlist}
+        onCancel={() => setShowRemoveWishlistConfirm(false)}
       />
     </div>
     </FadeUp>
