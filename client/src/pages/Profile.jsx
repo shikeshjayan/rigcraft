@@ -23,30 +23,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useCart } from '../context/CartContext';
 import Breadcrumb from '../components/Breadcrumb';
 import Orders from './Orders';
+import Pagination from '../components/Pagination';
 import { useToast } from '../components/toast/useToast';
+
+const ITEMS_PER_PAGE = 5;
+const COUPONS_PER_PAGE = 6;
 
 const getTypeName = (type) => {
   if (typeof type === 'string') return type;
   if (type && type.name) return type.name;
   return 'UNKNOWN';
-};
-
-const VerificationBadge = ({ verified, onVerify }) => {
-  if (verified) {
-    return (
-      <span className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full uppercase tracking-wide">
-        ✓ Verified
-      </span>
-    );
-  }
-  return (
-    <button
-      onClick={onVerify}
-      className="text-[10px] font-bold text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full uppercase tracking-wide hover:bg-amber-100 transition-colors"
-    >
-      ⚠ Not Verified
-    </button>
-  );
 };
 
 const getPasswordStrength = (pwd) => {
@@ -113,6 +99,12 @@ const Profile = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
+  const [reviewsPage, setReviewsPage] = useState(1);
+  const [buildsPage, setBuildsPage] = useState(1);
+  const [couponsPage, setCouponsPage] = useState(1);
+  const [buildsTotalPages, setBuildsTotalPages] = useState(1);
+  const [couponsTotalPages, setCouponsTotalPages] = useState(1);
+
   // Redirect if not logged in
   useEffect(() => {
     if (!isLoggedIn) {
@@ -128,20 +120,30 @@ const Profile = () => {
   });
 
   const { data: reviewsData, isLoading: reviewsLoading } = useQuery({
-    queryKey: ['myReviews'],
+    queryKey: ['myReviews', { page: reviewsPage }],
     queryFn: async () => {
-      const { data } = await apiClient.get('/reviews/me');
-      return data.data?.docs || data.data?.reviews || [];
+      const { data } = await apiClient.get('/reviews/me', { params: { page: reviewsPage, limit: ITEMS_PER_PAGE } });
+      return {
+        docs: data.data?.docs || data.data?.reviews || [],
+        totalPages: data.data?.totalPages || 1,
+      };
     },
     enabled: isLoggedIn,
     retry: false
   });
+  const reviewsList = reviewsData?.docs || [];
+  const reviewsTotalPages = reviewsData?.totalPages || 1;
 
   const userData = profileData?.data || user || {};
   const firstName = userData.firstName || '';
   const lastName = userData.lastName || '';
   const email = userData.email || '';
   const mobile = userData.phone || userData.mobile || '';
+  const phoneDigits = (p = '') => p.replace(/[^0-9]/g, '').replace(/^91/, '');
+  const formatPhone = (p = '') => {
+    const digits = phoneDigits(p);
+    return digits ? `+91 ${digits}` : '';
+  };
 
 const [isEditing, setIsEditing] = useState(false);
 const [openFaq, setOpenFaq] = useState(0);
@@ -153,8 +155,13 @@ const toggleSidebarGroup = (key) => setSidebarGroups(prev => ({ ...prev, [key]: 
     firstName: '',
     lastName: '',
     email: '',
-    phone: ''
+    phone: '',
+    currentPassword: ''
   });
+
+  const isChangingContact =
+    isEditing &&
+    (personalInfoForm.email !== email || phoneDigits(personalInfoForm.phone) !== phoneDigits(mobile));
 
   useEffect(() => {
     if (userData) {
@@ -162,31 +169,59 @@ const toggleSidebarGroup = (key) => setSidebarGroups(prev => ({ ...prev, [key]: 
         firstName: userData.firstName || '',
         lastName: userData.lastName || '',
         email: userData.email || '',
-        phone: userData.phone || userData.mobile || ''
+        phone: formatPhone(userData.phone || userData.mobile || ''),
+        currentPassword: ''
       });
     }
   }, [profileData, user]);
 
 const handleSavePersonalInfo = async () => {
+  if (!personalInfoForm.firstName.trim() || !personalInfoForm.lastName.trim()) {
+    toast('First and last name are required.', 'error');
+    return;
+  }
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalInfoForm.email)) {
+    toast('Please enter a valid email address.', 'error');
+    return;
+  }
+  if (personalInfoForm.phone && !/^\d{10}$/.test(phoneDigits(personalInfoForm.phone))) {
+    toast('Mobile number must be 10 digits.', 'error');
+    return;
+  }
   try {
-    await apiClient.put('/auth/profile', personalInfoForm);
+    const payload = { ...personalInfoForm };
+    if (payload.phone) {
+      payload.phone = `+91${phoneDigits(payload.phone)}`;
+    }
+    if (!isChangingContact) {
+      delete payload.currentPassword;
+    }
+    await apiClient.put('/auth/profile', payload);
     setIsEditing(false);
     queryClient.invalidateQueries({ queryKey: ['profile'] });
     toast('Profile updated successfully');
   } catch (error) {
     console.error('Failed to update profile', error);
-    toast('Failed to update profile', 'error');
+    toast(error.response?.data?.message || 'Failed to update profile', 'error');
   }
 };
 
 const handleCancelEdit = () => {
   setIsEditing(false);
-  setPersonalInfoForm({ firstName, lastName, email, phone: mobile });
+  setPersonalInfoForm({ firstName, lastName, email, phone: formatPhone(mobile), currentPassword: '' });
 };
 
   const handleChangePassword = async () => {
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       toast('New passwords do not match.', 'error');
+      return;
+    }
+    if (!passwordForm.currentPassword) {
+      toast('Current password is required.', 'error');
+      return;
+    }
+    if (passwordForm.newPassword.length < 8) {
+      toast('New password must be at least 8 characters.', 'error');
       return;
     }
     setIsSavingPassword(true);
@@ -213,8 +248,15 @@ const handleCancelEdit = () => {
   useEffect(() => {
     if (tabParam) {
       setActiveTab(tabParam);
+      setReviewsPage(1);
+      setBuildsPage(1);
+      setCouponsPage(1);
     }
   }, [tabParam]);
+
+  const switchTab = (tab) => {
+    navigate(`/profile?tab=${tab}`);
+  };
 
   // Addresses and Builds State
   const [addresses, setAddresses] = useState([]);
@@ -283,11 +325,12 @@ const handleCancelEdit = () => {
     }
   };
 
-  const fetchBuilds = async () => {
+  const fetchBuilds = async (page = 1) => {
     try {
-      const { data } = await apiClient.get('/builds');
+      const { data } = await apiClient.get('/builds', { params: { page, limit: ITEMS_PER_PAGE } });
       if (data.success) {
-        setBuilds(data.data);
+        setBuilds(data.data?.docs || data.data?.builds || []);
+        setBuildsTotalPages(data.data?.totalPages || 1);
       }
     } catch (error) {
       console.error('Failed to fetch builds', error);
@@ -295,12 +338,12 @@ const handleCancelEdit = () => {
     }
   };
 
-  const fetchCoupons = async () => {
+  const fetchCoupons = async (page = 1) => {
     try {
-      const { data } = await apiClient.get('/coupons/active');
+      const { data } = await apiClient.get('/coupons/active', { params: { page, limit: COUPONS_PER_PAGE } });
       if (data.success && data.data && data.data.coupons) {
-        const availableCoupons = data.data.coupons.filter(c => !c.isFirstOrderOnly);
-        setCoupons(availableCoupons);
+        setCoupons(data.data.coupons);
+        setCouponsTotalPages(data.data?.pagination?.pages || 1);
       }
     } catch (error) {
       console.error('Failed to fetch coupons', error);
@@ -315,7 +358,7 @@ const handleCancelEdit = () => {
         setDraftBuild({});
       } else {
         await apiClient.delete(`/builds/${deleteConfirmation.buildId}`);
-        fetchBuilds();
+        fetchBuilds(buildsPage);
       }
       setDeleteConfirmation({ show: false, buildId: null, isDraft: false });
       toast('Build deleted successfully');
@@ -376,18 +419,32 @@ const handleCancelEdit = () => {
   useEffect(() => {
     if (isLoggedIn) {
       fetchAddresses();
-      fetchBuilds();
-      fetchCoupons();
+      fetchBuilds(buildsPage);
+      fetchCoupons(couponsPage);
     }
-  }, [isLoggedIn]);
+  }, [isLoggedIn, buildsPage, couponsPage]);
+
+  const handleReviewsPageChange = (nextPage) => {
+    if (nextPage < 1 || nextPage > reviewsTotalPages) return;
+    setReviewsPage(nextPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleBuildsPageChange = (nextPage) => {
+    if (nextPage < 1 || nextPage > buildsTotalPages) return;
+    setBuildsPage(nextPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleCouponsPageChange = (nextPage) => {
+    if (nextPage < 1 || nextPage > couponsTotalPages) return;
+    setCouponsPage(nextPage);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleLogout = () => {
     logout();
     navigate('/');
-  };
-
-  const handleVerifyComingSoon = (target) => {
-    toast(`${target} verification is coming soon.`, 'warning');
   };
 
   const handleAvatarChange = async (e) => {
@@ -398,7 +455,7 @@ const handleCancelEdit = () => {
     formData.append('firstName', firstName || '');
     formData.append('lastName', lastName || '');
     formData.append('email', email || '');
-    formData.append('phone', mobile || '');
+    formData.append('phone', `+91${phoneDigits(mobile)}`);
     try {
       await apiClient.put('/auth/profile', formData);
       queryClient.invalidateQueries({ queryKey: ['profile'] });
@@ -421,11 +478,26 @@ const handleCancelEdit = () => {
 
   const handleSaveAddress = async (e) => {
     e.preventDefault();
+    if (!/^\d{10}$/.test(phoneDigits(addressForm.phone))) {
+      toast('Mobile number must be 10 digits.', 'error');
+      return;
+    }
+    if (addressForm.alternatePhone && !/^\d{10}$/.test(phoneDigits(addressForm.alternatePhone))) {
+      toast('Alternate mobile number must be 10 digits.', 'error');
+      return;
+    }
+    if (!/^\d{6}$/.test(addressForm.postalCode)) {
+      toast('Pincode must be 6 digits.', 'error');
+      return;
+    }
+    const payload = { ...addressForm };
+    if (payload.phone) payload.phone = `+91${phoneDigits(payload.phone)}`;
+    if (payload.alternatePhone) payload.alternatePhone = `+91${phoneDigits(payload.alternatePhone)}`;
     try {
       if (editingAddressId) {
-        await apiClient.put(`/addresses/${editingAddressId}`, addressForm);
+        await apiClient.put(`/addresses/${editingAddressId}`, payload);
       } else {
-        await apiClient.post('/addresses', addressForm);
+        await apiClient.post('/addresses', payload);
       }
       fetchAddresses();
       setIsAddingAddress(false);
@@ -438,7 +510,11 @@ const handleCancelEdit = () => {
   };
 
   const handleEditAddress = (address) => {
-    setAddressForm(address);
+    setAddressForm({
+      ...address,
+      phone: formatPhone(address.phone),
+      alternatePhone: address.alternatePhone ? formatPhone(address.alternatePhone) : ''
+    });
     setEditingAddressId(address._id);
     setIsAddingAddress(true);
   };
@@ -493,7 +569,6 @@ const handleCancelEdit = () => {
                     </div>
                     <div className="text-[12px] truncate" style={{ color: 'var(--color-sidebar-text)' }}>{email || '—'}</div>
                     <div className="flex flex-wrap items-center gap-2 mt-1">
-                      <VerificationBadge verified={!!userData?.isEmailVerified} onVerify={() => handleVerifyComingSoon('Email')} />
                       <span className="text-[10px] font-bold uppercase tracking-wide" style={{ color: 'var(--color-sidebar-text)' }}>
                         Member since {userData?.createdAt ? new Date(userData.createdAt).toLocaleDateString('en-US', { month: 'short', year: 'numeric' }) : 'Aug 2026'}
                       </span>
@@ -513,13 +588,13 @@ const handleCancelEdit = () => {
                 >
                   <div
                     className={`${navLinkClass(activeTab === 'profile')} pl-9`}
-                    onClick={() => setActiveTab('profile')}
+                    onClick={() => switchTab('profile')}
                   >
                     Profile Information
                   </div>
                   <div
                     className={`${navLinkClass(activeTab === 'addresses')} pl-9`}
-                    onClick={() => { setActiveTab('addresses'); setIsAddingAddress(false); }}
+                    onClick={() => { switchTab('addresses'); setIsAddingAddress(false); }}
                   >
                     Manage Addresses
                   </div>
@@ -534,7 +609,7 @@ const handleCancelEdit = () => {
                 >
                   <div
                     className={`${navLinkClass(activeTab === 'orders')} pl-9`}
-                    onClick={() => setActiveTab('orders')}
+                    onClick={() => switchTab('orders')}
                   >
                     Track Order
                   </div>
@@ -546,19 +621,19 @@ const handleCancelEdit = () => {
                   </div>
                   <div
                     className={`${navLinkClass(activeTab === 'coupons')} pl-9`}
-                    onClick={() => setActiveTab('coupons')}
+                    onClick={() => switchTab('coupons')}
                   >
                     Coupons
                   </div>
                   <div
                     className={`${navLinkClass(activeTab === 'builds')} pl-9`}
-                    onClick={() => setActiveTab('builds')}
+                    onClick={() => switchTab('builds')}
                   >
                     Your Builds
                   </div>
                   <div
                     className={`${navLinkClass(activeTab === 'reviews')} pl-9`}
-                    onClick={() => setActiveTab('reviews')}
+                    onClick={() => switchTab('reviews')}
                   >
                     My Reviews
                   </div>
@@ -646,7 +721,7 @@ const handleCancelEdit = () => {
                               <input
                                 type="text"
                                 value={isEditing ? personalInfoForm.firstName : firstName}
-                                onChange={(e) => setPersonalInfoForm({ ...personalInfoForm, firstName: e.target.value })}
+                                onChange={(e) => setPersonalInfoForm({ ...personalInfoForm, firstName: e.target.value.replace(/[^A-Za-z\s'-]/g, '').slice(0, 50) })}
                                 readOnly={!isEditing}
                                 className={`w-full ${isEditing ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`}
                                 placeholder="First Name"
@@ -657,7 +732,7 @@ const handleCancelEdit = () => {
                               <input
                                 type="text"
                                 value={isEditing ? personalInfoForm.lastName : lastName}
-                                onChange={(e) => setPersonalInfoForm({ ...personalInfoForm, lastName: e.target.value })}
+                                onChange={(e) => setPersonalInfoForm({ ...personalInfoForm, lastName: e.target.value.replace(/[^A-Za-z\s'-]/g, '').slice(0, 50) })}
                                 readOnly={!isEditing}
                                 className={`w-full ${isEditing ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`}
                                 placeholder="Last Name"
@@ -671,45 +746,42 @@ const handleCancelEdit = () => {
                                   value={isEditing ? personalInfoForm.email : email}
                                   onChange={(e) => setPersonalInfoForm({ ...personalInfoForm, email: e.target.value })}
                                   readOnly={!isEditing}
-                                  className={`w-full ${isEditing ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 pr-16 focus:outline-none rounded-sm font-medium`}
+                                  className={`w-full ${isEditing ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`}
                                   placeholder="Email Address"
                                 />
-                                {userData?.isEmailVerified ? (
-                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-green-600">✓ Verified</span>
-                                ) : (
-                                  <button
-                                    onClick={() => handleVerifyComingSoon('Email')}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-amber-600 hover:underline"
-                                  >
-                                    Verify
-                                  </button>
-                                )}
                               </div>
                             </div>
                             <div>
                               <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Mobile Number</label>
                               <div className="relative">
                                 <input
-                                  type="text"
-                                  value={isEditing ? personalInfoForm.phone : mobile}
-                                  onChange={(e) => setPersonalInfoForm({ ...personalInfoForm, phone: e.target.value })}
+                                  type="tel"
+                                  inputMode="numeric"
+                                  value={isEditing ? personalInfoForm.phone : formatPhone(mobile)}
+                                  onChange={(e) => {
+                                    const digits = e.target.value.replace(/[^0-9]/g, '').replace(/^91/, '').slice(0, 10);
+                                    setPersonalInfoForm({ ...personalInfoForm, phone: digits ? `+91 ${digits}` : '' });
+                                  }}
                                   readOnly={!isEditing}
-                                  className={`w-full ${isEditing ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 pr-16 focus:outline-none rounded-sm font-medium`}
-                                  placeholder="Mobile Number"
+                                  className={`w-full ${isEditing ? 'bg-white border-blue-500' : 'bg-gray-50 border-gray-200'} border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium`}
+                                  placeholder="Enter mobile number"
                                 />
-                                {userData?.isPhoneVerified ? (
-                                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-green-600">✓ Verified</span>
-                                ) : (
-                                  <button
-                                    onClick={() => handleVerifyComingSoon('Mobile')}
-                                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[11px] font-bold text-amber-600 hover:underline"
-                                  >
-                                    Verify
-                                  </button>
-                                )}
                               </div>
                             </div>
                           </div>
+                          {isChangingContact && (
+                            <div className="mt-5">
+                              <label className="block text-[11px] font-bold uppercase tracking-wider text-gray-500 mb-1.5">Current Password</label>
+                              <input
+                                type="password"
+                                value={personalInfoForm.currentPassword}
+                                onChange={(e) => setPersonalInfoForm({ ...personalInfoForm, currentPassword: e.target.value })}
+                                className="w-full bg-white border-blue-500 border text-gray-700 px-4 py-3 focus:outline-none rounded-sm font-medium"
+                                placeholder="Enter current password"
+                              />
+                              <p className="text-[12px] text-gray-400 mt-1">Required to change your email or phone number.</p>
+                            </div>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -825,7 +897,7 @@ const handleCancelEdit = () => {
                               <div className="flex items-center gap-3 mb-3">
                                 <span className="bg-gray-100 text-gray-600 text-[11px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">{addr.label}</span>
                                 <span className="font-bold text-gray-900">{addr.fullName}</span>
-                                <span className="font-bold text-gray-900">{addr.phone}</span>
+                                <span className="font-bold text-gray-900">{formatPhone(addr.phone)}</span>
                               </div>
                               <div className="text-gray-600 text-[14px] leading-relaxed max-w-lg">
                                 {addr.addressLine1}, {addr.addressLine2 ? `${addr.addressLine2}, ` : ''} {addr.landmark ? `${addr.landmark}, ` : ''}
@@ -839,30 +911,42 @@ const handleCancelEdit = () => {
                       <div className="bg-[var(--color-surface)] p-6 border border-gray-200 rounded-sm">
                         <h3 className="font-bold text-[var(--color-primary)] uppercase text-[14px] mb-6">{editingAddressId ? 'Edit Address' : 'Add a new address'}</h3>
                         <form onSubmit={handleSaveAddress} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <input type="text" name="fullName" value={addressForm.fullName} onChange={handleAddressChange} placeholder="Name" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
-                          <input type="text" name="phone" value={addressForm.phone} onChange={(e) => {
-                            const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
-                            handleAddressChange({ target: { name: 'phone', value: val } });
+                          <input type="text" name="fullName" value={addressForm.fullName} onChange={(e) => {
+                            const val = e.target.value.replace(/[^A-Za-z\s'-]/g, '').slice(0, 50);
+                            handleAddressChange({ target: { name: 'fullName', value: val } });
+                          }} placeholder="Name" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
+                          <input type="tel" name="phone" inputMode="numeric" value={addressForm.phone} onChange={(e) => {
+                            const digits = e.target.value.replace(/[^0-9]/g, '').replace(/^91/, '').slice(0, 10);
+                            handleAddressChange({ target: { name: 'phone', value: digits ? `+91 ${digits}` : '' } });
                           }} placeholder="10-digit mobile number" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
-                          <input type="text" name="alternatePhone" value={addressForm.alternatePhone} onChange={(e) => {
-                            const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 10);
-                            handleAddressChange({ target: { name: 'alternatePhone', value: val } });
+                          <input type="tel" name="alternatePhone" inputMode="numeric" value={addressForm.alternatePhone} onChange={(e) => {
+                            const digits = e.target.value.replace(/[^0-9]/g, '').replace(/^91/, '').slice(0, 10);
+                            handleAddressChange({ target: { name: 'alternatePhone', value: digits ? `+91 ${digits}` : '' } });
                           }} placeholder="Alternate mobile number (Optional)" className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
                           <input type="text" name="postalCode" value={addressForm.postalCode} onChange={(e) => {
                             const val = e.target.value.replace(/[^0-9]/g, '').slice(0, 6);
                             handleAddressChange({ target: { name: 'postalCode', value: val } });
                           }} placeholder="Pincode" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
-                          <input type="text" name="city" value={addressForm.city} onChange={handleAddressChange} placeholder="City/District/Town" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
+                          <input type="text" name="city" value={addressForm.city} onChange={(e) => {
+                            const val = e.target.value.replace(/[^A-Za-z\s'-]/g, '').slice(0, 50);
+                            handleAddressChange({ target: { name: 'city', value: val } });
+                          }} placeholder="City/District/Town" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
                           <select name="state" value={addressForm.state} onChange={handleAddressChange} required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium">
                             <option value="" disabled>Select State</option>
                             {statesList.map(s => <option key={s} value={s}>{s}</option>)}
                           </select>
                           <input type="text" name="country" value="India" readOnly className="w-full bg-gray-100 text-gray-500 border border-gray-300 px-4 py-3 focus:outline-none rounded-sm font-medium" />
                           <div className="md:col-span-2">
-                            <input type="text" name="addressLine1" value={addressForm.addressLine1} onChange={handleAddressChange} placeholder="Address (House No, Building, Street, Area)" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
+                            <input type="text" name="addressLine1" value={addressForm.addressLine1} onChange={(e) => {
+                              const val = e.target.value.replace(/[^A-Za-z0-9\s,.#\-']/g, '').slice(0, 120);
+                              handleAddressChange({ target: { name: 'addressLine1', value: val } });
+                            }} placeholder="Address (House No, Building, Street, Area)" required className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
                           </div>
                           <div className="md:col-span-2">
-                            <input type="text" name="landmark" value={addressForm.landmark} onChange={handleAddressChange} placeholder="Landmark (Optional)" className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
+                            <input type="text" name="landmark" value={addressForm.landmark} onChange={(e) => {
+                              const val = e.target.value.replace(/[^A-Za-z0-9\s,.#\-']/g, '').slice(0, 60);
+                              handleAddressChange({ target: { name: 'landmark', value: val } });
+                            }} placeholder="Landmark (Optional)" className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 focus:outline-none focus:border-blue-500 rounded-sm font-medium placeholder-gray-500" />
                           </div>
                           
                           <div className="md:col-span-2 flex flex-col gap-3 mt-2">
@@ -955,6 +1039,7 @@ const handleCancelEdit = () => {
                         </button>
                       </div>
                     ) : (
+                      <>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {builds.map((build) => {
                           const buildPrice = build.totalPrice || build.totalSalePrice || build.components?.reduce((sum, comp) => sum + (comp.product?.priceVal || comp.product?.price || comp.product?.salePrice || 0), 0) || 0;
@@ -1008,6 +1093,12 @@ const handleCancelEdit = () => {
                           );
                         })}
                       </div>
+                      <Pagination
+                        page={buildsPage}
+                        totalPages={buildsTotalPages}
+                        onPageChange={handleBuildsPageChange}
+                      />
+                      </>
                     )}
                   </FadeUp>
                 )}
@@ -1030,27 +1121,27 @@ const handleCancelEdit = () => {
                         <p className="text-gray-500 mt-2">There are currently no active coupons available.</p>
                       </div>
                     ) : (
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {coupons.map((coupon) => (
-                          <div key={coupon._id} className="border border-blue-100 bg-[var(--color-surface)] rounded-lg p-5 shadow-sm relative overflow-hidden group">
-                            <div className="absolute top-0 right-0 w-16 h-16 bg-blue-500 rotate-45 transform translate-x-8 -translate-y-8 group-hover:bg-blue-600 transition-colors"></div>
-                            <ConfirmationNumberOutlinedIcon className="absolute top-2 right-2 text-white z-10 w-4 h-4" />
+                          <div key={coupon._id} className="border border-blue-100 bg-[var(--color-surface)] rounded-lg p-4 shadow-sm relative overflow-hidden group flex flex-col">
+                            <div className="absolute top-0 right-0 w-12 h-12 bg-blue-500 rotate-45 transform translate-x-6 -translate-y-6 group-hover:bg-blue-600 transition-colors"></div>
+                            <ConfirmationNumberOutlinedIcon className="absolute top-1.5 right-1.5 text-white z-10 w-3.5 h-3.5" />
                             
-                            <h3 className="text-lg font-black text-gray-900 mb-1">{coupon.name}</h3>
-                            <p className="text-sm text-gray-600 mb-4 h-10">{coupon.description}</p>
+                            <h3 className="text-[15px] font-black text-gray-900 mb-1 pr-4 truncate">{coupon.name}</h3>
+                            <p className="text-[12px] text-gray-600 mb-3 h-8 overflow-hidden leading-snug">{coupon.description}</p>
                             
                             <div className="flex items-center justify-between mt-auto">
-                              <div className="flex items-center bg-white border border-dashed border-gray-300 rounded px-3 py-1.5 cursor-copy group/code" onClick={() => { navigator.clipboard.writeText(coupon.code); setCopiedCode(coupon.code); setTimeout(() => setCopiedCode(''), 2000); }}>
-                                <span className="font-mono font-bold tracking-wider cursor-pointer text-blue-700">{coupon.code}</span>
+                              <div className="flex items-center bg-white border border-dashed border-gray-300 rounded px-2.5 py-1 cursor-copy group/code" onClick={() => { navigator.clipboard.writeText(coupon.code); setCopiedCode(coupon.code); setTimeout(() => setCopiedCode(''), 2000); }}>
+                                <span className="font-mono font-bold tracking-wider cursor-pointer text-[13px] text-blue-700">{coupon.code}</span>
                                 {copiedCode === coupon.code ? (
-                                  <span className="text-[10px] text-green-600 font-bold ml-2">COPIED</span>
+                                  <span className="text-[10px] text-green-600 font-bold ml-1.5">COPIED</span>
                                 ) : (
-                                  <ContentCopyIcon sx={{ fontSize: 14 }} className="text-gray-400 ml-2 cursor-pointer group-hover/code:text-blue-500" />
+                                  <ContentCopyIcon sx={{ fontSize: 13 }} className="text-gray-400 ml-1.5 cursor-pointer group-hover/code:text-blue-500" />
                                 )}
                               </div>
                               <div className="text-right">
-                                <span className="block text-[10px] font-bold text-gray-500 uppercase">Discount</span>
-                                <span className="font-black text-blue-600 text-lg">
+                                <span className="block text-[9px] font-bold text-gray-500 uppercase">Discount</span>
+                                <span className="font-black text-blue-600 text-[15px]">
                                   {coupon.discountType === 'percentage' ? `${coupon.discountValue}%` : `₹${coupon.discountValue}`}
                                 </span>
                               </div>
@@ -1059,6 +1150,11 @@ const handleCancelEdit = () => {
                         ))}
                       </div>
                     )}
+                    <Pagination
+                      page={couponsPage}
+                      totalPages={couponsTotalPages}
+                      onPageChange={handleCouponsPageChange}
+                    />
                   </FadeUp>
                 )}
 
@@ -1069,7 +1165,7 @@ const handleCancelEdit = () => {
                     </div>
                     {reviewsLoading ? (
                       <div className="text-center py-12 text-gray-400">Loading reviews...</div>
-                    ) : (reviewsData || []).length === 0 ? (
+                    ) : (reviewsList || []).length === 0 ? (
                       <div className="text-center py-12 bg-gray-50 rounded-lg border border-dashed border-gray-200">
                         <StarOutlineRoundedIcon sx={{ fontSize: 48, color: '#94A3B8', mb: 2 }} />
                         <h3 className="text-lg font-bold text-gray-700">No Reviews Yet</h3>
@@ -1083,7 +1179,7 @@ const handleCancelEdit = () => {
                       </div>
                     ) : (
                       <div className="flex flex-col gap-4">
-                        {(reviewsData || []).map((review) => (
+                        {(reviewsList || []).map((review) => (
                           <div key={review._id} className="border border-gray-200 p-5 rounded-sm bg-white hover:shadow-md transition-shadow">
                             <div className="flex items-start justify-between gap-4 mb-3">
                               <div className="min-w-0">
@@ -1109,6 +1205,11 @@ const handleCancelEdit = () => {
                         ))}
                       </div>
                     )}
+                    <Pagination
+                      page={reviewsPage}
+                      totalPages={reviewsTotalPages}
+                      onPageChange={handleReviewsPageChange}
+                    />
                   </FadeUp>
                 )}
 

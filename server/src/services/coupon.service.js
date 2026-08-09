@@ -37,6 +37,7 @@ export const getCoupons = async (query = {}) => {
     isActive,
     discountType,
     search,
+    isFirstOrderOnly,
   } = query;
 
   const pageNum = Math.max(1, Number(page) || 1);
@@ -46,6 +47,7 @@ export const getCoupons = async (query = {}) => {
   const filter = {};
 
   if (isActive !== undefined) filter.isActive = isActive === "true";
+  if (isFirstOrderOnly !== undefined) filter.isFirstOrderOnly = isFirstOrderOnly === "true";
   if (discountType) filter.discountType = discountType;
   if (search) {
     const regex = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");

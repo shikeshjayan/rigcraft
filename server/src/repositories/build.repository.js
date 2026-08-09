@@ -18,18 +18,35 @@ class BuildRepository extends BaseRepository {
 
   async getUserBuilds(userId, options = {}) {
     const { page = 1, limit = 20, sort = { createdAt: -1 } } = options;
+    const pageNum = Math.max(1, Number(page) || 1);
+    const limitNum = Math.max(1, Number(limit) || 20);
+    const skip = (pageNum - 1) * limitNum;
 
-    return this.model.paginate
-      ? this.model.paginate(
-          { user: userId },
-          { page, limit, sort, populate: COMPONENT_POPULATE }
-        )
-      : this.model
-          .find({ user: userId })
-          .sort(sort)
-          .populate(COMPONENT_POPULATE)
-          .skip((page - 1) * limit)
-          .limit(limit);
+    if (this.model.paginate) {
+      const result = await this.model.paginate(
+        { user: userId },
+        { page: pageNum, limit: limitNum, sort, populate: COMPONENT_POPULATE }
+      );
+      return result;
+    }
+
+    const [builds, total] = await Promise.all([
+      this.model
+        .find({ user: userId })
+        .sort(sort)
+        .populate(COMPONENT_POPULATE)
+        .skip(skip)
+        .limit(limitNum),
+      this.model.countDocuments({ user: userId }),
+    ]);
+
+    return {
+      docs: builds,
+      totalDocs: total,
+      totalPages: Math.max(1, Math.ceil(total / limitNum)),
+      page: pageNum,
+      limit: limitNum,
+    };
   }
 
   async findBuildById(id, userId) {

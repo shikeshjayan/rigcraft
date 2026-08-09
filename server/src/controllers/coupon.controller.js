@@ -14,15 +14,20 @@ export const getCoupons = asyncHandler(async (req, res) => {
 });
 
 export const getActiveCoupons = asyncHandler(async (req, res) => {
-  const result = await couponService.getCoupons({ isActive: "true" });
-  
+  const query = {
+    isActive: "true",
+    page: req.query.page,
+    limit: req.query.limit,
+  };
+
   if (req.user) {
     const orderCount = await orderRepository.countByUser(req.user._id);
     if (orderCount > 0) {
-      result.coupons = result.coupons.filter(c => !c.isFirstOrderOnly);
+      query.isFirstOrderOnly = "false";
     }
   }
 
+  const result = await couponService.getCoupons(query);
   ApiResponse.ok(result).send(res);
 });
 
