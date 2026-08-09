@@ -25,6 +25,7 @@ import Breadcrumb from '../components/Breadcrumb';
 import Orders from './Orders';
 import Pagination from '../components/Pagination';
 import { useToast } from '../components/toast/useToast';
+import ConfirmModal from '../components/ConfirmModal';
 
 const ITEMS_PER_PAGE = 5;
 const COUPONS_PER_PAGE = 6;
@@ -280,6 +281,7 @@ const handleCancelEdit = () => {
   const [deleteConfirmation, setDeleteConfirmation] = useState({ show: false, buildId: null, isDraft: false });
   const [showDeactivateModal, setShowDeactivateModal] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+  const [addressToDelete, setAddressToDelete] = useState(null);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [passwordForm, setPasswordForm] = useState({ currentPassword: '', newPassword: '', confirmPassword: '' });
   const passwordStrength = getPasswordStrength(passwordForm.newPassword);
@@ -527,6 +529,13 @@ const handleCancelEdit = () => {
     } catch (error) {
       console.error('Failed to delete address', error);
       toast('Failed to delete address', 'error');
+    }
+  };
+
+  const confirmDeleteAddress = async () => {
+    if (addressToDelete) {
+      await handleDeleteAddress(addressToDelete);
+      setAddressToDelete(null);
     }
   };
 
@@ -892,7 +901,7 @@ const handleCancelEdit = () => {
                             <div key={addr._id} className="border border-gray-200 p-4 rounded-sm hover:shadow-md transition-shadow relative group bg-white">
                               <div className="absolute top-4 right-4 hidden group-hover:flex items-center gap-4">
                                 <button onClick={() => handleEditAddress(addr)} className="text-blue-600 font-bold text-[13px] uppercase hover:underline">Edit</button>
-                                <button onClick={() => handleDeleteAddress(addr._id)} className="text-red-500 font-bold text-[13px] uppercase hover:underline">Delete</button>
+                                <button onClick={() => setAddressToDelete(addr._id)} className="text-red-500 font-bold text-[13px] uppercase hover:underline">Delete</button>
                               </div>
                               <div className="flex items-center gap-3 mb-3">
                                 <span className="bg-gray-100 text-gray-600 text-[11px] font-bold px-2 py-0.5 rounded-sm uppercase tracking-wider">{addr.label}</span>
@@ -1301,48 +1310,17 @@ const handleCancelEdit = () => {
         )}
       </AnimatePresence>
 
-      {/* Delete Confirmation Modal */}
-      <AnimatePresence>
-        {deleteConfirmation.show && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-            onClick={() => setDeleteConfirmation({ show: false, buildId: null, isDraft: false })}
-          >
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white max-w-sm w-full p-6 shadow-2xl relative text-center"
-              style={{ borderRadius: 'var(--radius-sm)' }}
-            >
-              <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <DeleteOutlineIcon fontSize="large" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Build</h3>
-              <p className="text-gray-500 mb-6">Are you sure you want to delete this build? This action cannot be undone.</p>
-              
-              <div className="flex gap-3 justify-center">
-                <button 
-                  onClick={() => setDeleteConfirmation({ show: false, buildId: null, isDraft: false })}
-                  className="px-6 py-2.5 font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-sm transition-colors flex-1"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleDeleteBuildConfirm}
-                  className="px-6 py-2.5 font-bold text-white bg-red-500 hover:bg-red-600 rounded-sm transition-colors flex-1"
-                >
-                  Delete
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Delete Build Confirmation */}
+      <ConfirmModal
+        isOpen={deleteConfirmation.show}
+        title="Delete Build?"
+        message="Are you sure you want to delete this build? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
+        danger
+        onConfirm={handleDeleteBuildConfirm}
+        onCancel={() => setDeleteConfirmation({ show: false, buildId: null, isDraft: false })}
+      />
 
       {/* Change Password Modal */}
       <AnimatePresence>
@@ -1430,93 +1408,42 @@ const handleCancelEdit = () => {
       </AnimatePresence>
 
 
-      {/* Deactivate Account Confirmation Modal */}
-      <AnimatePresence>
-        {showDeactivateModal && (
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-            onClick={() => !isDeactivating && setShowDeactivateModal(false)}
-          >
-            <motion.div 
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white max-w-sm w-full p-6 shadow-2xl relative text-center"
-              style={{ borderRadius: 'var(--radius-sm)' }}
-            >
-              <div className="w-16 h-16 bg-red-100 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
-                <DeleteOutlineIcon fontSize="large" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Deactivate Account</h3>
-              <p className="text-gray-500 mb-6">Are you sure you want to deactivate your account? This action cannot be undone and your account can only be restored by an administrator.</p>
-              
-              <div className="flex gap-3 justify-center">
-                <button 
-                  onClick={() => setShowDeactivateModal(false)}
-                  disabled={isDeactivating}
-                  className="px-6 py-2.5 font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-sm transition-colors flex-1 disabled:opacity-50"
-                >
-                  Cancel
-                </button>
-                <button 
-                  onClick={handleDeactivateAccount}
-                  disabled={isDeactivating}
-                  className="px-6 py-2.5 font-bold text-white bg-red-500 hover:bg-red-600 rounded-sm transition-colors flex-1 disabled:opacity-50"
-                >
-                  {isDeactivating ? 'Deactivating...' : 'Deactivate'}
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Deactivate Account Confirmation */}
+      <ConfirmModal
+        isOpen={showDeactivateModal}
+        title="Deactivate Account?"
+        message="Are you sure you want to deactivate your account? This action cannot be undone and your account can only be restored by an administrator."
+        confirmLabel={isDeactivating ? 'Deactivating...' : 'Yes, Deactivate'}
+        cancelLabel="No, Keep it"
+        danger
+        onConfirm={handleDeactivateAccount}
+        onCancel={() => !isDeactivating && setShowDeactivateModal(false)}
+      />
 
-      {/* Logout Confirmation Modal */}
-      <AnimatePresence>
-        {showLogoutModal && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-            onClick={() => setShowLogoutModal(false)}
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()}
-              className="bg-white max-w-sm w-full p-6 shadow-2xl relative text-center"
-              style={{ borderRadius: 'var(--radius-sm)' }}
-            >
-              <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                <LogoutOutlinedIcon fontSize="large" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Logout</h3>
-              <p className="text-gray-500 mb-6">Are you sure you want to log out of your account?</p>
+      {/* Logout Confirmation */}
+      <ConfirmModal
+        isOpen={showLogoutModal}
+        title="Logout?"
+        message="Are you sure you want to log out of your account?"
+        confirmLabel="Yes, Log out"
+        cancelLabel="No, Stay logged in"
+        danger={false}
+        confirmDangerHover
+        onConfirm={() => { setShowLogoutModal(false); handleLogout(); }}
+        onCancel={() => setShowLogoutModal(false)}
+      />
 
-              <div className="flex gap-3 justify-center">
-                <button
-                  onClick={() => setShowLogoutModal(false)}
-                  className="px-6 py-2.5 font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-sm transition-colors flex-1"
-                >
-                  Cancel
-                </button>
-                <button
-                  onClick={() => { setShowLogoutModal(false); handleLogout(); }}
-                  className="px-6 py-2.5 font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-sm transition-colors flex-1"
-                >
-                  Logout
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Delete Address Confirmation */}
+      <ConfirmModal
+        isOpen={!!addressToDelete}
+        title="Delete Address?"
+        message="Are you sure you want to delete this address? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
+        danger
+        onConfirm={confirmDeleteAddress}
+        onCancel={() => setAddressToDelete(null)}
+      />
 
     </>
   );

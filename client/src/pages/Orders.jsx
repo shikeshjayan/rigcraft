@@ -15,6 +15,7 @@ import apiClient from '../api/client';
 import { useToast } from '../components/toast/useToast';
 import Pagination from '../components/Pagination';
 import SelectDropdown from '../components/SelectDropdown';
+import ConfirmModal from '../components/ConfirmModal';
 
 const ITEMS_PER_PAGE = 5;
 
@@ -337,37 +338,18 @@ const Orders = ({ embedded = false }) => {
     </FadeUp>
   );
 
-  const modalContent = (showCancelModal && (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-      <FadeUp>
-        <div className="bg-white p-6 max-w-sm w-full shadow-2xl border-t-4 border-red-500" style={{ borderRadius: 'var(--radius-sm)' }}>
-          <div className="flex flex-col items-center text-center mb-6">
-            <WarningAmberIcon sx={{ fontSize: 48, color: '#EF4444' }} className="mb-4" />
-            <h3 className="text-xl font-black text-gray-900 mb-2 uppercase tracking-wide">Cancel Order?</h3>
-            <p className="text-gray-600 text-sm font-medium">Are you sure you want to cancel <br/><span className="font-bold text-gray-900">{orderToCancel?.id}</span>?</p>
-            <p className="text-[12px] text-gray-500 mt-2">This action cannot be undone.</p>
-          </div>
-          
-          <div className="flex gap-3">
-            <button 
-              onClick={() => setShowCancelModal(false)}
-              className="flex-1 py-2.5 font-bold text-gray-700 bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer uppercase tracking-wider text-[13px]"
-              style={{ borderRadius: 'var(--radius-sm)' }}
-            >
-              No, Keep It
-            </button>
-            <button 
-              onClick={confirmCancel}
-              className="flex-1 py-2.5 font-bold text-white bg-red-600 hover:bg-red-700 transition-colors cursor-pointer flex items-center justify-center gap-2 uppercase tracking-wider text-[13px]"
-              style={{ borderRadius: 'var(--radius-sm)' }}
-            >
-              Yes, Cancel
-            </button>
-          </div>
-        </div>
-      </FadeUp>
-    </div>
-  ));
+  const modalContent = (
+    <ConfirmModal
+      isOpen={showCancelModal}
+      title="Cancel Order?"
+      message={`Are you sure you want to cancel order ${orderToCancel?.id}? This action cannot be undone.`}
+      confirmLabel="Yes, Cancel"
+      cancelLabel="No, Keep order"
+      danger
+      onConfirm={confirmCancel}
+      onCancel={() => { setShowCancelModal(false); setOrderToCancel(null); }}
+    />
+  );
 
   if (embedded) {
     return (

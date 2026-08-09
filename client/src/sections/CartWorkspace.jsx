@@ -16,6 +16,7 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { useToast } from '../components/toast/useToast';
 import Pagination from '../components/Pagination';
+import ConfirmModal from '../components/ConfirmModal';
 import { friendlyStockMessage } from '../utils/stockMessages';
 
 const getTypeName = (type) => typeof type === 'string' ? type : type?.name || 'UNKNOWN';
@@ -64,6 +65,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep, onRequireLogin }
 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [itemToDelete, setItemToDelete] = useState(null); // null, or { type: 'single' | 'bulk', id?: string }
+  const [showBulkMoveConfirm, setShowBulkMoveConfirm] = useState(false);
   const [availableCoupons, setAvailableCoupons] = useState([]);
   const [appliedCoupon, setAppliedCoupon] = useState(null); // The full coupon object
   const [cartPage, setCartPage] = useState(1);
@@ -366,8 +368,14 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep, onRequireLogin }
     setItemToDelete(null);
   };
 
-  const handleBulkMoveToWishlist = async () => {
+  const handleBulkMoveClick = () => {
     if (selectedItemIds.length === 0) return;
+    setShowBulkMoveConfirm(true);
+  };
+
+  const confirmBulkMoveToWishlist = async () => {
+    if (selectedItemIds.length === 0) return;
+    setShowBulkMoveConfirm(false);
     try {
       const checkoutItems = cartItems.filter(item => selectedItemIds.includes(item.cartItemId || item.id));
 
@@ -571,7 +579,7 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep, onRequireLogin }
                   <div className="flex items-center gap-4 text-[13px] font-bold text-[var(--color-text-secondary)]">
                     <button onClick={() => { if (selectedItemIds.length > 0) { setItemToDelete({ type: 'bulk' }); setShowDeleteConfirm(true); } }} className="hover:text-[var(--color-text)] cursor-pointer transition-colors">REMOVE</button>
                     <div className="w-[1px] h-4 bg-[#CBD5E1]"></div>
-                    <button onClick={handleBulkMoveToWishlist} className="hover:text-[var(--color-text)] cursor-pointer transition-colors">MOVE TO WISHLIST</button>
+                    <button onClick={handleBulkMoveClick} className="hover:text-[var(--color-text)] cursor-pointer transition-colors">MOVE TO WISHLIST</button>
                   </div>
                 </div>
 
@@ -1119,47 +1127,17 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep, onRequireLogin }
 
       </div>
 
-      {/* Remove Confirm Popup */}
-      <AnimatePresence>
-        {showRemoveConfirm && (
-          <motion.div
-            key="remove-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-            onClick={() => setShowRemoveConfirm(false)}
-          >
-            <motion.div
-              key="remove-modal"
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              onClick={e => e.stopPropagation()}
-              className="bg-white w-full max-w-[400px] p-6 shadow-xl relative text-center"
-              style={{ borderRadius: 'var(--radius-sm)' }}
-            >
-              <h2 className="text-[18px] font-bold text-[var(--color-text)] mb-2">Remove Address</h2>
-              <p className="text-[14px] text-[var(--color-text-secondary)] mb-6">Are you sure you want to remove this address?</p>
-
-              <div className="flex gap-4">
-                <button
-                  onClick={() => setShowRemoveConfirm(false)}
-                  className="flex-1 border border-[#0052FF] text-[#0052FF] font-bold py-2 rounded-sm hover:bg-[#EFF6FF] transition-colors text-[13px] cursor-pointer"
-                >
-                  CANCEL
-                </button>
-                <button
-                  onClick={confirmRemove}
-                  className="flex-1 bg-[#0052FF] text-white font-bold py-2 rounded-sm hover:bg-[#1E3A8A] transition-colors text-[13px] cursor-pointer"
-                >
-                  CONFIRM
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Remove Address Confirmation */}
+      <ConfirmModal
+        isOpen={showRemoveConfirm}
+        title="Remove Address?"
+        message="Are you sure you want to remove this address?"
+        confirmLabel="Yes, Remove"
+        cancelLabel="No, Keep it"
+        danger
+        onConfirm={confirmRemove}
+        onCancel={() => { setShowRemoveConfirm(false); setAddressToRemove(null); }}
+      />
 
       {/* Coupon Popup */}
       <AnimatePresence>
@@ -1239,50 +1217,29 @@ const CartWorkspace = ({ checkoutStep = 'bag', setCheckoutStep, onRequireLogin }
         )}
       </AnimatePresence>
 
-      {/* Delete Confirmation Popup */}
-      <AnimatePresence>
-        {showDeleteConfirm && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[200] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
-          >
-            <motion.div
-              initial={{ scale: 0.95, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-sm w-full max-w-sm p-6 shadow-2xl flex flex-col gap-4 border border-[var(--color-border)]"
-              style={{ borderRadius: 'var(--radius-sm)' }}
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center text-red-600 shrink-0">
-                  <DeleteOutlineIcon />
-                </div>
-                <div>
-                  <h3 className="text-[16px] font-bold text-[var(--color-text)]">Delete item from cart</h3>
-                  <p className="text-[13px] text-[var(--color-text-secondary)] mt-1">Are you sure you want to remove {itemToDelete?.type === 'bulk' ? 'selected items' : 'this item'}?</p>
-                </div>
-              </div>
-              
-              <div className="flex gap-3 mt-2">
-                <button
-                  onClick={() => { setShowDeleteConfirm(false); setItemToDelete(null); }}
-                  className="flex-1 py-2 border border-[#CBD5E1] text-[var(--color-text)] font-bold text-[13px] rounded-sm hover:bg-gray-50 transition-colors cursor-pointer"
-                >
-                  CANCEL
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  className="flex-1 py-2 bg-red-600 text-white font-bold text-[13px] rounded-sm hover:bg-red-700 transition-colors cursor-pointer"
-                >
-                  REMOVE
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+      {/* Delete Confirmation */}
+      <ConfirmModal
+        isOpen={showDeleteConfirm}
+        title="Delete item from cart?"
+        message={itemToDelete?.type === 'bulk' ? 'Are you sure you want to remove the selected items?' : 'Are you sure you want to remove this item?'}
+        confirmLabel="Yes, Remove"
+        cancelLabel="No, Keep it"
+        danger
+        onConfirm={confirmDelete}
+        onCancel={() => { setShowDeleteConfirm(false); setItemToDelete(null); }}
+      />
+
+      {/* Bulk Move to Wishlist Confirmation */}
+      <ConfirmModal
+        isOpen={showBulkMoveConfirm}
+        title="Move to Wishlist?"
+        message={`Move ${selectedItemIds.length} selected item${selectedItemIds.length === 1 ? '' : 's'} from your cart to your wishlist?`}
+        confirmLabel="Yes, Move"
+        cancelLabel="No, Keep it"
+        danger={false}
+        onConfirm={confirmBulkMoveToWishlist}
+        onCancel={() => setShowBulkMoveConfirm(false)}
+      />
 
       {/* Order Success Popup */}
       <AnimatePresence>

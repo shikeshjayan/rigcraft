@@ -8,7 +8,7 @@ import Breadcrumb from '../components/Breadcrumb';
 import LoginPrompt from '../components/LoginPrompt';
 import WishlistCard from '../components/WishlistCard';
 import WishlistRecommendations from '../sections/WishlistRecommendations';
-import StorefrontConfirm from '../components/StorefrontConfirm';
+import ConfirmModal from '../components/ConfirmModal';
 import { subscribeStockAlert } from '../api/stockAlert';
 import { useToast } from '../components/toast/useToast';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -458,12 +458,12 @@ const Wishlist = () => {
         message={loginMessage}
       />
 
-      <StorefrontConfirm
+      <ConfirmModal
         isOpen={showClearConfirm}
         title="Clear Wishlist?"
         message={`This will remove all ${wishlist.length} saved items from your wishlist. This action cannot be undone.`}
-        confirmLabel="Clear Wishlist"
-        cancelLabel="Cancel"
+        confirmLabel="Yes, Clear All"
+        cancelLabel="No, Keep items"
         danger
         onConfirm={() => {
           clearWishlist();
@@ -473,14 +473,14 @@ const Wishlist = () => {
         onCancel={() => setShowClearConfirm(false)}
       />
 
-      <StorefrontConfirm
+      <ConfirmModal
         isOpen={!!removeConfirmItem}
         title="Remove Item?"
         message={removeConfirmItem
           ? `Remove "${removeConfirmItem.title || removeConfirmItem.name}" from your wishlist?`
           : ''}
-        confirmLabel="Remove"
-        cancelLabel="Cancel"
+        confirmLabel="Yes, Remove"
+        cancelLabel="No, Keep it"
         danger
         onConfirm={() => {
           if (removeConfirmItem) removeFromWishlist(removeConfirmItem.id || removeConfirmItem._id);
