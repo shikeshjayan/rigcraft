@@ -174,6 +174,8 @@ const BrandList = () => {
         open={!!deleteTarget}
         title="Delete Brand"
         message="Are you sure you want to delete this brand? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

@@ -208,6 +208,8 @@ const ProductList = () => {
         open={!!deleteTarget}
         title="Delete Product"
         message="Are you sure you want to delete this product? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

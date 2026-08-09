@@ -83,6 +83,7 @@ const UserDetails = () => {
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [confirmAction, setConfirmAction] = useState(null);
+  const [reviewConfirm, setReviewConfirm] = useState(null);
   const [form, setForm] = useState({});
 
   const [orders, setOrders] = useState([]);
@@ -399,12 +400,12 @@ const UserDetails = () => {
                       <Box sx={{ display: "flex", gap: 0.5 }}>
                         {r.status === "pending" && (
                           <>
-                            <AdminButton variant="success" size="smallest" onClick={() => handleReviewStatus(r._id, "approved")}>Approve</AdminButton>
-                            <AdminButton variant="danger" size="smallest" onClick={() => handleReviewStatus(r._id, "rejected")}>Reject</AdminButton>
+                            <AdminButton variant="success" size="smallest" onClick={() => setReviewConfirm({ action: "approved", reviewId: r._id })}>Approve</AdminButton>
+                            <AdminButton variant="danger" size="smallest" onClick={() => setReviewConfirm({ action: "rejected", reviewId: r._id })}>Reject</AdminButton>
                           </>
                         )}
                         <AdminButton variant="ghost" size="smallest" icon={<ViewIcon />} onClick={() => navigate(`/admin/reviews/${r._id}`)} />
-                        <AdminButton variant="ghost" size="smallest" icon={<DeleteIcon />} onClick={() => handleReviewDelete(r._id)} />
+                        <AdminButton variant="ghost" size="smallest" icon={<DeleteIcon />} onClick={() => setReviewConfirm({ action: "delete", reviewId: r._id })} />
                       </Box>
                     </td>
                   </tr>
@@ -515,11 +516,28 @@ const UserDetails = () => {
         open={!!confirmAction}
         title={confirmAction === "block" ? "Block User" : confirmAction === "unblock" ? "Unblock User" : confirmAction === "deactivate" ? "Deactivate User" : confirmAction === "restore" ? "Restore User" : "Delete User Permanently"}
         message={confirmAction === "block" ? "Are you sure you want to block this user? They will not be able to access their account." : confirmAction === "unblock" ? "Are you sure you want to unblock this user?" : confirmAction === "deactivate" ? "Are you sure you want to deactivate this user's account? They will not be able to sign in until it is restored." : confirmAction === "restore" ? "Are you sure you want to restore this user's account? They will regain access to it." : "Are you sure you want to PERMANENTLY DELETE this user? This action is irreversible and will destroy all their data including orders, reviews, cart, wishlist, builds, and addresses."}
-        confirmLabel={confirmAction === "block" ? "Block" : confirmAction === "unblock" ? "Unblock" : confirmAction === "deactivate" ? "Deactivate" : confirmAction === "restore" ? "Restore" : "Delete Permanently"}
+        confirmLabel={confirmAction === "block" ? "Yes, Block" : confirmAction === "unblock" ? "Yes, Unblock" : confirmAction === "deactivate" ? "Yes, Deactivate" : confirmAction === "restore" ? "Yes, Restore" : "Yes, Delete Permanently"}
+        cancelLabel="No, Cancel"
         severity={confirmAction === "delete" || confirmAction === "deactivate" ? "danger" : "warning"}
         loading={saving}
         onConfirm={() => { if (confirmAction === "delete") handleDelete(); else if (confirmAction === "deactivate" || confirmAction === "restore") handleDeactivateToggle(); else handleBlockToggle(); }}
         onCancel={() => setConfirmAction(null)}
+      />
+
+      <ConfirmDialog
+        open={!!reviewConfirm}
+        title={reviewConfirm?.action === "approved" ? "Approve Review" : reviewConfirm?.action === "rejected" ? "Reject Review" : "Delete Review"}
+        message={reviewConfirm?.action === "approved" ? "Are you sure you want to approve this review? It will be visible on the product page." : reviewConfirm?.action === "rejected" ? "Are you sure you want to reject this review? It will be hidden from the product page." : "Are you sure you want to permanently delete this review? This action cannot be undone."}
+        confirmLabel={reviewConfirm?.action === "approved" ? "Yes, Approve" : reviewConfirm?.action === "rejected" ? "Yes, Reject" : "Yes, Delete"}
+        cancelLabel={reviewConfirm?.action === "delete" ? "No, Keep Review" : "No, Keep Pending"}
+        severity={reviewConfirm?.action === "approved" ? "success" : "danger"}
+        loading={saving}
+        onConfirm={() => {
+          if (reviewConfirm?.action === "delete") handleReviewDelete(reviewConfirm.reviewId);
+          else handleReviewStatus(reviewConfirm.reviewId, reviewConfirm.action);
+          setReviewConfirm(null);
+        }}
+        onCancel={() => setReviewConfirm(null)}
       />
     </Box>
   );

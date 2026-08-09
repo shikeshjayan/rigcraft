@@ -8,6 +8,7 @@ import { useToast } from "../../components/common/Toast";
 import AdminButton from "../../components/common/Button";
 import Loading from "../../components/common/Loading";
 import StatusBadge from "../../components/common/StatusBadge";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { extractError, humanizeField } from "../../utils/extractError";
 import { connectSocket, joinSupportRoom, leaveSupportRoom } from "../../../shared/socket";
 
@@ -50,6 +51,7 @@ const SupportDetails = () => {
   const [replyText, setReplyText] = useState("");
   const [replyFiles, setReplyFiles] = useState([]);
   const [cancelling, setCancelling] = useState(false);
+  const [confirmCancel, setConfirmCancel] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
@@ -410,7 +412,7 @@ const SupportDetails = () => {
                       size="small"
                       fullWidth
                       loading={cancelling}
-                      onClick={handleCancelOrder}
+                      onClick={() => setConfirmCancel(true)}
                       sx={{ mt: 1 }}
                     >
                       Cancel Order
@@ -418,6 +420,21 @@ const SupportDetails = () => {
                   )}
                 </Box>
               )}
+
+              <ConfirmDialog
+                open={confirmCancel}
+                title="Cancel Order?"
+                message="Are you sure you want to cancel this customer's order? This action is irreversible."
+                confirmLabel="Yes, Cancel Order"
+                cancelLabel="No, Keep Order"
+                severity="danger"
+                loading={cancelling}
+                onConfirm={() => {
+                  handleCancelOrder();
+                  setConfirmCancel(false);
+                }}
+                onCancel={() => setConfirmCancel(false)}
+              />
 
               <Box>
                 <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", mb: 0.5 }}>Last Updated</Typography>

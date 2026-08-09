@@ -5,6 +5,7 @@ import AdminInput from "../../components/common/Input";
 import AdminButton from "../../components/common/Button";
 import AdminSelect from "../../components/common/Select";
 import { useToast } from "../../components/common/Toast";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { settingsService } from "../../services/settingsService";
 import { buildService } from "../../services/buildService";
 import useSettingsStore from "../../store/settingsStore";
@@ -83,6 +84,7 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [logoUploading, setLogoUploading] = useState(false);
+  const [confirmLogoRemove, setConfirmLogoRemove] = useState(false);
   const [settings, setSettings] = useState(defaultSettings);
   const [builderSettings, setBuilderSettings] = useState(defaultBuilderSettings);
   const [builderSaving, setBuilderSaving] = useState(false);
@@ -197,6 +199,7 @@ const Settings = () => {
   }
 
   return (
+    <>
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
         <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)" }} />
@@ -240,7 +243,7 @@ const Settings = () => {
                     {settings.logo?.url ? "Change" : "Upload"}
                   </AdminButton>
                   {settings.logo?.url && (
-                    <IconButton size="small" onClick={handleLogoRemove} disabled={logoUploading} sx={{ color: "var(--color-admin-danger)" }}>
+                    <IconButton size="small" onClick={() => setConfirmLogoRemove(true)} disabled={logoUploading} sx={{ color: "var(--color-admin-danger)" }}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   )}
@@ -614,6 +617,22 @@ const Settings = () => {
         )}
       </TabPanel>
     </Box>
+
+    <ConfirmDialog
+      open={confirmLogoRemove}
+      title="Remove Store Logo?"
+      message="Are you sure you want to remove the store logo? This will clear the branding from the site."
+      confirmLabel="Yes, Remove Logo"
+      cancelLabel="No, Keep Logo"
+      severity="danger"
+      loading={logoUploading}
+      onConfirm={() => {
+        handleLogoRemove();
+        setConfirmLogoRemove(false);
+      }}
+      onCancel={() => setConfirmLogoRemove(false)}
+    />
+    </>
   );
 };
 
