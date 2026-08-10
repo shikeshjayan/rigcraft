@@ -163,7 +163,7 @@ const BundleList = () => {
               icon: row.isActive ? ToggleOffIcon : ToggleOnIcon,
               onClick: () => handleToggleStatus(row.id),
             },
-            { label: "Delete", icon: DeleteIcon, onClick: () => handleDelete(row.id) },
+            { label: "Delete", icon: DeleteIcon, danger: true, onClick: () => handleDelete(row.id) },
           ]}
         />
       ),
@@ -202,8 +202,9 @@ const BundleList = () => {
         open={Boolean(deleteTarget)}
         title="Delete bundle?"
         message="This will permanently remove this bundle from the store. This action cannot be undone."
-        confirmLabel="Delete"
-        confirmColor="error"
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
+        severity="danger"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
         loading={deleteMutation.isPending}

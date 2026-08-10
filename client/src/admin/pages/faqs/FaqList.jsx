@@ -139,6 +139,8 @@ const FaqList = () => {
         open={!!deleteTarget}
         title="Delete FAQ"
         message="Are you sure you want to delete this FAQ? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />
