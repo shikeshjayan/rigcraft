@@ -31,7 +31,7 @@ const BackToTop = () => {
           initial={{ opacity: 0, scale: 0.5 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.5 }}
-          className="fixed bottom-8 right-8 w-12 h-12 bg-[var(--color-primary)] text-white rounded-full shadow-2xl flex items-center justify-center cursor-pointer hover:opacity-90 z-50"
+          className="fixed bottom-24 right-4 lg:bottom-8 lg:right-8 w-12 h-12 bg-[var(--color-primary)] text-white rounded-full shadow-2xl flex items-center justify-center cursor-pointer hover:opacity-90 z-50"
         >
           <ArrowUpwardIcon sx={{ fontSize: 24 }} />
         </motion.button>
