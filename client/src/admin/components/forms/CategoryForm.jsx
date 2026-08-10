@@ -107,7 +107,7 @@ const CategoryForm = ({ defaultValues, onSubmit, loading, categories = [], submi
               <Typography variant="subtitle2" sx={{ mb: 2, color: "var(--color-admin-text)", fontWeight: 600 }}>
                 Status
               </Typography>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1.5 }}>
                 <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>Active</Typography>
                 <Controller
                   name="isActive"
@@ -129,7 +129,7 @@ const CategoryForm = ({ defaultValues, onSubmit, loading, categories = [], submi
         </Grid>
       </Grid>
 
-      <Box sx={{ mt: 4, pt: 3, borderTop: "1px solid var(--color-admin-border)", display: "flex", justifyContent: "flex-end", gap: 2 }}>
+      <Box sx={{ mt: 4, pt: 3, borderTop: "1px solid var(--color-admin-border)", display: "flex", justifyContent: "flex-end", gap: 2, flexWrap: "wrap" }}>
         <AdminButton variant="secondary" type="button" onClick={() => window.history.back()}>Cancel</AdminButton>
         <AdminButton variant="primary" type="submit" loading={loading}>{submitLabel}</AdminButton>
       </Box>

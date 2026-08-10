@@ -9,22 +9,22 @@ const StatCard = ({ title, value, icon: Icon, change, changeColor, subtitle, com
         background: "linear-gradient(135deg, var(--color-admin-primary) 0%, var(--color-admin-primary-light) 100%)",
       }}
     >
-      <div
-        className="bg-white flex flex-col flex-grow relative z-10"
-        style={{
-          borderRadius: "var(--radius-admin-card)",
-          marginTop: 4,
-          padding: compact ? 12 : 20,
-        }}
-      >
         <div
-          className="flex items-center justify-between"
-          style={{ marginBottom: compact ? 6 : 12 }}
+          className="bg-white flex flex-col flex-grow relative z-10"
+          style={{
+            borderRadius: "var(--radius-admin-card)",
+            marginTop: 4,
+            padding: compact ? 12 : "clamp(16px, 3vw, 20px)",
+          }}
         >
-          <span
-            className="font-bold uppercase tracking-wider"
-            style={{ color: "var(--color-admin-text-secondary)", fontSize: compact ? 10 : 12 }}
+          <div
+            className="flex items-center justify-between"
+            style={{ marginBottom: compact ? 6 : 12 }}
           >
+            <span
+              className="font-bold uppercase tracking-wider"
+              style={{ color: "var(--color-admin-text-secondary)", fontSize: compact ? 10 : "clamp(11px, 2.5vw, 12px)" }}
+            >
             {title}
           </span>
           {Icon && (
@@ -56,7 +56,7 @@ const StatCard = ({ title, value, icon: Icon, change, changeColor, subtitle, com
         <span
           className="font-extrabold leading-none"
           style={{
-            fontSize: compact ? 20 : 26,
+            fontSize: compact ? "clamp(17px, 4.5vw, 20px)" : "clamp(20px, 6vw, 26px)",
             color: "var(--color-admin-text)",
             marginBottom: compact ? 2 : 4,
             whiteSpace: "nowrap",

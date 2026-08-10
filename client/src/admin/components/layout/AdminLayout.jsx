@@ -40,8 +40,8 @@ const AdminLayout = () => {
           onToggleCollapse={() => setSidebarCollapsed((prev) => !prev)}
           collapsed={sidebarCollapsed}
         />
-        <main className="flex-1 overflow-y-auto overflow-x-hidden">
-          <div key={location.pathname} className="animate-admin-fade-in-up">
+        <main className="flex-1 w-full min-w-0 overflow-y-auto overflow-x-hidden">
+          <div key={location.pathname} className="animate-admin-fade-in-up min-w-0 max-w-full">
             <Outlet />
           </div>
         </main>

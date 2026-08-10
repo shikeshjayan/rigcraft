@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box } from "@mui/material";
+import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box, useTheme, useMediaQuery } from "@mui/material";
 import CompactPagination from "../common/CompactPagination";
 import { formatCurrency } from "../../utils/formatCurrency";
 
@@ -9,6 +9,9 @@ const TopProducts = ({ products = [] }) => {
   const totalPages = Math.ceil(products.length / rowsPerPage);
   const paginatedProducts = products.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
   const globalIndex = page * rowsPerPage;
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
 
   return (
     <Paper
@@ -31,6 +34,42 @@ const TopProducts = ({ products = [] }) => {
           Best selling products
         </Typography>
       </div>
+      {isMobile ? (
+        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+          {paginatedProducts.map((product, index) => (
+            <Box
+              key={product.id}
+              sx={{
+                px: 2,
+                py: 1.5,
+                borderBottom: "1px solid var(--color-admin-border)",
+                "&:last-of-type": { borderBottom: "none" },
+                "&:nth-of-type(odd)": { backgroundColor: "var(--color-admin-table-striped)" },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                <Box sx={{ width: 24, height: 24, borderRadius: "var(--radius-admin-button)", backgroundColor: "var(--color-admin-bg-tertiary)", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700, fontSize: "0.6875rem", color: "var(--color-admin-text-secondary)", flexShrink: 0 }}>
+                  {globalIndex + index + 1}
+                </Box>
+                <Typography sx={{ flex: 1, minWidth: 0, fontSize: "0.875rem", fontWeight: 500, color: "var(--color-admin-text)", overflowWrap: "anywhere" }}>
+                  {product.name}
+                </Typography>
+                <Typography sx={{ fontSize: "0.8125rem", fontWeight: 600, color: "var(--color-admin-text)", flexShrink: 0 }}>
+                  {product.soldCount || 0}
+                </Typography>
+              </Box>
+              <Typography sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)", mt: 0.25 }}>
+                {formatCurrency(product.price)}
+              </Typography>
+            </Box>
+          ))}
+          {products.length === 0 && (
+            <Box sx={{ py: 4, textAlign: "center", color: "var(--color-admin-muted)" }}>
+              <Typography variant="body2">No product data</Typography>
+            </Box>
+          )}
+        </Box>
+      ) : (
       <TableContainer sx={{ flex: 1 }}>
         <Table>
           <TableHead>
@@ -89,6 +128,8 @@ const TopProducts = ({ products = [] }) => {
           </TableBody>
         </Table>
       </TableContainer>
+      )}
+
       <CompactPagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </Paper>
   );

@@ -614,7 +614,7 @@ const ProductForm = ({
             const isCustom = !tpl;
             return (
               <Grid container spacing={1} key={field.id} sx={{ mb: 1 }}>
-                <Grid size={{ xs: 4 }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <AdminInput
                     label="Label"
                     {...register(`specifications.${idx}.label`, {
@@ -631,7 +631,7 @@ const ProductForm = ({
                     size="small"
                   />
                 </Grid>
-                <Grid size={{ xs: 7 }}>
+                <Grid size={{ xs: 12, sm: 7 }}>
                   {tpl?.type === "select" ? (
                     <Controller
                       name={`specifications.${idx}.value`}
@@ -656,7 +656,7 @@ const ProductForm = ({
                   )}
                 </Grid>
                 <Grid
-                  size={{ xs: 1 }}
+                  size={{ xs: 12, sm: "auto" }}
                   sx={{ display: "flex", alignItems: "center" }}>
                   <IconButton
                     onClick={() => remove(idx)}
@@ -715,10 +715,10 @@ const ProductForm = ({
 
             {customCompatKeys.map((key) => (
               <Grid container spacing={1} key={key} sx={{ alignItems: "center" }}>
-                <Grid size={{ xs: 4 }}>
+                <Grid size={{ xs: 12, sm: 4 }}>
                   <AdminInput label="Key" value={key.replace(/_/g, " ")} size="small" disabled />
                 </Grid>
-                <Grid size={{ xs: 7 }}>
+                <Grid size={{ xs: 12, sm: 7 }}>
                   <Controller
                     name={`compatibility.${key}`}
                     control={control}
@@ -727,7 +727,7 @@ const ProductForm = ({
                     )}
                   />
                 </Grid>
-                <Grid size={{ xs: 1 }} sx={{ display: "flex", alignItems: "center" }}>
+                <Grid size={{ xs: 12, sm: "auto" }} sx={{ display: "flex", alignItems: "center" }}>
                   <IconButton
                     onClick={() => removeCompatKey(key)}
                     size="small"
@@ -739,7 +739,7 @@ const ProductForm = ({
             ))}
 
             <Grid container spacing={1} sx={{ alignItems: "center" }}>
-              <Grid size={{ xs: 4 }}>
+              <Grid size={{ xs: 12, sm: 4 }}>
                 <AdminInput
                   placeholder="New key"
                   value={newCompatKey}
@@ -747,7 +747,7 @@ const ProductForm = ({
                   size="small"
                 />
               </Grid>
-              <Grid size={{ xs: 7 }}>
+              <Grid size={{ xs: 12, sm: 7 }}>
                 <AdminInput
                   placeholder="Value"
                   value={newCompatValue}
@@ -756,7 +756,7 @@ const ProductForm = ({
                   size="small"
                 />
               </Grid>
-              <Grid size={{ xs: 1 }} sx={{ display: "flex", alignItems: "center" }}>
+              <Grid size={{ xs: 12, sm: "auto" }} sx={{ display: "flex", alignItems: "center" }}>
                 <AdminButton variant="ghost" size="small" icon={<AddIcon />} type="button" onClick={addCompatKey}>
                   Add
                 </AdminButton>
@@ -813,6 +813,7 @@ const ProductForm = ({
           display: "flex",
           justifyContent: "flex-end",
           gap: 2,
+          flexWrap: "wrap",
         }}>
         <AdminButton
           variant="secondary"

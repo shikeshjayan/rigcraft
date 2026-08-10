@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Link } from "@mui/material";
+import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Link, Box, useTheme, useMediaQuery } from "@mui/material";
 import StatusBadge from "../common/StatusBadge";
 import CompactPagination from "../common/CompactPagination";
 import { formatCurrency } from "../../utils/formatCurrency";
@@ -11,6 +11,9 @@ const RecentOrders = ({ orders = [] }) => {
   const rowsPerPage = 5;
   const totalPages = Math.ceil(orders.length / rowsPerPage);
   const paginatedOrders = orders.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
 
   return (
     <Paper
@@ -33,6 +36,40 @@ const RecentOrders = ({ orders = [] }) => {
           Latest {orders.length} orders
         </Typography>
       </div>
+      {isMobile ? (
+        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+          {paginatedOrders.map((order) => (
+            <Box
+              key={order.id || order.orderNumber}
+              sx={{
+                px: 2,
+                py: 1.5,
+                borderBottom: "1px solid var(--color-admin-border)",
+                "&:last-of-type": { borderBottom: "none" },
+                "&:nth-of-type(odd)": { backgroundColor: "var(--color-admin-table-striped)" },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5 }}>
+                <Typography sx={{ fontWeight: 600, fontSize: "0.875rem", color: "var(--color-admin-primary)", overflowWrap: "anywhere" }}>
+                  {order.orderNumber}
+                </Typography>
+                <StatusBadge label={order.status} color={ORDER_STATUS_COLOR[order.status]} />
+              </Box>
+              <Typography sx={{ fontSize: "0.8125rem", color: "var(--color-admin-text)" }}>
+                {order.customer?.name || "N/A"}
+              </Typography>
+              <Typography sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)", mt: 0.25 }}>
+                {formatDate(order.createdAt)} · {formatCurrency(order.total)}
+              </Typography>
+            </Box>
+          ))}
+          {orders.length === 0 && (
+            <Box sx={{ py: 4, textAlign: "center", color: "var(--color-admin-muted)" }}>
+              <Typography variant="body2">No recent orders</Typography>
+            </Box>
+          )}
+        </Box>
+      ) : (
       <TableContainer sx={{ flex: 1 }}>
         <Table>
           <TableHead>
@@ -72,6 +109,8 @@ const RecentOrders = ({ orders = [] }) => {
           </TableBody>
         </Table>
       </TableContainer>
+      )}
+
       <CompactPagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </Paper>
   );

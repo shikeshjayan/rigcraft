@@ -1,4 +1,4 @@
-import { Paper, Typography, Box } from "@mui/material";
+import { Paper, Typography, Box, useTheme, useMediaQuery } from "@mui/material";
 import {
   PieChart,
   Pie,
@@ -59,6 +59,9 @@ const renderLegend = (props) => {
 };
 
 const OrderChart = ({ data = [] }) => {
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+
   const chartData = data.map((d) => ({
     name: d.status,
     value: d.count,
@@ -100,8 +103,8 @@ const OrderChart = ({ data = [] }) => {
             data={chartData}
             cx="50%"
             cy="50%"
-            innerRadius={60}
-            outerRadius={100}
+            innerRadius={isSmall ? 44 : 60}
+            outerRadius={isSmall ? 74 : 100}
             paddingAngle={3}
             dataKey="value"
           >

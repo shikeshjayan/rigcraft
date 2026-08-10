@@ -1,4 +1,4 @@
-import { Paper, Typography, Box } from "@mui/material";
+import { Paper, Typography, Box, useTheme, useMediaQuery } from "@mui/material";
 import {
   AreaChart,
   Area,
@@ -34,6 +34,9 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const RevenueChart = ({ data = [] }) => {
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <Paper
       elevation={0}
@@ -56,7 +59,7 @@ const RevenueChart = ({ data = [] }) => {
       >
         Monthly revenue for the last 12 months
       </Typography>
-      <ResponsiveContainer width="100%" height={320}>
+      <ResponsiveContainer width="100%" height={isSmall ? 240 : 320}>
         <AreaChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
           <defs>
             <linearGradient id="revenueGradient" x1="0" y1="0" x2="0" y2="1">
@@ -67,7 +70,8 @@ const RevenueChart = ({ data = [] }) => {
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-admin-border-light)" />
           <XAxis
             dataKey="month"
-            tick={{ fontSize: 12, fill: "var(--color-admin-muted)" }}
+            interval="preserveStartEnd"
+            tick={{ fontSize: isSmall ? 10 : 12, fill: "var(--color-admin-muted)" }}
             axisLine={{ stroke: "var(--color-admin-border-light)" }}
             tickLine={false}
           />

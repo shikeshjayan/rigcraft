@@ -1,4 +1,4 @@
-import { Paper, Typography, Box } from "@mui/material";
+import { Paper, Typography, Box, useTheme, useMediaQuery } from "@mui/material";
 import {
   BarChart,
   Bar,
@@ -36,6 +36,9 @@ const CustomTooltip = ({ active, payload, label }) => {
 };
 
 const SalesChart = ({ data = [] }) => {
+  const theme = useTheme();
+  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
+
   return (
     <Paper
       elevation={0}
@@ -58,12 +61,13 @@ const SalesChart = ({ data = [] }) => {
       >
         Monthly orders and revenue comparison
       </Typography>
-      <ResponsiveContainer width="100%" height={320}>
+      <ResponsiveContainer width="100%" height={isSmall ? 240 : 320}>
         <BarChart data={data} margin={{ top: 5, right: 5, left: -20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" stroke="var(--color-admin-border-light)" />
           <XAxis
             dataKey="month"
-            tick={{ fontSize: 12, fill: "var(--color-admin-muted)" }}
+            interval="preserveStartEnd"
+            tick={{ fontSize: isSmall ? 10 : 12, fill: "var(--color-admin-muted)" }}
             axisLine={{ stroke: "var(--color-admin-border-light)" }}
             tickLine={false}
           />

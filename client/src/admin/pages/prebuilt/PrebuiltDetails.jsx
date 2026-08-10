@@ -14,7 +14,7 @@ import AdminThumbnail from "../../components/common/AdminThumbnail";
 const DetailRow = ({ label, value }) => (
   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
     <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", mb: 0.5 }}>{label}</Typography>
-    <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500 }}>{value || "—"}</Typography>
+    <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500, wordBreak: "break-word" }}>{value || "—"}</Typography>
   </Grid>
 );
 
@@ -37,13 +37,13 @@ const PrebuiltDetails = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3, flexWrap: "wrap", gap: 1.5 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0, flex: 1 }}>
             <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/prebuilt")} />
             <AdminThumbnail src={item.image?.url || item.image} alt={item.name} size={48} sx={{ borderRadius: "var(--radius-admin-badge)" }} />
-            <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)" }} />
-            <Box>
-              <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>{item.name}</Typography>
+            <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", flexShrink: 0 }} />
+            <Box sx={{ minWidth: 0 }}>
+              <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2, overflowWrap: "break-word", fontSize: { xs: "1.125rem", sm: "1.375rem", md: "1.5rem" } }}>{item.name}</Typography>
               <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>SKU: {item.sku}</Typography>
             </Box>
           </Box>

@@ -24,9 +24,9 @@ const SectionHeader = ({ title, subtitle }) => (
 );
 
 const SwitchField = ({ label, caption, checked, onChange }) => (
-  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
-    <Box>
-      <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)" }}>{label}</Typography>
+  <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1.5, p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+    <Box sx={{ minWidth: 0 }}>
+      <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)", overflowWrap: "break-word" }}>{label}</Typography>
       {caption && <Typography variant="caption" sx={{ color: "var(--color-admin-muted)" }}>{caption}</Typography>}
     </Box>
     <MuiSwitch checked={checked} onChange={onChange} />
@@ -201,7 +201,7 @@ const Settings = () => {
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
         <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)" }} />
         <Box>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>Settings</Typography>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2, fontSize: { xs: "1.125rem", sm: "1.375rem", md: "1.5rem" } }}>Settings</Typography>
           <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", fontWeight: 500, mt: 0.25 }}>Manage your store configuration</Typography>
         </Box>
       </Box>
@@ -221,7 +221,7 @@ const Settings = () => {
             <SectionHeader title="Store Identity" subtitle="Basic information about your store" />
           </Grid>
           <Grid size={{ xs: 12 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 3, p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap", p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
               <Box sx={{ width: 100, height: 100, borderRadius: "var(--radius-admin-button)", overflow: "hidden", flexShrink: 0, backgroundColor: "var(--color-admin-bg-secondary)", display: "flex", alignItems: "center", justifyContent: "center", border: "1px solid var(--color-admin-border)" }}>
                 {logoUploading ? (
                   <div className="animate-spin w-6 h-6 border-2 border-blue-600 border-t-transparent rounded-full" />

@@ -1,4 +1,4 @@
-import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, Checkbox } from "@mui/material";
+import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TablePagination, Checkbox, Box, useMediaQuery, useTheme } from "@mui/material";
 import Loading from "../common/Loading";
 import EmptyState from "../common/EmptyState";
 
@@ -21,6 +21,9 @@ const DataTable = ({
   headerSlots,
   sx,
 }) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
+
   if (loading) return <Loading />;
 
   if (!rows || rows.length === 0) {
@@ -30,17 +33,139 @@ const DataTable = ({
   const maxPage = Math.max(0, Math.ceil(total / pageSize) - 1);
   const displayPage = Number.isFinite(page) ? Math.min(Math.max(0, Math.floor(page)), maxPage) : 0;
 
+  const primary = columns.find((c) => c.label !== "") || columns[0];
+  const headerExtras = columns.filter((c) => c.label === "" && c.key !== "actions");
+  const actionCol = columns.find((c) => c.key === "actions");
+  const bodyCols = columns.filter((c) => c !== primary && c.label !== "");
+
+  const renderCard = (row) => {
+    const id = getRowId(row);
+    return (
+      <Paper
+        key={id}
+        elevation={0}
+        onClick={() => onRowClick?.(row)}
+        sx={{
+          borderRadius: "var(--radius-admin-table)",
+          border: selected?.includes(id) ? "1px solid var(--color-admin-primary)" : "1px solid var(--color-admin-border)",
+          overflow: "hidden",
+          cursor: onRowClick ? "pointer" : "default",
+          "&:hover": { borderColor: "var(--color-admin-primary)" },
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, px: 2, py: 1.5 }}>
+          {selectable && (
+            <Checkbox
+              size="small"
+              checked={selected?.includes(id)}
+              onClick={(e) => e.stopPropagation()}
+              onChange={(e) => { e.stopPropagation(); onSelectOne?.(id); }}
+              sx={{ color: "var(--color-admin-muted)", "&.Mui-checked": { color: "var(--color-admin-primary)" }, mr: -0.5 }}
+            />
+          )}
+          <Box sx={{ flex: 1, minWidth: 0, overflow: "hidden", "& *": { minWidth: 0, maxWidth: "100%", overflowWrap: "anywhere" } }}>
+            {primary.render ? primary.render(row[primary.key], row) : row[primary.key]}
+          </Box>
+          {headerExtras.map((col) => (
+            <Box key={col.key} sx={{ display: "flex", alignItems: "center" }} onClick={(e) => e.stopPropagation()}>
+              {col.render ? col.render(row[col.key], row) : null}
+            </Box>
+          ))}
+          {actionCol && (
+            <Box sx={{ ml: "auto" }} onClick={(e) => e.stopPropagation()}>
+              {actionCol.render(row[actionCol.key], row)}
+            </Box>
+          )}
+        </Box>
+        {bodyCols.length > 0 && (
+          <Box sx={{ borderTop: "1px solid var(--color-admin-border)" }}>
+            {bodyCols.map((col) => (
+              <Box
+                key={col.key}
+                sx={{
+                  display: "flex",
+                  gap: 2,
+                  px: 2,
+                  py: 1.25,
+                  alignItems: "flex-start",
+                  borderBottom: "1px solid var(--color-admin-border)",
+                  "&:last-of-type": { borderBottom: "none" },
+                  "&:nth-of-type(odd)": { backgroundColor: "var(--color-admin-table-striped)" },
+                }}
+              >
+                <Box sx={{ width: 104, flexShrink: 0, fontSize: "0.6875rem", fontWeight: 600, color: "var(--color-admin-text-secondary)", textTransform: "uppercase", letterSpacing: "0.04em", pt: "3px" }}>
+                  {col.label}
+                </Box>
+                <Box
+                  sx={{
+                    flex: 1,
+                    minWidth: 0,
+                    fontSize: "0.875rem",
+                    color: "var(--color-admin-text)",
+                    overflowWrap: "anywhere",
+                    "& span": { whiteSpace: "normal !important", overflow: "visible !important", maxWidth: "none !important", textOverflow: "clip !important" },
+                  }}
+                >
+                  {col.render ? col.render(row[col.key], row) : row[col.key]}
+                </Box>
+              </Box>
+            ))}
+          </Box>
+        )}
+      </Paper>
+    );
+  };
+
   return (
-    <Paper
-      elevation={0}
-      sx={{
-        borderRadius: "var(--radius-admin-table)",
-        border: "1px solid var(--color-admin-border)",
-        overflow: "hidden",
-        ...sx,
-      }}
-    >
-      <TableContainer>
+    <>
+      {isMobile && selectable && selected.length > 0 && (
+        <Box
+          sx={{
+            position: "sticky",
+            top: 0,
+            zIndex: 5,
+            mb: 2,
+            display: "flex",
+            alignItems: "center",
+            gap: 1.5,
+            px: 2,
+            py: 1.25,
+            borderRadius: "var(--radius-admin-table)",
+            border: "1px solid var(--color-admin-primary)",
+            backgroundColor: "var(--color-admin-card)",
+            boxShadow: "var(--shadow-admin-dropdown)",
+            ...sx,
+          }}
+        >
+          <Checkbox
+            size="small"
+            checked={selected.length === rows.length}
+            indeterminate={selected.length > 0 && selected.length < rows.length}
+            onClick={(e) => e.stopPropagation()}
+            onChange={(e) => { e.stopPropagation(); onSelectAll?.(); }}
+            sx={{ color: "var(--color-admin-muted)", "&.Mui-checked": { color: "var(--color-admin-primary)" } }}
+          />
+          <Box sx={{ flex: 1, fontWeight: 600, fontSize: "0.8125rem", color: "var(--color-admin-text)" }}>
+            {selected.length} selected
+          </Box>
+          {headerSlots?.actions}
+        </Box>
+      )}
+      <Paper
+        elevation={0}
+        sx={{
+          borderRadius: "var(--radius-admin-table)",
+          border: "1px solid var(--color-admin-border)",
+          overflow: "hidden",
+          ...sx,
+        }}
+      >
+        {isMobile ? (
+          <Box sx={{ p: { xs: 1, sm: 1.5 }, display: "flex", flexDirection: "column", gap: 1.5 }}>
+            {rows.map((row) => renderCard(row))}
+          </Box>
+        ) : (
+        <TableContainer>
         <Table>
           <TableHead>
             <TableRow>
@@ -90,6 +215,7 @@ const DataTable = ({
                   <TableCell padding="checkbox">
                     <Checkbox
                       checked={selected?.includes(getRowId(row))}
+                      onClick={(e) => e.stopPropagation()}
                       onChange={() => onSelectOne?.(getRowId(row))}
                       sx={{ color: "var(--color-admin-muted)", "&.Mui-checked": { color: "var(--color-admin-primary)" } }}
                     />
@@ -114,7 +240,8 @@ const DataTable = ({
             ))}
           </TableBody>
         </Table>
-      </TableContainer>
+        </TableContainer>
+        )}
 
       {total > 0 && (
         <TablePagination
@@ -129,7 +256,7 @@ const DataTable = ({
             borderTop: "1px solid var(--color-admin-border)",
             color: "var(--color-admin-text-secondary)",
             fontSize: "0.8125rem",
-            "& .MuiTablePagination-toolbar": { minHeight: 52 },
+            "& .MuiTablePagination-toolbar": { minHeight: 52, flexWrap: "wrap", justifyContent: "center", gap: 0.5 },
             "& .MuiTablePagination-selectIcon": { color: "var(--color-admin-muted)" },
             "& .MuiTablePagination-actions .MuiIconButton-root": {
               borderRadius: "var(--radius-admin-button)",
@@ -139,7 +266,8 @@ const DataTable = ({
           }}
         />
       )}
-    </Paper>
+      </Paper>
+    </>
   );
 };
 
