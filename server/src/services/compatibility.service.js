@@ -143,6 +143,26 @@ const checkStorageMotherboard = (storage, motherboard) => {
   return issues;
 };
 
+const checkStorageMotherboardSlots = (storage, motherboard) => {
+  const issues = [];
+  const maxSlots = getCompatibilityValue(motherboard, COMPATIBILITY_KEYS.STORAGE_SLOTS);
+  if (!maxSlots) return issues;
+
+  const entries = Array.isArray(storage) ? storage : [{ product: storage, quantity: 1 }];
+  let totalUnits = 0;
+  for (const entry of entries) {
+    totalUnits += entry.quantity || 1;
+  }
+
+  if (totalUnits > maxSlots) {
+    issues.push(
+      `Selected ${totalUnits} storage drives exceed motherboard storage slots (${maxSlots})`
+    );
+  }
+
+  return issues;
+};
+
 const checkCpuCooler = (cpu, cooler) => {
   const issues = [];
   const cpuTdp = getCompatibilityValue(cpu, COMPATIBILITY_KEYS.TDP);
@@ -175,12 +195,19 @@ const calculatePower = (components) => {
 const calculatePrice = (components) => {
   let totalPrice = 0;
   let totalSalePrice = 0;
+  
+  const parseNum = (val) => {
+    if (!val) return 0;
+    if (typeof val === 'number') return val;
+    const numericStr = String(val).replace(/[^0-9.]/g, '');
+    return parseFloat(numericStr) || 0;
+  };
 
   for (const component of components) {
     const product = component.product || component;
     const qty = component.quantity || 1;
-    const price = product.price || 0;
-    const salePrice = product.salePrice || price;
+    const price = parseNum(product.price);
+    const salePrice = parseNum(product.salePrice) || price;
     totalPrice += price * qty;
     totalSalePrice += salePrice * qty;
   }
@@ -279,6 +306,7 @@ const validateBuild = (components) => {
     for (const s of storage) {
       issues.push(...checkStorageMotherboard(s.product, motherboard));
     }
+    issues.push(...checkStorageMotherboardSlots(storage, motherboard));
   }
 
   if (cpu && cooler) {
@@ -330,6 +358,7 @@ export {
   checkCoolerCabinet,
   checkMotherboardCabinet,
   checkStorageMotherboard,
+  checkStorageMotherboardSlots,
   checkCpuCooler,
   calculatePower,
   calculatePrice,

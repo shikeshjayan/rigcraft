@@ -333,7 +333,8 @@ const ReviewDetails = () => {
               ? "Are you sure you want to approve this review? It will become visible on the public site."
               : "Are you sure you want to reject this review? It will be hidden from the public site."
           }
-          confirmLabel={confirmAction === "approved" ? "Approve" : "Reject"}
+          confirmLabel={confirmAction === "approved" ? "Yes, Approve" : "Yes, Reject"}
+          cancelLabel="No, Keep Pending"
           severity={confirmAction === "approved" ? "success" : "danger"}
           loading={updating}
           onConfirm={() => {

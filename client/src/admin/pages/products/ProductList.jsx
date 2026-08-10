@@ -34,6 +34,7 @@ const ProductList = () => {
     data: products,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("productList", productService, { page, pageSize, search, ...filters });
 
@@ -170,6 +171,7 @@ const ProductList = () => {
         columns={columns}
         rows={products}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}
@@ -206,6 +208,8 @@ const ProductList = () => {
         open={!!deleteTarget}
         title="Delete Product"
         message="Are you sure you want to delete this product? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

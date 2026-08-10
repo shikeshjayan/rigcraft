@@ -211,7 +211,7 @@ const TicketDetail = () => {
               <div className="bg-white border border-gray-200 shadow-sm p-6 md:p-8" style={{ borderRadius: 'var(--radius-sm)' }}>
                 <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-5">
                   <div className="flex items-center gap-3">
-                    <SupportAgentIcon sx={{ fontSize: 32, color: '#2563EB' }} />
+                    <SupportAgentIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
                     <div>
                       <div className="flex items-center gap-3 flex-wrap">
                         <h1 className="text-xl font-black text-gray-900 tracking-wide" style={{ fontFamily: 'var(--font-admin-mono, monospace)' }}>

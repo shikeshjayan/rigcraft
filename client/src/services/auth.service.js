@@ -17,6 +17,11 @@ export const authService = {
     return data;
   },
 
+  deactivateAccount: async () => {
+    const { data } = await api.post(ENDPOINTS.AUTH.DEACTIVATE);
+    return data;
+  },
+
   refreshToken: async () => {
     const { data } = await api.post(ENDPOINTS.AUTH.REFRESH);
     return data;

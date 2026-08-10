@@ -31,7 +31,7 @@ const SelectDropdown = ({ value, onChange, placeholder, options }) => {
         onClick={() => setOpen((o) => !o)}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className="w-full bg-white text-gray-900 border border-gray-300 px-4 py-3 rounded-sm font-medium text-left flex items-center justify-between gap-2 hover:border-blue-400 cursor-pointer"
+        className="w-full h-10 bg-white text-gray-900 border border-gray-300 px-4 rounded-sm font-medium text-left flex items-center justify-between gap-2 hover:border-blue-400 cursor-pointer"
       >
         <span className={`truncate ${selected ? 'text-gray-900' : 'text-gray-500'}`}>
           {selected ? selected.label : placeholder}

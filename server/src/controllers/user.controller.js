@@ -38,6 +38,12 @@ export const block = asyncHandler(async (req, res) => {
   ApiResponse.ok(user, msg).send(res);
 });
 
+export const deactivate = asyncHandler(async (req, res) => {
+  const user = await userService.toggleDeactivate(req.params.id);
+  const msg = user.deactivatedAt ? "User deactivated" : "User restored";
+  ApiResponse.ok(user, msg).send(res);
+});
+
 export const getUserOrders = asyncHandler(async (req, res) => {
   const result = await orderService.adminGetUserOrders(req.params.id, req.query);
   ApiResponse.ok(result).send(res);

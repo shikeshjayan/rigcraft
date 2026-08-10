@@ -1,23 +1,33 @@
-import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import apiClient from '../api/client';
 
 const DealsBrands = () => {
-  const brands = [
-    "ASUS ROG", "NVIDIA", "AMD RYZEN", "INTEL", "CORSAIR", 
-    "GIGABYTE", "MSI", "NZXT", "LIAN LI", "COOLER MASTER"
-  ];
+  const { data: brandsData, isLoading } = useQuery({
+    queryKey: ['allBrands'],
+    queryFn: async () => {
+      const res = await apiClient.get('/brands');
+      return res.data;
+    },
+  });
+
+  const brands = Array.isArray(brandsData?.data)
+    ? brandsData.data
+    : Array.isArray(brandsData)
+      ? brandsData
+      : [];
+
+  if (isLoading || brands.length === 0) return null;
 
   return (
-    <section className="w-full py-16 border-t border-[#E2E8F0] overflow-hidden" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
+    <section className="w-full py-16 border-t border-[var(--color-border)] overflow-hidden" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
       <div className="flex items-center gap-16 whitespace-nowrap animate-marquee">
-        {/* Render multiple sets to create a seamless infinite scrolling marquee */}
         {[...brands, ...brands, ...brands].map((brand, i) => (
-          <div key={i} className="text-[32px] md:text-[48px] font-extrabold text-[#CBD5E1] tracking-widest uppercase hover:text-[#0052FF] transition-colors cursor-pointer">
-            {brand}
+          <div key={`${brand._id || brand.name}-${i}`} className="text-[28px] md:text-[42px] font-extrabold text-[#CBD5E1] tracking-widest uppercase hover:text-[var(--color-primary)] transition-colors duration-300 cursor-default">
+            {brand.name}
           </div>
         ))}
       </div>
-      
-      {/* Inline styles for the marquee animation */}
+
       <style dangerouslySetInnerHTML={{__html: `
         @keyframes marquee {
           0% { transform: translateX(0); }

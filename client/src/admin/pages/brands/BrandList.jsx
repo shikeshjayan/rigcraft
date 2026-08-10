@@ -33,6 +33,7 @@ const BrandList = () => {
     data: brands,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("brandList", brandService, { page, pageSize, search, ...filters });
 
@@ -136,6 +137,7 @@ const BrandList = () => {
         columns={columns}
         rows={brands}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}
@@ -172,6 +174,8 @@ const BrandList = () => {
         open={!!deleteTarget}
         title="Delete Brand"
         message="Are you sure you want to delete this brand? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

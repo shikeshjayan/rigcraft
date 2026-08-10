@@ -30,7 +30,7 @@ const BuilderCommunity = () => {
     <section className="w-full py-16" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         
-        <h2 className="text-[20px] font-bold text-[#0F172A] mb-6">
+        <h2 className="text-[20px] font-bold text-[var(--color-text)] mb-6">
           Get Inspired: Community Builds
         </h2>
 
@@ -47,10 +47,10 @@ const BuilderCommunity = () => {
               </div>
               
               <div className="p-4 flex flex-col flex-grow">
-                <h3 className="font-bold text-[#0F172A] text-[16px] mb-1">
+                <h3 className="font-bold text-[var(--color-text)] text-[16px] mb-1">
                   {build.title}
                 </h3>
-                <p className="text-[#64748B] text-[13px] italic mb-3">
+                <p className="text-[var(--color-text-secondary)] text-[13px] italic mb-3">
                   Built by {build.creator}
                 </p>
                 <p className="text-[#334155] text-[11px] font-bold uppercase tracking-wider mb-4">

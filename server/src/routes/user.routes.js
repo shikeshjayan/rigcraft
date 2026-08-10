@@ -52,6 +52,13 @@ router.patch(
   userController.block
 );
 
+router.patch(
+  "/:id/deactivate",
+  protect,
+  authorize(USER_ROLES.ADMIN),
+  userController.deactivate
+);
+
 router.get(
   "/:id/orders",
   protect,

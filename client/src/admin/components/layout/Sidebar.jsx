@@ -10,6 +10,7 @@ import {
   Computer as ComputerIcon,
   Receipt as ReceiptIcon,
   Discount as DiscountIcon,
+  Sell as SellIcon,
   People as PeopleIcon,
   RateReview as RateReviewIcon,
   Settings as SettingsIcon,
@@ -36,6 +37,7 @@ const iconMap = {
   Computer: ComputerIcon,
   Receipt: ReceiptIcon,
   Discount: DiscountIcon,
+  Sell: SellIcon,
   People: PeopleIcon,
   RateReview: RateReviewIcon,
   Settings: SettingsIcon,
@@ -273,8 +275,8 @@ const Sidebar = ({ open, onClose, collapsed }) => {
         open={logoutDialogOpen}
         title="Confirm Logout"
         message="Are you sure you want to log out?"
-        confirmLabel="Logout"
-        cancelLabel="Cancel"
+        confirmLabel="Yes, Logout"
+        cancelLabel="No, Stay Logged In"
         severity="danger"
         onConfirm={() => {
           logout();

@@ -98,6 +98,8 @@ const HomePrebuildSection = () => {
                 tagColor={discountPercentage > 0 ? "#E11D48" : pc.tagColor}
                 category="prebuilt"
                 stock={pc.stock}
+                brand={pc.brand?.name || pc.brand}
+                warranty={pc.warranty}
               />
             );
           })}

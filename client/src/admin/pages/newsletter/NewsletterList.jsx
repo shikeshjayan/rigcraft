@@ -38,6 +38,7 @@ const NewsletterList = () => {
     data: subscribers,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("newsletterList", newsletterService, { page, pageSize, search, ...filters });
 
@@ -183,6 +184,7 @@ const NewsletterList = () => {
         columns={columns}
         rows={subscribers}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}
@@ -219,6 +221,8 @@ const NewsletterList = () => {
         open={!!deleteTarget}
         title="Delete Subscriber"
         message="Are you sure you want to delete this subscriber? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

@@ -1,11 +1,10 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import FilterListIcon from '@mui/icons-material/FilterList';
-import KeyboardArrowLeftIcon from '@mui/icons-material/KeyboardArrowLeft';
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import Card from '../components/Card';
 import SkeletonCard from '../components/SkeletonCard';
 import Filter from '../components/Filter';
+import Pagination from '../components/Pagination';
 import apiClient from '../api/client';
 
 const PrebuildCatalog = () => {
@@ -23,7 +22,7 @@ const PrebuildCatalog = () => {
   // Pagination & Loading State
   const [currentPage, setCurrentPage] = useState(1);
   const [isFiltering, setIsFiltering] = useState(false);
-  const itemsPerPage = 40; 
+  const itemsPerPage = 12; 
 
   const [basePCs, setBasePCs] = useState([]);
   const [allProductsDict, setAllProductsDict] = useState({});
@@ -209,22 +208,14 @@ const PrebuildCatalog = () => {
     return filteredPCs.slice(start, start + itemsPerPage);
   }, [filteredPCs, currentPage]);
 
-  const handlePrevPage = () => {
-    if (currentPage > 1) {
-      setCurrentPage(prev => prev - 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-  };
-
-  const handleNextPage = () => {
-    if (currentPage < totalPages) {
-      setCurrentPage(prev => prev + 1);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+  const handlePageChange = (nextPage) => {
+    if (nextPage < 1 || nextPage > totalPages) return;
+    setCurrentPage(nextPage);
+    document.getElementById('prebuild-catalog').scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
-    <section className="w-full py-8 pb-24" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+    <section id="prebuild-catalog" className="w-full py-8 pb-24" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
         
         {/* Top Bar with Filters Button */}
@@ -311,6 +302,8 @@ const PrebuildCatalog = () => {
                               compact={filterDropdownOpen} 
                               category="prebuilt"
                               stock={pc.stock}
+                              brand={pc.brand?.name || pc.brand}
+                              warranty={pc.warranty}
                             />
                           </div>
                         );
@@ -319,29 +312,11 @@ const PrebuildCatalog = () => {
                   </div>
 
                 {/* Pagination Controls */}
-                {totalPages > 1 && (
-                  <div className="w-full flex items-center justify-center gap-6 mt-16 border-t border-[#E2E8F0] pt-8">
-                    <button 
-                      onClick={handlePrevPage}
-                      disabled={currentPage === 1}
-                      className="flex items-center gap-1 px-5 py-2.5 bg-white border border-[#D5D9D9] rounded-md font-bold text-[#0F1111] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F7F7F7] transition-colors cursor-pointer"
-                    >
-                      <KeyboardArrowLeftIcon /> Previous
-                    </button>
-                    
-                    <span className="text-[15px] font-bold text-[#565959]">
-                      Page {currentPage} of {totalPages}
-                    </span>
-
-                    <button 
-                      onClick={handleNextPage}
-                      disabled={currentPage === totalPages}
-                      className="flex items-center gap-1 px-5 py-2.5 bg-white border border-[#D5D9D9] rounded-md font-bold text-[#0F1111] disabled:opacity-40 disabled:cursor-not-allowed hover:bg-[#F7F7F7] transition-colors cursor-pointer"
-                    >
-                      Next <KeyboardArrowRightIcon />
-                    </button>
-                  </div>
-                )}
+                <Pagination
+                  page={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange}
+                />
                 </motion.div>
               )}
             </AnimatePresence>

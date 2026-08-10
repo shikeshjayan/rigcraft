@@ -28,6 +28,7 @@ const FaqList = () => {
     data: faqs,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("faqList", faqService, { page, pageSize, search });
 
@@ -101,6 +102,7 @@ const FaqList = () => {
         columns={columns}
         rows={faqs}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}
@@ -137,6 +139,8 @@ const FaqList = () => {
         open={!!deleteTarget}
         title="Delete FAQ"
         message="Are you sure you want to delete this FAQ? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

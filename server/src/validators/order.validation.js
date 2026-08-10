@@ -9,6 +9,7 @@ const objectId = z.string().refine(
 export const checkoutSchema = z.object({
   addressId: objectId,
   paymentMethod: z.enum(["razorpay", "cod"]),
+  selectedItemIds: z.array(z.string()).optional(),
 });
 
 export const cancelOrderSchema = z.object({

@@ -168,6 +168,11 @@ export const validateBuilderBuild = (parts) => {
         issues.push(`Storage interface (${storageInterface}) does not match the motherboard storage interface (${mbStorageInterface}).`);
       }
     }
+    const storageUnits = totalCount(byType.storage);
+    const storageSlots = numberValue(getCompatibilityValue(byType.motherboard, 'storageSlots'));
+    if (storageSlots && storageUnits > storageSlots) {
+      issues.push(`Selected ${storageUnits} storage drives exceed the motherboard's ${storageSlots} storage slots.`);
+    }
   }
 
   // checkCpuCooler — CPU TDP vs cooler TDP rating
@@ -208,4 +213,170 @@ export const estimateWattage = (parts) => {
     }
   });
   return Math.round(watts * 1.2);
+};
+
+const checkRow = (id, label, status, message) => ({ id, label, status, message });
+
+const sameValue = (a, b) => {
+  if (a == null || b == null) return null;
+  return String(a).toLowerCase() === String(b).toLowerCase();
+};
+
+/**
+ * validateBuilderBuildDetailed — per-check compatibility report used by the
+ * builder's live "Compatibility" section. Mirrors the checks in
+ * validateBuilderBuild but returns one row per pairing so the UI can render
+ * individual pass / fail / pending rows.
+ */
+export const validateBuilderBuildDetailed = (parts) => {
+  const ramEntries = normalizeEntries(parts?.ram);
+  const storageEntries = normalizeEntries(parts?.ssd);
+
+  const byType = {
+    cpu: parts?.cpu || null,
+    motherboard: parts?.motherboard || null,
+    gpu: parts?.gpu || null,
+    ram: ramEntries,
+    psu: parts?.psu || null,
+    cabinet: parts?.cabinet || null,
+    storage: storageEntries,
+    cooler: parts?.cooling || null
+  };
+
+  const checks = [];
+
+  // 1. CPU socket ↔ motherboard socket
+  const cpuSocket = getCompatibilityValue(byType.cpu, 'socket');
+  const mbSocket = getCompatibilityValue(byType.motherboard, 'socket');
+  if (!byType.cpu || !byType.motherboard) {
+    checks.push(checkRow('cpu-motherboard', 'CPU ↔ Motherboard', 'pending', 'Select a CPU and motherboard to verify socket compatibility.'));
+  } else {
+    const match = sameValue(cpuSocket, mbSocket);
+    checks.push(match === false
+      ? checkRow('cpu-motherboard', 'CPU ↔ Motherboard', 'fail', `CPU socket (${cpuSocket}) does not match the motherboard socket (${mbSocket}).`)
+      : checkRow('cpu-motherboard', 'CPU ↔ Motherboard', 'pass', cpuSocket && mbSocket ? `Socket ${cpuSocket} matches.` : 'Socket data not specified.'));
+  }
+
+  // 2. RAM ↔ motherboard (type, capacity, slots)
+  if (ramEntries.length === 0 || !byType.motherboard) {
+    checks.push(checkRow('ram-motherboard', 'RAM ↔ Motherboard', 'pending', 'Select memory and a motherboard to verify compatibility.'));
+  } else {
+    const ramIssues = [];
+    const mbMemoryType = getCompatibilityValue(byType.motherboard, 'memoryType');
+    for (const entry of byType.ram) {
+      const ramType = getCompatibilityValue(entry.item, 'memoryType');
+      if (ramType && mbMemoryType && !sameValue(ramType, mbMemoryType)) {
+        ramIssues.push(`RAM type (${ramType}) does not match the motherboard memory type (${mbMemoryType}).`);
+      }
+    }
+    const ramQty = totalCount(byType.ram);
+    const totalRamCapacity = totalCapacity(byType.ram);
+    const maxMemory = numberValue(getCompatibilityValue(byType.motherboard, 'maxMemory'));
+    if (maxMemory && totalRamCapacity > 0 && totalRamCapacity > maxMemory) {
+      ramIssues.push(`RAM capacity (${totalRamCapacity}GB across ${ramQty} sticks) exceeds the motherboard max memory (${maxMemory}GB).`);
+    }
+    const maxSlots = numberValue(getCompatibilityValue(byType.motherboard, 'maxMemorySlots'));
+    if (maxSlots && ramQty > maxSlots) {
+      ramIssues.push(`Selected ${ramQty} RAM sticks exceed the motherboard's ${maxSlots} memory slots.`);
+    }
+    checks.push(ramIssues.length > 0
+      ? checkRow('ram-motherboard', 'RAM ↔ Motherboard', 'fail', ramIssues.join(' '))
+      : checkRow('ram-motherboard', 'RAM ↔ Motherboard', 'pass', `${ramQty} stick(s), ${totalRamCapacity || 0}GB total — within motherboard limits.`));
+  }
+
+  // 3. Storage ↔ motherboard interface
+  if (storageEntries.length === 0 || !byType.motherboard) {
+    checks.push(checkRow('storage-motherboard', 'Storage ↔ Motherboard', 'pending', 'Select storage and a motherboard to verify compatibility.'));
+  } else {
+    const storageIssues = [];
+    const mbStorageInterface = getCompatibilityValue(byType.motherboard, 'storageInterface');
+    for (const entry of byType.storage) {
+      const storageInterface = getCompatibilityValue(entry.item, 'storageInterface');
+      if (storageInterface && mbStorageInterface && !sameValue(storageInterface, mbStorageInterface)) {
+        storageIssues.push(`Storage interface (${storageInterface}) does not match the motherboard storage interface (${mbStorageInterface}).`);
+      }
+    }
+    const storageUnits = totalCount(byType.storage);
+    const storageSlots = numberValue(getCompatibilityValue(byType.motherboard, 'storageSlots'));
+    if (storageSlots && storageUnits > storageSlots) {
+      storageIssues.push(`Selected ${storageUnits} storage drives exceed the motherboard's ${storageSlots} storage slots.`);
+    }
+    checks.push(storageIssues.length > 0
+      ? checkRow('storage-motherboard', 'Storage ↔ Motherboard', 'fail', storageIssues.join(' '))
+      : checkRow('storage-motherboard', 'Storage ↔ Motherboard', 'pass', storageSlots
+          ? `${storageUnits} drive(s) within the motherboard's ${storageSlots} storage slots.`
+          : 'Storage interface is supported by the motherboard.'));
+  }
+
+  // 4. GPU ↔ case clearance
+  if (!byType.gpu || !byType.cabinet) {
+    checks.push(checkRow('gpu-case', 'GPU ↔ Case', 'pending', 'Select a GPU and case to verify clearance.'));
+  } else {
+    const gpuLength = numberValue(getCompatibilityValue(byType.gpu, 'gpuLength'));
+    const maxGpuLength = numberValue(getCompatibilityValue(byType.cabinet, 'maxGpuLength'));
+    if (gpuLength && maxGpuLength && gpuLength > maxGpuLength) {
+      checks.push(checkRow('gpu-case', 'GPU ↔ Case', 'fail', `GPU length (${gpuLength}mm) exceeds the case's max GPU length (${maxGpuLength}mm).`));
+    } else {
+      checks.push(checkRow('gpu-case', 'GPU ↔ Case', 'pass', gpuLength && maxGpuLength ? `${gpuLength}mm GPU fits within the ${maxGpuLength}mm case limit.` : 'Clearance data not specified.'));
+    }
+  }
+
+  // 5. Cooler ↔ case clearance
+  if (!byType.cooler || !byType.cabinet) {
+    checks.push(checkRow('cooler-case', 'Cooler ↔ Case', 'pending', 'Select a CPU cooler and case to verify clearance.'));
+  } else {
+    const coolerHeight = numberValue(getCompatibilityValue(byType.cooler, 'coolerHeight'));
+    const maxCoolerHeight = numberValue(getCompatibilityValue(byType.cabinet, 'maxCoolerHeight'));
+    if (coolerHeight && maxCoolerHeight && coolerHeight > maxCoolerHeight) {
+      checks.push(checkRow('cooler-case', 'Cooler ↔ Case', 'fail', `Cooler height (${coolerHeight}mm) exceeds the case's max cooler height (${maxCoolerHeight}mm).`));
+    } else {
+      checks.push(checkRow('cooler-case', 'Cooler ↔ Case', 'pass', coolerHeight && maxCoolerHeight ? `${coolerHeight}mm cooler fits within the ${maxCoolerHeight}mm case limit.` : 'Clearance data not specified.'));
+    }
+  }
+
+  // 6. Motherboard ↔ case form factor
+  if (!byType.motherboard || !byType.cabinet) {
+    checks.push(checkRow('mb-case', 'Motherboard ↔ Case', 'pending', 'Select a motherboard and case to verify form factor.'));
+  } else {
+    const mbFormFactor = getCompatibilityValue(byType.motherboard, 'formFactor');
+    const cabinetFormFactor = getCompatibilityValue(byType.cabinet, 'formFactor');
+    const match = sameValue(mbFormFactor, cabinetFormFactor);
+    checks.push(match === false
+      ? checkRow('mb-case', 'Motherboard ↔ Case', 'fail', `Motherboard form factor (${mbFormFactor}) does not match the case form factor (${cabinetFormFactor}).`)
+      : checkRow('mb-case', 'Motherboard ↔ Case', 'pass', mbFormFactor && cabinetFormFactor ? `Form factor ${mbFormFactor} is supported.` : 'Form factor data not specified.'));
+  }
+
+  // 7. CPU ↔ cooler TDP
+  if (!byType.cpu || !byType.cooler) {
+    checks.push(checkRow('cpu-cooler', 'CPU ↔ Cooler', 'pending', 'Select a CPU and cooler to verify TDP rating.'));
+  } else {
+    const cpuTdp = numberValue(getCompatibilityValue(byType.cpu, 'tdp'));
+    const coolerTdp = numberValue(getCompatibilityValue(byType.cooler, 'tdp'));
+    if (cpuTdp && coolerTdp && cpuTdp > coolerTdp) {
+      checks.push(checkRow('cpu-cooler', 'CPU ↔ Cooler', 'fail', `CPU TDP (${cpuTdp}W) exceeds the cooler's TDP rating (${coolerTdp}W).`));
+    } else {
+      checks.push(checkRow('cpu-cooler', 'CPU ↔ Cooler', 'pass', cpuTdp && coolerTdp ? `${coolerTdp}W cooler covers the ${cpuTdp}W CPU.` : 'TDP data not specified.'));
+    }
+  }
+
+  // 8. PSU capacity vs estimated draw
+  if (!byType.psu) {
+    checks.push(checkRow('psu-capacity', 'PSU Capacity', 'pending', 'Select a power supply to verify capacity.'));
+  } else {
+    const psuWattage = numberValue(getCompatibilityValue(byType.psu, 'psuWattage'));
+    const estDraw = estimateWattage(parts);
+    if (!psuWattage) {
+      checks.push(checkRow('psu-capacity', 'PSU Capacity', 'pending', 'Rated wattage not available for this PSU.'));
+    } else if (psuWattage < estDraw) {
+      checks.push(checkRow('psu-capacity', 'PSU Capacity', 'fail', `PSU rated ${psuWattage}W is below the estimated ${estDraw}W system draw. Consider a higher capacity PSU.`));
+    } else {
+      checks.push(checkRow('psu-capacity', 'PSU Capacity', 'pass', `PSU rated ${psuWattage}W covers the estimated ${estDraw}W system draw.`));
+    }
+  }
+
+  const evaluated = checks.filter(c => c.status !== 'pending');
+  const passed = evaluated.filter(c => c.status === 'pass').length;
+  const overall = evaluated.length > 0 ? Math.round((passed / evaluated.length) * 100) : 0;
+
+  return { checks, overall };
 };

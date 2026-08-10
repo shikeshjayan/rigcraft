@@ -1,4 +1,7 @@
+import fs from 'fs';
+
 const errorHandler = (err, req, res, next) => {
+  fs.appendFileSync('error.log', new Date().toISOString() + ' ' + err.message + '\n');
   let statusCode = err.statusCode || 500;
   let message = err.message || 'Internal server error';
   let errors = err.errors || [];

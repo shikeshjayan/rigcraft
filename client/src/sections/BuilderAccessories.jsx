@@ -1,12 +1,28 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Card from '../components/Card';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import apiClient from '../api/client';
 import { useCart } from '../context/CartContext';
 import { normalizeBuilderProduct, normalizeCategory, getRawCategory } from '../utils/builderProducts';
 
 const BuilderAccessories = () => {
   const [accessories, setAccessories] = useState([]);
+  const [canScroll, setCanScroll] = useState(false);
+  const carouselRef = useRef(null);
   const { addToCart } = useCart();
+
+  const scrollLeft = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: -400, behavior: 'smooth' });
+    }
+  };
+
+  const scrollRight = () => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({ left: 400, behavior: 'smooth' });
+    }
+  };
 
   useEffect(() => {
     const fetchAccessories = async () => {
@@ -22,7 +38,6 @@ const BuilderAccessories = () => {
               const type = (p.categoryType || p.productType || '').toLowerCase();
               return type === 'accessory' || type === 'accessories' || normalizeCategory(getRawCategory(p)) === 'accessory';
             })
-            .slice(0, 4)
             .map(p => normalizeBuilderProduct(p));
 
           setAccessories(accessoryItems);
@@ -34,6 +49,17 @@ const BuilderAccessories = () => {
     fetchAccessories();
   }, []);
 
+  useEffect(() => {
+    const measure = () => {
+      if (carouselRef.current) {
+        setCanScroll(carouselRef.current.scrollWidth > carouselRef.current.clientWidth + 1);
+      }
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [accessories.length]);
+
   const handleAddToCart = (item) => {
     addToCart(item);
   };
@@ -41,30 +67,58 @@ const BuilderAccessories = () => {
   return (
     <section className="w-full py-16" style={{ backgroundColor: 'var(--color-bg-secondary)' }}>
       <div className="max-w-[1500px] mx-auto px-4 lg:px-8">
-        
-        <h2 className="text-[20px] font-bold text-[#0F172A] mb-6">
-          Recommended Accessories
-        </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-6 gap-4">
+          <h2 className="text-[20px] font-bold text-[var(--color-text)]">
+            Recommended Accessories
+          </h2>
+
+          {canScroll && (
+            <div className="flex items-center gap-2 shrink-0 self-end">
+              <button
+                onClick={scrollLeft}
+                className="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors shadow-sm cursor-pointer"
+                style={{ borderRadius: 'var(--radius-sm, 8px)' }}
+                aria-label="Previous"
+              >
+                <ChevronLeftIcon />
+              </button>
+              <button
+                onClick={scrollRight}
+                className="flex items-center justify-center w-10 h-10 bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors shadow-sm cursor-pointer"
+                style={{ borderRadius: 'var(--radius-sm, 8px)' }}
+                aria-label="Next"
+              >
+                <ChevronRightIcon />
+              </button>
+            </div>
+          )}
+        </div>
+
+        <div
+          ref={carouselRef}
+          className="flex overflow-x-auto gap-6 pb-2 snap-x snap-mandatory hide-scrollbar"
+          style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+        >
           {accessories.map(item => (
-            <Card 
-              key={item.id}
-              id={item.id}
-              image={item.image}
-              title={item.title}
-              specs={item.specs}
-              description={item.description}
-              price={item.price}
-              mrp={item.mrp}
-              discount={item.discount}
-              category={item.category}
-              tag="ACCESSORY"
-              tagColor="var(--color-primary)"
-              buttonText="Add to Cart"
-              onButtonClick={() => handleAddToCart(item)}
-              stock={item.stock}
-            />
+            <div key={item.id} className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex flex-col snap-start">
+              <Card
+                id={item.id}
+                image={item.image}
+                title={item.title}
+                specs={item.specs}
+                description={item.description}
+                price={item.price}
+                mrp={item.mrp}
+                discount={item.discount}
+                category={item.category}
+                tag="ACCESSORY"
+                tagColor="var(--color-primary)"
+                buttonText="Add to Cart"
+                onButtonClick={() => handleAddToCart(item)}
+                stock={item.stock}
+              />
+            </div>
           ))}
         </div>
 

@@ -5,6 +5,7 @@ import AdminInput from "../../components/common/Input";
 import AdminButton from "../../components/common/Button";
 import AdminSelect from "../../components/common/Select";
 import { useToast } from "../../components/common/Toast";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 import { settingsService } from "../../services/settingsService";
 import { buildService } from "../../services/buildService";
 import useSettingsStore from "../../store/settingsStore";
@@ -83,6 +84,7 @@ const Settings = () => {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [logoUploading, setLogoUploading] = useState(false);
+  const [confirmLogoRemove, setConfirmLogoRemove] = useState(false);
   const [settings, setSettings] = useState(defaultSettings);
   const [builderSettings, setBuilderSettings] = useState(defaultBuilderSettings);
   const [builderSaving, setBuilderSaving] = useState(false);
@@ -197,6 +199,7 @@ const Settings = () => {
   }
 
   return (
+    <>
     <Box sx={{ p: 3 }}>
       <Box sx={{ display: "flex", alignItems: "center", gap: 2, mb: 3 }}>
         <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)" }} />
@@ -212,6 +215,7 @@ const Settings = () => {
         <Tab label="Shipping" />
         <Tab label="Notifications" />
         <Tab label="PC Builder" />
+        <Tab label="Inventory" />
       </Tabs>
 
       {/* ── General Tab ── */}
@@ -239,7 +243,7 @@ const Settings = () => {
                     {settings.logo?.url ? "Change" : "Upload"}
                   </AdminButton>
                   {settings.logo?.url && (
-                    <IconButton size="small" onClick={handleLogoRemove} disabled={logoUploading} sx={{ color: "var(--color-admin-danger)" }}>
+                    <IconButton size="small" onClick={() => setConfirmLogoRemove(true)} disabled={logoUploading} sx={{ color: "var(--color-admin-danger)" }}>
                       <DeleteIcon fontSize="small" />
                     </IconButton>
                   )}
@@ -492,6 +496,60 @@ const Settings = () => {
         </Grid>
       </TabPanel>
 
+      {/* ── Inventory Tab ── */}
+      <TabPanel value={tab} index={5}>
+        <Grid container spacing={3} maxWidth={600}>
+          <Grid size={{ xs: 12 }}>
+            <SectionHeader title="Stock Visibility" subtitle="How out-of-stock and low-stock items are handled across the store" />
+          </Grid>
+          <Grid size={{ xs: 12 }}>
+            <SwitchField
+              label="Hide Out of Stock"
+              caption="Hide out-of-stock products and prebuilt PCs from public storefronts. Out-of-stock items are only shown to administrators."
+              checked={settings.inventory?.hideOutOfStock ?? false}
+              onChange={(e) => handleNestedChange("inventory", "hideOutOfStock", e.target.checked)}
+            />
+          </Grid>
+          <Grid size={{ xs: 12 }}>
+            <SwitchField
+              label="Allow Backorders"
+              caption="Let customers purchase items even when stock is 0"
+              checked={settings.inventory?.allowBackorders ?? false}
+              onChange={(e) => handleNestedChange("inventory", "allowBackorders", e.target.checked)}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12 }}>
+            <Box sx={{ height: 1, backgroundColor: "var(--color-admin-border)", my: 1 }} />
+          </Grid>
+          <Grid size={{ xs: 12 }}>
+            <SectionHeader title="Stock Thresholds" subtitle="Low-stock warnings" />
+          </Grid>
+          <Grid size={{ xs: 6 }}>
+            <AdminInput
+              label="Low Stock Threshold"
+              type="number"
+              inputProps={{ min: 0 }}
+              value={settings.inventory?.lowStockThreshold ?? 10}
+              onChange={(e) => handleNestedChange("inventory", "lowStockThreshold", Number(e.target.value))}
+              helperText="When stock reaches this level, low-stock alerts fire"
+            />
+          </Grid>
+          <Grid size={{ xs: 12 }}>
+            <SwitchField
+              label="Auto-update Inventory"
+              caption="Automatically reduce stock when orders are placed (recommended unless you manage stock externally)"
+              checked={settings.inventory?.autoUpdateInventory ?? true}
+              onChange={(e) => handleNestedChange("inventory", "autoUpdateInventory", e.target.checked)}
+            />
+          </Grid>
+
+          <Grid size={{ xs: 12, mt: 2 }}>
+            <AdminButton variant="primary" onClick={handleSave} loading={saving}>Save Settings</AdminButton>
+          </Grid>
+        </Grid>
+      </TabPanel>
+
       {/* ── PC Builder Tab ── */}
       <TabPanel value={tab} index={4}>
         {builderLoading ? (
@@ -559,6 +617,22 @@ const Settings = () => {
         )}
       </TabPanel>
     </Box>
+
+    <ConfirmDialog
+      open={confirmLogoRemove}
+      title="Remove Store Logo?"
+      message="Are you sure you want to remove the store logo? This will clear the branding from the site."
+      confirmLabel="Yes, Remove Logo"
+      cancelLabel="No, Keep Logo"
+      severity="danger"
+      loading={logoUploading}
+      onConfirm={() => {
+        handleLogoRemove();
+        setConfirmLogoRemove(false);
+      }}
+      onCancel={() => setConfirmLogoRemove(false)}
+    />
+    </>
   );
 };
 

@@ -31,6 +31,7 @@ const CategoryList = () => {
     data: categories,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("categoryList", categoryService, { page, pageSize, search, ...filters });
 
@@ -132,6 +133,7 @@ const CategoryList = () => {
         columns={columns}
         rows={categories}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}
@@ -168,6 +170,8 @@ const CategoryList = () => {
         open={!!deleteTarget}
         title="Delete Category"
         message="Are you sure you want to delete this category? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

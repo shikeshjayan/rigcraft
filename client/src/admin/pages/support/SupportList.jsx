@@ -41,6 +41,7 @@ const SupportList = () => {
     data: tickets,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("supportList", supportService, { page, pageSize, search, ...filters });
 
@@ -177,6 +178,7 @@ const SupportList = () => {
         columns={columns}
         rows={tickets}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}
@@ -213,6 +215,8 @@ const SupportList = () => {
         open={!!deleteTarget}
         title="Delete Ticket"
         message="Are you sure you want to delete this support ticket? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

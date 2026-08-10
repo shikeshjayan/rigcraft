@@ -38,10 +38,12 @@ import dashboardRoutes from "./routes/dashboard.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import settingsRoutes from "./routes/settings.routes.js";
 import dealRoutes, { adminDealRoutes } from "./routes/deal.routes.js";
+import bundleRoutes, { adminBundleRoutes } from "./routes/bundle.routes.js";
 import supportRoutes, { adminSupportRoutes } from "./routes/support.routes.js";
 import faqRoutes, { adminFaqRoutes } from "./routes/faq.routes.js";
 import newsletterRoutes from "./routes/newsletter.routes.js";
 import notificationRoutes, { adminNotificationRoutes } from "./routes/notification.routes.js";
+import stockAlertRoutes from "./routes/stockAlert.routes.js";
 import searchRoutes, { adminSearchRoutes } from "./routes/search.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
 import errorHandler from "./middlewares/error.js";
@@ -105,10 +107,14 @@ app.use("/api/v1/settings", settingsRoutes);
 app.use("/api/v1/deals", dealRoutes);
 app.use("/api/v1/admin/deals", adminDealRoutes);
 
+app.use("/api/v1/bundles", bundleRoutes);
+app.use("/api/v1/admin/bundles", adminBundleRoutes);
+
 app.use("/api/v1/newsletter", newsletterRoutes);
 
 app.use("/api/v1/notifications", notificationRoutes);
 app.use("/api/v1/admin/notifications", adminNotificationRoutes);
+app.use("/api/v1/stock-alerts", stockAlertRoutes);
 
 app.use("/api/v1/support", supportRoutes);
 app.use("/api/v1/admin/support", adminSupportRoutes);

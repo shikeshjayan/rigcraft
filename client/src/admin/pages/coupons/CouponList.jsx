@@ -31,6 +31,7 @@ const CouponList = () => {
     data: coupons,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("couponList", couponService, { page, pageSize, search, ...filters });
 
@@ -100,6 +101,7 @@ const CouponList = () => {
         columns={columns}
         rows={coupons}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}
@@ -136,6 +138,8 @@ const CouponList = () => {
         open={!!deleteTarget}
         title="Delete Coupon"
         message="Are you sure you want to delete this coupon? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

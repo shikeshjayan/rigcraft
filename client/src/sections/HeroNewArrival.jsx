@@ -116,10 +116,11 @@ const HeroNewArrival = () => {
               const discountPercentage = mrp ? Math.round(((mrp - price) / mrp) * 100) : 0;
               const imageUrl = product.images?.[0]?.url || 'https://via.placeholder.com/300?text=No+Image';
 
-              return (
+return (
                 <div key={product._id} className="flex-shrink-0 w-full sm:w-[calc(50%-12px)] lg:w-[calc(25%-18px)] flex flex-col snap-start">
                   <Card 
- rating={product?.rating} id={product._id}
+                    rating={product?.rating} 
+                    id={product._id}
                     image={imageUrl}
                     title={product.name}
                     specs={product.tags || []}
@@ -130,6 +131,8 @@ const HeroNewArrival = () => {
                     tag="NEW"
                     tagColor="var(--color-primary, #06B6D4)"
                     stock={product.stock}
+                    brand={product.brand?.name || product.brand}
+                    warranty={product.warranty}
                   />
                 </div>
               );

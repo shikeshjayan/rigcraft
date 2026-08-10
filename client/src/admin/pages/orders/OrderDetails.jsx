@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { Box, Typography, Grid, Chip, Table, TableHead, TableBody, TableRow, TableCell } from "@mui/material";
+import { Box, Typography, Grid, Table, TableHead, TableBody, TableRow, TableCell } from "@mui/material";
 import { ArrowBack as ArrowBackIcon } from "@mui/icons-material";
 import { orderService } from "../../services/orderService";
 import { extractError } from "../../utils/extractError";
@@ -12,6 +12,7 @@ import AdminButton from "../../components/common/Button";
 import AdminSelect from "../../components/common/Select";
 import Loading from "../../components/common/Loading";
 import StatusBadge from "../../components/common/StatusBadge";
+import ConfirmDialog from "../../components/common/ConfirmDialog";
 
 const DetailRow = ({ label, value }) => (
   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
@@ -27,6 +28,7 @@ const OrderDetails = () => {
   const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [confirmStatus, setConfirmStatus] = useState(null);
 
   useEffect(() => {
     orderService.getById(id)
@@ -123,13 +125,32 @@ const OrderDetails = () => {
             <AdminSelect
               label="Status"
               value={order.status}
-              onChange={(e) => handleStatusChange(e.target.value)}
+              onChange={(e) => {
+                const next = e.target.value;
+                if (next === "cancelled") setConfirmStatus(next);
+                else handleStatusChange(next);
+              }}
               options={Object.entries(ORDER_STATUS).map(([k, v]) => ({ value: v, label: k.charAt(0) + k.slice(1).toLowerCase() }))}
               sx={{ minWidth: 200 }}
               disabled={updating}
             />
           </Box>
         </Box>
+
+        <ConfirmDialog
+          open={!!confirmStatus}
+          title="Cancel Order?"
+          message="Are you sure you want to cancel this order? This action is irreversible."
+          confirmLabel="Yes, Cancel Order"
+          cancelLabel="No, Keep Order"
+          severity="danger"
+          loading={updating}
+          onConfirm={() => {
+            handleStatusChange("cancelled");
+            setConfirmStatus(null);
+          }}
+          onCancel={() => setConfirmStatus(null)}
+        />
 
         {order.notes && (
           <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>

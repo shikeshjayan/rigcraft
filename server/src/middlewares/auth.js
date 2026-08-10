@@ -16,6 +16,8 @@ export const protect = asyncHandler(async (req, res, next) => {
   req.user = await User.findById(decoded.id);
   if (!req.user) throw ApiError.unauthorized('User no longer exists');
   if (req.user.isBlocked) throw ApiError.forbidden('Account is blocked');
+  if (req.user.deactivatedAt)
+    throw ApiError.forbidden('This account has been deactivated');
   next();
 });
 

@@ -33,6 +33,7 @@ const PrebuiltList = () => {
     data: items,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("prebuiltList", prebuiltService, { page, pageSize, search, ...filters });
 
@@ -129,6 +130,7 @@ const PrebuiltList = () => {
         columns={columns}
         rows={items}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}
@@ -165,6 +167,8 @@ const PrebuiltList = () => {
         open={!!deleteTarget}
         title="Delete Prebuilt PC"
         message="Are you sure you want to delete this prebuilt PC? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

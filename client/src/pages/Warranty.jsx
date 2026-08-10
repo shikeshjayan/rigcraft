@@ -146,7 +146,7 @@ const Warranty = () => {
               
               <div className="bg-white p-8 border border-gray-200 shadow-sm" style={{ borderRadius: 'var(--radius-sm)' }}>
                 <div className="flex items-center gap-4 mb-4">
-                  <ShieldIcon sx={{ fontSize: 32, color: '#2563EB' }} />
+                  <ShieldIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
                   <h2 className="text-xl font-bold text-gray-900 uppercase tracking-wide">Our Guarantee</h2>
                 </div>
                 <p className="text-sm text-gray-600 leading-relaxed font-medium mb-4">
@@ -170,7 +170,7 @@ const Warranty = () => {
 
               <div className="bg-white p-8 border border-gray-200 shadow-sm" style={{ borderRadius: 'var(--radius-sm)' }}>
                 <div className="flex items-center gap-4 mb-4">
-                  <AssignmentReturnIcon sx={{ fontSize: 32, color: '#2563EB' }} />
+                  <AssignmentReturnIcon sx={{ fontSize: 32, color: 'var(--color-primary)' }} />
                   <h2 className="text-xl font-bold text-gray-900 uppercase tracking-wide">Claim Process</h2>
                 </div>
                 <div className="flex flex-col gap-6 relative">
@@ -327,7 +327,7 @@ const Warranty = () => {
                               {file.type.startsWith('image/') ? (
                                 <img src={URL.createObjectURL(file)} alt={file.name} className="w-10 h-10 object-cover rounded-sm" />
                               ) : (
-                                <AttachFileIcon fontSize="small" sx={{ color: '#2563EB' }} />
+                                <AttachFileIcon fontSize="small" sx={{ color: 'var(--color-primary)' }} />
                               )}
                               <span className="text-[12px] text-gray-700 font-medium truncate max-w-[180px]">{file.name}</span>
                               <span className="text-[11px] text-gray-500">{formatBytes(file.size)}</span>

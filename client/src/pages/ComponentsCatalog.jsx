@@ -41,7 +41,7 @@ const ComponentsCatalog = () => {
       <div className="max-w-[1400px] mx-auto px-4 lg:px-8">
         <Breadcrumb items={[{ label: 'Home', path: '/' }, { label: 'Components', path: '/components' }, { label: categoryTitle }]} />
         
-        <div className="flex justify-between items-center mb-8 border-b border-[#E2E8F0] pb-4">
+        <div className="flex justify-between items-center mb-8 border-b border-[var(--color-border)] pb-4">
           <h1 className="text-[28px] font-bold text-[#0F1111]">{categoryTitle} CATALOG</h1>
           <div className="text-[14px] text-[#565959]">Showing {items.length} results</div>
         </div>
@@ -67,6 +67,8 @@ const ComponentsCatalog = () => {
                 discount={item.discount}
                 tag={item.discount || 'SALE'}
                 tagColor="#EF4444"
+                brand={item.brand}
+                warranty={item.warranty}
               />
             ))}
           </div>

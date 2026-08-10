@@ -2,6 +2,7 @@ import cartRepository from "../repositories/cart.repository.js";
 import productRepository from "../repositories/product.repository.js";
 import prebuiltPCRepository from "../repositories/prebuiltPC.repository.js";
 import buildRepository from "../repositories/build.repository.js";
+import bundleRepository from "../repositories/bundle.repository.js";
 import * as couponService from "./coupon.service.js";
 import * as pricingService from "./pricing.service.js";
 import ApiError from "../utils/ApiError.js";
@@ -13,6 +14,7 @@ const ITEM_TYPE_MODEL_MAP = {
   [CART_ITEM_TYPES.PRODUCT]: "Product",
   [CART_ITEM_TYPES.PREBUILT]: "PrebuiltPC",
   [CART_ITEM_TYPES.SAVED_BUILD]: "SavedBuild",
+  [CART_ITEM_TYPES.BUNDLE]: "Bundle",
 };
 
 const resolveItemPrice = async (itemType, itemId, quantity) => {
@@ -67,9 +69,54 @@ const resolveItemPrice = async (itemType, itemId, quantity) => {
   if (itemType === CART_ITEM_TYPES.SAVED_BUILD) {
     const build = await buildRepository.findById(itemId);
     effectivePrice = build.totalSalePrice || build.totalPrice;
+    
+    if (!effectivePrice || effectivePrice === 0) {
+      await build.populate({
+        path: "components.product",
+        model: "Product"
+      });
+      effectivePrice = build.components.reduce((sum, comp) => {
+        const p = comp.product;
+        if (!p) return sum;
+        
+        const parseNum = (val) => {
+          if (!val) return 0;
+          if (typeof val === 'number') return val;
+          const numericStr = String(val).replace(/[^0-9.]/g, '');
+          return parseFloat(numericStr) || 0;
+        };
+        
+        const itemPrice = parseNum(p.salePrice) || parseNum(p.price) || 0;
+        return sum + (itemPrice * (comp.quantity || 1));
+      }, 0);
+      
+      // Optionally update the build in the database to fix it permanently
+      if (effectivePrice > 0) {
+        build.totalPrice = effectivePrice;
+        build.totalSalePrice = effectivePrice;
+        await build.save({ validateBeforeSave: false });
+      }
+    }
+
     return {
       itemType,
       item: build._id,
+      itemTypeModel: ITEM_TYPE_MODEL_MAP[itemType],
+      price: effectivePrice,
+      quantity,
+      totalPrice: effectivePrice * quantity,
+    };
+  }
+
+  if (itemType === CART_ITEM_TYPES.BUNDLE) {
+    const bundle = await bundleRepository.getActiveBundleById(itemId);
+    if (!bundle) {
+      throw ApiError.badRequest("This bundle is not available");
+    }
+    effectivePrice = Number(bundle.bundlePrice) || 0;
+    return {
+      itemType,
+      item: bundle._id,
       itemTypeModel: ITEM_TYPE_MODEL_MAP[itemType],
       price: effectivePrice,
       quantity,
@@ -144,9 +191,11 @@ export const addItem = async (userId, { itemType, itemId, quantity }) => {
     const stockItem =
       itemType === CART_ITEM_TYPES.PRODUCT
         ? await productRepository.findById(itemId)
-        : await prebuiltPCRepository.findById(itemId);
+        : itemType === CART_ITEM_TYPES.PREBUILT
+          ? await prebuiltPCRepository.findById(itemId)
+          : null;
 
-    if (stockItem.stock < newQty) {
+    if (stockItem && stockItem.stock < newQty) {
       throw ApiError.badRequest("Insufficient stock.");
     }
 

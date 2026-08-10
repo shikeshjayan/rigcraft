@@ -7,7 +7,7 @@ const normalizeUser = (u) => ({
   _id: undefined,
   __v: undefined,
   name: u.name || `${u.firstName || ""} ${u.lastName || ""}`.trim() || "Unknown",
-  status: u.isBlocked ? "blocked" : "active",
+  status: u.deactivatedAt ? "deactivated" : u.isBlocked ? "blocked" : "active",
 });
 
 const normalizeList = (res) => {
@@ -54,6 +54,11 @@ export const userService = {
 
   toggleBlock: async (id) => {
     const { data } = await api.patch(ENDPOINTS.USER.TOGGLE_BLOCK(id));
+    return data.data;
+  },
+
+  toggleDeactivate: async (id) => {
+    const { data } = await api.patch(ENDPOINTS.USER.TOGGLE_DEACTIVATE(id));
     return data.data;
   },
 

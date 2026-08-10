@@ -56,9 +56,16 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    passwordChangedAt: {
+      type: Date,
+    },
     isBlocked: {
       type: Boolean,
       default: false,
+    },
+    deactivatedAt: {
+      type: Date,
+      default: null,
     },
     lastLogin: {
       type: Date,
@@ -83,6 +90,7 @@ userSchema.pre('validate', function () {
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);
+  this.passwordChangedAt = new Date();
 });
 
 userSchema.methods.comparePassword = async function (candidate) {

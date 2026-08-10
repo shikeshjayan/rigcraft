@@ -46,6 +46,7 @@ const UserList = () => {
     data: users,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("userList", userService, { page, pageSize, search, ...filters });
 
@@ -68,6 +69,7 @@ const UserList = () => {
         { value: "", label: "All" },
         { value: "active", label: "Active" },
         { value: "blocked", label: "Blocked" },
+        { value: "deactivated", label: "Deactivated" },
       ],
     },
   ];
@@ -140,6 +142,7 @@ const UserList = () => {
         columns={columns}
         rows={users}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}

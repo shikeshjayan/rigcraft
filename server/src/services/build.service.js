@@ -135,6 +135,11 @@ export const duplicateBuild = async (buildId, userId, name) => {
 };
 
 const recalculateBuild = async (build, enforceComplete = false) => {
+  await build.populate({
+    path: "components.product",
+    model: "Product"
+  });
+
   const result = await compatibilityValidate(build);
   const settings = await getBuildSettings();
 

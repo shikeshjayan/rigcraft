@@ -4,6 +4,7 @@ export const ENDPOINTS = {
     LOGIN: "/auth/login",
     REGISTER: "/auth/register",
     LOGOUT: "/auth/logout",
+    DEACTIVATE: "/auth/deactivate",
     REFRESH: "/auth/refresh-token",
     PROFILE: "/auth/profile",
     CHANGE_PASSWORD: "/auth/password",
@@ -28,6 +29,23 @@ export const ENDPOINTS = {
     UPDATE: (id) => `/admin/deals/${id}`,
     DELETE: (id) => `/admin/deals/${id}`,
     TOGGLE_STATUS: (id) => `/admin/deals/${id}/status`,
+  },
+
+  // Bundles (public)
+  BUNDLE: {
+    LIST: "/bundles",
+    ACTIVE: "/bundles/active",
+    DETAILS: (slug) => `/bundles/${slug}`,
+  },
+
+  // Bundles (admin)
+  ADMIN_BUNDLE: {
+    LIST: "/admin/bundles",
+    DETAILS: (id) => `/admin/bundles/${id}`,
+    CREATE: "/admin/bundles",
+    UPDATE: (id) => `/admin/bundles/${id}`,
+    DELETE: (id) => `/admin/bundles/${id}`,
+    TOGGLE_STATUS: (id) => `/admin/bundles/${id}/status`,
   },
 
   // Dashboard
@@ -184,6 +202,7 @@ export const ENDPOINTS = {
     UPDATE: (id) => `/users/${id}`,
     DELETE: (id) => `/users/${id}`,
     TOGGLE_BLOCK: (id) => `/users/${id}/block`,
+    TOGGLE_DEACTIVATE: (id) => `/users/${id}/deactivate`,
     ORDERS: (id) => `/users/${id}/orders`,
     ADDRESSES: (id) => `/users/${id}/addresses`,
     REVIEWS: (id) => `/users/${id}/reviews`,

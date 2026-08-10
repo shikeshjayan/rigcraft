@@ -1,9 +1,11 @@
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useState } from "react";
 import { Box, Typography, IconButton } from "@mui/material";
 import { CloudUpload as UploadIcon, Close as CloseIcon } from "@mui/icons-material";
+import ConfirmDialog from "./ConfirmDialog";
 
 const ImageUpload = ({ images = [], onChange, maxFiles = 5, multiple = true }) => {
   const inputRef = useRef(null);
+  const [pendingRemove, setPendingRemove] = useState(null);
 
   useEffect(() => {
     return () => {
@@ -78,7 +80,7 @@ const ImageUpload = ({ images = [], onChange, maxFiles = 5, multiple = true }) =
             />
             <IconButton
               size="small"
-              onClick={() => handleRemove(img.id || img.url || img.publicId || idx)}
+              onClick={() => setPendingRemove(img.id || img.url || img.publicId || idx)}
               sx={{
                 position: "absolute",
                 top: 2,
@@ -126,6 +128,20 @@ const ImageUpload = ({ images = [], onChange, maxFiles = 5, multiple = true }) =
       <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", mt: 1, display: "block" }}>
         {images.length}/{maxFiles} files • JPG, PNG, WEBP
       </Typography>
+
+      <ConfirmDialog
+        open={pendingRemove !== null}
+        title="Remove Image?"
+        message="Are you sure you want to remove this image? You can re-upload it if needed."
+        confirmLabel="Yes, Remove"
+        cancelLabel="No, Keep"
+        severity="danger"
+        onConfirm={() => {
+          handleRemove(pendingRemove);
+          setPendingRemove(null);
+        }}
+        onCancel={() => setPendingRemove(null)}
+      />
     </Box>
   );
 };

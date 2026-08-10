@@ -41,6 +41,7 @@ const DealList = () => {
     data: deals,
     total,
     loading,
+    error,
     refetch,
   } = useAdminList("dealList", dealService, { page, pageSize, search, status: filters.status });
 
@@ -188,6 +189,7 @@ const DealList = () => {
         columns={columns}
         rows={deals}
         loading={loading}
+        error={error}
         total={total}
         page={page}
         pageSize={pageSize}
@@ -200,6 +202,8 @@ const DealList = () => {
         open={!!deleteTarget}
         title="Delete Deal"
         message="Are you sure you want to delete this deal? This action cannot be undone."
+        confirmLabel="Yes, Delete"
+        cancelLabel="No, Keep it"
         onConfirm={confirmDelete}
         onCancel={() => setDeleteTarget(null)}
       />

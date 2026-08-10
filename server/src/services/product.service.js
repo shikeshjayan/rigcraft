@@ -6,6 +6,8 @@ import brandRepository from "../repositories/brand.repository.js";
 import { getSettings } from "../models/settings.model.js";
 import ApiError from "../utils/ApiError.js";
 import * as uploadService from "./upload.service.js";
+import { CART_ITEM_TYPES } from "../constants/constants.js";
+import { notifyRestockIfNeeded } from "./stockAlert.service.js";
 
 const FOLDER = "products";
 
@@ -118,6 +120,7 @@ export const create = async (data, files) => {
 
 export const update = async (id, data, files) => {
   const product = await productRepository.findById(id);
+  const previousStock = product.stock;
 
   if (data.category) await categoryRepository.findById(data.category);
   if (data.brand) await brandRepository.findById(data.brand);
@@ -157,7 +160,20 @@ export const update = async (id, data, files) => {
     delete data.images;
   }
 
-  return productRepository.updateById(id, data);
+  const updated = await productRepository.updateById(id, data);
+
+  try {
+    await notifyRestockIfNeeded(
+      CART_ITEM_TYPES.PRODUCT,
+      id,
+      previousStock,
+      updated.stock
+    );
+  } catch (err) {
+    console.warn("[product] restock check failed:", err.message);
+  }
+
+  return updated;
 };
 
 export const remove = async (id) => {

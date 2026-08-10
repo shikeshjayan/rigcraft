@@ -1,36 +1,218 @@
-import React, { useState, useRef } from 'react';
-import { Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import React, { useState, useRef } from "react";
+import { Link } from "react-router-dom";
+import { motion, AnimatePresence } from "framer-motion";
 
 const categories = [
-  { name: 'CPU', path: 'cpu', products: '124 Products', icon: <svg className="w-[72px] h-[72px] text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z" /></svg> },
-  { name: 'Graphics Cards', path: 'gpu', products: '98 Products', icon: <svg className="w-[72px] h-[72px] text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M6 6.878V6a2.25 2.25 0 012.25-2.25h7.5A2.25 2.25 0 0118 6v.878m-12 0c.236-.027.473-.051.71-.073V21m11.29-14.195c-.237-.022-.474-.046-.71-.073V21m-10.58 0h10.58" /></svg> },
-  { name: 'Motherboards', path: 'motherboard', products: '75 Products', icon: <svg className="w-[72px] h-[72px] text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z" /></svg> },
-  { name: 'RAM', path: 'ram', products: '67 Products', icon: <svg className="w-[72px] h-[72px] text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg> },
-  { name: 'Storage', path: 'storage', products: '112 Products', icon: <svg className="w-[72px] h-[72px] text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125" /></svg> },
-  { name: 'Power Supplies', path: 'power-supply', products: '60 Products', icon: <svg className="w-[72px] h-[72px] text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" /></svg> },
-  { name: 'Cases', path: 'case', products: '78 Products', icon: <svg className="w-[72px] h-[72px] text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z" /></svg> },
-  { name: 'Cooling', path: 'cooling', products: '92 Products', icon: <svg className="w-[72px] h-[72px] text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M12 3v18m0-18l-3.5 3.5M12 3l3.5 3.5M12 21l-3.5-3.5M12 21l3.5-3.5M4.929 4.929l14.142 14.142m-14.142 0l3.5-3.5M4.929 4.929l3.5 3.5m10.642 10.642l-3.5-3.5M19.071 4.929l-3.5 3.5" /></svg> },
-  { name: 'Monitors', path: 'monitor', products: '56 Products', icon: <svg className="w-[72px] h-[72px] text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" /></svg> },
-  { name: 'Peripherals', path: 'accessories', products: '145 Products', icon: <svg className="w-[72px] h-[72px] text-[var(--color-primary)]" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.159-5.463-5.263 1.83 8.979-11.458 4.256 12.766z" /></svg> },
+  {
+    name: "CPU",
+    path: "cpu",
+    products: "124 Products",
+    icon: (
+      <svg
+        className="w-[72px] h-[72px] text-[var(--color-primary)]"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M8.25 3v1.5M4.5 8.25H3m18 0h-1.5M4.5 12H3m18 0h-1.5m-15 3.75H3m18 0h-1.5M8.25 19.5V21M12 3v1.5m0 15V21m3.75-18v1.5m0 15V21m-9-1.5h10.5a2.25 2.25 0 002.25-2.25V6.75a2.25 2.25 0 00-2.25-2.25H6.75A2.25 2.25 0 004.5 6.75v10.5a2.25 2.25 0 002.25 2.25zm.75-12h9v9h-9v-9z"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "Graphics Cards",
+    path: "gpu",
+    products: "98 Products",
+    icon: (
+      <svg
+        className="w-[72px] h-[72px] text-[var(--color-primary)]"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M6 6.878V6a2.25 2.25 0 012.25-2.25h7.5A2.25 2.25 0 0118 6v.878m-12 0c.236-.027.473-.051.71-.073V21m11.29-14.195c-.237-.022-.474-.046-.71-.073V21m-10.58 0h10.58"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "Motherboards",
+    path: "motherboard",
+    products: "75 Products",
+    icon: (
+      <svg
+        className="w-[72px] h-[72px] text-[var(--color-primary)]"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "RAM",
+    path: "ram",
+    products: "67 Products",
+    icon: (
+      <svg
+        className="w-[72px] h-[72px] text-[var(--color-primary)]"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "Storage",
+    path: "storage",
+    products: "112 Products",
+    icon: (
+      <svg
+        className="w-[72px] h-[72px] text-[var(--color-primary)]"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M20.25 6.375c0 2.278-3.694 4.125-8.25 4.125S3.75 8.653 3.75 6.375m16.5 0c0-2.278-3.694-4.125-8.25-4.125S3.75 4.097 3.75 6.375m16.5 0v11.25c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125V6.375m16.5 0v3.75m-16.5-3.75v3.75m16.5 0v3.75C20.25 16.153 16.556 18 12 18s-8.25-1.847-8.25-4.125v-3.75m16.5 0c0 2.278-3.694 4.125-8.25 4.125s-8.25-1.847-8.25-4.125"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "Power Supplies",
+    path: "power-supply",
+    products: "60 Products",
+    icon: (
+      <svg
+        className="w-[72px] h-[72px] text-[var(--color-primary)]"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "Cases",
+    path: "case",
+    products: "78 Products",
+    icon: (
+      <svg
+        className="w-[72px] h-[72px] text-[var(--color-primary)]"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 100 6h13.5a3 3 0 100-6m-16.5-3a3 3 0 013-3h13.5a3 3 0 013 3m-19.5 0a4.5 4.5 0 01.9-2.7L5.737 5.1a3.375 3.375 0 012.7-1.35h7.126c1.062 0 2.062.5 2.7 1.35l2.587 3.45a4.5 4.5 0 01.9 2.7m0 0a3 3 0 01-3 3m0 3h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008zm-3 6h.008v.008h-.008v-.008zm0-6h.008v.008h-.008v-.008z"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "Cooling",
+    path: "cooling",
+    products: "92 Products",
+    icon: (
+      <svg
+        className="w-[72px] h-[72px] text-[var(--color-primary)]"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M12 3v18m0-18l-3.5 3.5M12 3l3.5 3.5M12 21l-3.5-3.5M12 21l3.5-3.5M4.929 4.929l14.142 14.142m-14.142 0l3.5-3.5M4.929 4.929l3.5 3.5m10.642 10.642l-3.5-3.5M19.071 4.929l-3.5 3.5"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "Monitors",
+    path: "monitor",
+    products: "56 Products",
+    icon: (
+      <svg
+        className="w-[72px] h-[72px] text-[var(--color-primary)]"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25"
+        />
+      </svg>
+    ),
+  },
+  {
+    name: "Peripherals",
+    path: "accessories",
+    products: "145 Products",
+    icon: (
+      <svg
+        className="w-[72px] h-[72px] text-[var(--color-primary)]"
+        fill="none"
+        viewBox="0 0 24 24"
+        strokeWidth="1.5"
+        stroke="currentColor">
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          d="M15.042 21.672L13.684 16.6m0 0l-2.51 2.225.159-5.463-5.263 1.83 8.979-11.458 4.256 12.766z"
+        />
+      </svg>
+    ),
+  },
 ];
 
 const CategoryCard = ({ cat }) => (
   <Link
     to={`/components/${cat.path}`}
-    className="flex flex-col mx-auto w-full max-w-[140px] md:max-w-[160px] lg:max-w-[140px] h-[160px] md:h-[170px] bg-white rounded-[var(--radius-sm)] border border-[#E5E7EB] shadow-[0_4px_20px_rgb(0,0,0,0.05)] hover:shadow-[0_12px_30px_rgb(0,0,0,0.08)] hover:-translate-y-2 hover:border-[var(--color-primary)] transition-all duration-300 cursor-pointer group relative overflow-hidden"
-  >
+    className="flex flex-col mx-auto w-full max-w-[140px] md:max-w-[160px] lg:max-w-[140px] h-[160px] md:h-[170px] bg-white rounded-[var(--radius-sm)] border border-[#E5E7EB] shadow-[0_4px_20px_rgb(0,0,0,0.05)] hover:shadow-[0_12px_30px_rgb(0,0,0,0.08)] hover:-translate-y-2 hover:border-[var(--color-primary)] transition-all duration-300 cursor-pointer group relative overflow-hidden">
     {/* Optional Tag */}
     {cat.tag && (
-      <div 
+      <div
         className="absolute top-2 left-2 px-1.5 py-0.5 text-[8px] md:text-[9px] font-[700] text-white flex items-center gap-0.5 rounded-[4px] shadow-sm z-10 uppercase tracking-wider"
-        style={{ backgroundColor: 'var(--color-primary)' }}
-      >
-        {cat.tag === 'BEST SELLER' && (
-          <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        style={{ backgroundColor: "var(--color-primary)" }}>
+        {cat.tag === "BEST SELLER" && (
+          <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          </svg>
         )}
-        {cat.tag === 'POPULAR' && (
-          <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13 3.23 12.18 3.75 11.46 4.32C8.87 6.4 7.85 10.07 9.07 13.22C9.11 13.32 9.15 13.42 9.15 13.55C9.15 13.77 9 13.97 8.8 14.05C8.57 14.15 8.33 14.09 8.14 13.93C8.08 13.88 8.04 13.83 8 13.76C6.87 12.33 6.69 10.28 7.45 8.64C5.78 10.14 4.8 12.39 4.8 14.77C4.8 18.77 8.03 22 12.03 22C16.03 22 19.26 18.77 19.26 14.77C19.26 13.46 18.86 12.22 17.66 11.2Z"/></svg>
+        {cat.tag === "POPULAR" && (
+          <svg className="w-2 h-2" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13 3.23 12.18 3.75 11.46 4.32C8.87 6.4 7.85 10.07 9.07 13.22C9.11 13.32 9.15 13.42 9.15 13.55C9.15 13.77 9 13.97 8.8 14.05C8.57 14.15 8.33 14.09 8.14 13.93C8.08 13.88 8.04 13.83 8 13.76C6.87 12.33 6.69 10.28 7.45 8.64C5.78 10.14 4.8 12.39 4.8 14.77C4.8 18.77 8.03 22 12.03 22C16.03 22 19.26 18.77 19.26 14.77C19.26 13.46 18.86 12.22 17.66 11.2Z" />
+          </svg>
         )}
         {cat.tag}
       </div>
@@ -38,10 +220,10 @@ const CategoryCard = ({ cat }) => (
 
     <div className="flex flex-col items-center justify-center h-full pt-2 relative p-2 md:p-3 w-full">
       {/* Icon Container */}
-      <div className="flex items-center justify-center w-[56px] h-[56px] md:w-[64px] md:h-[64px] rounded-full group-hover:scale-[1.08] transition-transform duration-300" style={{ backgroundColor: 'rgba(37, 99, 235, 0.05)' }}>
-        <div className="scale-50">
-          {cat.icon}
-        </div>
+      <div
+        className="flex items-center justify-center w-[56px] h-[56px] md:w-[64px] md:h-[64px] rounded-full group-hover:scale-[1.08] transition-transform duration-300"
+        style={{ backgroundColor: "rgba(37, 99, 235, 0.05)" }}>
+        <div className="scale-50">{cat.icon}</div>
       </div>
 
       {/* Text Content */}
@@ -54,10 +236,19 @@ const CategoryCard = ({ cat }) => (
         </p>
       </div>
 
-    {/* Arrow Button */}
+      {/* Arrow Button */}
       <div className="absolute bottom-2 right-2 flex items-center justify-center transition-transform duration-300 group-hover:translate-x-1">
-        <svg className="w-3 h-3 md:w-4 md:h-4 transition-colors duration-300 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 12h14M12 5l7 7-7 7" />
+        <svg
+          className="w-3 h-3 md:w-4 md:h-4 transition-colors duration-300 text-[var(--color-primary)]"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24">
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M5 12h14M12 5l7 7-7 7"
+          />
         </svg>
       </div>
     </div>
@@ -67,29 +258,31 @@ const CategoryCard = ({ cat }) => (
 const MobileCategoryCard = ({ cat }) => (
   <Link
     to={`/components/${cat.path}`}
-    className="flex items-center w-full bg-[#F8FAFC] rounded-[var(--radius-sm)] p-4 relative mt-3"
-  >
+    className="flex items-center w-full bg-[var(--color-surface)] rounded-[var(--radius-sm)] p-4 relative mt-3">
     {/* Optional Tag */}
     {cat.tag && (
-      <div 
+      <div
         className="absolute -top-2.5 left-4 px-2 py-0.5 text-[9px] font-[800] text-white flex items-center gap-1 rounded-[4px] uppercase tracking-wider shadow-sm z-10"
-        style={{ backgroundColor: 'var(--color-primary)' }}
-      >
-        {cat.tag === 'BEST SELLER' && (
-          <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>
+        style={{ backgroundColor: "var(--color-primary)" }}>
+        {cat.tag === "BEST SELLER" && (
+          <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+          </svg>
         )}
-        {cat.tag === 'POPULAR' && (
-          <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24"><path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13 3.23 12.18 3.75 11.46 4.32C8.87 6.4 7.85 10.07 9.07 13.22C9.11 13.32 9.15 13.42 9.15 13.55C9.15 13.77 9 13.97 8.8 14.05C8.57 14.15 8.33 14.09 8.14 13.93C8.08 13.88 8.04 13.83 8 13.76C6.87 12.33 6.69 10.28 7.45 8.64C5.78 10.14 4.8 12.39 4.8 14.77C4.8 18.77 8.03 22 12.03 22C16.03 22 19.26 18.77 19.26 14.77C19.26 13.46 18.86 12.22 17.66 11.2Z"/></svg>
+        {cat.tag === "POPULAR" && (
+          <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 24 24">
+            <path d="M17.66 11.2C17.43 10.9 17.15 10.64 16.89 10.38C16.22 9.78 15.46 9.35 14.82 8.72C13.33 7.26 13 4.85 13.95 3C13 3.23 12.18 3.75 11.46 4.32C8.87 6.4 7.85 10.07 9.07 13.22C9.11 13.32 9.15 13.42 9.15 13.55C9.15 13.77 9 13.97 8.8 14.05C8.57 14.15 8.33 14.09 8.14 13.93C8.08 13.88 8.04 13.83 8 13.76C6.87 12.33 6.69 10.28 7.45 8.64C5.78 10.14 4.8 12.39 4.8 14.77C4.8 18.77 8.03 22 12.03 22C16.03 22 19.26 18.77 19.26 14.77C19.26 13.46 18.86 12.22 17.66 11.2Z" />
+          </svg>
         )}
         {cat.tag}
       </div>
     )}
 
     {/* Icon */}
-    <div className="flex-shrink-0 w-[50px] h-[50px] rounded-full flex items-center justify-center mr-4" style={{ backgroundColor: 'rgba(37, 99, 235, 0.08)' }}>
-      <div className="scale-[0.55] text-[var(--color-primary)]">
-        {cat.icon}
-      </div>
+    <div
+      className="flex-shrink-0 w-[50px] h-[50px] rounded-full flex items-center justify-center mr-4"
+      style={{ backgroundColor: "rgba(37, 99, 235, 0.08)" }}>
+      <div className="scale-[0.55] text-[var(--color-primary)]">{cat.icon}</div>
     </div>
 
     {/* Details */}
@@ -104,7 +297,12 @@ const MobileCategoryCard = ({ cat }) => (
 
     {/* Chevron */}
     <div className="flex-shrink-0">
-      <svg className="w-5 h-5 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2.5}>
+      <svg
+        className="w-5 h-5 text-[var(--color-primary)]"
+        fill="none"
+        stroke="currentColor"
+        viewBox="0 0 24 24"
+        strokeWidth={2.5}>
         <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
       </svg>
     </div>
@@ -118,14 +316,15 @@ const HomeCategory = () => {
   const handleToggle = () => {
     const newState = !isMobileDropdownOpen;
     setIsMobileDropdownOpen(newState);
-    
+
     if (newState) {
       setTimeout(() => {
         if (dropdownRef.current) {
           const yOffset = -70; // Approximate navbar height offset
           const element = dropdownRef.current;
-          const y = element.getBoundingClientRect().top + window.pageYOffset + yOffset;
-          window.scrollTo({ top: y, behavior: 'smooth' });
+          const y =
+            element.getBoundingClientRect().top + window.pageYOffset + yOffset;
+          window.scrollTo({ top: y, behavior: "smooth" });
         }
       }, 50);
     }
@@ -134,86 +333,122 @@ const HomeCategory = () => {
   // Close dropdown and restore UI if component unmounts
   React.useEffect(() => {
     return () => {
-      window.dispatchEvent(new CustomEvent('mobileCategoryDropdownToggled', { detail: { isOpen: false } }));
-      document.body.style.overflow = 'auto';
+      window.dispatchEvent(
+        new CustomEvent("mobileCategoryDropdownToggled", {
+          detail: { isOpen: false },
+        }),
+      );
+      document.body.style.overflow = "auto";
     };
   }, []);
 
   // Lock body scroll and notify components when dropdown state changes
   React.useEffect(() => {
-    window.dispatchEvent(new CustomEvent('mobileCategoryDropdownToggled', { detail: { isOpen: isMobileDropdownOpen } }));
+    window.dispatchEvent(
+      new CustomEvent("mobileCategoryDropdownToggled", {
+        detail: { isOpen: isMobileDropdownOpen },
+      }),
+    );
     if (isMobileDropdownOpen) {
-      document.body.style.overflow = 'hidden';
+      document.body.style.overflow = "hidden";
     } else {
-      document.body.style.overflow = 'auto';
+      document.body.style.overflow = "auto";
     }
   }, [isMobileDropdownOpen]);
 
   return (
-    <section className="w-full pt-8 pb-0 md:py-20" style={{ backgroundColor: 'var(--color-bg-primary)' }}>
+    <section
+      className="w-full pt-8 pb-0 md:py-20"
+      style={{ backgroundColor: "var(--color-bg-primary)" }}>
       <div className="max-w-[1400px] mx-auto px-6 lg:px-8">
-        
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-8 md:mb-12">
           <div>
             <h2 className="text-[28px] md:text-[40px] font-extrabold text-[#111111] uppercase tracking-wide">
-              Shop By <span style={{ color: 'var(--color-primary)' }}>Category</span>
+              Shop By{" "}
+              <span style={{ color: "var(--color-primary)" }}>Category</span>
             </h2>
             <p className="text-[#6B7280] mt-2 text-[14px] md:text-[16px] font-[500]">
               Browse all PC components and peripherals by category.
             </p>
           </div>
-          <Link to="/components" className="hidden md:flex font-[600] text-[16px] items-center gap-1 mt-4 md:mt-0 transition-transform hover:translate-x-1" style={{ color: 'var(--color-primary)' }}>
-            View All Categories
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-            </svg>
-          </Link>
         </div>
-        
+
         {/* Mobile Dropdown Category Selector */}
-        <div ref={dropdownRef} className={`md:hidden block mb-4 relative ${isMobileDropdownOpen ? 'z-50' : 'z-10'}`}>
-          <button 
+        <div
+          ref={dropdownRef}
+          className={`md:hidden block mb-4 relative ${isMobileDropdownOpen ? "z-50" : "z-10"}`}>
+          <button
             onClick={handleToggle}
             className="w-full flex items-center bg-white border p-4 shadow-sm text-[#111111] font-[700] text-[16px] transition-colors"
-            style={{ 
-              borderRadius: 'var(--radius-sm)', 
-              borderColor: 'var(--color-primary)',
-              color: 'var(--color-primary)'
-            }}
-          >
+            style={{
+              borderRadius: "var(--radius-sm)",
+              borderColor: "var(--color-primary)",
+              color: "var(--color-primary)",
+            }}>
             {/* Category Grid Icon */}
-            <svg className="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z" />
+            <svg
+              className="w-5 h-5 mr-3"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              strokeWidth={2}>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M4 4h6v6H4zM14 4h6v6h-6zM4 14h6v6H4zM14 14h6v6h-6z"
+              />
             </svg>
-            
-            <span className="flex-1 text-left text-[#111111]">Select a Category</span>
-            
-            <svg className={`w-5 h-5 transition-transform duration-300 ${isMobileDropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+
+            <span className="flex-1 text-left text-[#111111]">
+              Select a Category
+            </span>
+
+            <svg
+              className={`w-5 h-5 transition-transform duration-300 ${isMobileDropdownOpen ? "rotate-180" : ""}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24">
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
             </svg>
           </button>
-          
+
           <AnimatePresence>
             {isMobileDropdownOpen && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -10, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
                 transition={{ duration: 0.2, ease: "easeOut" }}
-                className="absolute left-0 right-0 mt-2 z-50 origin-top"
-              >
-                <div className="bg-white border border-[#E5E7EB] shadow-[0_10px_40px_rgba(0,0,0,0.1)] p-4 flex flex-col" style={{ borderRadius: 'var(--radius-sm)' }}>
-                  
+                className="absolute left-0 right-0 mt-2 z-50 origin-top">
+                <div
+                  className="bg-white border border-[#E5E7EB] shadow-[0_10px_40px_rgba(0,0,0,0.1)] p-4 flex flex-col"
+                  style={{ borderRadius: "var(--radius-sm)" }}>
                   {/* Top Drag indicator style */}
                   <div className="w-12 h-1 bg-gray-200 rounded-full mx-auto mb-4"></div>
 
                   {/* Dropdown Header */}
                   <div className="flex justify-between items-center mb-2 px-1">
-                    <h3 className="text-[var(--color-primary)] font-[700] text-[16px]">All Categories</h3>
+                    <h3 className="text-[var(--color-primary)] font-[700] text-[16px]">
+                      All Categories
+                    </h3>
                     <button onClick={() => setIsMobileDropdownOpen(false)}>
-                      <svg className="w-6 h-6 text-[var(--color-primary)]" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      <svg
+                        className="w-6 h-6 text-[var(--color-primary)]"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                        strokeWidth={2}>
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M6 18L18 6M6 6l12 12"
+                        />
                       </svg>
                     </button>
                   </div>
@@ -242,7 +477,6 @@ const HomeCategory = () => {
                       <MobileCategoryCard key={index} cat={cat} />
                     ))}
                   </div>
-                  
                 </div>
               </motion.div>
             )}
@@ -255,7 +489,6 @@ const HomeCategory = () => {
             <CategoryCard key={index} cat={cat} />
           ))}
         </div>
-
       </div>
     </section>
   );
