@@ -15,7 +15,7 @@ import AdminThumbnail from "../../components/common/AdminThumbnail";
 const DetailRow = ({ label, value }) => (
   <Grid size={{ xs: 12, sm: 6, md: 4 }}>
     <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", mb: 0.5 }}>{label}</Typography>
-    <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500 }}>{value || "—"}</Typography>
+    <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500, wordBreak: "break-word" }}>{value || "—"}</Typography>
   </Grid>
 );
 
@@ -40,12 +40,12 @@ const ProductDetails = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3, flexWrap: "wrap", gap: 1.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0, flex: 1 }}>
           <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/products")} />
-          <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", ml: 1 }} />
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>{product.name}</Typography>
+          <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", ml: 1, flexShrink: 0 }} />
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2, overflowWrap: "break-word", fontSize: { xs: "1.125rem", sm: "1.375rem", md: "1.5rem" } }}>{product.name}</Typography>
             <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>SKU: {product.sku}</Typography>
           </Box>
         </Box>
@@ -106,7 +106,7 @@ const ProductDetails = () => {
                 <Grid key={idx} size={{ xs: 6, sm: 4, md: 3 }}>
                   <Box sx={{ p: 1.5, backgroundColor: "var(--color-admin-bg-tertiary)", borderRadius: "var(--radius-admin-badge)" }}>
                     <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block" }}>{spec.label}</Typography>
-                    <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500 }}>{spec.value}</Typography>
+                    <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500, wordBreak: "break-word" }}>{spec.value}</Typography>
                   </Box>
                 </Grid>
               ))}
@@ -144,7 +144,7 @@ const ProductDetails = () => {
                 <Grid key={key} size={{ xs: 6, sm: 4, md: 3 }}>
                   <Box sx={{ p: 1.5, backgroundColor: "var(--color-admin-bg-tertiary)", borderRadius: "var(--radius-admin-badge)" }}>
                     <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", textTransform: "capitalize" }}>{key.replace(/_/g, " ")}</Typography>
-                    <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500 }}>{String(value)}</Typography>
+                    <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500, wordBreak: "break-word" }}>{String(value)}</Typography>
                   </Box>
                 </Grid>
               ))}

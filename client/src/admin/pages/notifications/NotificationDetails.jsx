@@ -68,12 +68,12 @@ const NotificationDetails = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+      <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3, flexWrap: "wrap", gap: 1.5 }}>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1, minWidth: 0, flex: 1 }}>
           <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/notifications")} />
-          <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", ml: 1 }} />
-          <Box>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>
+          <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", ml: 1, flexShrink: 0 }} />
+          <Box sx={{ minWidth: 0 }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2, overflowWrap: "break-word", fontSize: { xs: "1.125rem", sm: "1.375rem", md: "1.5rem" } }}>
               {notification.title || "Notification"}
             </Typography>
             <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>

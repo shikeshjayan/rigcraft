@@ -83,7 +83,7 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="p-6">
+    <div className="p-4 md:p-6">
       <div className="mb-6 animate-admin-fade-in-down">
         <div className="flex items-center gap-2 mb-1">
           <div className="w-1 h-6 rounded-full" style={{ backgroundColor: "var(--color-admin-primary)" }} />
@@ -113,7 +113,7 @@ const Dashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-rows-2 gap-4 mb-6" style={{ minHeight: 520 }}>
+      <div className="grid grid-rows-2 gap-4 mb-6" style={{ minHeight: "clamp(400px, 60vh, 520px)" }}>
         <div className="grid grid-cols-1 xl:grid-cols-3 gap-4 min-h-0">
           <div className="xl:col-span-2 animate-admin-fade-in-up opacity-0" style={{ animationDelay: "0.6s" }}>
             <RecentOrders orders={recentOrders} />

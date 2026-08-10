@@ -60,12 +60,12 @@ const FaqEdit = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3, flexWrap: "wrap" }}>
         <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/faqs")} />
-        <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", ml: 1 }} />
-        <Box>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>Edit FAQ</Typography>
-          <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", fontWeight: 500, mt: 0.25 }}>{form.question}</Typography>
+        <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", ml: 1, flexShrink: 0 }} />
+        <Box sx={{ minWidth: 0 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2, overflowWrap: "break-word", fontSize: { xs: "1.125rem", sm: "1.375rem", md: "1.5rem" } }}>Edit FAQ</Typography>
+          <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", fontWeight: 500, mt: 0.25, overflowWrap: "break-word" }}>{form.question}</Typography>
         </Box>
       </Box>
 
@@ -83,9 +83,9 @@ const FaqEdit = () => {
               <AdminInput label="Sort Order" type="number" value={form.order} onChange={(e) => setForm((prev) => ({ ...prev, order: e.target.value }))} helperText="Lower numbers appear first" />
             </Grid>
             <Grid size={{ xs: 12, sm: 6 }}>
-              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
-                <Box>
-                  <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)" }}>Active</Typography>
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1.5, p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+                <Box sx={{ minWidth: 0 }}>
+                  <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)", overflowWrap: "break-word" }}>Active</Typography>
                   <Typography variant="caption" sx={{ color: "var(--color-admin-muted)" }}>Show this FAQ on the public site</Typography>
                 </Box>
                 <Switch checked={form.isActive} onChange={(e) => setForm((prev) => ({ ...prev, isActive: e.target.checked }))} />
@@ -94,7 +94,7 @@ const FaqEdit = () => {
           </Grid>
         </Box>
 
-        <Box sx={{ display: "flex", gap: 2 }}>
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
           <AdminButton variant="primary" type="submit" loading={saving}>Update FAQ</AdminButton>
           <AdminButton variant="secondary" onClick={() => navigate("/admin/faqs")}>Cancel</AdminButton>
         </Box>

@@ -230,7 +230,7 @@ const UserDetails = () => {
   return (
     <Box sx={{ p: 3 }}>
       {/* Header */}
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3, flexWrap: "wrap" }}>
         <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/users")} />
         <AdminThumbnail
           src={user.avatar}
@@ -239,14 +239,14 @@ const UserDetails = () => {
           sx={{ borderRadius: "var(--radius-admin-avatar)", border: "none" }}
           fallback={<Box sx={{ width: 52, height: 52, borderRadius: "var(--radius-admin-avatar)", backgroundColor: "var(--color-admin-primary)", color: "var(--color-admin-white)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.125rem", fontWeight: 700, flexShrink: 0 }}>{user.name?.charAt(0)}</Box>}
         />
-        <Box sx={{ width: 4, height: 28, borderRadius: 2, backgroundColor: "var(--color-admin-primary)" }} />
-        <Box sx={{ flex: 1 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>{user.name}</Typography>
+        <Box sx={{ width: 4, height: 28, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", flexShrink: 0 }} />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, flexWrap: "wrap" }}>
+            <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2, overflowWrap: "break-word", fontSize: { xs: "1.125rem", sm: "1.375rem", md: "1.5rem" } }}>{user.name}</Typography>
             <Chip label={user.role} size="small" variant="outlined" sx={{ textTransform: "capitalize", borderRadius: "var(--radius-admin-badge)", fontSize: "0.7rem" }} />
             <StatusBadge status={user.status} colorMap={USER_STATUS_COLOR} />
           </Box>
-          <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>{user.email} {user.phone && `· ${formatPhoneForDisplay(user.phone)}`}</Typography>
+          <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500, overflowWrap: "break-word" }}>{user.email} {user.phone && `· ${formatPhoneForDisplay(user.phone)}`}</Typography>
         </Box>
         {!isManager && (
         <IconButton onClick={() => { setEditing(!editing); if (!editing) setForm({ firstName: user.firstName || "", lastName: user.lastName || "", email: user.email, phone: formatPhoneForDisplay(user.phone), role: user.role }); }}

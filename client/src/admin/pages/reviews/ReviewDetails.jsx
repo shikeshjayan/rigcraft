@@ -26,7 +26,7 @@ import { extractError } from "../../utils/extractError";
 const DetailRow = ({ label, value }) => (
   <Grid size={{ xs: 12, sm: 6 }}>
     <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", mb: 0.5 }}>{label}</Typography>
-    <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500 }}>{value || "—"}</Typography>
+    <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500, wordBreak: "break-word" }}>{value || "—"}</Typography>
   </Grid>
 );
 
@@ -149,12 +149,12 @@ const ReviewDetails = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3 }}>
+      <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 3, flexWrap: "wrap" }}>
         <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate(listPath)} />
-        <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)" }} />
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2 }}>Review Details</Typography>
-          <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500 }}>
+        <Box sx={{ width: 4, height: 24, borderRadius: 2, backgroundColor: "var(--color-admin-primary)", flexShrink: 0 }} />
+        <Box sx={{ flex: 1, minWidth: 0 }}>
+          <Typography variant="h5" sx={{ fontWeight: 800, color: "var(--color-admin-text)", lineHeight: 1.2, overflowWrap: "break-word", fontSize: { xs: "1.125rem", sm: "1.375rem", md: "1.5rem" } }}>Review Details</Typography>
+          <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500, overflowWrap: "break-word" }}>
             {isTestimonial ? "Website Testimonial" : `Product: ${review.product.name}`}
           </Typography>
         </Box>

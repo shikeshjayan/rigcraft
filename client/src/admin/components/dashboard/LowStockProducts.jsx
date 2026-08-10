@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from "@mui/material";
+import { Paper, Typography, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Box, useTheme, useMediaQuery } from "@mui/material";
 import StatusBadge from "../common/StatusBadge";
 import CompactPagination from "../common/CompactPagination";
 import { formatCurrency } from "../../utils/formatCurrency";
@@ -15,6 +15,9 @@ const LowStockProducts = ({ products = [] }) => {
   const rowsPerPage = 5;
   const totalPages = Math.ceil(products.length / rowsPerPage);
   const paginatedProducts = products.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage);
+
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("lg"));
 
   return (
     <Paper
@@ -37,6 +40,37 @@ const LowStockProducts = ({ products = [] }) => {
           Products running low on inventory
         </Typography>
       </div>
+      {isMobile ? (
+        <Box sx={{ flex: 1, display: "flex", flexDirection: "column", overflowY: "auto" }}>
+          {paginatedProducts.map((product) => (
+            <Box
+              key={product.id}
+              sx={{
+                px: 2,
+                py: 1.5,
+                borderBottom: "1px solid var(--color-admin-border)",
+                "&:last-of-type": { borderBottom: "none" },
+                "&:nth-of-type(odd)": { backgroundColor: "var(--color-admin-table-striped)" },
+              }}
+            >
+              <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 1.5 }}>
+                <Typography sx={{ flex: 1, minWidth: 0, fontSize: "0.875rem", fontWeight: 500, color: "var(--color-admin-text)", overflowWrap: "anywhere" }}>
+                  {product.name}
+                </Typography>
+                <StatusBadge label={product.stock} color={getStockColor(product.stock)} />
+              </Box>
+              <Typography sx={{ fontSize: "0.75rem", color: "var(--color-admin-muted)", mt: 0.25 }}>
+                Threshold {product.threshold} · {formatCurrency(product.price)}
+              </Typography>
+            </Box>
+          ))}
+          {products.length === 0 && (
+            <Box sx={{ py: 4, textAlign: "center", color: "var(--color-admin-muted)" }}>
+              <Typography variant="body2">No low stock products</Typography>
+            </Box>
+          )}
+        </Box>
+      ) : (
       <TableContainer sx={{ flex: 1 }}>
         <Table>
           <TableHead>
@@ -74,6 +108,8 @@ const LowStockProducts = ({ products = [] }) => {
           </TableBody>
         </Table>
       </TableContainer>
+      )}
+
       <CompactPagination page={page} totalPages={totalPages} onPageChange={setPage} />
     </Paper>
   );

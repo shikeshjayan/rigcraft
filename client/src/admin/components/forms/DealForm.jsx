@@ -263,7 +263,7 @@ const DealForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Deal
 
         {/* Top Bar Announcements */}
         <Box sx={{ mb: 3, p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2, flexWrap: "wrap", gap: 1.5 }}>
             <Typography variant="subtitle2" sx={{ color: "var(--color-admin-text)", fontWeight: 600 }}>
               Top Announcement Bar
             </Typography>
@@ -322,7 +322,7 @@ const DealForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Deal
 
         {/* Homepage Offers */}
         <Box sx={{ p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2 }}>
+          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 2, flexWrap: "wrap", gap: 1.5 }}>
             <Typography variant="subtitle2" sx={{ color: "var(--color-admin-text)", fontWeight: 600 }}>
               Homepage Offer Section
             </Typography>
@@ -403,7 +403,7 @@ const DealForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create Deal
         </Box>
       </Box>
 
-      <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end", pt: 3, borderTop: "1px solid var(--color-admin-border)" }}>
+      <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end", pt: 3, borderTop: "1px solid var(--color-admin-border)", flexWrap: "wrap" }}>
         <AdminButton variant="secondary" type="button" onClick={() => window.history.back()}>Cancel</AdminButton>
         <AdminButton variant="primary" type="submit" loading={loading}>{submitLabel}</AdminButton>
       </Box>

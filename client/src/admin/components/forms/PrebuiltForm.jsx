@@ -172,7 +172,7 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
                 {HARDWARE_SLOTS.map((slot) => {
                   const selectedId = components[slot.key];
                   return (
-                    <Box key={slot.key} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 1.5, border: "1px solid", borderColor: errors.components?.[slot.key] ? "var(--color-admin-danger)" : "var(--color-admin-border)", borderRadius: "var(--radius-admin-badge)", backgroundColor: "var(--color-admin-bg-tertiary)" }}>
+                    <Box key={slot.key} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1, p: 1.5, border: "1px solid", borderColor: errors.components?.[slot.key] ? "var(--color-admin-danger)" : "var(--color-admin-border)", borderRadius: "var(--radius-admin-badge)", backgroundColor: "var(--color-admin-bg-tertiary)" }}>
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)" }}>
                           {slot.label} {slot.required && <span style={{ color: "var(--color-admin-danger)" }}>*</span>}
@@ -205,7 +205,7 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
                 {ADDON_SLOTS.map((slot) => {
                   const selectedId = components[slot.key];
                   return (
-                    <Box key={slot.key} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 1.5, border: "1px solid", borderColor: errors.components?.[slot.key] ? "var(--color-admin-danger)" : "var(--color-admin-border)", borderRadius: "var(--radius-admin-badge)", backgroundColor: "var(--color-admin-bg-tertiary)" }}>
+                    <Box key={slot.key} sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1, p: 1.5, border: "1px solid", borderColor: errors.components?.[slot.key] ? "var(--color-admin-danger)" : "var(--color-admin-border)", borderRadius: "var(--radius-admin-badge)", backgroundColor: "var(--color-admin-bg-tertiary)" }}>
                       <Box>
                         <Typography variant="body2" sx={{ fontWeight: 500, color: "var(--color-admin-text)" }}>
                           {slot.label}
@@ -270,13 +270,13 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
             <Box sx={{ p: 2, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
               <Typography variant="subtitle2" sx={{ mb: 2, color: "var(--color-admin-text)", fontWeight: 600 }}>Status</Typography>
               <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1.5 }}>
                   <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>Active</Typography>
                   <Controller name="isActive" control={control} render={({ field }) => (
                     <MuiSwitch checked={field.value ?? true} onChange={(e) => field.onChange(e.target.checked)} />
                   )} />
                 </Box>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 1.5 }}>
                   <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)" }}>Featured</Typography>
                   <Controller name="isFeatured" control={control} render={({ field }) => (
                     <MuiSwitch checked={field.value ?? false} onChange={(e) => field.onChange(e.target.checked)} />
@@ -288,7 +288,7 @@ const PrebuiltForm = ({ defaultValues, onSubmit, loading, submitLabel = "Create 
         </Grid>
       </Grid>
 
-      <Box sx={{ mt: 4, pt: 3, borderTop: "1px solid var(--color-admin-border)", display: "flex", justifyContent: "flex-end", gap: 2 }}>
+      <Box sx={{ mt: 4, pt: 3, borderTop: "1px solid var(--color-admin-border)", display: "flex", justifyContent: "flex-end", gap: 2, flexWrap: "wrap" }}>
         <AdminButton variant="secondary" type="button" onClick={() => window.history.back()}>Cancel</AdminButton>
         <AdminButton variant="primary" type="submit" loading={loading}>{submitLabel}</AdminButton>
       </Box>
