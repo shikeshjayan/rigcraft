@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://rigcraft.vercel.app/</loc><changefreq>daily</changefreq><priority>1.0</priority></url>
+  <url><loc>https://rigcraft.vercel.app/prebuild</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://rigcraft.vercel.app/builder</loc><changefreq>weekly</changefreq><priority>0.9</priority></url>
+  <url><loc>https://rigcraft.vercel.app/components</loc><changefreq>weekly</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rigcraft.vercel.app/deals</loc><changefreq>daily</changefreq><priority>0.8</priority></url>
+  <url><loc>https://rigcraft.vercel.app/alldeals</loc><changefreq>daily</changefreq><priority>0.7</priority></url>
+  <url><loc>https://rigcraft.vercel.app/about</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://rigcraft.vercel.app/contact</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://rigcraft.vercel.app/faq</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://rigcraft.vercel.app/help</loc><changefreq>monthly</changefreq><priority>0.5</priority></url>
+  <url><loc>https://rigcraft.vercel.app/pc-builder-guide</loc><changefreq>monthly</changefreq><priority>0.6</priority></url>
+  <url><loc>https://rigcraft.vercel.app/warranty</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://rigcraft.vercel.app/returns</loc><changefreq>monthly</changefreq><priority>0.4</priority></url>
+  <url><loc>https://rigcraft.vercel.app/privacy-policy</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+  <url><loc>https://rigcraft.vercel.app/terms-of-service</loc><changefreq>yearly</changefreq><priority>0.3</priority></url>
+</urlset>
