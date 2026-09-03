@@ -3,15 +3,11 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useCart } from '../context/CartContext';
-import { GoogleGenerativeAI } from '@google/generative-ai';
 import SendIcon from '@mui/icons-material/Send';
 import CloseIcon from '@mui/icons-material/Close';
 import SmartToyIcon from '@mui/icons-material/SmartToy'; // Fallback icon
 import apiClient from '../api/client';
 import { useToast } from '../components/toast/useToast';
-
-// Initialize Gemini
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY || '');
 
 const mapCategoryToEnum = (cat) => {
   if (!cat) return 'accessory';
@@ -253,7 +249,6 @@ CRITICAL BUDGET INSTRUCTION: You MUST calculate the total cost of all currently 
 If all 8 basic parts are selected, list all the selected components with their prices and the total sum, then output exactly [BUILD_COMPLETE].`;
 
     try {
-      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
       const promptText = `You are RigCraft, an AI PC Builder Assistant. 
       
 Here is the live catalog:
@@ -271,8 +266,8 @@ INSTRUCTIONS:
 
 User: ${hiddenPrompt}`;
       
-      const result = await model.generateContent(promptText);
-      setMessages(prev => [...prev, { role: 'ai', text: result.response.text() }]);
+      const { data } = await apiClient.post('/ai/chat', { prompt: promptText });
+      setMessages(prev => [...prev, { role: 'ai', text: data?.data?.text || '' }]);
     } catch (error) {
       console.error(error);
       setMessages(prev => [...prev, { role: 'ai', text: "Error fetching next part. Please try again." }]);
@@ -330,8 +325,6 @@ User: ${hiddenPrompt}`;
     try {
       const startTime = Date.now();
       
-      const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
-      
       let promptText = `You are RigCraft, an AI PC Builder Assistant. 
       
 Here is the live catalog:
@@ -350,8 +343,8 @@ INSTRUCTIONS:
 
 User: ${userText}`;
       
-      const result = await model.generateContent(promptText);
-      const responseText = result.response.text();
+      const { data } = await apiClient.post('/ai/chat', { prompt: promptText });
+      const responseText = data?.data?.text || '';
       
       // Ensure the typing animation shows for at least 2 seconds
       const elapsed = Date.now() - startTime;

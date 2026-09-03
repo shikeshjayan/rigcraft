@@ -46,6 +46,7 @@ import notificationRoutes, { adminNotificationRoutes } from "./routes/notificati
 import stockAlertRoutes from "./routes/stockAlert.routes.js";
 import searchRoutes, { adminSearchRoutes } from "./routes/search.routes.js";
 import uploadRoutes from "./routes/upload.routes.js";
+import aiRoutes from "./routes/ai.routes.js";
 import errorHandler from "./middlewares/error.js";
 import maintenanceMode from "./middlewares/maintenanceMode.js";
 
@@ -124,6 +125,8 @@ app.use("/api/v1/admin/faqs", adminFaqRoutes);
 app.use("/api/v1/search", searchRoutes);
 app.use("/api/v1/admin/search", adminSearchRoutes);
 app.use("/api/v1/uploads", uploadRoutes);
+
+app.use("/api/v1/ai", aiRoutes);
 
 app.use(errorHandler);
 

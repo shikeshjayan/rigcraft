@@ -1,9 +1,19 @@
 import BaseRepository from "./base.repository.js";
 import Product from "../models/product.model.js";
+import ApiError from "../utils/ApiError.js";
 
 class ProductRepository extends BaseRepository {
   constructor() {
     super(Product);
+  }
+
+  async findById(id) {
+    const doc = await this.model
+      .findById(id)
+      .populate("category", "name slug")
+      .populate("brand", "name slug logo");
+    if (!doc) throw ApiError.notFound(`${this.model.modelName} not found`);
+    return doc;
   }
 
   async findBySlug(slug) {

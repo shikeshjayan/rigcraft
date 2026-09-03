@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import apiClient from '../api/client';
@@ -85,7 +85,6 @@ const TicketDetail = () => {
 
   useEffect(() => {
     if (!isLoggedIn || !id) return;
-    const sock = connectSocket();
     const handleNewMessage = (message) => {
       queryClient.setQueryData(['myTicket', id], (old) => {
         if (!old) return old;
@@ -99,13 +98,20 @@ const TicketDetail = () => {
         old ? { ...old, ticket: { ...old.ticket, ...ticket } } : old
       );
     };
-    joinSupportRoom(id);
-    sock.on('support:new-message', handleNewMessage);
-    sock.on('support:ticket-updated', handleTicketUpdate);
+    let sock;
+    connectSocket().then((s) => {
+      if (!s) return;
+      sock = s;
+      sock.on('support:new-message', handleNewMessage);
+      sock.on('support:ticket-updated', handleTicketUpdate);
+      joinSupportRoom(id);
+    });
     return () => {
-      sock.off('support:new-message', handleNewMessage);
-      sock.off('support:ticket-updated', handleTicketUpdate);
-      leaveSupportRoom(id);
+      if (sock) {
+        sock.off('support:new-message', handleNewMessage);
+        sock.off('support:ticket-updated', handleTicketUpdate);
+        leaveSupportRoom(id);
+      }
     };
   }, [id, isLoggedIn, queryClient]);
 

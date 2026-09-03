@@ -49,10 +49,6 @@ axiosInstance.interceptors.response.use(
     const isPublicAuth = publicAuthRoutes.some((route) => error.config?.url?.includes(route));
 
     if (error.response?.status === 401 && !isPublicAuth) {
-      console.error("🔥 401 UNAUTHORIZED CAUGHT BY INTERCEPTOR 🔥");
-      console.error("Error Response Data:", error.response.data);
-      console.error("Request URL:", error.config?.url);
-
       clearToken();
       // Remove any stale token that may linger in legacy localStorage.
       localStorage.removeItem("accessToken");

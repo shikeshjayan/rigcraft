@@ -63,7 +63,6 @@ const SupportDetails = () => {
 
   useEffect(() => {
     if (!id) return;
-    const sock = connectSocket();
     const handleNewMessage = (message) => {
       if (!message) return;
       const msgTicketId = (message.ticket?._id || message.ticket)?.toString();
@@ -97,15 +96,22 @@ const SupportDetails = () => {
         setTicket((prev) => (prev ? { ...prev, isRead: true } : prev));
       }
     };
-    joinSupportRoom(id);
-    sock.on("support:new-message", handleNewMessage);
-    sock.on("support:ticket-updated", handleTicketUpdate);
-    sock.on("support:read-status", handleReadStatus);
+    let sock;
+    connectSocket().then((s) => {
+      if (!s) return;
+      sock = s;
+      joinSupportRoom(id);
+      sock.on("support:new-message", handleNewMessage);
+      sock.on("support:ticket-updated", handleTicketUpdate);
+      sock.on("support:read-status", handleReadStatus);
+    });
     return () => {
-      sock.off("support:new-message", handleNewMessage);
-      sock.off("support:ticket-updated", handleTicketUpdate);
-      sock.off("support:read-status", handleReadStatus);
-      leaveSupportRoom(id);
+      if (sock) {
+        sock.off("support:new-message", handleNewMessage);
+        sock.off("support:ticket-updated", handleTicketUpdate);
+        sock.off("support:read-status", handleReadStatus);
+        leaveSupportRoom(id);
+      }
     };
   }, [id]);
 

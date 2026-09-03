@@ -18,9 +18,9 @@ const cookieAttributes = {
 };
 
 const createTokenResponse = async (user, statusCode, res, rememberMe = false) => {
-  const accessTokenExpiry = rememberMe ? '30d' : process.env.JWT_EXPIRES_IN || '1d';
+  const accessTokenExpiry = rememberMe ? '7d' : process.env.JWT_EXPIRES_IN || '1d';
   const cookieMaxAge = rememberMe
-    ? 30 * 24 * 60 * 60 * 1000
+    ? 7 * 24 * 60 * 60 * 1000
     : 24 * 60 * 60 * 1000;
 
   const accessToken = user.generateAccessToken(accessTokenExpiry);

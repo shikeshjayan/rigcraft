@@ -598,17 +598,18 @@ const ProductForm = ({
         </Grid>
       </SectionAccordion>
 
-      {selectedType && (
-        <SectionAccordion title="Specifications">
-          <Box sx={{ mb: 2 }}>
-            <AdminButton
-              variant="secondary"
-              size="small"
-              type="button"
-              onClick={addSpecsFromTemplate}>
-              Add specs from template
-            </AdminButton>
-          </Box>
+      <SectionAccordion title="Specifications">
+          {specTemplate.length > 0 && (
+            <Box sx={{ mb: 2 }}>
+              <AdminButton
+                variant="secondary"
+                size="small"
+                type="button"
+                onClick={addSpecsFromTemplate}>
+                Add specs from template
+              </AdminButton>
+            </Box>
+          )}
           {fields.map((field, idx) => {
             const tpl = specTemplate.find((s) => s.key === field.key);
             const isCustom = !tpl;
@@ -676,11 +677,9 @@ const ProductForm = ({
             onClick={() => append({ key: "", value: "", label: "" })}>
             Add Custom Spec
           </AdminButton>
-        </SectionAccordion>
-      )}
+      </SectionAccordion>
 
-      {selectedType && (
-        <SectionAccordion title="Compatibility">
+      <SectionAccordion title="Compatibility">
           <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             {compatTemplate.map((tpl) => (
               <Grid container spacing={1} key={tpl.key} sx={{ alignItems: "center" }}>
@@ -763,8 +762,7 @@ const ProductForm = ({
               </Grid>
             </Grid>
           </Box>
-        </SectionAccordion>
-      )}
+      </SectionAccordion>
 
       <SectionAccordion title="Status">
         <Box sx={{ display: "flex", gap: 4 }}>

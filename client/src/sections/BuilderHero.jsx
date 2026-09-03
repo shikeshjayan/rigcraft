@@ -36,7 +36,8 @@ const BuilderHero = () => {
         muted 
         loop 
         playsInline
-        preload="auto"
+        preload="none"
+        poster="/heroimage.webp"
         onCanPlay={() => setIsVideoLoaded(true)}
         className={`absolute inset-0 w-full h-full object-cover z-0 transition-opacity duration-1000 ${isVideoLoaded ? 'opacity-100' : 'opacity-0'}`}
       />

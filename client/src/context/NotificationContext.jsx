@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useCallback } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { notificationService } from '../services/notification.service';
-import { connectSocket, socket } from '../shared/socket';
+import { connectSocket } from '../shared/socket';
 import { useAuth } from './AuthContext';
 
 const NotificationContext = createContext();
@@ -27,12 +27,14 @@ export const NotificationProvider = ({ children }) => {
   useEffect(() => {
     if (!isLoggedIn) return;
 
-    connectSocket();
-
-    socket.on('notification:new', handleNewNotification);
+    let sock;
+    connectSocket().then((s) => {
+      sock = s;
+      sock.on('notification:new', handleNewNotification);
+    });
 
     return () => {
-      socket.off('notification:new', handleNewNotification);
+      if (sock) sock.off('notification:new', handleNewNotification);
     };
   }, [isLoggedIn, handleNewNotification]);
 

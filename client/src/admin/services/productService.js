@@ -47,7 +47,14 @@ const normalizeProduct = (p) => ({
   warrantyUnit: p.warranty?.unit || "month",
   warrantyType: p.warranty?.type || "manufacturer",
   specifications: p.specifications
-    ? Object.entries(p.specifications).map(([key, value]) => ({ key, value, label: SPEC_LABEL_MAP[key] || "" }))
+    ? Object.entries(p.specifications).map(([key, value]) => ({
+        key,
+        value,
+        label:
+          SPEC_LABEL_MAP[key] ||
+          SPEC_LABEL_MAP[key.toLowerCase().replace(/\s+/g, "_")] ||
+          key.replace(/_/g, " "),
+      }))
     : [],
   brand: undefined,
   category: undefined,

@@ -5,6 +5,7 @@ import Header from "./Header";
 import useAuthStore from "../../store/authStore";
 import useNotificationStore from "../../store/notificationStore";
 import { connectSocket } from "../../../shared/socket";
+import { useRouteMeta } from "../../../utils/seo";
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -12,13 +13,20 @@ const AdminLayout = () => {
   const { isAuthenticated, user } = useAuthStore();
   const fetchUnreadCount = useNotificationStore((s) => s.fetchUnreadCount);
   const location = useLocation();
+  useRouteMeta(location.pathname);
 
   useEffect(() => {
     if (!isAuthenticated) return;
-    const sock = connectSocket();
     const handleNotif = () => fetchUnreadCount();
-    sock.on("notification:new", handleNotif);
-    return () => sock.off("notification:new", handleNotif);
+    let sock;
+    connectSocket().then((s) => {
+      if (!s) return;
+      sock = s;
+      sock.on("notification:new", handleNotif);
+    });
+    return () => {
+      if (sock) sock.off("notification:new", handleNotif);
+    };
   }, [isAuthenticated, fetchUnreadCount]);
 
   if (!isAuthenticated || !user) {
