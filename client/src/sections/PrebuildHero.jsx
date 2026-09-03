@@ -1,22 +1,19 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef } from 'react';
 import { 
   motion, 
   useScroll, 
   useTransform, 
   useSpring, 
   useMotionValue, 
-  useMotionTemplate, 
-  AnimatePresence 
+  useMotionTemplate 
 } from 'framer-motion';
 
 // MUI Icons
-import KeyboardArrowRightIcon from '@mui/icons-material/KeyboardArrowRight';
 import VideogameAssetIcon from '@mui/icons-material/VideogameAsset';
 import MemoryIcon from '@mui/icons-material/Memory';
 import DeveloperBoardIcon from '@mui/icons-material/DeveloperBoard';
 import StorageIcon from '@mui/icons-material/Storage';
 import SettingsInputComponentIcon from '@mui/icons-material/SettingsInputComponent';
-import MouseIcon from '@mui/icons-material/Mouse';
 import VerifiedUserOutlinedIcon from '@mui/icons-material/VerifiedUserOutlined';
 import LocalShippingOutlinedIcon from '@mui/icons-material/LocalShippingOutlined';
 import SecurityOutlinedIcon from '@mui/icons-material/SecurityOutlined';
@@ -117,7 +114,6 @@ const PrebuildHero = () => {
   // Glow & Grid Parallax
   const glowOpacity = useTransform(scrollYProgress, [0, 0.5], [1, 0]);
   const glowBlur = useTransform(scrollYProgress, [0, 1], [40, 100]);
-  const gridY = useTransform(scrollYProgress, [0, 1], [0, 50]);
 
   // Floating parts spread on scroll
   const gpuX = useTransform(scrollYProgress, [0, 1], [0, 100]);
@@ -286,7 +282,7 @@ const PrebuildHero = () => {
             style={{ x: pcMouseX, y: pcMouseY }}
           >
             <img 
-              src="/heroimage.png" 
+              src="/heroimage.webp" 
               alt="Premium Gaming PC" 
               className="w-full h-auto object-contain"
             />

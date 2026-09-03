@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import FadeUp from '../components/FadeUp';
 import PeopleOutlinedIcon from '@mui/icons-material/PeopleOutlined';
@@ -191,8 +190,9 @@ const Home = () => {
             <div className="relative z-10 w-full max-w-[750px] animate-float flex items-center justify-center">
               {/* Image */}
               <img 
-                src="/heroimage.png" 
+                src="/heroimage.webp" 
                 alt="Custom gaming PC workstation with real-time compatibility support" 
+                fetchPriority="high"
                 className="w-full max-h-[50vh] lg:max-h-[75vh] object-contain drop-shadow-2xl"
               />
               

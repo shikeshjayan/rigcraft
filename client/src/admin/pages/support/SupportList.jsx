@@ -46,15 +46,21 @@ const SupportList = () => {
   } = useAdminList("supportList", supportService, { page, pageSize, search, ...filters });
 
   useEffect(() => {
-    const sock = connectSocket();
     const handleUpdate = () => refetch();
-    sock.on("support:new-message", handleUpdate);
-    sock.on("support:ticket-updated", handleUpdate);
-    sock.on("notification:new", handleUpdate);
+    let sock;
+    connectSocket().then((s) => {
+      if (!s) return;
+      sock = s;
+      sock.on("support:new-message", handleUpdate);
+      sock.on("support:ticket-updated", handleUpdate);
+      sock.on("notification:new", handleUpdate);
+    });
     return () => {
-      sock.off("support:new-message", handleUpdate);
-      sock.off("support:ticket-updated", handleUpdate);
-      sock.off("notification:new", handleUpdate);
+      if (sock) {
+        sock.off("support:new-message", handleUpdate);
+        sock.off("support:ticket-updated", handleUpdate);
+        sock.off("notification:new", handleUpdate);
+      }
     };
   }, [refetch]);
 

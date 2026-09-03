@@ -6,7 +6,10 @@ import ApiResponse from "../utils/ApiResponse.js";
 import ApiError from "../utils/ApiError.js";
 
 export const createRazorpayOrder = asyncHandler(async (req, res) => {
-  const result = await paymentService.createRazorpayOrder(req.body.orderId);
+  const result = await paymentService.createRazorpayOrder(
+    req.body.orderId,
+    req.user.id
+  );
   ApiResponse.created(result, "Razorpay order created").send(res);
 });
 
@@ -25,6 +28,10 @@ export const verifyPayment = asyncHandler(async (req, res) => {
 
   const order = await orderRepository.findByRazorpayOrderId(razorpay_order_id);
   if (!order) throw ApiError.notFound("Order not found");
+
+  if (order.user?.toString() !== req.user.id.toString()) {
+    throw ApiError.forbidden("You are not authorized to verify this order");
+  }
 
   const confirmed = await orderService.confirmPayment(
     order._id,

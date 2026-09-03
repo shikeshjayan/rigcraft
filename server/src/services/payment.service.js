@@ -31,9 +31,13 @@ const validateOrderForPayment = (order) => {
   }
 };
 
-export const createRazorpayOrder = async (orderId) => {
+export const createRazorpayOrder = async (orderId, userId) => {
   const order = await orderRepository.findById(orderId);
   validateOrderForPayment(order);
+
+  if (userId && order.user?.toString() !== userId.toString()) {
+    throw ApiError.forbidden("You are not authorized to pay for this order");
+  }
 
   const razorpay = getRazorpay();
   const razorpayOrder = await razorpay.orders.create({

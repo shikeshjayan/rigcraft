@@ -1,14 +1,18 @@
-import React, { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { motion, useScroll, useTransform, useMotionValueEvent, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
 
-const TOTAL_FRAMES = 49
+const TOTAL_FRAMES = 49;
+const FRAME_BASE = '/hero-scroll/frame_';
+const FRAME_EXT = '.webp';
+const CONCURRENCY = 4;
 
 const HomeParallax = () => {
   const containerRef = useRef(null);
   const canvasRef = useRef(null);
-  const [images, setImages] = useState([]);
-  const [imagesLoaded, setImagesLoaded] = useState(false);
+  const imagesRef = useRef([]);
+  const supportsIntersectionObserver = typeof window !== 'undefined' && 'IntersectionObserver' in window;
+  const [startedLoading, setStartedLoading] = useState(() => !supportsIntersectionObserver);
   const [activeIndex, setActiveIndex] = useState(1);
 
   // Framer motion scroll setup
@@ -17,49 +21,74 @@ const HomeParallax = () => {
     offset: ['start start', 'end end']
   });
 
-  // Map progress (0-1) to frame index. 
+  // Map progress (0-1) to frame index.
   // 0% -> Frame 0 (Assembled)
   // 50% -> Frame 50 (Exploded)
   // 100% -> Frame 100 (Reassembled)
   const frameIndex = useTransform(scrollYProgress, [0, 1], [0, TOTAL_FRAMES - 1]);
 
-  // Preload images
+  // Only start loading the frame sequence when the section is about to enter
+  // the viewport. Previously all 49 (~66MB) PNG frames were downloaded on page
+  // load even though this section sits far below the fold.
   useEffect(() => {
-    const loadedImages = [];
-    let loadedCount = 0;
-    for (let i = 1; i <= TOTAL_FRAMES; i++) {
-      const img = new Image();
-      const paddedIndex = String(i).padStart(6, '0');
-      img.src = `/hero-scroll/frame_${paddedIndex}.png`;
-      img.onload = () => {
-        loadedCount++;
-        if (loadedCount === TOTAL_FRAMES) {
-          setImagesLoaded(true);
+    const el = containerRef.current;
+    if (!el || startedLoading) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setStartedLoading(true);
+          observer.disconnect();
         }
+      },
+      { rootMargin: '1500px 0px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [startedLoading]);
+
+  // Sequentially load the (small .webp) frames with limited concurrency so
+  // early frames are available first and memory/bandwidth stay bounded.
+  useEffect(() => {
+    if (!startedLoading) return;
+    let nextIndex = 0;
+    let cancelled = false;
+
+    const loadNext = () => {
+      if (cancelled || nextIndex >= TOTAL_FRAMES) return;
+      const i = nextIndex;
+      nextIndex += 1;
+      const img = new Image();
+      img.src = FRAME_BASE + String(i + 1).padStart(6, '0') + FRAME_EXT;
+      img.onload = () => {
+        imagesRef.current[i] = img;
+        loadNext();
       };
-      loadedImages.push(img);
-    }
-    setImages(loadedImages);
-  }, []);
+      img.onerror = loadNext;
+    };
+
+    for (let c = 0; c < CONCURRENCY; c++) loadNext();
+    return () => {
+      cancelled = true;
+    };
+  }, [startedLoading]);
 
   const drawImage = (index) => {
-    if (images.length === 0 || !canvasRef.current) return;
-    const img = images[index];
-    if (img && img.complete) {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) return;
+    if (!canvasRef.current) return;
+    const img = imagesRef.current[index];
+    if (!img || !img.complete) return;
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return;
 
-      const width = canvas.width;
-      const height = canvas.height;
-      ctx.clearRect(0, 0, width, height);
+    const width = canvas.width;
+    const height = canvas.height;
+    ctx.clearRect(0, 0, width, height);
 
-      const scale = Math.max(width / img.width, height / img.height);
-      const x = (width / 2) - (img.width / 2) * scale;
-      const y = (height / 2) - (img.height / 2) * scale;
+    const scale = Math.max(width / img.width, height / img.height);
+    const x = (width / 2) - (img.width / 2) * scale;
+    const y = (height / 2) - (img.height / 2) * scale;
 
-      ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
-    }
+    ctx.drawImage(img, x, y, img.width * scale, img.height * scale);
   };
 
   // Update canvas on scroll
@@ -88,10 +117,8 @@ const HomeParallax = () => {
         canvas.width = rect.width * dpr;
         canvas.height = rect.height * dpr;
 
-        if (imagesLoaded) {
-          const index = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.floor(frameIndex.get())));
-          drawImage(index);
-        }
+        const index = Math.min(TOTAL_FRAMES - 1, Math.max(0, Math.floor(frameIndex.get())));
+        drawImage(index);
       }
     };
 
@@ -99,7 +126,7 @@ const HomeParallax = () => {
     handleResize();
 
     return () => window.removeEventListener('resize', handleResize);
-  }, [imagesLoaded, frameIndex]);
+  }, [startedLoading, frameIndex]);
 
   return (
     <section ref={containerRef} className="relative h-[400vh] w-full bg-black">

@@ -1,0 +1,14 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /login
+Disallow: /register
+Disallow: /forgot-password
+Disallow: /profile
+Disallow: /orders
+Disallow: /wishlist
+Disallow: /cart
+Disallow: /notifications
+Disallow: /my-tickets
+
+Sitemap: https://rigcraft.vercel.app/sitemap.xml

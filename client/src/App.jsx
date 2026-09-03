@@ -1,50 +1,53 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Navbar from './components/Navbar';
-import Home from './pages/Home';
-import Prebuild from './pages/Prebuild';
 import Footer from './components/Footer';
-import Pcbuilder from './pages/Pcbuilder';
-import Components from './pages/Components';
-import Detail from './pages/Detail';
-import Wishlist from './pages/Wishlist';
-import Cart from './pages/Cart';
-import Deals from './pages/Deals';
-import AllDeals from './pages/AllDeals';
-import BundleDetail from './pages/BundleDetail';
-import Customerlogin from './pages/Customerlogin';
-import CustomerRegister from './pages/CustomerRegister';
-import ForgotPassword from './pages/ForgotPassword';
-import Profile from './pages/Profile';
-import Orders from './pages/Orders';
-import MyTickets from './pages/MyTickets';
-import TicketDetail from './pages/TicketDetail';
-import Notifications from './pages/Notifications';
-import Warranty from './pages/Warranty';
-import ReturnsAndRefunds from './pages/ReturnsAndRefunds';
-import PcBuilderGuide from './pages/PcBuilderGuide';
-import Faq from './pages/Faq';
-import HelpCenter from './pages/HelpCenter';
-import PrivacyPolicy from './pages/PrivacyPolicy';
-import Terms from './pages/Terms';
-import About from './pages/About';
-import Contact from './pages/Contact';
-import Error from './pages/Error';
 import { NotificationProvider } from './context/NotificationContext';
 import { WishlistProvider } from './context/WishlistContext';
 import { PublicSettingsProvider } from './context/PublicSettingsContext';
-import AdminRoutes from './admin/routes/AdminRoutes';
 import { AuthProvider } from './context/AuthContext';
 import { CartProvider } from './context/CartContext';
 import { ToastProvider } from './components/toast/ToastProvider';
-import Chatbot from './components/Chatbot';
-import BackToTop from './components/BackToTop';
-import DealStickyBar from './sections/DealStickyBar';
 import ScrollToTop from './components/ScrollToTop';
 import PageTransition from './components/PageTransition';
+import { useRouteMeta } from './utils/seo';
 
-import FirstOrderCoupon from './components/FirstOrderCoupon';
+const Home = lazy(() => import('./pages/Home'));
+const Prebuild = lazy(() => import('./pages/Prebuild'));
+const Pcbuilder = lazy(() => import('./pages/Pcbuilder'));
+const Components = lazy(() => import('./pages/Components'));
+const Detail = lazy(() => import('./pages/Detail'));
+const Wishlist = lazy(() => import('./pages/Wishlist'));
+const Cart = lazy(() => import('./pages/Cart'));
+const Deals = lazy(() => import('./pages/Deals'));
+const AllDeals = lazy(() => import('./pages/AllDeals'));
+const BundleDetail = lazy(() => import('./pages/BundleDetail'));
+const Customerlogin = lazy(() => import('./pages/Customerlogin'));
+const CustomerRegister = lazy(() => import('./pages/CustomerRegister'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const Profile = lazy(() => import('./pages/Profile'));
+const Orders = lazy(() => import('./pages/Orders'));
+const MyTickets = lazy(() => import('./pages/MyTickets'));
+const TicketDetail = lazy(() => import('./pages/TicketDetail'));
+const Notifications = lazy(() => import('./pages/Notifications'));
+const Warranty = lazy(() => import('./pages/Warranty'));
+const ReturnsAndRefunds = lazy(() => import('./pages/ReturnsAndRefunds'));
+const PcBuilderGuide = lazy(() => import('./pages/PcBuilderGuide'));
+const Faq = lazy(() => import('./pages/Faq'));
+const HelpCenter = lazy(() => import('./pages/HelpCenter'));
+const PrivacyPolicy = lazy(() => import('./pages/PrivacyPolicy'));
+const Terms = lazy(() => import('./pages/Terms'));
+const About = lazy(() => import('./pages/About'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Error = lazy(() => import('./pages/Error'));
+const AdminRoutes = lazy(() => import('./admin/routes/AdminRoutes'));
+
+const BackToTop = lazy(() => import('./components/BackToTop'));
+const Chatbot = lazy(() => import('./components/Chatbot'));
+const DealStickyBar = lazy(() => import('./sections/DealStickyBar'));
+const FirstOrderCoupon = lazy(() => import('./components/FirstOrderCoupon'));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -57,21 +60,28 @@ const queryClient = new QueryClient({
 
 const PublicLayout = () => {
   const location = useLocation();
+  useRouteMeta(location.pathname);
   return (
     <div className="min-h-screen bg-black text-white flex flex-col">
       <Navbar />
-      <FirstOrderCoupon />
+      <Suspense fallback={null}>
+        <FirstOrderCoupon />
+      </Suspense>
       <div className="flex-grow bg-white">
         <AnimatePresence mode="wait">
           <PageTransition key={location.pathname}>
-            <Outlet />
+            <Suspense fallback={null}>
+              <Outlet />
+            </Suspense>
           </PageTransition>
         </AnimatePresence>
       </div>
       <Footer hideNewsletter={location.pathname === '/deals'} />
-      <Chatbot />
-      <BackToTop />
-      <DealStickyBar />
+      <Suspense fallback={null}>
+        <Chatbot />
+        <BackToTop />
+        <DealStickyBar />
+      </Suspense>
     </div>
   );
 };
@@ -88,46 +98,45 @@ const App = () => {
               <NotificationProvider>
                 <PublicSettingsProvider>
                   <Routes>
-
-                <Route path="/admin/*" element={<AdminRoutes />} />
-                <Route element={<PublicLayout />}>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/prebuild" element={<Prebuild />} />
-                  <Route path="/builder" element={<Pcbuilder />} />
-                  <Route path="/components" element={<Components />} />
-                  <Route path="/components/:category" element={<Components />} />
-                  <Route path="/detail/:id" element={<Detail />} />
-                  <Route path="/detail/:productName/:id" element={<Detail />} />
-                  <Route path="/wishlist" element={<Wishlist />} />
-                  <Route path="/notifications" element={<Notifications />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/deals" element={<Deals />} />
-                  <Route path="/alldeals" element={<AllDeals />} />
-                  <Route path="/bundle/:slug" element={<BundleDetail />} />
-                  <Route path="/login" element={<Customerlogin />} />
-                  <Route path="/register" element={<CustomerRegister />} />
-                  <Route path="/forgot-password" element={<ForgotPassword />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route path="/orders" element={<Orders />} />
-                  <Route path="/my-tickets" element={<MyTickets />} />
-                  <Route path="/my-tickets/:id" element={<TicketDetail />} />
-                  <Route path="/warranty" element={<Warranty />} />
-                  <Route path="/returns" element={<ReturnsAndRefunds />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/pc-builder-guide" element={<PcBuilderGuide />} />
-                  <Route path="/faq" element={<Faq />} />
-                  <Route path="/help" element={<HelpCenter />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                  <Route path="/terms-of-service" element={<Terms />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="*" element={<Error />} />
-                </Route>
-              </Routes>
-              </PublicSettingsProvider>
-              </NotificationProvider>
-            </WishlistProvider>
-          </CartProvider>
-        </AuthProvider>
+                    <Route path="/admin/*" element={<Suspense fallback={null}><AdminRoutes /></Suspense>} />
+                    <Route element={<PublicLayout />}>
+                      <Route path="/" element={<Home />} />
+                      <Route path="/prebuild" element={<Prebuild />} />
+                      <Route path="/builder" element={<Pcbuilder />} />
+                      <Route path="/components" element={<Components />} />
+                      <Route path="/components/:category" element={<Components />} />
+                      <Route path="/detail/:id" element={<Detail />} />
+                      <Route path="/detail/:productName/:id" element={<Detail />} />
+                      <Route path="/wishlist" element={<Wishlist />} />
+                      <Route path="/notifications" element={<Notifications />} />
+                      <Route path="/cart" element={<Cart />} />
+                      <Route path="/deals" element={<Deals />} />
+                      <Route path="/alldeals" element={<AllDeals />} />
+                      <Route path="/bundle/:slug" element={<BundleDetail />} />
+                      <Route path="/login" element={<Customerlogin />} />
+                      <Route path="/register" element={<CustomerRegister />} />
+                      <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/orders" element={<Orders />} />
+                      <Route path="/my-tickets" element={<MyTickets />} />
+                      <Route path="/my-tickets/:id" element={<TicketDetail />} />
+                      <Route path="/warranty" element={<Warranty />} />
+                      <Route path="/returns" element={<ReturnsAndRefunds />} />
+                      <Route path="/contact" element={<Contact />} />
+                      <Route path="/pc-builder-guide" element={<PcBuilderGuide />} />
+                      <Route path="/faq" element={<Faq />} />
+                      <Route path="/help" element={<HelpCenter />} />
+                      <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                      <Route path="/terms-of-service" element={<Terms />} />
+                      <Route path="/about" element={<About />} />
+                      <Route path="*" element={<Error />} />
+                    </Route>
+                  </Routes>
+                </PublicSettingsProvider>
+                </NotificationProvider>
+              </WishlistProvider>
+            </CartProvider>
+          </AuthProvider>
         </ToastProvider>
       </BrowserRouter>
     </QueryClientProvider>

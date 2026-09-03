@@ -91,6 +91,13 @@ const ProductDetails = () => {
           </Grid>
         </Box>
 
+        {product.shortDescription && (
+          <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Short Description</Typography>
+            <Typography variant="body2" sx={{ color: "var(--color-admin-text-secondary)", whiteSpace: "pre-wrap" }}>{product.shortDescription}</Typography>
+          </Box>
+        )}
+
         {product.description && (
           <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)" }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Description</Typography>
