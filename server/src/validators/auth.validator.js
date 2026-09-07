@@ -125,8 +125,8 @@ export const resetPasswordSchema = z
   });
 
 export const updateRoleSchema = z.object({
-  role: z.enum([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN], {
-    errorMap: () => ({ message: 'Role must be admin or super_admin' }),
+  role: z.enum([USER_ROLES.CUSTOMER, USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.PRODUCT_MANAGER, USER_ROLES.ORDER_MANAGER, USER_ROLES.SUPPORT_EXECUTIVE], {
+    errorMap: () => ({ message: 'Invalid role' }),
   }),
 });
 

@@ -1,9 +1,11 @@
 import { Router } from "express";
 import * as faqController from "../controllers/faq.controller.js";
 import { protect, authorize } from "../middlewares/auth.js";
+import { hasPermission } from "../middlewares/permission.js";
 import validate from "../middlewares/validate.js";
 import { createFAQSchema, updateFAQSchema } from "../validators/faq.validation.js";
 import { USER_ROLES } from "../constants/constants.js";
+import { PERMISSIONS } from "../constants/permissions.js";
 
 const router = Router();
 
@@ -17,6 +19,7 @@ adminFaqRoutes.get(
   "/",
   protect,
   authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+  hasPermission(PERMISSIONS.faqs.list),
   faqController.adminList
 );
 
@@ -24,13 +27,15 @@ adminFaqRoutes.get(
   "/:id",
   protect,
   authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+  hasPermission(PERMISSIONS.faqs.read),
   faqController.getById
 );
 
 adminFaqRoutes.post(
   "/",
   protect,
-  authorize(USER_ROLES.ADMIN),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  hasPermission(PERMISSIONS.faqs.create),
   validate(createFAQSchema),
   faqController.create
 );
@@ -38,7 +43,8 @@ adminFaqRoutes.post(
 adminFaqRoutes.put(
   "/:id",
   protect,
-  authorize(USER_ROLES.ADMIN),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  hasPermission(PERMISSIONS.faqs.update),
   validate(updateFAQSchema),
   faqController.update
 );
@@ -46,6 +52,7 @@ adminFaqRoutes.put(
 adminFaqRoutes.delete(
   "/:id",
   protect,
-  authorize(USER_ROLES.ADMIN),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  hasPermission(PERMISSIONS.faqs.delete),
   faqController.remove
 );

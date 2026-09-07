@@ -2,8 +2,10 @@ import { Router } from 'express';
 import rateLimit from 'express-rate-limit';
 import * as authController from '../controllers/auth.controller.js';
 import { protect, authorize } from '../middlewares/auth.js';
+import { hasPermission } from '../middlewares/permission.js';
 import { uploadSingleImage } from '../middlewares/upload.middleware.js';
 import { USER_ROLES } from '../constants/constants.js';
+import { PERMISSIONS } from '../constants/permissions.js';
 import validate from '../middlewares/validate.js';
 import {
   registerSchema,
@@ -40,6 +42,6 @@ router.put('/password', protect, validate(updatePasswordSchema), authController.
 router.post('/logout', protect, authController.logout);
 router.post('/deactivate', protect, authController.deactivate);
 
-router.patch('/users/:id/role', protect, authorize(USER_ROLES.ADMIN), validate(updateRoleSchema), authController.updateUserRole);
+router.patch('/users/:id/role', protect, authorize(USER_ROLES.SUPER_ADMIN), hasPermission(PERMISSIONS.users.assignRole), validate(updateRoleSchema), authController.updateUserRole);
 
 export default router;

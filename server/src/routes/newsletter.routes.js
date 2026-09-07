@@ -2,12 +2,15 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import * as newsletterController from "../controllers/newsletter.controller.js";
 import { protect, authorize } from "../middlewares/auth.js";
+import { hasPermission } from "../middlewares/permission.js";
 import validate from "../middlewares/validate.js";
 import {
   subscribeSchema,
   unsubscribeSchema,
   updateSubscriberSchema,
 } from "../validators/newsletter.validation.js";
+import { USER_ROLES } from "../constants/constants.js";
+import { PERMISSIONS } from "../constants/permissions.js";
 
 const router = Router();
 
@@ -26,20 +29,45 @@ router.post("/subscribe", subscribeLimiter, validate(subscribeSchema), newslette
 
 router.post("/unsubscribe", validate(unsubscribeSchema), newsletterController.unsubscribe);
 
-router.get("/export", protect, authorize("admin", "super_admin"), newsletterController.exportSubscribers);
+router.get(
+  "/export",
+  protect,
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  hasPermission(PERMISSIONS.newsletter.export),
+  newsletterController.exportSubscribers
+);
 
-router.get("/", protect, authorize("admin", "super_admin"), newsletterController.getSubscribers);
+router.get(
+  "/",
+  protect,
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  hasPermission(PERMISSIONS.newsletter.list),
+  newsletterController.getSubscribers
+);
 
-router.get("/:id", protect, authorize("admin", "super_admin"), newsletterController.getSubscriber);
+router.get(
+  "/:id",
+  protect,
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  hasPermission(PERMISSIONS.newsletter.read),
+  newsletterController.getSubscriber
+);
 
 router.put(
   "/:id",
   protect,
-  authorize("admin"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  hasPermission(PERMISSIONS.newsletter.update),
   validate(updateSubscriberSchema),
   newsletterController.updateSubscriber
 );
 
-router.delete("/:id", protect, authorize("admin"), newsletterController.deleteSubscriber);
+router.delete(
+  "/:id",
+  protect,
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  hasPermission(PERMISSIONS.newsletter.delete),
+  newsletterController.deleteSubscriber
+);
 
 export default router;
