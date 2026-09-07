@@ -27,21 +27,21 @@ export const adminSupportRoutes = Router();
 adminSupportRoutes.get(
   "/",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.SUPPORT_EXECUTIVE),
   supportController.adminList
 );
 
 adminSupportRoutes.get(
   "/:id",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.SUPPORT_EXECUTIVE),
   supportController.adminGetById
 );
 
 adminSupportRoutes.post(
   "/:id/messages",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.SUPPORT_EXECUTIVE),
   uploadAnyFiles("attachments", 5),
   validate(sendMessageSchema),
   supportController.adminReply
@@ -50,7 +50,7 @@ adminSupportRoutes.post(
 adminSupportRoutes.put(
   "/:id/status",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.SUPPORT_EXECUTIVE),
   validate(updateStatusSchema),
   supportController.adminUpdateStatus
 );
@@ -58,7 +58,7 @@ adminSupportRoutes.put(
 adminSupportRoutes.put(
   "/:id/assign",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   validate(assignTicketSchema),
   supportController.adminAssign
 );
@@ -66,7 +66,7 @@ adminSupportRoutes.put(
 adminSupportRoutes.put(
   "/:id/priority",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   validate(updatePrioritySchema),
   supportController.adminUpdatePriority
 );

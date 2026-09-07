@@ -8,6 +8,8 @@ import {
 } from "../validators/category.validator.js";
 import { uploadSingleImage } from "../middlewares/upload.middleware.js";
 
+import { USER_ROLES } from "../constants/constants.js";
+
 const router = Router();
 
 // Public
@@ -19,7 +21,7 @@ router.get("/:id", categoryController.getById);
 router.post(
   "/",
   protect,
-  authorize("admin"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.PRODUCT_MANAGER),
   uploadSingleImage("image"),
   validate(createCategorySchema),
   categoryController.create
@@ -28,7 +30,7 @@ router.post(
 router.put(
   "/:id",
   protect,
-  authorize("admin"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.PRODUCT_MANAGER),
   uploadSingleImage("image"),
   validate(updateCategorySchema),
   categoryController.update
@@ -37,7 +39,7 @@ router.put(
 router.delete(
   "/:id",
   protect,
-  authorize("admin"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
   categoryController.remove
 );
 

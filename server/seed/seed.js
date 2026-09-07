@@ -236,11 +236,9 @@ async function seed() {
 
   const staffData = [
     { firstName: "Admin", lastName: "User", email: "admin@rigcraft.com", phone: "+91-1800-000-0001", password: "Admin@123", role: "admin", isEmailVerified: true },
-    { firstName: "Manager", lastName: "User", email: "manager@rigcraft.com", phone: "+91-1800-000-0002", password: "Manager@123", role: "manager", isEmailVerified: true },
   ];
   const staffDocs = await User.create(staffData);
   const adminUser = staffDocs[0];
-  const managerUser = staffDocs[1];
 
   const customerData = [];
   for (let i = 0; i < 20; i++) {

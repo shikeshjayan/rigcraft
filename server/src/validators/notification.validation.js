@@ -8,7 +8,7 @@ const objectId = z.string().refine(
 
 export const createNotificationSchema = z.object({
   recipient: objectId,
-  recipientRole: z.enum(["customer", "admin", "manager"]),
+  recipientRole: z.enum(["customer", "admin", "super_admin", "product_manager", "order_manager", "support_executive"]),
   type: z.enum([
     "order",
     "payment",

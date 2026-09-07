@@ -1,0 +1,555 @@
+RBAC Permission Baseline - E-Commerce Platform	
+	
+Role	Purpose
+Super Admin	Full platform control, including system configuration, administrator management, role/permission management, security, and all business operations.
+Administrator	Manage overall e-commerce operations including customers, catalog, orders, reviews, coupons, support, and business reports.
+Product Manager	Manage the product catalog, categories, brands, pricing, specifications, compatibility, inventory, and prebuilt PCs.
+Order Manager	Manage customer orders, fulfillment, shipping, cancellations, returns, refunds, and related payment/order operations.
+Support Executive	Assist customers through support tickets and live chat, and access the customer/order information required to resolve issues.
+Customer	Browse products, build PCs, manage cart and wishlist, place orders, make payments, submit reviews, and use customer support.
+
+
+CAPABILITY MATRIX BY ROLE 							
+							
+Module / Category	Capability / Permission	Super Admin	Administrator	Product Manager	Order Manager	Support Executive	Customer
+ADMINISTRATION & RBAC							
+ADMINISTRATION & RBAC	View Admin Users	Yes	Yes	No	No	No	No
+ADMINISTRATION & RBAC	Create Admin User	Yes	No	No	No	No	No
+ADMINISTRATION & RBAC	Edit Admin User	Yes	No	No	No	No	No
+ADMINISTRATION & RBAC	Disable Admin User	Yes	No	No	No	No	No
+ADMINISTRATION & RBAC	Assign Admin Role	Yes	No	No	No	No	No
+ADMINISTRATION & RBAC	Manage Roles	Yes	No	No	No	No	No
+ADMINISTRATION & RBAC	Manage Permissions	Yes	No	No	No	No	No
+ADMINISTRATION & RBAC	View Audit Logs	Yes	Yes	No	No	No	No
+CUSTOMERS							
+CUSTOMERS	View Customers	Yes	Yes	No	Yes	Yes	Own
+CUSTOMERS	View Customer Details	Yes	Yes	No	Yes	Yes	Own
+CUSTOMERS	Edit Customer Profile	Yes	Yes	No	No	No	Own
+CUSTOMERS	Block Customer	Yes	Yes	No	No	No	No
+CUSTOMERS	Unblock Customer	Yes	Yes	No	No	No	No
+CUSTOMERS	Delete/Soft Delete Customer	Yes	Yes	No	No	No	Own
+CUSTOMERS	View Customer Orders	Yes	Yes	No	Yes	Yes	Own
+CUSTOMERS	View Customer Reviews	Yes	Yes	No	No	Yes	Own
+CATEGORIES							
+CATEGORIES	View Categories	Yes	Yes	Yes	Yes	Yes	Yes
+CATEGORIES	Create Category	Yes	Yes	Yes	No	No	No
+CATEGORIES	Edit Category	Yes	Yes	Yes	No	No	No
+CATEGORIES	Delete Category	Yes	Yes	No	No	No	No
+CATEGORIES	Change Category Status	Yes	Yes	Yes	No	No	No
+BRANDS							
+BRANDS	View Brands	Yes	Yes	Yes	Yes	Yes	Yes
+BRANDS	Create Brand	Yes	Yes	Yes	No	No	No
+BRANDS	Edit Brand	Yes	Yes	Yes	No	No	No
+BRANDS	Delete Brand	Yes	Yes	No	No	No	No
+BRANDS	Change Brand Status	Yes	Yes	Yes	No	No	No
+PRODUCTS							
+PRODUCTS	View Products	Yes	Yes	Yes	Yes	Yes	Yes
+PRODUCTS	View Product Details	Yes	Yes	Yes	Yes	Yes	Yes
+PRODUCTS	Create Product	Yes	Yes	Yes	No	No	No
+PRODUCTS	Edit Product	Yes	Yes	Yes	No	No	No
+PRODUCTS	Delete Product	Yes	Yes	No	No	No	No
+PRODUCTS	Change Product Status	Yes	Yes	Yes	No	No	No
+PRODUCTS	Manage Product Images	Yes	Yes	Yes	No	No	No
+PRODUCTS	Manage Specifications	Yes	Yes	Yes	No	No	No
+PRODUCTS	Manage Compatibility	Yes	Yes	Yes	No	No	No
+PRODUCTS	Manage Pricing	Yes	Yes	Yes	No	No	No
+PRODUCTS	Manage Inventory	Yes	Yes	Yes	No	No	No
+PREBUILT PCs							
+PREBUILT PCs	View Prebuilt PCs	Yes	Yes	Yes	Yes	Yes	Yes
+PREBUILT PCs	Create Prebuilt PC	Yes	Yes	Yes	No	No	No
+PREBUILT PCs	Edit Prebuilt PC	Yes	Yes	Yes	No	No	No
+PREBUILT PCs	Delete Prebuilt PC	Yes	Yes	No	No	No	No
+PREBUILT PCs	Publish/Unpublish Prebuilt	Yes	Yes	Yes	No	No	No
+PC BUILDER							
+PC BUILDER	Create Build	Yes	Yes	No	No	No	Yes
+PC BUILDER	View Builds	All	All	No	No	No	Own
+PC BUILDER	Validate Compatibility	Yes	Yes	No	No	No	Own
+PC BUILDER	Edit Build	Yes	Yes	No	No	No	Own
+PC BUILDER	Delete Build	Yes	Yes	No	No	No	Own
+INVENTORY							
+INVENTORY	View Inventory	Yes	Yes	Yes	Yes	Yes	No
+INVENTORY	Update Stock	Yes	Yes	Yes	No	No	No
+INVENTORY	View Low Stock	Yes	Yes	Yes	Yes	No	No
+ORDERS							
+ORDERS	View All Orders	Yes	Yes	No	Yes	Yes	No
+ORDERS	View Order Details	Yes	Yes	No	Yes	Yes	Own
+ORDERS	Update Order Status	Yes	Yes	No	Yes	No	No
+ORDERS	Confirm Order	Yes	Yes	No	Yes	No	No
+ORDERS	Process Shipment	Yes	Yes	No	Yes	No	No
+ORDERS	Cancel Order	Yes	Yes	No	Yes	No	Own
+ORDERS	Process Refund	Yes	Yes	No	Yes	No	No
+PAYMENTS							
+PAYMENTS	View Payment Status	Yes	Yes	No	Yes	Yes	Own
+PAYMENTS	View Transaction Details	Yes	Yes	No	Yes	Limited	Own
+PAYMENTS	Process Refund	Yes	Yes	No	Yes	No	No
+COUPONS							
+COUPONS	View Coupons	Yes	Yes	Limited	Yes	Yes	No
+COUPONS	Create Coupon	Yes	Yes	No	No	No	No
+COUPONS	Edit Coupon	Yes	Yes	No	No	No	No
+COUPONS	Delete Coupon	Yes	Yes	No	No	No	No
+COUPONS	Activate/Deactivate Coupon	Yes	Yes	No	No	No	No
+REVIEWS							
+REVIEWS	View Reviews	Yes	Yes	Yes	Yes	Yes	Own
+REVIEWS	Approve Review	Yes	Yes	No	No	No	No
+REVIEWS	Reject Review	Yes	Yes	No	No	Yes	No
+REVIEWS	Delete Review	Yes	Yes	No	No	No	Own
+REVIEWS	Respond to Review	Yes	Yes	No	No	Yes	No
+SUPPORT							
+SUPPORT	View Support Tickets	Yes	Yes	No	No	Yes	Own
+SUPPORT	Create Support Ticket	Yes	Yes	No	No	Yes	Yes
+SUPPORT	Assign Support Ticket	Yes	Yes	No	No	Yes	No
+SUPPORT	Reply to Customer	Yes	Yes	No	No	Yes	Own
+SUPPORT	Close Support Ticket	Yes	Yes	No	No	Yes	Own
+SUPPORT	Escalate Ticket	Yes	Yes	No	No	Yes	No
+SUPPORT	Access Live Chat	Yes	Yes	No	No	Yes	Own
+WISHLIST							
+WISHLIST	View Wishlist	Yes	Yes	No	No	No	Own
+WISHLIST	Manage Wishlist	No	No	No	No	No	Own
+DASHBOARD & REPORTING							
+DASHBOARD & REPORTING	View Admin Dashboard	Yes	Yes	Yes	Yes	Yes	No
+DASHBOARD & REPORTING	View Sales Reports	Yes	Yes	No	Yes	No	No
+DASHBOARD & REPORTING	View Product Reports	Yes	Yes	Yes	No	No	No
+DASHBOARD & REPORTING	View Customer Reports	Yes	Yes	No	Yes	Yes	No
+DASHBOARD & REPORTING	Export Reports	Yes	Yes	Yes	Yes	No	No
+SYSTEM							
+SYSTEM	Manage Site Settings	Yes	Yes	No	No	No	No
+SYSTEM	Manage Payment Settings	Yes	No	No	No	No	No
+SYSTEM	Manage Cloudinary/Uploads	Yes	Yes	Yes	No	No	No
+SYSTEM	View System Logs	Yes	Yes	No	No	No	No
+
+
+Detailed Permission List by Role			
+			
+Role	Category / Module	Permission / Action	Access Scope
+Super Admin	Administration	Read Admin Users	Global
+Super Admin	Administration	Create Admin User	Yes
+Super Admin	Administration	Update Admin User	Yes
+Super Admin	Administration	Disable Admin User	Yes
+Super Admin	Administration	Delete Admin User	Yes
+Super Admin	Administration	Assign Roles	Yes
+Super Admin	Administration	Manage Roles	Yes
+Super Admin	Administration	Manage Permissions	Yes
+Super Admin	Administration	View Audit Logs	Global
+Super Admin	Administration	Manage System Settings	Yes
+Super Admin	Administration	Manage Payment Settings	Yes
+Super Admin	Customers	Read Customer	Global
+Super Admin	Customers	Update Customer	Yes
+Super Admin	Customers	Block Customer	Yes
+Super Admin	Customers	Unblock Customer	Yes
+Super Admin	Customers	Suspend Customer	Yes
+Super Admin	Customers	Soft Delete Customer	Yes
+Super Admin	Categories	Create Category	Yes
+Super Admin	Categories	Read Category	Global
+Super Admin	Categories	Update Category	Yes
+Super Admin	Categories	Delete Category	Yes
+Super Admin	Categories	Change Category Status	Yes
+Super Admin	Brands	Create Brand	Yes
+Super Admin	Brands	Read Brand	Global
+Super Admin	Brands	Update Brand	Yes
+Super Admin	Brands	Delete Brand	Yes
+Super Admin	Brands	Change Brand Status	Yes
+Super Admin	Products	Create Product	Yes
+Super Admin	Products	Read Product	Global
+Super Admin	Products	Update Product	Yes
+Super Admin	Products	Delete Product	Yes
+Super Admin	Products	Publish Product	Yes
+Super Admin	Products	Manage Pricing	Yes
+Super Admin	Products	Manage Inventory	Yes
+Super Admin	Products	Manage Compatibility	Yes
+Super Admin	Products	Manage Specifications	Yes
+Super Admin	Products	Manage Images	Yes
+Super Admin	Prebuilt PCs	Create Prebuilt PC	Yes
+Super Admin	Prebuilt PCs	Read Prebuilt PC	Global
+Super Admin	Prebuilt PCs	Update Prebuilt PC	Yes
+Super Admin	Prebuilt PCs	Delete Prebuilt PC	Yes
+Super Admin	Prebuilt PCs	Publish Prebuilt PC	Yes
+Super Admin	Orders	Read Order	Global
+Super Admin	Orders	Update Order	Yes
+Super Admin	Orders	Confirm Order	Yes
+Super Admin	Orders	Cancel Order	Yes
+Super Admin	Orders	Ship Order	Yes
+Super Admin	Orders	Mark Delivered	Yes
+Super Admin	Orders	Process Refund	Yes
+Super Admin	Payments	Read Payment	Global
+Super Admin	Payments	View Transaction Details	Yes
+Super Admin	Payments	Process Refund	Yes
+Super Admin	Coupons	Create Coupon	Yes
+Super Admin	Coupons	Read Coupon	Global
+Super Admin	Coupons	Update Coupon	Yes
+Super Admin	Coupons	Delete Coupon	Yes
+Super Admin	Coupons	Activate/Deactivate Coupon	Yes
+Super Admin	Reviews	Read Review	Global
+Super Admin	Reviews	Approve Review	Yes
+Super Admin	Reviews	Reject Review	Yes
+Super Admin	Reviews	Delete Review	Yes
+Super Admin	Reviews	Respond to Review	Yes
+Super Admin	Support	Read Tickets	Global
+Super Admin	Support	Assign Tickets	Yes
+Super Admin	Support	Reply to Ticket	Yes
+Super Admin	Support	Close Ticket	Yes
+Super Admin	Support	Escalate Ticket	Yes
+Super Admin	Support	Access Live Chat	Yes
+Super Admin	Reports	View Sales Reports	Global
+Super Admin	Reports	View Product Reports	Global
+Super Admin	Reports	View Customer Reports	Global
+Super Admin	Reports	Export Reports	Yes
+Administrator	Administration	Read Admin Users	Limited
+Administrator	Administration	Create Admin User	No
+Administrator	Administration	Update Admin User	No
+Administrator	Administration	Disable Admin User	No
+Administrator	Administration	Assign Roles	No
+Administrator	Administration	Manage Roles	No
+Administrator	Administration	Manage Permissions	No
+Administrator	Administration	View Audit Logs	Limited
+Administrator	Customers	Read Customer	Global
+Administrator	Customers	View Customer Details	Global
+Administrator	Customers	Update Customer	Limited
+Administrator	Customers	Block Customer	Yes
+Administrator	Customers	Unblock Customer	Yes
+Administrator	Customers	Suspend Customer	Yes
+Administrator	Customers	Soft Delete Customer	Yes
+Administrator	Categories	Create Category	Yes
+Administrator	Categories	Read Category	Global
+Administrator	Categories	Update Category	Yes
+Administrator	Categories	Delete Category	Yes
+Administrator	Categories	Change Category Status	Yes
+Administrator	Brands	Create Brand	Yes
+Administrator	Brands	Read Brand	Global
+Administrator	Brands	Update Brand	Yes
+Administrator	Brands	Delete Brand	Yes
+Administrator	Brands	Change Brand Status	Yes
+Administrator	Products	Create Product	Yes
+Administrator	Products	Read Product	Global
+Administrator	Products	Update Product	Yes
+Administrator	Products	Delete Product	Yes
+Administrator	Products	Publish Product	Yes
+Administrator	Products	Manage Pricing	Yes
+Administrator	Products	Manage Inventory	Yes
+Administrator	Products	Manage Compatibility	Yes
+Administrator	Products	Manage Specifications	Yes
+Administrator	Products	Manage Images	Yes
+Administrator	Prebuilt PCs	Create Prebuilt PC	Yes
+Administrator	Prebuilt PCs	Read Prebuilt PC	Global
+Administrator	Prebuilt PCs	Update Prebuilt PC	Yes
+Administrator	Prebuilt PCs	Delete Prebuilt PC	Yes
+Administrator	Prebuilt PCs	Publish Prebuilt PC	Yes
+Administrator	Orders	Read Order	Global
+Administrator	Orders	Update Order	Yes
+Administrator	Orders	Confirm Order	Yes
+Administrator	Orders	Cancel Order	Yes
+Administrator	Orders	Ship Order	Yes
+Administrator	Orders	Mark Delivered	Yes
+Administrator	Orders	Process Refund	Yes
+Administrator	Payments	Read Payment	Global
+Administrator	Payments	View Transaction Details	Limited
+Administrator	Payments	Process Refund	Yes
+Administrator	Coupons	Create Coupon	Yes
+Administrator	Coupons	Read Coupon	Global
+Administrator	Coupons	Update Coupon	Yes
+Administrator	Coupons	Delete Coupon	Yes
+Administrator	Coupons	Activate/Deactivate Coupon	Yes
+Administrator	Reviews	Read Review	Global
+Administrator	Reviews	Approve Review	Yes
+Administrator	Reviews	Reject Review	Yes
+Administrator	Reviews	Delete Review	Yes
+Administrator	Reviews	Respond to Review	Yes
+Administrator	Support	Read Tickets	Global
+Administrator	Support	Assign Tickets	Yes
+Administrator	Support	Reply to Ticket	Yes
+Administrator	Support	Close Ticket	Yes
+Administrator	Support	Escalate Ticket	Yes
+Administrator	Support	Access Live Chat	Yes
+Administrator	Reports	View Sales Reports	Global
+Administrator	Reports	View Product Reports	Global
+Administrator	Reports	View Customer Reports	Global
+Administrator	Reports	Export Reports	Yes
+Product Manager	Categories	Read Category	Global
+Product Manager	Categories	Create Category	Yes
+Product Manager	Categories	Update Category	Yes
+Product Manager	Categories	Delete Category	No
+Product Manager	Categories	Change Category Status	Yes
+Product Manager	Brands	Read Brand	Global
+Product Manager	Brands	Create Brand	Yes
+Product Manager	Brands	Update Brand	Yes
+Product Manager	Brands	Delete Brand	No
+Product Manager	Brands	Change Brand Status	Yes
+Product Manager	Products	Create Product	Yes
+Product Manager	Products	Read Product	Global
+Product Manager	Products	Update Product	Yes
+Product Manager	Products	Delete Product	No
+Product Manager	Products	Publish Product	Yes
+Product Manager	Products	Manage Pricing	Yes
+Product Manager	Products	Manage Inventory	Yes
+Product Manager	Products	Manage Compatibility	Yes
+Product Manager	Products	Manage Specifications	Yes
+Product Manager	Products	Manage Images	Yes
+Product Manager	Products	Manage Warranty	Yes
+Product Manager	Prebuilt PCs	Create Prebuilt PC	Yes
+Product Manager	Prebuilt PCs	Read Prebuilt PC	Global
+Product Manager	Prebuilt PCs	Update Prebuilt PC	Yes
+Product Manager	Prebuilt PCs	Delete Prebuilt PC	No
+Product Manager	Prebuilt PCs	Publish Prebuilt PC	Yes
+Product Manager	Inventory	Read Inventory	Global
+Product Manager	Inventory	Update Stock	Yes
+Product Manager	Inventory	View Low Stock	Yes
+Product Manager	Orders	Read Order	No
+Product Manager	Customers	Read Customer	No
+Product Manager	Reviews	Read Review	Yes
+Product Manager	Coupons	Read Coupon	Limited
+Product Manager	Reports	View Product Reports	Yes
+Product Manager	Reports	Export Product Reports	Yes
+Order Manager	Orders	Read Order	Global
+Order Manager	Orders	View Order Details	Global
+Order Manager	Orders	Update Order	Yes
+Order Manager	Orders	Confirm Order	Yes
+Order Manager	Orders	Process Order	Yes
+Order Manager	Orders	Ship Order	Yes
+Order Manager	Orders	Mark Delivered	Yes
+Order Manager	Orders	Cancel Order	Yes
+Order Manager	Orders	Process Return	Yes
+Order Manager	Orders	Process Refund	Yes
+Order Manager	Payments	Read Payment	Global
+Order Manager	Payments	View Transaction Details	Limited
+Order Manager	Payments	Process Refund	Yes
+Order Manager	Customers	Read Customer	Global
+Order Manager	Customers	View Customer Details	Global
+Order Manager	Products	Read Product	Global
+Order Manager	Products	Read Inventory	Global
+Order Manager	Reviews	Read Review	Yes
+Order Manager	Support	Read Tickets	Yes
+Order Manager	Support	Escalate Ticket	Yes
+Order Manager	Reports	View Sales Reports	Yes
+Order Manager	Reports	View Customer Reports	Yes
+Order Manager	Reports	Export Sales Reports	Yes
+Support Executive	Customers	Read Customer	Global
+Support Executive	Customers	View Customer Details	Global
+Support Executive	Customers	View Customer Orders	Global
+Support Executive	Customers	View Customer Addresses	Limited
+Support Executive	Customers	Block Customer	No
+Support Executive	Customers	Unblock Customer	No
+Support Executive	Orders	Read Order	Global
+Support Executive	Orders	View Order Details	Global
+Support Executive	Orders	Update Order	No
+Support Executive	Orders	Cancel Order	No
+Support Executive	Payments	Read Payment Status	Global
+Support Executive	Payments	View Transaction Details	Limited
+Support Executive	Products	Read Product	Global
+Support Executive	Products	Read Specifications	Global
+Support Executive	Products	Read Compatibility	Global
+Support Executive	Prebuilt PCs	Read Prebuilt PC	Global
+Support Executive	Reviews	Read Review	Global
+Support Executive	Reviews	Respond to Review	No
+Support Executive	Support	Create Ticket	Yes
+Support Executive	Support	Read Tickets	Assigned
+Support Executive	Support	Update Ticket	Assigned
+Support Executive	Support	Reply to Customer	Yes
+Support Executive	Support	Assign Ticket	Yes
+Support Executive	Support	Close Ticket	Yes
+Support Executive	Support	Reopen Ticket	Yes
+Support Executive	Support	Escalate Ticket	Yes
+Support Executive	Support	Access Live Chat	Yes
+Support Executive	Support	Transfer Live Chat	Yes
+Support Executive	Support	View Chat History	Assigned
+Support Executive	Reports	View Support Reports	Yes
+Customer	Profile	Read Profile	Own
+Customer	Profile	Update Profile	Own
+Customer	Profile	Change Password	Own
+Customer	Profile	Manage Avatar	Own
+Customer	Addresses	Create Address	Own
+Customer	Addresses	Read Address	Own
+Customer	Addresses	Update Address	Own
+Customer	Addresses	Delete Address	Own
+Customer	Products	Read Product	Public
+Customer	Categories	Read Category	Public
+Customer	Brands	Read Brand	Public
+Customer	Prebuilt PCs	Read Prebuilt PC	Public
+Customer	PC Builder	Create Build	Own
+Customer	PC Builder	Read Build	Own
+Customer	PC Builder	Update Build	Own
+Customer	PC Builder	Delete Build	Own
+Customer	PC Builder	Duplicate Build	Own
+Customer	PC Builder	Validate Build	Own
+Customer	PC Builder	Add Build to Cart	Own
+Customer	Cart	Read Cart	Own
+Customer	Cart	Add Item	Own
+Customer	Cart	Update Quantity	Own
+Customer	Cart	Remove Item	Own
+Customer	Cart	Apply Coupon	Own
+Customer	Wishlist	Read Wishlist	Own
+Customer	Wishlist	Add Item	Own
+Customer	Wishlist	Remove Item	Own
+Customer	Orders	Create Order	Own
+Customer	Orders	Read Order	Own
+Customer	Orders	Cancel Order	Own
+Customer	Payments	Create Payment	Own
+Customer	Payments	Read Payment Status	Own
+Customer	Reviews	Create Review	Own
+Customer	Reviews	Read Reviews	Public
+Customer	Reviews	Update Review	Own
+Customer	Reviews	Delete Review	Own
+Customer	Support	Create Ticket	Own
+Customer	Support	Read Ticket	Own
+Customer	Support	Reply to Ticket	Own
+Customer	Support	Close Ticket	Own
+Customer	Support	Access Live Chat	Own
+
+
+Role-Based Access Control (RBAC) Permissions Matrix					
+					
+Role	Resource / Module	Action	Scope	Policy / Conditions	Decision
+SUPER ADMIN	Administration	Read Admin Users	Global	Can view all administrative users.	Allow
+SUPER ADMIN	Administration	Create Admin User	Global	Can create administrative accounts.	Allow
+SUPER ADMIN	Administration	Update Admin User	Global	Can update admin account information.	Allow
+SUPER ADMIN	Administration	Disable Admin User	Global	Can disable administrative accounts.	Allow
+SUPER ADMIN	Administration	Delete Admin User	Global	Destructive admin-account action is restricted to Super Admin.	Allow
+SUPER ADMIN	Administration	Assign Role	Global	Can assign approved roles to administrative users.	Allow
+SUPER ADMIN	Roles	Manage Roles	Global	Can create, update, and remove roles.	Allow
+SUPER ADMIN	Permissions	Manage Permissions	Global	Can configure role permissions.	Allow
+SUPER ADMIN	Audit Logs	Read	Global	Can review all administrative and security activity.	Allow
+SUPER ADMIN	Settings	Update	Global	Can review all administrative and security activity.	Allow
+ADMINISTRATOR	Administration	Create Admin User	Global	Admin cannot create privileged administrative accounts.	Deny
+ADMINISTRATOR	Administration	Update Admin User	Global	Admin cannot modify privileged administrative accounts.	Deny
+ADMINISTRATOR	Administration	Assign Role	Global	Role assignment is controlled by Super Admin.	Deny
+ADMINISTRATOR	Roles	Manage Roles	Global	Role configuration is restricted to Super Admin.	Deny
+ADMINISTRATOR	Permissions	Manage Permissions	Global	Admin cannot modify RBAC permissions.	Deny
+ADMINISTRATOR	Customers	Read	Global	Can view all customer accounts for business operations.	Allow
+ADMINISTRATOR	Customers	Update	Global	Can update permitted customer information.	Allow
+ADMINISTRATOR	Customers	Block	Global	Can block customers for legitimate platform-policy reasons.	Allow
+ADMINISTRATOR	Customers	Unblock	Global	Can restore access to blocked customers.	Allow
+ADMINISTRATOR	Categories	Create	Global	Can create product categories.	Allow
+ADMINISTRATOR	Categories	Update	Global	Can modify category information.	Allow
+ADMINISTRATOR	Categories	Delete	Global	Can delete categories when they are no longer required and have no dependent products.	Allow
+ADMINISTRATOR	Brands	Create	Global	Can create brands.	Allow
+ADMINISTRATOR	Brands	Update	Global	Can modify brand information.	Allow
+ADMINISTRATOR	Brands	Delete	Global	Can delete unused brands.	Allow
+ADMINISTRATOR	Products	Create	Global	Can create products.	Allow
+ADMINISTRATOR	Products	Read	Global	Can access the complete product catalog.	Allow
+ADMINISTRATOR	Products	Update	Global	Can modify product information.	Allow
+ADMINISTRATOR	Products	Delete	Global	Destructive catalog action is available to Admin.	Allow
+ADMINISTRATOR	Products	Publish	Global	Can publish or unpublish products.	Allow
+ADMINISTRATOR	Orders	Read	Global	Can access all customer orders.	Allow
+ADMINISTRATOR	Orders	Update	Global	Can manage order lifecycle.	Allow
+ADMINISTRATOR	Orders	Cancel	Global	Can cancel orders according to business rules.	Allow
+ADMINISTRATOR	Orders	Refund	Global	Can process refunds according to refund policy.	Allow
+ADMINISTRATOR	Reviews	Approve	Global	Can moderate submitted customer reviews.	Allow
+ADMINISTRATOR	Reviews	Reject	Global	Can reject reviews violating review policy.	Allow
+ADMINISTRATOR	Reports	Read	Global	Can view business reports.	Allow
+ADMINISTRATOR	Reports	Export	Global	"Can export permitted business reports.Allow
+
+PRODUCT_MANAGERCategoriesReadGlobalCan view all product categories."	Allow
+PRODUCT MANAGER	Categories	Create	Global	Can create categories required for catalog management.	Allow
+PRODUCT MANAGER	Categories	Update	Global	Can update category information.	Allow
+PRODUCT MANAGER	Categories	Delete	Global	Product Managers cannot perform destructive category deletion.	Allow
+PRODUCT MANAGER	Categories	Change Status	Global	Can activate/deactivate categories.	Allow
+PRODUCT MANAGER	Brands	Read	Global	Can view all brands.	Allow
+PRODUCT MANAGER	Brands	Create	Global	Can add brands to the catalog.	Allow
+PRODUCT MANAGER	Brands	Update	Global	Can update brand information.	Allow
+PRODUCT MANAGER	Brands	Delete	Global	Product Managers cannot delete brands.	Deny
+PRODUCT MANAGER	Products	Read	Global	Can access the complete product catalog.	Allow
+PRODUCT MANAGER	Products	Create	Global	Can create new catalog products.	Allow
+PRODUCT MANAGER	Products	Update	Global	Can update product information.	Allow
+PRODUCT MANAGER	Products	Delete	Global	Product deletion is restricted to Admin/Super Admin.	Deny
+PRODUCT MANAGER	Products	Manage Pricing	Global	Can manage product price and sale price.	Allow
+PRODUCT MANAGER	Products	Manage Inventory	Global	Can update stock information.	Allow
+PRODUCT MANAGER	Products	Manage Specifications	Global	Can manage technical specifications.	Allow
+PRODUCT MANAGER	Products	Manage Compatibility	Global	Can configure hardware compatibility information.	Allow
+PRODUCT MANAGER	Products	Manage Images	Global	Can upload, replace, and remove product images.	Allow
+PRODUCT MANAGER	Products	Publish	Global	Can publish products after catalog preparation.	Allow
+PRODUCT MANAGER	Prebuilt PCs	Read	Global	Can view all prebuilt configurations.	Allow
+PRODUCT MANAGER	Prebuilt PCs	Create	Global	Can create prebuilt PC configurations.	Allow
+PRODUCT MANAGER	Prebuilt PCs	Update	Global	Can modify prebuilt configurations.	Allow
+PRODUCT MANAGER	Prebuilt PCs	Delete	Global	Destructive deletion is restricted to Admin/Super Admin.	Deny
+PRODUCT MANAGER	Prebuilt PCs	Publish	Global	Can publish prebuilt configurations.	Allow
+PRODUCT MANAGER	Inventory	Read	Global	Can view stock levels.	Allow
+PRODUCT MANAGER	Inventory	Update Stock	Global	Can update inventory quantities.	Allow
+PRODUCT MANAGER	Orders	Read	Global	Product Manager does not require customer-order access.	Deny
+PRODUCT MANAGER	Customers	Read	Global	Customer information is outside the Product Manager's responsibility.	Deny
+PRODUCT MANAGER	Reviews	Read	Global	Can view reviews for product-quality feedback.	Allow
+PRODUCT MANAGER	Reports	Product Reports	Global	"Can view product and inventory analytics.Allow
+
+ORDER_MANAGEROrdersReadGlobalCan view all orders required for fulfillment."	Allow
+ORDER MANAGER	Orders	Read Details	Global	Can view customer, shipping, item, and order information.	Allow
+ORDER MANAGER	Orders	Update	Global	Can update permitted order information.	Allow
+ORDER MANAGER	Orders	Confirm	Global	Can confirm valid paid/processable orders.	Allow
+ORDER MANAGER	Orders	Process	Global	Can move orders into processing.	Allow
+ORDER MANAGER	Orders	Ship	Global	Can mark eligible orders as shipped.	Allow
+ORDER MANAGER	Orders	Deliver	Global	Can mark orders as delivered based on fulfillment confirmation.	Allow
+ORDER MANAGER	Orders	Cancel	Global	Can cancel orders according to cancellation policy.	Allow
+ORDER MANAGER	Orders	Handle Return	Global	Can process eligible returns.	Allow
+ORDER MANAGER	Orders	Refund	Global	Can initiate/process permitted refunds.	Allow
+ORDER MANAGER	Payments	Read	Global	Can view payment status required for order processing.	Allow
+ORDER MANAGER	Payments	Read Transaction	Global	Sensitive payment information must remain restricted.	Allow
+ORDER MANAGER	Inventory	Read	Global	Can check stock availability.	Allow
+ORDER MANAGER	Customers	Read	Global	Can view customer information required for order fulfillment.	Allow
+ORDER MANAGER	Customers	Block	Global	Customer-account administration is outside order management.	Deny
+ORDER MANAGER	Products	Update	Global	Catalog management belongs to Product Manager/Admin.	Deny
+ORDER MANAGER	Products	Delete	Global	Order Manager cannot delete products.	Deny
+ORDER MANAGER	Coupons	Manage	Global	Coupon management is outside order management.	Deny
+ORDER MANAGER	Reports	Sales Reports	Global	"Can view order and sales performance.Allow
+
+SUPPORT_EXECUTIVECustomersReadGlobalCan view customer information required for support."	Allow
+SUPPORT EXECUTIVE	Customers	Read Details	Global	Can access permitted customer profile information.	Allow
+SUPPORT EXECUTIVE	Customers	Read Orders	Global	Can inspect customer orders to resolve support issues.	Allow
+SUPPORT EXECUTIVE	Customers	Read Addresses	Limited	Address access is limited to support-related needs.	Allow
+SUPPORT EXECUTIVE	Customers	Suspend	Global	Support cannot suspend customer accounts.	Deny
+SUPPORT EXECUTIVE	Orders	Read	Global	Can inspect orders to resolve customer issues.	Allow
+SUPPORT EXECUTIVE	Orders	Read Details	Global	Can view order details.	Allow
+SUPPORT EXECUTIVE	Orders	Update	Global	Support cannot directly modify order lifecycle.	Deny
+SUPPORT EXECUTIVE	Orders	Cancel	Global	Cancellation must be handled by authorized order staff.	Deny
+SUPPORT EXECUTIVE	Orders	Refund	Global	Refunds are restricted to authorized order/admin roles.	Deny
+SUPPORT EXECUTIVE	Payments	Read Status	Global	Can view payment status to assist customers.	Allow
+SUPPORT EXECUTIVE	Payments	Read Transaction	Global	Only limited transaction information is exposed.	Allow
+SUPPORT EXECUTIVE	Products	Read Compatibility	Global	Can access compatibility information.	Allow
+SUPPORT EXECUTIVE	Reviews	Read	Global	Can inspect reviews when handling customer issues.	Allow
+SUPPORT EXECUTIVE	Reviews	Approve	Global	Review moderation is outside support responsibility.	Deny
+SUPPORT EXECUTIVE	Support Tickets	Create	Global	Can create tickets on behalf of customers.	Allow
+SUPPORT EXECUTIVE	Support Tickets	Read	Assigned	Can access assigned support tickets.	Allow
+SUPPORT EXECUTIVE	Support Tickets	Update	Assigned	Can update tickets assigned to them.	Allow
+SUPPORT EXECUTIVE	Support Tickets	Reply	Assigned	Can communicate with customers on assigned tickets.	Allow
+SUPPORT EXECUTIVE	Support Tickets	Assign	Global	Can assign/escalate tickets according to support workflow.	Allow
+SUPPORT EXECUTIVE	Support Tickets	Close	Assigned	Can close resolved assigned tickets.	Allow
+SUPPORT EXECUTIVE	Support Tickets	Escalate	Global	Can escalate issues to Order Manager/Admin.	Allow
+SUPPORT EXECUTIVE	Live Chat	Chat	Assigned	Can communicate with customers through assigned conversations.	Allow
+SUPPORT EXECUTIVE	Live Chat	Transfer	Assigned	Can transfer conversations to another support staff member.	Allow
+SUPPORT EXECUTIVE	Reports	Support Reports	Global	"Can view support-performance information.Allow
+
+CUSTOMERProfileReadOwnCustomer can view their own profile."	Allow
+CUSTOMER	Profile	Update	Own	Customer can update permitted personal information.	Allow
+CUSTOMER	Profile	Change Password	Own	Customer can change their own password.	Allow
+CUSTOMER	Addresses	Create	Own	Customer can add their own delivery addresses.	Allow
+CUSTOMER	Addresses	Read	Own	Customer can view their own addresses.	Allow
+CUSTOMER	Addresses	Update	Own	Customer can modify their own addresses.	Allow
+CUSTOMER	Addresses	Delete	Own	Customer can delete their own addresses.	Allow
+CUSTOMER	Products	Read	Public	Product catalog is publicly accessible.	Allow
+CUSTOMER	Products	Compare	Public	Customers can compare available products.	Allow
+CUSTOMER	Prebuilt PCs	Read	Public	Published prebuilt PCs are publicly accessible.	Allow
+CUSTOMER	PC Builder	Create	Own	Customer can create their own PC builds.	Allow
+CUSTOMER	PC Builder	Read	Own	Customer can access their own saved builds.	Allow
+CUSTOMER	PC Builder	Update	Own	Customer can modify their own builds.	Allow
+CUSTOMER	PC Builder	Delete	Own	Customer can delete their own builds.	Allow
+CUSTOMER	PC Builder	Duplicate	Own	Customer can duplicate their own builds.	Allow
+CUSTOMER	PC Builder	Validate	Own	Customer can validate component compatibility.	Allow
+CUSTOMER	PC Builder	Add to Cart	Own	Valid builds can be added to the customer's cart.	Allow
+CUSTOMER	Cart	Read	Own	Customer can access only their own cart.	Allow
+CUSTOMER	Cart	Add Item	Own	Customer can add products/builds to their cart.	Allow
+CUSTOMER	Cart	Update Quantity	Own	Customer can modify their own cart quantities.	Allow
+CUSTOMER	Cart	Remove Item	Own	Customer can remove their own cart items.	Allow
+CUSTOMER	Cart	Apply Coupon	Own	Valid coupons can be applied to their own cart.	Allow
+CUSTOMER	Wishlist	Read	Own	Customer can access their own wishlist.	Allow
+CUSTOMER	Wishlist	Add Item	Own	Customer can add products to their wishlist.	Allow
+CUSTOMER	Wishlist	Remove Item	Own	Customer can remove wishlist items.	Allow
+CUSTOMER	Orders	Create	Own	Customer can place orders for their own account.	Allow
+CUSTOMER	Orders	Read	Own	Customer can view only their own orders.	Allow
+CUSTOMER	Orders	Read Details	Own	Customer can view details of their own orders.	Allow
+CUSTOMER	Orders	Cancel	Own	Cancellation is allowed only when order status permits it.	Allow
+CUSTOMER	Payments	Create	Own	Customer can initiate payment for their own order.	Allow
+CUSTOMER	Payments	Read Status	Own	Customer can view payment status for their own orders.	Allow
+CUSTOMER	Reviews	Create	Own	Only eligible/verified purchasers can submit reviews.	Allow
+CUSTOMER	Reviews	Update	Own	Customer can update their own review according to review policy.	Allow
+CUSTOMER	Reviews	Delete	Own	Customer can delete their own review where permitted.	Allow
+CUSTOMER	Reviews	Approve	Global	Customers cannot moderate reviews.	Deny
+CUSTOMER	Support Tickets	Create	Own	Customer can create support requests.	Allow
+CUSTOMER	Support Tickets	Read	Own	Customer can view only their own tickets.	Allow
+CUSTOMER	Support Tickets	Reply	Own	Customer can reply to their own open tickets.	Allow
+CUSTOMER	Support Tickets	Close	Own	Customer can close their own resolved tickets.	Allow
+CUSTOMER	Live Chat	Chat	Own	Customer can participate in their own support conversations.	Allow

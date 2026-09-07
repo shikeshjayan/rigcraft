@@ -19,14 +19,14 @@ router.post(
 router.get(
   "/",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   userController.list
 );
 
 router.get(
   "/:id",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   userController.getById
 );
 
@@ -62,35 +62,35 @@ router.patch(
 router.get(
   "/:id/orders",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   userController.getUserOrders
 );
 
 router.get(
   "/:id/addresses",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   userController.getUserAddresses
 );
 
 router.get(
   "/:id/reviews",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   userController.getUserReviews
 );
 
 router.get(
   "/:id/wishlist",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   userController.getUserWishlist
 );
 
 router.get(
   "/:id/builds",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   userController.getUserBuilds
 );
 

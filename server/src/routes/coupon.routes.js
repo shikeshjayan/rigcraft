@@ -7,6 +7,8 @@ import {
   updateCouponSchema,
 } from "../validators/coupon.validation.js";
 
+import { USER_ROLES } from "../constants/constants.js";
+
 const router = Router();
 
 router.post(
@@ -22,7 +24,7 @@ router.get("/active", optionalProtect, couponController.getActiveCoupons);
 router.get(
   "/",
   protect,
-  authorize("admin"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.ORDER_MANAGER),
   couponController.getCoupons
 );
 

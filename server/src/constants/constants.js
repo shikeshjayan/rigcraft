@@ -1,7 +1,10 @@
 export const USER_ROLES = {
   CUSTOMER: 'customer',
   ADMIN: 'admin',
-  MANAGER: 'manager',
+  SUPER_ADMIN: 'super_admin',
+  PRODUCT_MANAGER: 'product_manager',
+  ORDER_MANAGER: 'order_manager',
+  SUPPORT_EXECUTIVE: 'support_executive',
 };
 
 export const PRODUCT_STATUS = {

@@ -8,6 +8,8 @@ import {
 } from "../validators/product.validator.js";
 import { uploadMultipleImages } from "../middlewares/upload.middleware.js";
 
+import { USER_ROLES } from "../constants/constants.js";
+
 const router = Router();
 
 // Public
@@ -20,7 +22,7 @@ router.get("/:slugOrId", productController.getBySlugOrId);
 router.post(
   "/",
   protect,
-  authorize("admin", "manager"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.PRODUCT_MANAGER),
   uploadMultipleImages("images", 10),
   validate(createProductSchema),
   productController.create
@@ -29,12 +31,12 @@ router.post(
 router.put(
   "/:id",
   protect,
-  authorize("admin", "manager"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.PRODUCT_MANAGER),
   uploadMultipleImages("images", 10),
   validate(updateProductSchema),
   productController.update
 );
 
-router.delete("/:id", protect, authorize("admin", "manager"), productController.remove);
+router.delete("/:id", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN), productController.remove);
 
 export default router;

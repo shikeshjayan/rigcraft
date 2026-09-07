@@ -15,18 +15,18 @@ const MIN_QUERY_LENGTH = 3;
 const DEFAULT_LIMIT = 5;
 
 const MODULE_ROLES = {
-  products: ["admin", "manager"],
-  categories: ["admin", "manager"],
-  brands: ["admin", "manager"],
-  prebuiltPCs: ["admin", "manager"],
-  deals: ["admin", "manager"],
-  orders: ["admin", "manager"],
-  customers: ["admin"],
-  reviews: ["admin", "manager"],
-  coupons: ["admin"],
-  supportTickets: ["admin", "manager"],
-  newsletter: ["admin", "manager"],
-  notifications: ["admin", "manager"],
+  products: ["admin", "super_admin", "product_manager"],
+  categories: ["admin", "super_admin", "product_manager"],
+  brands: ["admin", "super_admin", "product_manager"],
+  prebuiltPCs: ["admin", "super_admin", "product_manager"],
+  deals: ["admin", "super_admin", "product_manager"],
+  orders: ["admin", "super_admin", "order_manager"],
+  customers: ["admin", "super_admin", "order_manager", "support_executive"],
+  reviews: ["admin", "super_admin", "order_manager", "support_executive"],
+  coupons: ["admin", "super_admin"],
+  supportTickets: ["admin", "super_admin", "order_manager", "support_executive"],
+  newsletter: ["admin", "super_admin", "product_manager"],
+  notifications: ["admin", "super_admin", "order_manager", "support_executive"],
 };
 
 const escapeRegex = (value) =>
@@ -227,7 +227,7 @@ const searchNewsletter = async (regex, limit) => {
 
 const searchNotifications = async (regex, limit) => {
   const docs = await Notification.find({
-    recipientRole: { $in: ["admin", "manager"] },
+    recipientRole: { $in: ["admin", "super_admin", "product_manager", "order_manager"] },
     ...buildRegexFilter(regex, ["title", "message"]),
   })
     .select("title message")

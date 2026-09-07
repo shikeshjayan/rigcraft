@@ -38,11 +38,11 @@ const statusHistorySchema = new mongoose.Schema(
     status: { type: String, required: true },
     paymentStatus: String,
     changedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    changedByRole: {
-      type: String,
-      enum: ["user", "admin", "manager", "system"],
-      default: "system",
-    },
+changedByRole: {
+       type: String,
+       enum: ["user", "admin", "super_admin", "product_manager", "order_manager", "support_executive", "system"],
+       default: "system",
+     },
     changedAt: { type: Date, default: Date.now },
     note: String,
   },

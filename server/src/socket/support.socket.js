@@ -4,7 +4,7 @@ import SupportTicket from "../models/support-ticket.model.js";
 export const registerSupportHandlers = (io, socket) => {
   socket.on("support:join", async (ticketId) => {
     try {
-      if (socket.userRole !== "admin" && socket.userRole !== "manager") {
+      if (socket.userRole !== "admin" && socket.userRole !== "super_admin" && socket.userRole !== "support_executive") {
         const ticket = await SupportTicket.findById(ticketId);
         if (!ticket || ticket.user.toString() !== socket.userId.toString()) {
           socket.emit("error", { message: "You do not have access to this ticket" });

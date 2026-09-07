@@ -20,17 +20,17 @@ router.get("/:slug", dealController.getBySlug);
 // ── Admin routes ───────────────────────────────────────────────
 
 // List & search
-adminRouter.get("/", protect, authorize("admin", "manager"), dealController.getAll);
-adminRouter.get("/active-list", protect, authorize("admin", "manager"), dealController.getActiveForHomepage);
+adminRouter.get("/", protect, authorize("admin", "super_admin"), dealController.getAll);
+adminRouter.get("/active-list", protect, authorize("admin", "super_admin"), dealController.getActiveForHomepage);
 
 // Single deal
-adminRouter.get("/:id", protect, authorize("admin", "manager"), dealController.getById);
+adminRouter.get("/:id", protect, authorize("admin", "super_admin"), dealController.getById);
 
 // Create
 adminRouter.post(
   "/",
   protect,
-  authorize("admin", "manager"),
+  authorize("admin", "super_admin"),
   uploadFields([
     { name: "desktopBanner", maxCount: 1 },
     { name: "mobileBanner", maxCount: 1 },
@@ -43,7 +43,7 @@ adminRouter.post(
 adminRouter.put(
   "/:id",
   protect,
-  authorize("admin", "manager"),
+  authorize("admin", "super_admin"),
   uploadFields([
     { name: "desktopBanner", maxCount: 1 },
     { name: "mobileBanner", maxCount: 1 },
@@ -56,7 +56,7 @@ adminRouter.put(
 adminRouter.patch(
   "/:id/status",
   protect,
-  authorize("admin", "manager"),
+  authorize("admin", "super_admin"),
   dealController.toggleStatus,
 );
 

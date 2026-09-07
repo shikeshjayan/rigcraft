@@ -7,6 +7,7 @@ import {
   updateBundleSchema,
 } from "../validators/bundle.validator.js";
 import { uploadFields } from "../middlewares/upload.middleware.js";
+import { USER_ROLES } from "../constants/constants.js";
 
 const router = Router();
 const adminRouter = Router();
@@ -17,13 +18,13 @@ router.get("/active", bundleController.getActive);
 router.get("/:slug", bundleController.getBySlug);
 
 // ── Admin routes ───────────────────────────────────────────────
-adminRouter.get("/", protect, authorize("admin", "manager"), bundleController.getAll);
-adminRouter.get("/:id", protect, authorize("admin", "manager"), bundleController.getById);
+adminRouter.get("/", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN), bundleController.getAll);
+adminRouter.get("/:id", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN), bundleController.getById);
 
 adminRouter.post(
   "/",
   protect,
-  authorize("admin", "manager"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.PRODUCT_MANAGER),
   uploadFields([{ name: "image", maxCount: 1 }]),
   validate(createBundleSchema),
   bundleController.create,
@@ -32,7 +33,7 @@ adminRouter.post(
 adminRouter.put(
   "/:id",
   protect,
-  authorize("admin", "manager"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.PRODUCT_MANAGER),
   uploadFields([{ name: "image", maxCount: 1 }]),
   validate(updateBundleSchema),
   bundleController.update,
@@ -41,14 +42,14 @@ adminRouter.put(
 adminRouter.patch(
   "/:id/status",
   protect,
-  authorize("admin", "manager"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.PRODUCT_MANAGER),
   bundleController.toggleStatus,
 );
 
 adminRouter.delete(
   "/:id",
   protect,
-  authorize("admin"),
+  authorize(USER_ROLES.ADMIN),
   bundleController.remove,
 );
 

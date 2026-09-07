@@ -16,14 +16,14 @@ export const adminFaqRoutes = Router();
 adminFaqRoutes.get(
   "/",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   faqController.adminList
 );
 
 adminFaqRoutes.get(
   "/:id",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   faqController.getById
 );
 
