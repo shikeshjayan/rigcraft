@@ -14,17 +14,17 @@ const router = Router();
 
 router.post("/", protect, validate(createBuildSchema), buildController.createBuild);
 
-router.get("/admin", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER), buildController.adminGetAllBuilds);
+router.get("/admin", protect, authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), buildController.adminGetAllBuilds);
 
-router.get("/admin/analytics", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER), buildController.getBuildAnalytics);
+router.get("/admin/analytics", protect, authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), buildController.getBuildAnalytics);
 
-router.get("/admin/issues", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER), buildController.getCompatibilityIssues);
+router.get("/admin/issues", protect, authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), buildController.getCompatibilityIssues);
 
-router.post("/admin/settings", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER), validate(updateBuildSettingsSchema), buildController.updateBuildSettings);
+router.post("/admin/settings", protect, authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), validate(updateBuildSettingsSchema), buildController.updateBuildSettings);
 
 router.get("/settings", buildController.getBuildSettings);
 
-router.get("/admin/settings", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER), buildController.getBuildSettings);
+router.get("/admin/settings", protect, authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN), buildController.getBuildSettings);
 
 router.get("/", protect, buildController.getUserBuilds);
 

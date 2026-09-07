@@ -66,28 +66,28 @@ export const adminReviewRoutes = Router();
 adminReviewRoutes.get(
   "/stats",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.SUPPORT_EXECUTIVE),
   reviewController.getReviewStats
 );
 
 adminReviewRoutes.get(
   "/",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.SUPPORT_EXECUTIVE),
   reviewController.adminGetAllReviews
 );
 
 adminReviewRoutes.get(
   "/:id",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.SUPPORT_EXECUTIVE),
   reviewController.adminGetReview
 );
 
 adminReviewRoutes.patch(
   "/:id/status",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.SUPPORT_EXECUTIVE),
   validate(updateReviewStatusSchema),
   reviewController.adminUpdateStatus
 );
@@ -95,7 +95,7 @@ adminReviewRoutes.patch(
 adminReviewRoutes.patch(
   "/:id/feature",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.SUPPORT_EXECUTIVE),
   validate(featureReviewSchema),
   reviewController.adminToggleFeatured
 );
@@ -103,7 +103,7 @@ adminReviewRoutes.patch(
 adminReviewRoutes.patch(
   "/:id/reply",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.SUPPORT_EXECUTIVE),
   validate(adminReplySchema),
   reviewController.adminReply
 );
@@ -111,20 +111,20 @@ adminReviewRoutes.patch(
 adminReviewRoutes.patch(
   "/:id/dismiss-reports",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.SUPPORT_EXECUTIVE),
   reviewController.dismissReports
 );
 
 adminReviewRoutes.patch(
   "/:id/clear-spam",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.SUPPORT_EXECUTIVE),
   reviewController.adminClearSpam
 );
 
 adminReviewRoutes.delete(
   "/:id",
   protect,
-  authorize(USER_ROLES.ADMIN),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
   reviewController.adminDeleteReview
 );

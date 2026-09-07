@@ -22,34 +22,34 @@ export const adminNotificationRoutes = Router();
 adminNotificationRoutes.get(
   "/",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   notificationController.adminGetNotifications
 );
 
 adminNotificationRoutes.get(
   "/unread",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   notificationController.adminGetUnreadCount
 );
 
 adminNotificationRoutes.get(
   "/:id",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   notificationController.adminGetNotification
 );
 
 adminNotificationRoutes.put(
   "/:id/read",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   notificationController.adminMarkAsRead
 );
 
 adminNotificationRoutes.put(
   "/read-all",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
   notificationController.adminMarkAllAsRead
 );

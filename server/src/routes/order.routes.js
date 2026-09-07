@@ -32,21 +32,21 @@ export const adminOrderRoutes = Router();
 adminOrderRoutes.get(
   "/",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.ORDER_MANAGER),
   orderController.adminGetOrders
 );
 
 adminOrderRoutes.get(
   "/:id",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.ORDER_MANAGER),
   orderController.adminGetOrder
 );
 
 adminOrderRoutes.patch(
   "/:id/status",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.ORDER_MANAGER),
   validate(updateOrderStatusSchema),
   orderController.updateOrderStatus
 );
@@ -54,7 +54,7 @@ adminOrderRoutes.patch(
 adminOrderRoutes.patch(
   "/:id/payment-status",
   protect,
-  authorize(USER_ROLES.ADMIN, USER_ROLES.MANAGER),
+  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN, USER_ROLES.ORDER_MANAGER),
   validate(updatePaymentStatusSchema),
   orderController.updatePaymentStatus
 );

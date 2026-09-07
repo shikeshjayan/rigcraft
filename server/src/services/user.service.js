@@ -71,10 +71,13 @@ export const list = async (query = {}) => {
           rolePriority: {
             $switch: {
               branches: [
-                { case: { $eq: ["$role", "admin"] }, then: 1 },
-                { case: { $eq: ["$role", "manager"] }, then: 2 },
+                { case: { $eq: ["$role", "super_admin"] }, then: 1 },
+                { case: { $eq: ["$role", "admin"] }, then: 2 },
+                { case: { $eq: ["$role", "product_manager"] }, then: 3 },
+                { case: { $eq: ["$role", "order_manager"] }, then: 4 },
+                { case: { $eq: ["$role", "support_executive"] }, then: 5 },
               ],
-              default: 3,
+              default: 6,
             },
           },
         },

@@ -40,14 +40,14 @@ const toPlain = (doc) => (doc && typeof doc.toObject === "function" ? doc.toObje
 
 const notifyStaff = async (ticket, title, message) => {
   try {
-    const [admin, manager] = await Promise.all([
-      User.findOne({ role: USER_ROLES.ADMIN, isBlocked: { $ne: true } }),
-      User.findOne({ role: USER_ROLES.MANAGER, isBlocked: { $ne: true } }),
-    ]);
+const [admin, supportExecutive] = await Promise.all([
+    User.findOne({ role: USER_ROLES.ADMIN, isBlocked: { $ne: true } }),
+    User.findOne({ role: USER_ROLES.SUPPORT_EXECUTIVE, isBlocked: { $ne: true } }),
+  ]);
 
     const targets = [
       admin ? { userId: admin._id, role: USER_ROLES.ADMIN } : null,
-      manager ? { userId: manager._id, role: USER_ROLES.MANAGER } : null,
+      supportExecutive ? { userId: supportExecutive._id, role: USER_ROLES.SUPPORT_EXECUTIVE } : null,
     ].filter(Boolean);
 
     await Promise.all(
@@ -417,8 +417,8 @@ export const adminAssignTicket = async (ticketId, assignedToId) => {
 
   const assignee = await User.findById(assignedToId);
   if (!assignee) throw ApiError.notFound("User not found");
-  if (![USER_ROLES.ADMIN, USER_ROLES.MANAGER].includes(assignee.role)) {
-    throw ApiError.badRequest("Can only assign a ticket to an admin or manager");
+  if (![USER_ROLES.ADMIN, USER_ROLES.SUPPORT_EXECUTIVE].includes(assignee.role)) {
+    throw ApiError.badRequest("Can only assign a ticket to an admin or support executive");
   }
 
   ticket.assignedTo = assignedToId;

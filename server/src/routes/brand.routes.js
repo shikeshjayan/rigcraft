@@ -8,6 +8,8 @@ import {
 } from "../validators/brand.validator.js";
 import { uploadSingleImage } from "../middlewares/upload.middleware.js";
 
+import { USER_ROLES } from "../constants/constants.js";
+
 const router = Router();
 
 // Public
@@ -19,7 +21,7 @@ router.get("/:id", brandController.getById);
 router.post(
   "/",
   protect,
-  authorize("admin"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.PRODUCT_MANAGER),
   uploadSingleImage("logo"),
   validate(createBrandSchema),
   brandController.create
@@ -28,7 +30,7 @@ router.post(
 router.put(
   "/:id",
   protect,
-  authorize("admin"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN, USER_ROLES.PRODUCT_MANAGER),
   uploadSingleImage("logo"),
   validate(updateBrandSchema),
   brandController.update
@@ -37,7 +39,7 @@ router.put(
 router.delete(
   "/:id",
   protect,
-  authorize("admin"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
   brandController.remove
 );
 

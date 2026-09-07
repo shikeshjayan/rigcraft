@@ -6,7 +6,7 @@ export const registerNotificationHandlers = (io, socket) => {
 
   socket.join(`user:${userId}`);
 
-  if (userRole === "admin" || userRole === "manager") {
+  if (userRole === "admin" || userRole === "super_admin" || userRole === "product_manager" || userRole === "order_manager" || userRole === "support_executive") {
     socket.join(`admin:${userRole}`);
   }
 

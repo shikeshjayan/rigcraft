@@ -26,11 +26,11 @@ router.post("/subscribe", subscribeLimiter, validate(subscribeSchema), newslette
 
 router.post("/unsubscribe", validate(unsubscribeSchema), newsletterController.unsubscribe);
 
-router.get("/export", protect, authorize("admin", "manager"), newsletterController.exportSubscribers);
+router.get("/export", protect, authorize("admin", "super_admin"), newsletterController.exportSubscribers);
 
-router.get("/", protect, authorize("admin", "manager"), newsletterController.getSubscribers);
+router.get("/", protect, authorize("admin", "super_admin"), newsletterController.getSubscribers);
 
-router.get("/:id", protect, authorize("admin", "manager"), newsletterController.getSubscriber);
+router.get("/:id", protect, authorize("admin", "super_admin"), newsletterController.getSubscriber);
 
 router.put(
   "/:id",
