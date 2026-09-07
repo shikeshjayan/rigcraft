@@ -1,4 +1,5 @@
 import { ROLE_PERMISSIONS } from '../constants/role-permissions.js';
+import { getPermissions } from '../services/role.service.js';
 import ApiError from '../utils/ApiError.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
@@ -7,8 +8,11 @@ export const hasPermission = (...requiredPermissions) =>
     if (!req.user) throw ApiError.unauthorized('Not authorized');
 
     const userRole = req.user.role;
-    const rolePerms = ROLE_PERMISSIONS[userRole];
+    let rolePerms = await getPermissions(userRole);
 
+    if (!rolePerms) {
+      rolePerms = ROLE_PERMISSIONS[userRole];
+    }
     if (!rolePerms) {
       throw ApiError.forbidden('Invalid role');
     }
@@ -29,8 +33,11 @@ export const hasAnyPermission = (...requiredPermissions) =>
     if (!req.user) throw ApiError.unauthorized('Not authorized');
 
     const userRole = req.user.role;
-    const rolePerms = ROLE_PERMISSIONS[userRole];
+    let rolePerms = await getPermissions(userRole);
 
+    if (!rolePerms) {
+      rolePerms = ROLE_PERMISSIONS[userRole];
+    }
     if (!rolePerms) {
       throw ApiError.forbidden('Invalid role');
     }
@@ -51,8 +58,11 @@ export const hasAllPermissions = (...requiredPermissions) =>
     if (!req.user) throw ApiError.unauthorized('Not authorized');
 
     const userRole = req.user.role;
-    const rolePerms = ROLE_PERMISSIONS[userRole];
+    let rolePerms = await getPermissions(userRole);
 
+    if (!rolePerms) {
+      rolePerms = ROLE_PERMISSIONS[userRole];
+    }
     if (!rolePerms) {
       throw ApiError.forbidden('Invalid role');
     }
