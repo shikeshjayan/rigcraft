@@ -52,6 +52,11 @@ axiosInstance.interceptors.response.use(
       clearToken();
       // Remove any stale token that may linger in legacy localStorage.
       localStorage.removeItem("accessToken");
+      // Session invalidated (e.g. password changed) — clear persisted auth state
+      localStorage.removeItem("rigcraft_auth");
+      localStorage.removeItem("rigcraft_user");
+      localStorage.removeItem("admin-auth-storage");
+      window.dispatchEvent(new Event("rigcraft:auth-logout"));
 
       if (window.location.pathname.startsWith("/admin")) {
         window.location.href = "/admin/login";

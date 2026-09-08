@@ -48,7 +48,7 @@ export const AuthProvider = ({ children }) => {
       setUser(userData);
     }
   };
-  
+   
   const logout = () => {
     setIsLoggedIn(false);
     setUser(null);
@@ -67,8 +67,14 @@ export const AuthProvider = ({ children }) => {
     window.location.href = '/';
   };
 
+  // Handle session invalidation when password is changed
+  const handlePasswordChange = () => {
+    // Clear auth state and redirect to login when password changes
+    logout();
+  };
+
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, handlePasswordChange }}>
       {children}
     </AuthContext.Provider>
   );

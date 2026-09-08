@@ -24,12 +24,42 @@ const authLimiter = rateLimit({
   message: { success: false, message: 'Too many attempts, try again later' },
 });
 
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, message: 'Too many login attempts, try again later' },
+});
+
+const otpRequestLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { success: false, message: 'Too many OTP requests, try again later' },
+});
+
+const otpVerifyLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, message: 'Too many OTP verification attempts, try again later' },
+});
+
+const forgotPasswordLimiter = rateLimit({
+  windowMs: 60 * 60 * 1000,
+  max: 5,
+  message: { success: false, message: 'Too many reset requests, try again later' },
+});
+
+const resetPasswordLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: { success: false, message: 'Too many reset attempts, try again later' },
+});
+
 router.post('/register', authLimiter, validate(registerSchema), authController.register);
-router.post('/login', authLimiter, validate(loginSchema), authController.login);
+router.post('/login', loginLimiter, validate(loginSchema), authController.login);
 router.post('/google', authLimiter, validate(googleLoginSchema), authController.googleLogin);
 router.post('/check', authLimiter, authController.checkAccount);
-router.post('/forgot-password', authLimiter, validate(forgotPasswordSchema), authController.forgotPassword);
-router.post('/reset-password', authLimiter, validate(resetPasswordSchema), authController.resetPassword);
+router.post('/forgot-password', forgotPasswordLimiter, validate(forgotPasswordSchema), authController.forgotPassword);
+router.post('/reset-password', resetPasswordLimiter, validate(resetPasswordSchema), authController.resetPassword);
 router.post('/refresh-token', authLimiter, authController.refresh);
 
 router.get('/profile', protect, authController.getProfile);

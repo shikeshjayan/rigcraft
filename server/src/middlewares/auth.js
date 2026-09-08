@@ -18,6 +18,15 @@ export const protect = asyncHandler(async (req, res, next) => {
   if (req.user.isBlocked) throw ApiError.forbidden('Account is blocked');
   if (req.user.deactivatedAt)
     throw ApiError.forbidden('This account has been deactivated');
+  
+  // Check if token was issued before password change
+  if (req.user.passwordChangedAt) {
+    const tokenIssuedAt = decoded.iat * 1000; // Convert to milliseconds
+    if (req.user.passwordChangedAt.getTime() > tokenIssuedAt) {
+      throw ApiError.unauthorized('Token issued before password change');
+    }
+  }
+  
   next();
 });
 
@@ -33,6 +42,12 @@ export const optionalProtect = asyncHandler(async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.user = await User.findById(decoded.id);
+    if (req.user?.passwordChangedAt) {
+      const tokenIssuedAt = decoded.iat * 1000;
+      if (req.user.passwordChangedAt.getTime() > tokenIssuedAt) {
+        req.user = undefined;
+      }
+    }
   } catch (error) {
     // If token is invalid, just proceed as guest
   }
