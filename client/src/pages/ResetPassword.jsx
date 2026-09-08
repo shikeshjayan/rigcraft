@@ -57,12 +57,13 @@ const ResetPassword = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center items-center py-12 px-4 sm:px-6 lg:px-8">
-      <FadeUp>
-        <div className="max-w-md w-full space-y-8 bg-white p-10 shadow-[0_10px_40px_rgba(0,0,0,0.08)]" style={{ borderRadius: 'var(--radius-sm)' }}>
+      <FadeUp className="w-full">
+        <div className="max-w-md w-full mx-auto min-h-[680px] flex flex-col space-y-8 bg-white p-10 shadow-[0_10px_40px_rgba(0,0,0,0.08)]" style={{ borderRadius: 'var(--radius-sm)' }}>
           <div className="flex justify-center">
             <DynamicLogo />
           </div>
 
+          <div className="flex-1 flex flex-col justify-center">
           <div>
             <h2 className="mt-4 text-center text-3xl font-extrabold text-gray-900">
               Reset Password
@@ -146,6 +147,7 @@ const ResetPassword = () => {
               </Link>
             </div>
           </form>
+          </div>
         </div>
       </FadeUp>
     </div>
