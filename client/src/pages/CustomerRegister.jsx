@@ -37,6 +37,16 @@ const CustomerRegister = () => {
         toast('Account created successfully.');
         handleAuthSuccess(user, navigate, login);
       }
+    },
+    onError: (err) => {
+      const message = err?.response?.data?.message || 'An unexpected error occurred. Please try again.';
+      
+      // Handle registration rate limit errors
+      if (message === 'Too many attempts, try again later') {
+        setErrors(prev => ({ ...prev, consent: 'Too many registration attempts. Please try again later.' }));
+      } else {
+        setErrors(prev => ({ ...prev, consent: message }));
+      }
     }
   });
 

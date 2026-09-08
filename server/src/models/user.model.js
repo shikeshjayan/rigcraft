@@ -70,6 +70,38 @@ const userSchema = new mongoose.Schema(
     lastLogin: {
       type: Date,
     },
+    failedAttempts: {
+      type: Number,
+      default: 0,
+    },
+    lockTimestamp: {
+      type: Date,
+      default: null,
+    },
+    otpVerifyAttempts: {
+      type: Number,
+      default: 0,
+    },
+    otpRequestCount: {
+      type: Number,
+      default: 0,
+    },
+    lastOtpRequest: {
+      type: Date,
+      default: null,
+    },
+    resetTokenExpiry: {
+      type: Date,
+      default: null,
+    },
+    resetRequestCount: {
+      type: Number,
+      default: 0,
+    },
+    lastResetRequest: {
+      type: Date,
+      default: null,
+    },
     refreshToken: { type: String, select: false },
     resetPasswordToken: String,
     resetPasswordExpire: Date,

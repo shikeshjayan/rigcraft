@@ -27,6 +27,7 @@ const BundleDetail = lazy(() => import('./pages/BundleDetail'));
 const Customerlogin = lazy(() => import('./pages/Customerlogin'));
 const CustomerRegister = lazy(() => import('./pages/CustomerRegister'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const Profile = lazy(() => import('./pages/Profile'));
 const Orders = lazy(() => import('./pages/Orders'));
 const MyTickets = lazy(() => import('./pages/MyTickets'));
@@ -116,6 +117,7 @@ const App = () => {
                       <Route path="/login" element={<Customerlogin />} />
                       <Route path="/register" element={<CustomerRegister />} />
                       <Route path="/forgot-password" element={<ForgotPassword />} />
+                      <Route path="/reset-password/:token" element={<ResetPassword />} />
                       <Route path="/profile" element={<Profile />} />
                       <Route path="/orders" element={<Orders />} />
                       <Route path="/my-tickets" element={<MyTickets />} />

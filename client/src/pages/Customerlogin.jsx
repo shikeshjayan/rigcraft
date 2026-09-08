@@ -11,6 +11,8 @@ import DynamicLogo from '../components/DynamicLogo';
 import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import { useToast } from '../components/toast/useToast';
+import useOtpTimer from '../hooks/useOtpTimer';
+import useAttemptTracker from '../hooks/useAttemptTracker';
 
 const Customerlogin = () => {
   const [step, setStep] = useState('login'); // 'login' or 'otp' or 'password'
@@ -26,6 +28,10 @@ const Customerlogin = () => {
   const navigate = useNavigate();
   const inputRefs = useRef([]);
   const { toast } = useToast();
+
+  // Custom hooks for OTP security
+  const { isCoolingDown: isOtpCooldown, startCooldown: startOtpCooldown, remainingTime: otpCooldownTime } = useOtpTimer(60);
+  const { attempts: otpAttempts, isLockedOut: isOtpLockedOut, incrementAttempt: incrementOtpAttempt, resetAttempts: resetOtpAttempts, getLockoutStatus } = useAttemptTracker(5, 15);
 
   const checkMutation = useMutation({
     mutationFn: authService.checkAccount,
@@ -49,10 +55,34 @@ const loginMutation = useMutation({
          const { user } = data.data;
         toast(`Welcome back${user.firstName ? `, ${user.firstName}` : ''}!`);
         handleAuthSuccess(user, navigate, login);
+        // Reset OTP attempt tracking on successful login
+        if (step === 'otp') {
+          resetOtpAttempts();
+        }
       }
     },
     onError: (err) => {
-      setError(err?.response?.data?.message || 'Invalid credentials. Please try again.');
+      const message = err?.response?.data?.message || 'Invalid credentials. Please try again.';
+      
+      // Handle specific error types from backend
+      if (message === 'Account temporarily locked due to too many failed attempts') {
+        setError('Account is temporarily locked. Please try again later.');
+      } else if (message === 'Too many OTP verification attempts. Please request a new OTP.') {
+        setError('Too many failed OTP attempts. Please request a new OTP.');
+        incrementOtpAttempt(); // Increment attempt counter for lockout
+      } else if (message === 'Invalid OTP') {
+        incrementOtpAttempt(); // Increment attempt counter
+        setError('Invalid OTP. Please try again.');
+      } else if (message === 'OTP has expired') {
+        setError('OTP has expired. Please request a new one.');
+        resetOtpAttempts(); // Reset attempts on expiry
+      } else if (message === 'Please wait before requesting a new OTP') {
+        setError('Please wait before requesting a new OTP.');
+      } else if (message === 'Too many OTP requests. Please try again later.') {
+        setError('Too many OTP requests. Please try again later.');
+      } else {
+        setError(message);
+      }
     }
   });
 
@@ -291,61 +321,96 @@ const loginMutation = useMutation({
             </>
           )}
 
-          {step === 'otp' && (
-            <>
-              <div>
-                <h2 className="mt-4 text-center text-3xl font-extrabold text-gray-900">
-                  Verify Mobile Number
-                </h2>
-                <p className="mt-2 text-center text-sm text-gray-600">
-                  We've sent a 6-digit code to <span className="font-bold text-black">{identifier}</span>
-                </p>
-              </div>
+{step === 'otp' && (
+             <>
+               <div>
+                 <h2 className="mt-4 text-center text-3xl font-extrabold text-gray-900">
+                   Verify Mobile Number
+                 </h2>
+                 <p className="mt-2 text-center text-sm text-gray-600">
+                   We've sent a 6-digit code to <span className="font-bold text-black">{identifier}</span>
+                 </p>
+               </div>
 
-              <form className="mt-8 space-y-6" onSubmit={handleVerifyOtp}>
-                <div className="flex justify-center items-center gap-2">
-                  {otp.map((digit, index) => (
-                    <Fragment key={index}>
-                      <input
-                        ref={(el) => (inputRefs.current[index] = el)}
-                        type="text"
-                        maxLength={1}
-                        value={digit}
-                        onChange={(e) => handleOtpChange(index, e.target.value)}
-                        onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                        inputMode="numeric"
-                        className="w-11 h-12 text-center text-xl font-bold border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors"
-                        style={{ borderRadius: 'var(--radius-sm)' }}
-                      />
-                      {index === 2 && <span className="text-gray-400 font-bold mx-1">-</span>}
-                    </Fragment>
-                  ))}
-                </div>
+               {/* OTP Attempt Counter */}
+               {otpAttempts > 0 && (
+                 <div className="mb-4 text-center">
+                   <p className="text-sm text-gray-600">
+                     Attempt {otpAttempts} of 5
+                   </p>
+                   {isOtpLockedOut && (
+                     <p className="text-sm text-red-600 font-medium">
+                       Too many attempts. Please wait for lockout to expire.
+                     </p>
+                   )}
+                 </div>
+               )}
 
-                <div>
-                  <button
-                    type="submit"
-                    disabled={loginMutation.isPending}
-                    className={`group relative cursor-pointer w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold text-white bg-[var(--color-primary)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-all shadow-md ${loginMutation.isPending ? 'opacity-70 cursor-not-allowed' : ''}`}
-                    style={{ borderRadius: 'var(--radius-sm)' }}
-                  >
-                    {loginMutation.isPending ? 'Verifying...' : 'Verify'}
-                  </button>
-                  {error && step === 'otp' && <p className="mt-2 text-center text-sm text-red-600 font-medium">{error}</p>}
-                </div>
+               {/* OTP Resend Button with Cooldown */}
+               <div className="mb-4 text-center">
+                 <button
+                   type="button"
+                   onClick={() => {
+                     // Resend OTP by triggering sendOtpMutation again
+                     const phoneDigits = identifier.replace(/\D/g, '').replace(/^91/, '');
+                     sendOtpMutation.mutate({ phone: `+91${phoneDigits}` });
+                     startOtpCooldown(); // Start cooldown timer
+                     resetOtpAttempts(); // Reset attempt counter on new OTP
+                   }}
+                   disabled={isOtpCooldown || sendOtpMutation.isPending}
+                   className={`group relative w-full flex justify-center py-3 px-4 border border-gray-300 text-sm font-bold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-all shadow-md ${(isOtpCooldown || sendOtpMutation.isPending) ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}
+                   style={{ borderRadius: 'var(--radius-sm)' }}
+                 >
+                   {isOtpCooldown
+                     ? `Resend OTP in ${otpCooldownTime}s`
+                     : 'Resend OTP'}
+                 </button>
+               </div>
 
-                <div className="text-center mt-4">
-                  <button
-                    type="button"
-                    onClick={() => setStep('login')}
-                    className="text-sm font-medium text-blue-600 hover:text-blue-500 cursor-pointer"
-                  >
-                    Change mobile number
-                  </button>
-                </div>
-              </form>
-            </>
-          )}
+               <form className="mt-8 space-y-6" onSubmit={handleVerifyOtp}>
+                 <div className="flex justify-center items-center gap-2">
+                   {otp.map((digit, index) => (
+                     <Fragment key={index}>
+                       <input
+                         ref={(el) => (inputRefs.current[index] = el)}
+                         type="text"
+                         maxLength={1}
+                         value={digit}
+                         onChange={(e) => handleOtpChange(index, e.target.value)}
+                         onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                         inputMode="numeric"
+                         className="w-11 h-12 text-center text-xl font-bold text-gray-900 border border-gray-300 focus:outline-none focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent transition-colors"
+                         style={{ borderRadius: 'var(--radius-sm)' }}
+                       />
+                       {index === 2 && <span className="text-gray-400 font-bold mx-1">-</span>}
+                     </Fragment>
+                   ))}
+                 </div>
+
+                 <div>
+                   <button
+                     type="submit"
+                     disabled={loginMutation.isPending}
+                     className={`group relative cursor-pointer w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold text-white bg-[var(--color-primary)] hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--color-primary)] transition-all shadow-md ${loginMutation.isPending ? 'opacity-70 cursor-not-allowed' : ''}`}
+                     style={{ borderRadius: 'var(--radius-sm)' }}
+                   >
+                     {loginMutation.isPending ? 'Verifying...' : 'Verify'}
+                   </button>
+                   {error && step === 'otp' && <p className="mt-2 text-center text-sm text-red-600 font-medium">{error}</p>}
+                 </div>
+
+                 <div className="text-center mt-4">
+                   <button
+                     type="button"
+                     onClick={() => setStep('login')}
+                     className="text-sm font-medium text-blue-600 hover:text-blue-500 cursor-pointer"
+                   >
+                     Change mobile number
+                   </button>
+                 </div>
+               </form>
+             </>
+           )}
 
           {step === 'password' && (
             <>

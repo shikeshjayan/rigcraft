@@ -11,7 +11,7 @@ class UserRepository extends BaseRepository {
   }
 
   async findByEmailWithPassword(email) {
-    return User.findOne({ email: email.toLowerCase() }).select('+password');
+    return User.findOne({ email: email.toLowerCase() }).select('+password +failedAttempts +lockTimestamp');
   }
 
   async findByPhone(phone) {
@@ -19,11 +19,11 @@ class UserRepository extends BaseRepository {
   }
 
   async findByPhoneWithPassword(phone) {
-    return User.findOne({ phone }).select('+password');
+    return User.findOne({ phone }).select('+password +failedAttempts +lockTimestamp');
   }
 
   async findByPhoneWithOtp(phone) {
-    return User.findOne({ phone }).select('+otp +otpExpire');
+    return User.findOne({ phone }).select('+otp +otpExpire +otpVerifyAttempts +otpRequestCount +lastOtpRequest');
   }
 
   async findByIdWithPassword(id) {
