@@ -111,6 +111,7 @@ export const list = async (query = {}) => {
     name: `${u.firstName} ${u.lastName}`,
     email: u.email,
     role: u.role,
+    permissions: u.permissions,
     isBlocked: u.isBlocked,
     deactivatedAt: u.deactivatedAt || null,
     status: getStatus(u),
@@ -141,6 +142,7 @@ export const updateById = async (id, data, file) => {
   if (data.email !== undefined) updateData.email = data.email;
   if (data.phone !== undefined) updateData.phone = data.phone;
   if (data.role !== undefined) updateData.role = data.role;
+  if (data.permissions !== undefined) updateData.permissions = data.permissions;
   if (data.avatar !== undefined) updateData.avatar = data.avatar;
 
   if (file) {
@@ -205,6 +207,7 @@ export const getById = async (id) => {
     email: u.email,
     phone: u.phone,
     role: u.role,
+    permissions: u.permissions,
     isBlocked: u.isBlocked,
     deactivatedAt: u.deactivatedAt || null,
     status: getStatus(u),

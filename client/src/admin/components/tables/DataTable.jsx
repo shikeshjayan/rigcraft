@@ -256,7 +256,7 @@ const DataTable = ({
           onPageChange={onPageChange}
           rowsPerPage={pageSize}
           onRowsPerPageChange={(e) => onPageSizeChange(parseInt(e.target.value, 10))}
-          rowsPerPageOptions={rowsPerPageOptions || [10, 25, 50, 100]}
+          rowsPerPageOptions={Array.from(new Set([...(rowsPerPageOptions || [10, 25, 50, 100]), pageSize])).sort((a,b)=>a-b)}
           sx={{
             borderTop: "1px solid var(--color-admin-border)",
             color: "var(--color-admin-text-secondary)",

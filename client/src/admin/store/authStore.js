@@ -20,7 +20,8 @@ const useAuthStore = create(
             lastName: user.lastName,
             name: `${user.firstName} ${user.lastName}`,
             email: user.email,
-            role: user.role,
+            role: user.role ? user.role.replace(" ", "_") : "customer",
+            permissions: user.permissions || undefined,
             avatar: user.avatar?.url || null,
             phone: user.phone || "",
           },
@@ -48,6 +49,8 @@ const useAuthStore = create(
           firstName: userData.firstName,
           lastName: userData.lastName,
           name: userData.name || [userData.firstName, userData.lastName].filter(Boolean).join(' ') || '',
+          role: userData.role ? userData.role.replace(" ", "_") : "customer",
+          permissions: userData.permissions || undefined,
           avatar: typeof userData.avatar === 'object' && userData.avatar ? userData.avatar.url : (userData.avatar || null),
         };
         set({ user: normalized });

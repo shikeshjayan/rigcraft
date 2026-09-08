@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import {
   Box, Typography, Grid, Chip, TextField, MenuItem, IconButton, Tabs, Tab, Rating, Tooltip,
+  Card, CardContent, Switch, FormControlLabel,
 } from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
@@ -19,7 +20,10 @@ import {
   Computer as BuildsIcon,
   Visibility as ViewIcon,
   CheckCircle as VerifiedIcon,
+  VpnKey as VpnKeyIcon,
+  InfoOutlined as InfoOutlinedIcon,
 } from "@mui/icons-material";
+import { PERMISSIONS, ROLE_PERMISSIONS } from "../../constants/permissions";
 import { userService } from "../../services/userService";
 import { formatCurrency } from "../../utils/formatCurrency";
 import { formatDateTime, formatDate } from "../../utils/formatDate";
@@ -34,12 +38,42 @@ import { extractError } from "../../utils/extractError";
 import { reviewService } from "../../services/reviewService";
 import useAuthStore from "../../store/authStore";
 
-const ALL_ROLES = ["customer", "admin", "manager"];
+import { ROLES as STATUS_ROLES } from "../../constants/status";
+
+const ALL_ROLES = Object.values(STATUS_ROLES);
 
 const formatPhoneForDisplay = (val) => {
   const digits = (val || "").replace(/[^0-9]/g, "").replace(/^91/, "");
   return digits ? `+91 ${digits}` : "";
 };
+
+const MODULES = [
+  { key: "dashboard", label: "Dashboard" },
+  { key: "users", label: "Users" },
+  { key: "products", label: "Products" },
+  { key: "categories", label: "Categories" },
+  { key: "brands", label: "Brands" },
+  { key: "orders", label: "Orders" },
+  { key: "prebuilts", label: "Prebuilt PCs" },
+  { key: "bundles", label: "Bundles" },
+  { key: "deals", label: "Deals" },
+  { key: "coupons", label: "Coupons" },
+  { key: "reviews", label: "Reviews" },
+  { key: "support", label: "Support Tickets" },
+  { key: "faqs", label: "FAQs" },
+  { key: "newsletter", label: "Newsletter" },
+  { key: "notifications", label: "Notifications" },
+  { key: "settings", label: "Settings" },
+  { key: "audit", label: "Audit Logs" },
+  { key: "search", label: "Search" },
+  { key: "addresses", label: "Addresses" },
+  { key: "builds", label: "Builds" },
+  { key: "stockAlerts", label: "Stock Alerts" },
+  { key: "uploads", label: "Uploads" },
+  { key: "ai", label: "AI" },
+  { key: "roles", label: "Roles" },
+  { key: "permissions", label: "Permissions" },
+];
 
 const TABS = [
   { label: "Overview", icon: <PeopleIcon /> },
@@ -75,8 +109,7 @@ const UserDetails = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const currentUser = useAuthStore((state) => state.user);
-  const isManager = currentUser?.role === "manager";
-  const ROLES = isManager ? ALL_ROLES.filter((r) => r !== "admin") : ALL_ROLES;
+  const ROLES = ALL_ROLES;
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState(0);
@@ -108,6 +141,42 @@ const UserDetails = () => {
       .catch((err) => { toast(extractError(err, "User not found"), "error"); navigate("/admin/users"); })
       .finally(() => setLoading(false));
   }, [id, navigate, toast]);
+
+  const [customPermissions, setCustomPermissions] = useState([]);
+  const [isPermissionsDirty, setIsPermissionsDirty] = useState(false);
+  const [savingPermissions, setSavingPermissions] = useState(false);
+
+  useEffect(() => {
+    if (user && user.role !== STATUS_ROLES.CUSTOMER) {
+      setCustomPermissions(user.permissions !== undefined ? user.permissions : (ROLE_PERMISSIONS[user.role] || []));
+      setIsPermissionsDirty(false);
+    }
+  }, [user]);
+
+  const currentUserPermissions = currentUser?.permissions || ROLE_PERMISSIONS[currentUser?.role] || [];
+  const canManagePermissions = currentUser?.role === STATUS_ROLES.SUPER_ADMIN || currentUserPermissions.includes(PERMISSIONS.permissions.manage);
+
+  const handlePermissionToggle = (permValue) => {
+    setCustomPermissions(prev => {
+      const next = prev.includes(permValue) ? prev.filter(p => p !== permValue) : [...prev, permValue];
+      return next;
+    });
+    setIsPermissionsDirty(true);
+  };
+
+  const handleSavePermissions = async () => {
+    setSavingPermissions(true);
+    try {
+      const updatedUser = await userService.update(user.id || user._id, { permissions: customPermissions });
+      setUser(updatedUser);
+      toast("Permissions saved successfully");
+      setIsPermissionsDirty(false);
+    } catch (err) {
+      toast(extractError(err, "Failed to save permissions"), "error");
+    } finally {
+      setSavingPermissions(false);
+    }
+  };
 
   // Lazy-load tab data on demand; synchronous loading flags guard against
   // duplicate fetches when StrictMode re-invokes effects.
@@ -226,6 +295,7 @@ const UserDetails = () => {
   const isBlocked = user.status === "blocked";
   const isDeactivated = user.status === "deactivated";
   const s = user.stats || {};
+  const isCustomer = user.role === STATUS_ROLES.CUSTOMER;
 
   return (
     <Box sx={{ p: 3 }}>
@@ -248,23 +318,24 @@ const UserDetails = () => {
           </Box>
           <Typography variant="body2" sx={{ color: "var(--color-admin-muted)", fontWeight: 500, overflowWrap: "break-word" }}>{user.email} {user.phone && `· ${formatPhoneForDisplay(user.phone)}`}</Typography>
         </Box>
-        {!isManager && (
         <IconButton onClick={() => { setEditing(!editing); if (!editing) setForm({ firstName: user.firstName || "", lastName: user.lastName || "", email: user.email, phone: formatPhoneForDisplay(user.phone), role: user.role }); }}
           sx={{ color: editing ? "var(--color-admin-primary)" : "var(--color-admin-muted)" }}>
           {editing ? <CloseIcon /> : <EditIcon />}
         </IconButton>
-        )}
       </Box>
 
-      {/* Tabs */}
-      <Box sx={{ borderBottom: 1, borderColor: "var(--color-admin-border)" }}>
-        <Tabs value={tab} onChange={(e, v) => setTab(v)} sx={{ "& .MuiTab-root": { textTransform: "none", fontWeight: 600, fontSize: "0.8125rem", minHeight: 48 }, "& .Mui-selected": { color: "var(--color-admin-primary) !important" }, "& .MuiTabs-indicator": { backgroundColor: "var(--color-admin-primary)" } }}>
-          {TABS.map((t, i) => <Tab key={i} icon={t.icon} iconPosition="start" label={t.label} />)}
-        </Tabs>
-      </Box>
+      {/* Tabs - Only for Customers */}
+      {isCustomer && (
+        <Box sx={{ borderBottom: 1, borderColor: "var(--color-admin-border)" }}>
+          <Tabs value={tab} onChange={(e, v) => setTab(v)} variant="scrollable" scrollButtons="auto" sx={{ "& .MuiTab-root": { textTransform: "none", fontWeight: 600, fontSize: "0.8125rem", minHeight: 48 }, "& .Mui-selected": { color: "var(--color-admin-primary) !important" }, "& .MuiTabs-indicator": { backgroundColor: "var(--color-admin-primary)" } }}>
+            {TABS.map((t, i) => <Tab key={i} icon={t.icon} iconPosition="start" label={t.label} />)}
+          </Tabs>
+        </Box>
+      )}
 
-      {/* Tab 0: Overview */}
-      <TabPanel value={tab} index={0}>
+      {/* Tab 0: Overview / Staff Profile */}
+      {(isCustomer ? tab === 0 : true) && (
+        <Box sx={{ pt: 3 }}>
         {editing ? (
           <Box sx={{ p: 3, border: "1px solid var(--color-admin-border)", borderRadius: "var(--radius-admin-card)", mb: 3, maxWidth: 520 }}>
             <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Edit Account</Typography>
@@ -314,19 +385,24 @@ const UserDetails = () => {
             </Grid>
           </Box>
         )}
-
-        <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Statistics</Typography>
-        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-          <StatCard label="Orders" value={s.orders ?? 0} icon={<OrdersIcon />} />
-          <StatCard label="Total Spent" value={formatCurrency(s.totalSpent ?? 0)} icon={<PeopleIcon />} />
-          <StatCard label="Avg Order" value={formatCurrency(s.avgOrderValue ?? 0)} icon={<PeopleIcon />} />
-          <StatCard label="Wishlist" value={s.wishlist ?? 0} icon={<WishlistIcon />} />
-          <StatCard label="Reviews" value={s.reviews ?? 0} icon={<ReviewsIcon />} />
-          <StatCard label="Saved Builds" value={s.savedBuilds ?? 0} icon={<BuildsIcon />} />
+        {isCustomer && (
+          <>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Statistics</Typography>
+            <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+              <StatCard label="Orders" value={s.orders ?? 0} icon={<OrdersIcon />} />
+              <StatCard label="Total Spent" value={formatCurrency(s.totalSpent ?? 0)} icon={<PeopleIcon />} />
+              <StatCard label="Avg Order" value={formatCurrency(s.avgOrderValue ?? 0)} icon={<PeopleIcon />} />
+              <StatCard label="Wishlist" value={s.wishlist ?? 0} icon={<WishlistIcon />} />
+              <StatCard label="Reviews" value={s.reviews ?? 0} icon={<ReviewsIcon />} />
+              <StatCard label="Saved Builds" value={s.savedBuilds ?? 0} icon={<BuildsIcon />} />
+            </Box>
+          </>
+        )}
         </Box>
-      </TabPanel>
+      )}
 
       {/* Tab 1: Orders */}
+      {isCustomer && (
       <TabPanel value={tab} index={1}>
         {ordersLoading ? (
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
@@ -369,8 +445,10 @@ const UserDetails = () => {
           </Box>
         )}
       </TabPanel>
+      )}
 
       {/* Tab 2: Reviews */}
+      {isCustomer && (
       <TabPanel value={tab} index={2}>
         {reviewsLoading ? (
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
@@ -415,8 +493,10 @@ const UserDetails = () => {
           </Box>
         )}
       </TabPanel>
+      )}
 
       {/* Tab 3: Addresses */}
+      {isCustomer && (
       <TabPanel value={tab} index={3}>
         {addressesLoading ? (
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
@@ -443,8 +523,10 @@ const UserDetails = () => {
           </Grid>
         )}
       </TabPanel>
+      )}
 
       {/* Tab 4: Wishlist */}
+      {isCustomer && (
       <TabPanel value={tab} index={4}>
         {wishlistLoading ? (
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
@@ -466,8 +548,10 @@ const UserDetails = () => {
           </Box>
         )}
       </TabPanel>
+      )}
 
       {/* Tab 5: PC Builds */}
+      {isCustomer && (
       <TabPanel value={tab} index={5}>
         {buildsLoading ? (
           <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: 200 }}>
@@ -492,9 +576,88 @@ const UserDetails = () => {
           </Grid>
         )}
       </TabPanel>
+      )}
 
-      {/* Admin Actions — visible only to admins (block/delete are admin-only operations) */}
-      {!isManager && (
+      {/* Permissions Section (Only for Staff) */}
+      {!isCustomer && (
+        <Box sx={{ mt: 4, pt: 3, borderTop: "1px solid var(--color-admin-border)" }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+            <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "var(--color-admin-text)" }}>Access Control</Typography>
+            {canManagePermissions && (
+              <AdminButton 
+                variant="primary" 
+                size="small" 
+                onClick={handleSavePermissions} 
+                loading={savingPermissions}
+                disabled={!isPermissionsDirty}
+              >
+                Save Permissions
+              </AdminButton>
+            )}
+          </Box>
+          <Grid container spacing={3}>
+            {MODULES.map((module) => {
+              const modulePermissions = PERMISSIONS[module.key];
+              if (!modulePermissions) return null;
+              
+              const keys = Object.keys(modulePermissions);
+              if (keys.length === 0) return null;
+
+              return (
+                <Grid size={{ xs: 12, sm: 6, md: 4 }} key={module.key}>
+                  <Card sx={{ height: "100%", borderRadius: "var(--radius-admin-card)", border: "1px solid var(--color-admin-border)", boxShadow: "none" }}>
+                    <CardContent>
+                      <Typography variant="h6" sx={{ fontWeight: 700, color: "var(--color-admin-text)", mb: 2, pb: 1, borderBottom: "1px solid var(--color-admin-border)" }}>
+                        {module.label}
+                      </Typography>
+                      <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                        {keys.map((permKey) => {
+                          const permissionValue = modulePermissions[permKey];
+                          const isGranted = customPermissions.includes(permissionValue);
+                          
+                          return (
+                            <FormControlLabel
+                              key={permKey}
+                              control={
+                                <Switch 
+                                  checked={isGranted} 
+                                  onChange={() => handlePermissionToggle(permissionValue)}
+                                  disabled={!canManagePermissions}
+                                  size="small"
+                                  sx={{
+                                    "& .MuiSwitch-switchBase.Mui-checked": {
+                                      color: "var(--color-admin-primary)",
+                                    },
+                                    "& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track": {
+                                      backgroundColor: "var(--color-admin-primary)",
+                                      opacity: 0.5,
+                                    },
+                                    "& .MuiSwitch-switchBase.Mui-disabled": {
+                                      opacity: 0.8,
+                                    }
+                                  }}
+                                />
+                              }
+                              label={
+                                <Typography variant="body2" sx={{ color: isGranted ? "var(--color-admin-text)" : "var(--color-admin-muted)", fontWeight: isGranted ? 600 : 400 }}>
+                                  {permKey.charAt(0).toUpperCase() + permKey.slice(1).replace(/([A-Z])/g, ' $1').trim()}
+                                </Typography>
+                              }
+                              sx={{ m: 0 }}
+                            />
+                          );
+                        })}
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              );
+            })}
+          </Grid>
+        </Box>
+      )}
+
+      {/* Admin Actions */}
       <Box sx={{ mt: 4, pt: 3, borderTop: "1px solid var(--color-admin-border)" }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2, color: "var(--color-admin-text)" }}>Admin Actions</Typography>
         <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
@@ -510,7 +673,6 @@ const UserDetails = () => {
           </AdminButton>
         </Box>
       </Box>
-      )}
 
       <ConfirmDialog
         open={!!confirmAction}

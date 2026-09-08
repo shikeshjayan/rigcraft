@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import AdminLayout from "../components/layout/AdminLayout";
 import ProtectedRoute from "./ProtectedRoute";
+import useAuthStore from "../store/authStore";
 import Dashboard from "../pages/dashboard/Dashboard";
 import CategoryList from "../pages/categories/CategoryList";
 import CategoryCreate from "../pages/categories/CategoryCreate";
@@ -28,6 +29,7 @@ import UserDetails from "../pages/users/UserDetails";
 import Settings from "../pages/settings/Settings";
 import Profile from "../pages/profile/Profile";
 import NewsletterList from "../pages/newsletter/NewsletterList";
+import RolesAccessList from "../pages/roles/RolesAccessList";
 import DealList from "../pages/deals/DealList";
 import DealCreate from "../pages/deals/DealCreate";
 import DealEdit from "../pages/deals/DealEdit";
@@ -42,6 +44,20 @@ import SupportDetails from "../pages/support/SupportDetails";
 import NotificationList from "../pages/notifications/NotificationList";
 import NotificationDetails from "../pages/notifications/NotificationDetails";
 import { ROLES } from "../constants/status";
+const RoleBasedRedirect = () => {
+  const { user } = useAuthStore();
+  const normalizedRole = user?.role ? user.role.replace(" ", "_") : "customer";
+
+  const rolePaths = {
+    super_admin: 'dashboard',
+    admin: 'dashboard',
+    product_manager: 'products',
+    order_manager: 'orders',
+    support_executive: 'support',
+  };
+
+  return <Navigate to={rolePaths[normalizedRole] || 'dashboard'} replace />;
+};
 
 const AdminRoutes = () => {
   return (
@@ -50,12 +66,12 @@ const AdminRoutes = () => {
 
       <Route
         element={
-          <ProtectedRoute allowedRoles={["admin", "manager"]}>
+          <ProtectedRoute allowedRoles={["admin", "super_admin", "product_manager", "order_manager", "support_executive"]}>
             <AdminLayout />
           </ProtectedRoute>
         }
       >
-        <Route index element={<Navigate to="dashboard" replace />} />
+        <Route index element={<RoleBasedRedirect />} />
         <Route path="dashboard" element={<Dashboard />} />
 
         <Route path="categories" element={<CategoryList />} />
@@ -111,9 +127,11 @@ const AdminRoutes = () => {
 
         <Route path="settings" element={<Settings />} />
         <Route path="profile" element={<Profile />} />
+        
+        <Route path="roles" element={<ProtectedRoute allowedRoles={["super_admin"]}><RolesAccessList /></ProtectedRoute>} />
       </Route>
 
-      <Route path="*" element={<Navigate to="dashboard" replace />} />
+      <Route path="*" element={<RoleBasedRedirect />} />
     </Routes>
   );
 };

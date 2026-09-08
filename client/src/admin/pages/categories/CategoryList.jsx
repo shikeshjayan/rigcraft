@@ -14,7 +14,8 @@ import { categoryService } from "../../services/categoryService";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
-import { useAdminList, useAdminMutation } from "../../hooks";
+import { useAdminList, useAdminMutation, usePermissions } from "../../hooks";
+import { PERMISSIONS } from "../../constants/permissions";
 
 const CategoryList = () => {
   const navigate = useNavigate();
@@ -22,6 +23,12 @@ const CategoryList = () => {
   const { maxRows, containerRef } = useViewportRows();
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
+
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission(PERMISSIONS.categories.create);
+  const canRead = hasPermission(PERMISSIONS.categories.read);
+  const canUpdate = hasPermission(PERMISSIONS.categories.update);
+  const canDelete = hasPermission(PERMISSIONS.categories.delete);
 
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState({ isActive: "" });
@@ -111,8 +118,8 @@ const CategoryList = () => {
     { key: "actions", label: "", render: (_, row) => (
       <TableActions
         actions={[
-          { label: "Edit", icon: EditIcon, onClick: () => navigate(`/admin/categories/${row.id}/edit`) },
-          { label: "Delete", icon: DeleteIcon, danger: true, onClick: () => handleDelete(row.id) },
+          ...(canUpdate ? [{ label: "Edit", icon: EditIcon, onClick: () => navigate(`/admin/categories/${row.id}/edit`) }] : []),
+          ...(canDelete ? [{ label: "Delete", icon: DeleteIcon, danger: true, onClick: () => handleDelete(row.id) }] : []),
         ]}
       />
     )},
@@ -124,7 +131,7 @@ const CategoryList = () => {
         title="Categories"
         searchValue={search}
         onSearchChange={setSearch}
-        addPath="/admin/categories/new"
+        addPath={canCreate ? "/admin/categories/new" : undefined}
         addLabel="New Category"
         onRefresh={refetch}
       />
@@ -139,13 +146,13 @@ const CategoryList = () => {
         pageSize={pageSize}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
-        onRowClick={(row) => navigate(`/admin/categories/${row.id}/edit`)}
+        onRowClick={canRead || canUpdate ? (row) => navigate(`/admin/categories/${row.id}/edit`) : undefined}
         selected={selected}
-        onSelectAll={() => setSelected(selected.length === categories.length ? [] : categories.map((c) => c.id))}
-        onSelectOne={(id) => setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id])}
-        selectable
+        onSelectAll={canDelete ? () => setSelected(selected.length === categories.length ? [] : categories.map((c) => c.id)) : undefined}
+        onSelectOne={canDelete ? (id) => setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]) : undefined}
+        selectable={canDelete}
         headerSlots={{
-          actions: (
+          actions: canDelete && (
             <Box
               onClick={selected.length > 0 ? handleBulkDelete : undefined}
               sx={{

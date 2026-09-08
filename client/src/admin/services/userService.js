@@ -3,7 +3,7 @@ import { ENDPOINTS } from "../../shared/api/endpoints";
 
 const normalizeUser = (u) => ({
   ...u,
-  id: u._id,
+  id: u.id || u._id,
   _id: undefined,
   __v: undefined,
   name: u.name || `${u.firstName || ""} ${u.lastName || ""}`.trim() || "Unknown",

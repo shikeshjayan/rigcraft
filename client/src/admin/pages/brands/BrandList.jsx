@@ -15,8 +15,9 @@ import { sanitizeUrl } from "../../../utils/sanitizeUrl";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
-import { useAdminList, useAdminMutation } from "../../hooks";
+import { useAdminList, useAdminMutation, usePermissions } from "../../hooks";
 import { formatDate } from "../../utils/formatDate";
+import { PERMISSIONS } from "../../constants/permissions";
 
 const BrandList = () => {
   const navigate = useNavigate();
@@ -24,6 +25,12 @@ const BrandList = () => {
   const { maxRows, containerRef } = useViewportRows();
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
+
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission(PERMISSIONS.brands.create);
+  const canRead = hasPermission(PERMISSIONS.brands.read);
+  const canUpdate = hasPermission(PERMISSIONS.brands.update);
+  const canDelete = hasPermission(PERMISSIONS.brands.delete);
 
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState({ isActive: "" });
@@ -115,8 +122,8 @@ const BrandList = () => {
     { key: "actions", label: "", render: (_, row) => (
       <TableActions
         actions={[
-          { label: "Edit", icon: EditIcon, onClick: () => navigate(`/admin/brands/${row.id}/edit`) },
-          { label: "Delete", icon: DeleteIcon, danger: true, onClick: () => handleDelete(row.id) },
+          ...(canUpdate ? [{ label: "Edit", icon: EditIcon, onClick: () => navigate(`/admin/brands/${row.id}/edit`) }] : []),
+          ...(canDelete ? [{ label: "Delete", icon: DeleteIcon, danger: true, onClick: () => handleDelete(row.id) }] : []),
         ]}
       />
     )},
@@ -128,7 +135,7 @@ const BrandList = () => {
         title="Brands"
         searchValue={search}
         onSearchChange={setSearch}
-        addPath="/admin/brands/new"
+        addPath={canCreate ? "/admin/brands/new" : undefined}
         addLabel="New Brand"
         onRefresh={refetch}
       />
@@ -143,13 +150,13 @@ const BrandList = () => {
         pageSize={pageSize}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
-        onRowClick={(row) => navigate(`/admin/brands/${row.id}/edit`)}
+        onRowClick={canRead || canUpdate ? (row) => navigate(`/admin/brands/${row.id}/edit`) : undefined}
         selected={selected}
-        onSelectAll={() => setSelected(selected.length === brands.length ? [] : brands.map((r) => r.id))}
-        onSelectOne={(id) => setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id])}
-        selectable
+        onSelectAll={canDelete ? () => setSelected(selected.length === brands.length ? [] : brands.map((r) => r.id)) : undefined}
+        onSelectOne={canDelete ? (id) => setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]) : undefined}
+        selectable={canDelete}
         headerSlots={{
-          actions: (
+          actions: canDelete && (
             <Box
               onClick={selected.length > 0 ? handleBulkDelete : undefined}
               sx={{
