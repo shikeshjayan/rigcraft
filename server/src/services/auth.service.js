@@ -191,8 +191,9 @@ export const login = async (body, res) => {
   }
 
 // ── Phone only — send OTP ────────────────────────────────────
-   if (phone && !password && !otp) {
-     const user = await userRepository.findByPhone(phone);
+    if (phone && !password && !otp) {
+      const normalizedPhone = phone.replace(/\s+/g, ''); // Remove spaces from query
+      const user = await userRepository.findByPhone(normalizedPhone);
      if (!user) throw ApiError.notFound('No account found with this phone number');
      if (user.deactivatedAt)
        throw ApiError.forbidden('This account has been deactivated');
@@ -238,8 +239,9 @@ export const login = async (body, res) => {
    }
 
 // ── Phone + OTP — verify and log in ──────────────────────────
-   if (phone && otp) {
-     const user = await userRepository.findByPhoneWithOtp(phone);
+    if (phone && otp) {
+      const normalizedPhone = phone.replace(/\s+/g, '');
+      const user = await userRepository.findByPhoneWithOtp(normalizedPhone);
      if (!user) throw ApiError.notFound('No account found with this phone number');
 
      if (user.deactivatedAt)
@@ -385,20 +387,26 @@ export const updatePassword = async (userId, currentPassword, newPassword) => {
   return user;
 };
 
-export const forgotPassword = async (email) => {
-  const user = await userRepository.findByEmail(email);
+export const forgotPassword = async (emailOrPhone) => {
+  const normalized = (emailOrPhone || '').replace(/\s+/g, '');
+  let user;
+  if (normalized.includes('@')) {
+    user = await userRepository.findByEmail(normalized);
+  } else {
+    user = await userRepository.findByPhone(normalized);
+  }
   if (!user) return;
 
   // Check if reset was recently requested (60-second cooldown)
   if (user.lastResetRequest && (Date.now() - user.lastResetRequest < 60 * 1000)) {
     // Still return success to prevent enumeration but log internally
-    console.log(`Reset request too soon for ${email}`);
+    console.log(`Reset request too soon for ${normalized}`);
   }
 
   // Check hourly limit (5 requests/hour)
   if (user.resetRequestCount >= 5) {
     // Still return success to prevent enumeration but log internally
-    console.log(`Reset request limit exceeded for ${email}`);
+    console.log(`Reset request limit exceeded for ${normalized}`);
   }
 
   // Invalidate previous token when new one is requested
@@ -418,11 +426,11 @@ export const forgotPassword = async (email) => {
 
   const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
   console.log(`\n========== PASSWORD RESET ==========`);
-  console.log(`Email: ${email}`);
+  console.log(`Email: ${normalized}`);
   console.log(`Reset URL: ${resetUrl}`);
   console.log(`Token: ${resetToken}`);
   console.log(`====================================\n`);
-  await sendResetPasswordEmail(email, resetUrl);
+  await sendResetPasswordEmail(normalized, resetUrl);
 };
 
 export const resetPassword = async (token, password) => {
