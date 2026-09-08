@@ -224,7 +224,7 @@ const wishlistCount = wishlist.length;
                   <span className="hidden md:block text-[12px] font-bold mt-0.5">Search</span>
                 </button>
 
-                <ProfileMenu isLoggedIn={isLoggedIn} profileText={profileText} onLogout={handleLogoutClick} />
+                <ProfileMenu isLoggedIn={isLoggedIn} profileText={profileText} onLogout={handleLogoutClick} user={user} />
 
                 {/* Wishlist (Desktop Only) */}
                 <Link to="/wishlist" aria-label="Wishlist" className="hidden lg:flex hover:text-[var(--color-primary)] transition-colors flex-col items-center justify-center cursor-pointer relative pb-1 pt-1">
@@ -299,6 +299,7 @@ const wishlistCount = wishlist.length;
         cartCount={cartCount}
         showCartTick={showCartTick}
         onLogout={handleLogoutClick}
+        user={user}
       />
 
       {/* Logout Confirmation Modal */}

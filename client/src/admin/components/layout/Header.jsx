@@ -17,6 +17,8 @@ import useAuthStore from "../../store/authStore";
 import useNotificationStore from "../../store/notificationStore";
 import NotificationPanel from "../common/NotificationPanel";
 import GlobalSearch from "../common/GlobalSearch";
+import { usePermissions } from "../../hooks";
+import { PERMISSIONS } from "../../constants/permissions";
 
 const ROUTE_TITLES = {
   "/admin/dashboard": "Dashboard",
@@ -67,12 +69,16 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
   const [notificationAnchorEl, setNotificationAnchorEl] = useState(null);
   const unreadCount = useNotificationStore((s) => s.unreadCount);
   const fetchUnreadCount = useNotificationStore((s) => s.fetchUnreadCount);
+  const { hasPermission } = usePermissions();
+
+  const canReadNotifications = hasPermission(PERMISSIONS.notifications.adminList) || hasPermission(PERMISSIONS.notifications.read);
 
   useEffect(() => {
+    if (!canReadNotifications) return;
     fetchUnreadCount();
     const interval = setInterval(fetchUnreadCount, 30000);
     return () => clearInterval(interval);
-  }, [fetchUnreadCount]);
+  }, [fetchUnreadCount, canReadNotifications]);
 
   const breadcrumbs = getBreadcrumbs(location.pathname);
 
@@ -134,27 +140,29 @@ const Header = ({ onToggleSidebar, onToggleCollapse, collapsed }) => {
 
         <GlobalSearch />
 
-        <IconButton
-          onClick={(e) => setNotificationAnchorEl(e.currentTarget)}
-          sx={{ color: "var(--color-admin-text-secondary)" }}
-        >
-          <Badge
-            badgeContent={unreadCount}
-            max={99}
-            sx={{
-              "& .MuiBadge-badge": {
-                backgroundColor: "#FF3E6C",
-                color: "#fff",
-                fontSize: 10,
-                fontWeight: 700,
-                minWidth: 16,
-                height: 16,
-              },
-            }}
+        {canReadNotifications && (
+          <IconButton
+            onClick={(e) => setNotificationAnchorEl(e.currentTarget)}
+            sx={{ color: "var(--color-admin-text-secondary)" }}
           >
-            <NotificationsIcon />
-          </Badge>
-        </IconButton>
+            <Badge
+              badgeContent={unreadCount}
+              max={99}
+              sx={{
+                "& .MuiBadge-badge": {
+                  backgroundColor: "#FF3E6C",
+                  color: "#fff",
+                  fontSize: 10,
+                  fontWeight: 700,
+                  minWidth: 16,
+                  height: 16,
+                },
+              }}
+            >
+              <NotificationsIcon />
+            </Badge>
+          </IconButton>
+        )}
 
         <NotificationPanel
           anchorEl={notificationAnchorEl}

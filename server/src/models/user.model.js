@@ -51,6 +51,10 @@ const userSchema = new mongoose.Schema(
       enum: Object.values(USER_ROLES),
       default: USER_ROLES.CUSTOMER,
     },
+    permissions: {
+      type: [String],
+      default: undefined,
+    },
     avatar: avatarSchema,
     isEmailVerified: {
       type: Boolean,

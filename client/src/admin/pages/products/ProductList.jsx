@@ -17,7 +17,8 @@ import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
-import { useAdminList, useAdminMutation } from "../../hooks";
+import { useAdminList, useAdminMutation, usePermissions } from "../../hooks";
+import { PERMISSIONS } from "../../constants/permissions";
 
 const ProductList = () => {
   const navigate = useNavigate();
@@ -25,6 +26,12 @@ const ProductList = () => {
   const { maxRows, containerRef } = useViewportRows();
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
+
+  const { hasPermission } = usePermissions();
+  const canCreate = hasPermission(PERMISSIONS.products.create);
+  const canRead = hasPermission(PERMISSIONS.products.read);
+  const canUpdate = hasPermission(PERMISSIONS.products.update);
+  const canDelete = hasPermission(PERMISSIONS.products.delete);
 
   const [selected, setSelected] = useState([]);
   const [filters, setFilters] = useState({ categoryType: "", isActive: "", isFeatured: "" });
@@ -148,9 +155,9 @@ const ProductList = () => {
     { key: "actions", label: "", render: (_, row) => (
       <TableActions
         actions={[
-          { label: "View", icon: Visibility, onClick: () => navigate(`/admin/products/${row.id}`) },
-          { label: "Edit", icon: EditIcon, onClick: () => navigate(`/admin/products/${row.id}/edit`) },
-          { label: "Delete", icon: DeleteIcon, danger: true, onClick: () => handleDelete(row.id) },
+          ...(canRead ? [{ label: "View", icon: Visibility, onClick: () => navigate(`/admin/products/${row.id}`) }] : []),
+          ...(canUpdate ? [{ label: "Edit", icon: EditIcon, onClick: () => navigate(`/admin/products/${row.id}/edit`) }] : []),
+          ...(canDelete ? [{ label: "Delete", icon: DeleteIcon, danger: true, onClick: () => handleDelete(row.id) }] : []),
         ]}
       />
     )},
@@ -162,7 +169,7 @@ const ProductList = () => {
         title="Products"
         searchValue={search}
         onSearchChange={setSearch}
-        addPath="/admin/products/new"
+        addPath={canCreate ? "/admin/products/new" : undefined}
         addLabel="New Product"
         onRefresh={refetch}
       />
@@ -177,13 +184,13 @@ const ProductList = () => {
         pageSize={pageSize}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
-        onRowClick={(row) => navigate(`/admin/products/${row.id}`)}
+        onRowClick={canRead || canUpdate ? (row) => navigate(`/admin/products/${row.id}`) : undefined}
         selected={selected}
-        onSelectAll={() => setSelected(selected.length === products.length ? [] : products.map((r) => r.id))}
-        onSelectOne={(id) => setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id])}
-        selectable
+        onSelectAll={canDelete ? () => setSelected(selected.length === products.length ? [] : products.map((r) => r.id)) : undefined}
+        onSelectOne={canDelete ? (id) => setSelected((prev) => prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]) : undefined}
+        selectable={canDelete}
         headerSlots={{
-          actions: (
+          actions: canDelete && (
             <Box
               onClick={selected.length > 0 ? handleBulkDelete : undefined}
               sx={{

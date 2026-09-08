@@ -23,7 +23,9 @@ export const getById = asyncHandler(async (req, res) => {
 });
 
 export const update = asyncHandler(async (req, res) => {
+  console.log("UPDATE USER req.body:", req.body);
   const user = await userService.updateById(req.params.id, req.body, req.file);
+  console.log("UPDATED USER:", user.permissions);
   ApiResponse.ok(user, "User updated").send(res);
 });
 

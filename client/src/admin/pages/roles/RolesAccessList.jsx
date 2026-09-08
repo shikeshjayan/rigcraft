@@ -20,30 +20,31 @@ import { useViewportRows } from "../../hooks/useViewportRows";
 import { useAdminList, useAdminMutation, usePermissions } from "../../hooks";
 import { PERMISSIONS } from "../../constants/permissions";
 
-import useAuthStore from "../../store/authStore";
-
 import { ROLES as STATUS_ROLES } from "../../constants/status";
 
-const ALL_ROLES = Object.values(STATUS_ROLES);
+const STAFF_ROLES = [STATUS_ROLES.ADMIN, STATUS_ROLES.SUPER_ADMIN, STATUS_ROLES.PRODUCT_MANAGER, STATUS_ROLES.ORDER_MANAGER, STATUS_ROLES.SUPPORT_EXECUTIVE];
+const ALL_STAFF_QUERY = { $ne: STATUS_ROLES.CUSTOMER };
 
-const UserList = () => {
+const RolesAccessList = () => {
   const navigate = useNavigate();
   const { maxRows, containerRef } = useViewportRows();
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
-  const currentUser = useAuthStore((state) => state.user);
-  const isCurrentUser = (role) => currentUser?.role === role;
-  const ROLES = ALL_ROLES; // Super admin and Admin can manage all roles. If we need to restrict, we can filter here.
 
   const { hasPermission } = usePermissions();
-  const canCreate = hasPermission(PERMISSIONS.users.create);
-  const canRead = hasPermission(PERMISSIONS.users.read);
+  const canManageRoles = hasPermission(PERMISSIONS.roles.manage);
+  const canManagePermissions = hasPermission(PERMISSIONS.permissions.manage);
 
   const [filters, setFilters] = useState({ status: "" });
+  const [currentRole, setCurrentRole] = useState(ALL_STAFF_QUERY);
 
   const [createOpen, setCreateOpen] = useState(false);
-  const [creating, setCreating] = useState(false);  
-  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", password: "", phone: "", role: "customer" });
+  const [creating, setCreating] = useState(false);
+  const [form, setForm] = useState({ firstName: "", lastName: "", email: "", password: "", phone: "", role: STATUS_ROLES.ADMIN });
+
+  const ROLE_TABS = ["All Staff", "Admins", "Super Admins", "Product Managers", "Order Managers", "Executives"];
+  const ROLE_FILTER = [ALL_STAFF_QUERY, STATUS_ROLES.ADMIN, STATUS_ROLES.SUPER_ADMIN, STATUS_ROLES.PRODUCT_MANAGER, STATUS_ROLES.ORDER_MANAGER, STATUS_ROLES.SUPPORT_EXECUTIVE];
+  const [roleTab, setRoleTab] = useState(0);
 
   const {
     data: users,
@@ -51,12 +52,18 @@ const UserList = () => {
     loading,
     error,
     refetch,
-  } = useAdminList("userList", userService, { page, pageSize, search, role: "customer", ...filters });
+  } = useAdminList("staffList", userService, { page, pageSize, search, role: currentRole, ...filters });
 
   const createMutation = useAdminMutation(
     (userData) => userService.create(userData),
-    { queryKey: "userList", successMessage: "Customer created" }
+    { queryKey: "staffList", successMessage: "Staff account created" }
   );
+
+  const handleTabChange = (_, v) => {
+    setRoleTab(v);
+    setCurrentRole(ROLE_FILTER[v]);
+    setPage(0);
+  };
 
   const filterOptions = [
     {
@@ -80,7 +87,7 @@ const UserList = () => {
           size={36}
           sx={{ borderRadius: "var(--radius-admin-avatar)", border: "none" }}
           fallback={
-            <Box sx={{ width: 36, height: 36, borderRadius: "var(--radius-admin-avatar)", backgroundColor: "var(--color-admin-primary)", color: "var(--color-admin-white)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700, flexShrink: 0 }}>{val.charAt(0)}</Box>
+            <Box sx={{ width: 36, height: 36, borderRadius: "var(--radius-admin-avatar)", backgroundColor: "var(--color-admin-primary)", color: "var(--color-admin-white)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "0.75rem", fontWeight: 700, flexShrink: 0 }}>{val?.charAt(0) || "?"}</Box>
           }
         />
         <Box>
@@ -91,8 +98,6 @@ const UserList = () => {
     )},
     { key: "role", label: "Role", render: (val) => <Chip label={val} size="small" variant="outlined" sx={{ fontSize: "0.7rem", textTransform: "capitalize", borderRadius: "var(--radius-admin-badge)" }} /> },
     { key: "status", label: "Status", render: (val) => <StatusBadge status={val} colorMap={USER_STATUS_COLOR} /> },
-    { key: "orders", label: "Orders", align: "center" },
-    { key: "totalSpent", label: "Total Spent", render: (val) => formatCurrency(val) },
     { key: "registeredAt", label: "Registered", render: (val) => formatDate(val) },
     { key: "lastLogin", label: "Last Login", render: (val) => val ? formatDate(val) : "—" },
   ];
@@ -102,7 +107,7 @@ const UserList = () => {
     try {
       await createMutation.mutateAsync(form);
       setCreateOpen(false);
-      setForm({ firstName: "", lastName: "", email: "", password: "", phone: "", role: "customer" });
+      setForm({ firstName: "", lastName: "", email: "", password: "", phone: "", role: STATUS_ROLES.ADMIN });
     } catch {
       // error handled by useAdminMutation
     } finally {
@@ -113,12 +118,27 @@ const UserList = () => {
   return (
     <Box ref={containerRef}>
       <TableToolbar
-        title="Customers"
+        title="Roles & Access"
         searchValue={search}
         onSearchChange={setSearch}
         onRefresh={refetch}
-        onAdd={canCreate ? () => setCreateOpen(true) : undefined} addLabel="New Customer"
+        onAdd={canManageRoles ? () => setCreateOpen(true) : undefined} addLabel="New Staff"
       />
+      <Box sx={{ px: 3 }}>
+        <Tabs
+          value={roleTab}
+          onChange={handleTabChange}
+          variant="scrollable"
+          scrollButtons="auto"
+          sx={{
+            minHeight: 40,
+            "& .MuiTab-root": { textTransform: "none", fontWeight: 600, fontSize: "0.8125rem", minHeight: 40, py: 0.75, color: "var(--color-admin-text-secondary)", "&.Mui-selected": { color: "var(--color-admin-primary) !important" } },
+            "& .MuiTabs-indicator": { backgroundColor: "var(--color-admin-primary)" },
+          }}
+        >
+          {ROLE_TABS.map((label) => <Tab key={label} label={label} />)}
+        </Tabs>
+      </Box>
 
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
 
@@ -132,7 +152,7 @@ const UserList = () => {
         pageSize={pageSize}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
-        onRowClick={canRead ? (row) => navigate(`/admin/users/${row.id}`) : undefined}
+        onRowClick={canManageRoles || canManagePermissions ? (row) => navigate(`/admin/users/${row.id}`) : undefined}
         rowsPerPageOptions={[10, 25, 50, 100]}
         sx={{ mx: 3, mb: 3 }}
       />
@@ -140,7 +160,7 @@ const UserList = () => {
       <Dialog open={createOpen} onClose={() => setCreateOpen(false)} maxWidth="sm" fullWidth
         slotProps={{ paper: { sx: { borderRadius: "var(--radius-admin-modal)" } } }}
       >
-        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.125rem" }}>New Customer</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, fontSize: "1.125rem" }}>New Staff Account</DialogTitle>
         <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, pt: "16px !important" }}>
           <Box sx={{ display: "flex", gap: 2 }}>
             <TextField label="First Name" fullWidth size="small" value={form.firstName}
@@ -154,6 +174,10 @@ const UserList = () => {
             onChange={(e) => setForm({ ...form, password: e.target.value })} />
           <TextField label="Phone" fullWidth size="small" value={form.phone}
             onChange={(e) => setForm({ ...form, phone: e.target.value })} />
+          <TextField label="Role" fullWidth size="small" select value={form.role}
+            onChange={(e) => setForm({ ...form, role: e.target.value })}>
+            {STAFF_ROLES.map((r) => <MenuItem key={r} value={r}>{r.replace("_", " ").replace(/\b\w/g, l => l.toUpperCase())}</MenuItem>)}
+          </TextField>
         </DialogContent>
         <DialogActions sx={{ p: 2, pt: 0, gap: 1 }}>
           <AdminButton variant="secondary" size="small" onClick={() => setCreateOpen(false)}>Cancel</AdminButton>
@@ -164,4 +188,4 @@ const UserList = () => {
   );
 };
 
-export default UserList;
+export default RolesAccessList;

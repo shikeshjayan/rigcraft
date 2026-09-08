@@ -12,13 +12,18 @@ import { formatDate } from "../../utils/formatDate";
 import { usePagination } from "../../hooks/usePagination";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewportRows } from "../../hooks/useViewportRows";
-import { useAdminList } from "../../hooks";
+import { useAdminList, usePermissions } from "../../hooks";
+import { PERMISSIONS } from "../../constants/permissions";
 
 const OrderList = () => {
   const navigate = useNavigate();
   const { maxRows, containerRef } = useViewportRows();
   const { page, pageSize, setPage, setPageSize } = usePagination([], maxRows);
   const { search, setSearch } = useSearch();
+
+  const { hasPermission } = usePermissions();
+  const canRead = hasPermission(PERMISSIONS.orders.read);
+  const canUpdate = hasPermission(PERMISSIONS.orders.update);
 
   const [filters, setFilters] = useState({ status: "" });
 
@@ -66,7 +71,7 @@ const OrderList = () => {
     <Box ref={containerRef}>
       <TableToolbar title="Orders" searchValue={search} onSearchChange={setSearch} onRefresh={refetch} />
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
-      <DataTable columns={columns} rows={orders} loading={loading} error={error} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={(row) => navigate(`/admin/orders/${row.id}`)} rowsPerPageOptions={[10, 25, 50, 100]} />
+      <DataTable columns={columns} rows={orders} loading={loading} error={error} total={total} page={page} pageSize={pageSize} onPageChange={setPage} onPageSizeChange={setPageSize} onRowClick={canRead || canUpdate ? (row) => navigate(`/admin/orders/${row.id}`) : undefined} rowsPerPageOptions={[10, 25, 50, 100]} />
     </Box>
   );
 };

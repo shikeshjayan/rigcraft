@@ -23,6 +23,7 @@ const MobileDrawer = ({
   cartCount,
   showCartTick,
   onLogout,
+  user,
 }) => {
   const containerRef = useDialog({ open, onClose });
   const navigate = useNavigate();
@@ -106,6 +107,12 @@ const MobileDrawer = ({
             <PersonOutlineOutlinedIcon />
             {isLoggedIn ? profileText : 'Profile'}
           </Link>
+          {isLoggedIn && user && user.role !== 'customer' && (
+            <Link to="/admin" onClick={onClose} className="flex items-center gap-3 text-[16px] font-bold p-3 rounded-md hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer" style={{ color: 'var(--color-text)' }}>
+              <PersonOutlineOutlinedIcon />
+              Admin Dashboard
+            </Link>
+          )}
           <Link to="/wishlist" onClick={onClose} className="flex items-center justify-between text-[16px] font-bold p-3 rounded-md hover:bg-[var(--color-bg-secondary)] transition-colors cursor-pointer" style={{ color: 'var(--color-text)' }}>
             <div className="flex items-center gap-3">
               <FavoriteBorderIcon />

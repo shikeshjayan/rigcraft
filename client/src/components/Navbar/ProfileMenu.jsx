@@ -12,7 +12,7 @@ import LogoutOutlinedIcon from '@mui/icons-material/LogoutOutlined';
 const MENU_LINK_CLASS =
   'flex items-center gap-3 px-3 py-2.5 rounded-sm hover:bg-gradient-to-r hover:from-[#E8F4FF] hover:to-transparent hover:text-[var(--color-primary)] transition-all cursor-pointer';
 
-const ProfileMenu = ({ isLoggedIn, profileText, onLogout }) => {
+const ProfileMenu = ({ isLoggedIn, profileText, onLogout, user }) => {
   const [open, setOpen] = useState(false);
   const containerRef = useRef(null);
 
@@ -84,6 +84,14 @@ const ProfileMenu = ({ isLoggedIn, profileText, onLogout }) => {
                       Your Build
                     </Link>
                   </li>
+                  {user && user.role !== 'customer' && (
+                    <li className="mx-2 my-0.5">
+                      <Link to="/admin" onClick={() => setOpen(false)} className={MENU_LINK_CLASS}>
+                        <DesktopWindowsOutlinedIcon fontSize="small" className="text-[var(--color-primary)] opacity-80" />
+                        Admin Dashboard
+                      </Link>
+                    </li>
+                  )}
                 </>
               )}
               <li className="mx-2 my-0.5">

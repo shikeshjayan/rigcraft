@@ -19,8 +19,18 @@ export const handleAuthSuccess = (user, navigate, login) => {
     isAuthenticated: true,
   });
 
-  if (['admin', 'manager'].includes(user.role)) {
-    navigate('/admin/dashboard');
+  if (user.role !== 'customer') {
+    const rolePaths = {
+      super_admin: '/admin/dashboard',
+      admin: '/admin/dashboard',
+      product_manager: '/admin/products',
+      order_manager: '/admin/orders',
+      support_executive: '/admin/support',
+    };
+    
+    // Normalize user role locally just in case it has spaces before sending it for lookup
+    const normalizedRole = user.role ? user.role.replace(" ", "_") : "customer";
+    navigate(rolePaths[normalizedRole] || '/admin/dashboard');
   } else {
     navigate('/');
   }

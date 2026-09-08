@@ -27,6 +27,8 @@ import {
 import useAuthStore from "../../store/authStore";
 import useNotificationStore from "../../store/notificationStore";
 import useSettingsStore from "../../store/settingsStore";
+import { usePermissions } from "../../hooks";
+import { PERMISSIONS } from "../../constants/permissions";
 import { SIDEBAR_SECTIONS } from "../../constants/sidebar";
 
 const iconMap = {
@@ -132,10 +134,13 @@ const Sidebar = ({ open, onClose, collapsed }) => {
   const storeName = useSettingsStore((s) => s.storeName);
   const logo = useSettingsStore((s) => s.logo);
   const fetchSettings = useSettingsStore((s) => s.fetchSettings);
+  const { hasPermission } = usePermissions();
   const [activeSection, setActiveSection] = useState("Catalog");
   const [logoutDialogOpen, setLogoutDialogOpen] = useState(false);
 
-  useEffect(() => { fetchSettings(); }, [fetchSettings]);
+  useEffect(() => { 
+    if (hasPermission(PERMISSIONS.settings.read)) fetchSettings(); 
+  }, [fetchSettings, hasPermission]);
 
   useEffect(() => {
     const path = location.pathname;
@@ -158,7 +163,10 @@ const Sidebar = ({ open, onClose, collapsed }) => {
 
   const filteredSections = SIDEBAR_SECTIONS.map((section) => ({
     ...section,
-    items: section.items.filter((item) => item.roles.includes(user?.role)),
+    items: section.items.filter((item) => 
+      item.roles.includes(user?.role) && 
+      (!item.requiredPermission || hasPermission(item.requiredPermission))
+    ),
   })).filter((section) => section.items.length > 0);
 
   const sidebarContent = (
