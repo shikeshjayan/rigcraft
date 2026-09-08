@@ -23,7 +23,7 @@ const MODULE_ROLES = {
   orders: ["admin", "super_admin", "order_manager"],
   customers: ["admin", "super_admin", "order_manager", "support_executive"],
   reviews: ["admin", "super_admin", "order_manager", "support_executive"],
-  coupons: ["admin", "super_admin"],
+  coupons: ["admin", "super_admin", "order_manager"],
   supportTickets: ["admin", "super_admin", "order_manager", "support_executive"],
   newsletter: ["admin", "super_admin", "product_manager"],
   notifications: ["admin", "super_admin", "order_manager", "support_executive"],
@@ -227,7 +227,7 @@ const searchNewsletter = async (regex, limit) => {
 
 const searchNotifications = async (regex, limit) => {
   const docs = await Notification.find({
-    recipientRole: { $in: ["admin", "super_admin", "product_manager", "order_manager"] },
+    recipientRole: { $in: ["admin", "super_admin", "product_manager", "order_manager", "support_executive"] },
     ...buildRegexFilter(regex, ["title", "message"]),
   })
     .select("title message")

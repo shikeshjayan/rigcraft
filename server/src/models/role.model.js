@@ -35,6 +35,10 @@ const roleSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+roleSchema.index({ name: 1 });
+roleSchema.index({ isSystem: 1 });
+roleSchema.index({ isActive: 1 });
+
 roleSchema.pre('save', function () {
   if (this.isModified('permissions')) {
     this.permissions = [...new Set(this.permissions)];

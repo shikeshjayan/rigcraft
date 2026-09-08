@@ -1,12 +1,15 @@
 import { Router } from "express";
 import * as dealController from "../controllers/deal.controller.js";
 import { protect, authorize } from "../middlewares/auth.js";
+import { hasPermission } from "../middlewares/permission.js";
 import validate from "../middlewares/validate.js";
 import {
   createDealSchema,
   updateDealSchema,
 } from "../validators/deal.validator.js";
 import { uploadFields } from "../middlewares/upload.middleware.js";
+import { USER_ROLES } from "../constants/constants.js";
+import { PERMISSIONS } from "../constants/permissions.js";
 
 const router = Router();
 const adminRouter = Router();
@@ -20,17 +23,18 @@ router.get("/:slug", dealController.getBySlug);
 // ── Admin routes ───────────────────────────────────────────────
 
 // List & search
-adminRouter.get("/", protect, authorize("admin", "super_admin"), dealController.getAll);
-adminRouter.get("/active-list", protect, authorize("admin", "super_admin"), dealController.getActiveForHomepage);
+adminRouter.get("/", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN), hasPermission(PERMISSIONS.deals.list), dealController.getAll);
+adminRouter.get("/active-list", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN), hasPermission(PERMISSIONS.deals.list), dealController.getActiveForHomepage);
 
 // Single deal
-adminRouter.get("/:id", protect, authorize("admin", "super_admin"), dealController.getById);
+adminRouter.get("/:id", protect, authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN), hasPermission(PERMISSIONS.deals.read), dealController.getById);
 
 // Create
 adminRouter.post(
   "/",
   protect,
-  authorize("admin", "super_admin"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  hasPermission(PERMISSIONS.deals.create),
   uploadFields([
     { name: "desktopBanner", maxCount: 1 },
     { name: "mobileBanner", maxCount: 1 },
@@ -43,7 +47,8 @@ adminRouter.post(
 adminRouter.put(
   "/:id",
   protect,
-  authorize("admin", "super_admin"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  hasPermission(PERMISSIONS.deals.update),
   uploadFields([
     { name: "desktopBanner", maxCount: 1 },
     { name: "mobileBanner", maxCount: 1 },
@@ -56,7 +61,8 @@ adminRouter.put(
 adminRouter.patch(
   "/:id/status",
   protect,
-  authorize("admin", "super_admin"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  hasPermission(PERMISSIONS.deals.toggleStatus),
   dealController.toggleStatus,
 );
 
@@ -64,7 +70,8 @@ adminRouter.patch(
 adminRouter.delete(
   "/:id",
   protect,
-  authorize("admin"),
+  authorize(USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN),
+  hasPermission(PERMISSIONS.deals.delete),
   dealController.remove,
 );
 
