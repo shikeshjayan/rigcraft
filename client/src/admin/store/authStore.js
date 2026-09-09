@@ -2,77 +2,39 @@ import { create } from "zustand";
 import api from "../../shared/api/axios";
 import { ENDPOINTS } from "../../shared/api/endpoints";
 
-const useAuthStore = create(
-  persist(
-    (set, get) => ({
-      user: null,
-      isAuthenticated: false,
+const ADMIN_ROLES = ["admin", "super_admin", "product_manager", "order_manager", "support_executive"];
 
-      login: async (credentials) => {
-        const { data } = await api.post(ENDPOINTS.AUTH.LOGIN, credentials);
-        const { user } = data.data;
-        set({
-          user: {
-            id: user._id,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            name: `${user.firstName} ${user.lastName}`,
-            email: user.email,
-            role: user.role ? user.role.replace(" ", "_") : "customer",
-            permissions: user.permissions !== undefined ? user.permissions : undefined,
-            avatar: user.avatar?.url || null,
-            phone: user.phone || "",
-          },
-          isAuthenticated: true,
-        });
-      },
+const normalizeUser = (user) => ({
+  id: user.id || user._id,
+  firstName: user.firstName,
+  lastName: user.lastName,
+  name: user.name || [user.firstName, user.lastName].filter(Boolean).join(" ") || "",
+  email: user.email,
+  role: user.role ? user.role.replace(" ", "_") : "customer",
+  permissions: user.permissions !== undefined ? user.permissions : undefined,
+  avatar: user.avatar?.url || (typeof user.avatar === "string" ? user.avatar : null),
+  phone: user.phone || "",
+});
 
-const useAuthStore = create((set) => ({
+const useAuthStore = create((set, get) => ({
   user: null,
   isAuthenticated: false,
   isHydrating: true,
 
-      setUser: (userData) => {
-        const normalized = {
-          ...userData,
-          id: userData.id || userData._id,
-          firstName: userData.firstName,
-          lastName: userData.lastName,
-          name: userData.name || [userData.firstName, userData.lastName].filter(Boolean).join(' ') || '',
-          role: userData.role ? userData.role.replace(" ", "_") : "customer",
-          permissions: userData.permissions !== undefined ? userData.permissions : undefined,
-          avatar: typeof userData.avatar === 'object' && userData.avatar ? userData.avatar.url : (userData.avatar || null),
-        };
-        set({ user: normalized });
-      },
+  login: async (credentials) => {
+    const { data } = await api.post(ENDPOINTS.AUTH.LOGIN, credentials);
+    const user = data.data;
+    set({
+      user: normalizeUser(user),
+      isAuthenticated: true,
+    });
+  },
 
-      hydrate: async () => {
-        try {
-          // Only attempt hydration if we think we're authenticated
-          if (!get().isAuthenticated) return;
-          
-          const { data } = await api.get(ENDPOINTS.AUTH.PROFILE);
-          if (data && data.data) {
-            get().setUser(data.data);
-          }
-        } catch (error) {
-          // If hydration fails (e.g. invalid token), logout the user
-          get().logout();
-        }
-      }
-    }),
-    {
-      name: "admin-auth-storage",
-      version: 1,
-      migrate: (persistedState) => {
-        const user = persistedState?.user;
-        if (user && !user.firstName) {
-          const parts = (user.name || "").trim().split(/\s+/);
-          user.firstName = user.firstName || parts[0] || "";
-          user.lastName = user.lastName || parts.slice(1).join(" ") || "";
-        }
-        return persistedState;
-      },
+  logout: async () => {
+    try {
+      await api.post(ENDPOINTS.AUTH.LOGOUT, null, { _skipAuthRedirect: true });
+    } catch {
+      // ignore
     }
     ["rigcraft_token", "accessToken", "rigcraft_auth", "rigcraft_user", "admin-auth-storage"].forEach((key) => {
       try {
@@ -87,6 +49,19 @@ const useAuthStore = create((set) => ({
 
   setUser: (userData) => {
     set({ user: normalizeUser(userData) });
+  },
+
+  hydrate: async () => {
+    try {
+      if (!get().isAuthenticated) return;
+
+      const { data } = await api.get(ENDPOINTS.AUTH.PROFILE, { _skipAuthRedirect: true });
+      if (data && data.data) {
+        get().setUser(data.data);
+      }
+    } catch {
+      get().logout();
+    }
   },
 
   refreshUser: async () => {
