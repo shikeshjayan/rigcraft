@@ -6,7 +6,7 @@ import { clearToken } from "../../shared/auth/token";
 
 const useAuthStore = create(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: null,
       isAuthenticated: false,
 
@@ -21,7 +21,7 @@ const useAuthStore = create(
             name: `${user.firstName} ${user.lastName}`,
             email: user.email,
             role: user.role ? user.role.replace(" ", "_") : "customer",
-            permissions: user.permissions || undefined,
+            permissions: user.permissions !== undefined ? user.permissions : undefined,
             avatar: user.avatar?.url || null,
             phone: user.phone || "",
           },
@@ -50,11 +50,26 @@ const useAuthStore = create(
           lastName: userData.lastName,
           name: userData.name || [userData.firstName, userData.lastName].filter(Boolean).join(' ') || '',
           role: userData.role ? userData.role.replace(" ", "_") : "customer",
-          permissions: userData.permissions || undefined,
+          permissions: userData.permissions !== undefined ? userData.permissions : undefined,
           avatar: typeof userData.avatar === 'object' && userData.avatar ? userData.avatar.url : (userData.avatar || null),
         };
         set({ user: normalized });
       },
+
+      hydrate: async () => {
+        try {
+          // Only attempt hydration if we think we're authenticated
+          if (!get().isAuthenticated) return;
+          
+          const { data } = await api.get(ENDPOINTS.AUTH.PROFILE);
+          if (data && data.data) {
+            get().setUser(data.data);
+          }
+        } catch (error) {
+          // If hydration fails (e.g. invalid token), logout the user
+          get().logout();
+        }
+      }
     }),
     {
       name: "admin-auth-storage",

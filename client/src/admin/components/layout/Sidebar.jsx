@@ -164,7 +164,9 @@ const Sidebar = ({ open, onClose, collapsed }) => {
   const filteredSections = SIDEBAR_SECTIONS.map((section) => ({
     ...section,
     items: section.items.filter((item) => {
-      if (!item.roles.includes(user?.role)) return false;
+      // Exclude customer role from seeing admin sidebar items
+      if (user?.role === "customer") return false;
+      
       if (item.requiredPermissions) {
         return item.requiredPermissions.some(p => hasPermission(p));
       }

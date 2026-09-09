@@ -51,7 +51,13 @@ const createTokenResponse = async (user, statusCode, res, rememberMe = false) =>
   user.password = undefined;
   user.refreshToken = undefined;
 
-  const permissions = await getPermissions(user.role);
+  let permissions;
+  if (user.permissions !== undefined) {
+    permissions = Array.isArray(user.permissions) ? user.permissions : [];
+  } else {
+    permissions = await getPermissions(user.role);
+  }
+
   return res.status(statusCode).json({
     success: true,
     data: {
