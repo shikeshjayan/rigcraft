@@ -65,14 +65,14 @@ const Dashboard = () => {
   };
   const isPositive = (val) => (val ?? 0) >= 0;
 
-  const statCards = stats
-    ? [
-        { title: "Total Revenue", value: formatCurrency(stats.totalRevenue), icon: AttachMoney, change: changeStr(stats.revenueChange), changeColor: isPositive(stats.revenueChange) ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
-        { title: "Orders", value: stats.totalOrders.toLocaleString(), icon: ShoppingCart, change: changeStr(stats.ordersChange), changeColor: isPositive(stats.ordersChange) ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
-        { title: "Products", value: stats.totalProducts.toLocaleString(), icon: Inventory, change: changeStr(stats.productsChange), changeColor: isPositive(stats.productsChange) ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
-        { title: "Customers", value: stats.totalCustomers.toLocaleString(), icon: People, change: changeStr(stats.customersChange), changeColor: isPositive(stats.customersChange) ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
-      ]
-    : [];
+const statCards = stats
+     ? [
+         { title: "Total Revenue", value: formatCurrency(stats?.totalRevenue ?? 0), icon: AttachMoney, change: changeStr(stats?.revenueChange ?? 0), changeColor: isPositive(stats?.revenueChange ?? 0) ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
+         { title: "Orders", value: (stats?.totalOrders ?? 0).toLocaleString(), icon: ShoppingCart, change: changeStr(stats?.ordersChange ?? 0), changeColor: isPositive(stats?.ordersChange ?? 0) ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
+         { title: "Products", value: (stats?.totalProducts ?? 0).toLocaleString(), icon: Inventory, change: changeStr(stats?.productsChange ?? 0), changeColor: isPositive(stats?.productsChange ?? 0) ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
+         { title: "Customers", value: (stats?.totalCustomers ?? 0).toLocaleString(), icon: People, change: changeStr(stats?.customersChange ?? 0), changeColor: isPositive(stats?.customersChange ?? 0) ? "var(--color-admin-success)" : "var(--color-admin-danger)" },
+       ]
+     : [];
 
   if (loading) {
     return (

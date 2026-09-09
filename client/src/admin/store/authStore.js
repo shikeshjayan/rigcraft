@@ -53,14 +53,21 @@ const useAuthStore = create((set, get) => ({
 
   hydrate: async () => {
     try {
-      if (!get().isAuthenticated) return;
-
       const { data } = await api.get(ENDPOINTS.AUTH.PROFILE, { _skipAuthRedirect: true });
       if (data && data.data) {
+        // Store the normalized user
         get().setUser(data.data);
+        // Check if user has admin role
+        const { user } = get();
+        const isAdmin = ADMIN_ROLES.includes(user.role);
+        set({ isAuthenticated: isAdmin });
+      } else {
+        set({ user: null, isAuthenticated: false });
       }
     } catch {
-      get().logout();
+      set({ user: null, isAuthenticated: false });
+    } finally {
+      set({ isHydrating: false });
     }
   },
 
