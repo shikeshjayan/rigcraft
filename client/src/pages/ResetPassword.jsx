@@ -52,7 +52,7 @@ const ResetPassword = () => {
       return;
     }
 
-    resetMutation.mutate({ token, password });
+    resetMutation.mutate({ token, password, confirmPassword });
   };
 
   return (

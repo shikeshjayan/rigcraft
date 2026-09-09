@@ -12,7 +12,7 @@ export const useWishlist = () => {
 };
 
 export const WishlistProvider = ({ children }) => {
-  const { user } = useAuth();
+  const { user, isLoggingOutRef, isHydrating } = useAuth();
   const queryClient = useQueryClient();
   const { addToCart } = useCart();
 
@@ -33,7 +33,7 @@ export const WishlistProvider = ({ children }) => {
         };
       });
     },
-    enabled: !!user,
+    enabled: !!user && !isHydrating,
     retry: false,
   });
 
@@ -45,15 +45,15 @@ export const WishlistProvider = ({ children }) => {
     }
   });
 
-  const wishlist = user ? (serverItems ?? []) : guestWishlist;
+  const wishlist = !isHydrating && user ? (serverItems ?? []) : guestWishlist;
 
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!user) {
+    if (!user && !(isLoggingOutRef && isLoggingOutRef.current)) {
       localStorage.setItem(storageKey, JSON.stringify(guestWishlist));
     }
-  }, [guestWishlist, user]);
+  }, [guestWishlist, user, isLoggingOutRef]);
 
   const invalidateWishlist = () => queryClient.invalidateQueries({ queryKey: ['wishlist', user?._id] });
 

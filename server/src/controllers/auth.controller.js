@@ -49,7 +49,7 @@ export const updatePassword = asyncHandler(async (req, res) => {
 });
 
 export const forgotPassword = asyncHandler(async (req, res) => {
-  await authService.forgotPassword(req.body.email);
+  await authService.forgotPassword(req.body.email || req.body.phone);
   ApiResponse.ok(null, 'If the email exists, a reset link has been sent').send(res);
 });
 
@@ -68,12 +68,12 @@ export const refresh = asyncHandler(async (req, res) => {
 });
 
 export const logout = asyncHandler(async (req, res) => {
-  await authService.logout(res);
+  await authService.logout(req.user.id, res);
   ApiResponse.ok(null, 'Logged out successfully').send(res);
 });
 
 export const deactivate = asyncHandler(async (req, res) => {
   await authService.deactivateAccount(req.user.id);
-  await authService.logout(res);
+  await authService.logout(req.user.id, res);
   ApiResponse.ok(null, 'Account deactivated').send(res);
 });

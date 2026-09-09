@@ -1,8 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import api from "../../shared/api/axios";
 import { ENDPOINTS } from "../../shared/api/endpoints";
-import { clearToken } from "../../shared/auth/token";
 
 const useAuthStore = create(
   persist(
@@ -29,18 +27,10 @@ const useAuthStore = create(
         });
       },
 
-      logout: async () => {
-        try {
-          await api.post(ENDPOINTS.AUTH.LOGOUT);
-        } catch {
-          // ignore
-        }
-        clearToken();
-        localStorage.removeItem("rigcraft_auth");
-        localStorage.removeItem("rigcraft_user");
-        set({ user: null, isAuthenticated: false });
-        window.dispatchEvent(new Event("rigcraft:auth-logout"));
-      },
+const useAuthStore = create((set) => ({
+  user: null,
+  isAuthenticated: false,
+  isHydrating: true,
 
       setUser: (userData) => {
         const normalized = {
@@ -84,7 +74,28 @@ const useAuthStore = create(
         return persistedState;
       },
     }
-  )
-);
+    ["rigcraft_token", "accessToken", "rigcraft_auth", "rigcraft_user", "admin-auth-storage"].forEach((key) => {
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // storage unavailable
+      }
+    });
+    set({ user: null, isAuthenticated: false });
+    window.dispatchEvent(new Event("rigcraft:auth-logout"));
+  },
+
+  setUser: (userData) => {
+    set({ user: normalizeUser(userData) });
+  },
+}));
 
 export default useAuthStore;
+
+if (typeof window !== "undefined") {
+  // Session is proven by the HttpOnly cookie at boot, before any route renders.
+  useAuthStore.getState().hydrate();
+  window.addEventListener("rigcraft:auth-logout", () => {
+    useAuthStore.setState({ user: null, isAuthenticated: false });
+  });
+}

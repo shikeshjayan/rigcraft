@@ -10,7 +10,7 @@ import { useWishlist } from '../context/WishlistContext';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import { useQuery } from '@tanstack/react-query';
-import { getProfile } from '../api/auth';
+import { authService } from '../services/auth.service';
 import { getPublicSettings } from '../services/settings.service';
 import { useSearch } from '../hooks/useSearch';
 import apiClient from '../api/client';
@@ -33,7 +33,7 @@ const Navbar = () => {
 
   const { data: profileData } = useQuery({
     queryKey: ['profile', user?._id || user?.id],
-    queryFn: getProfile,
+    queryFn: authService.getProfile,
     enabled: isLoggedIn,
     retry: false,
   });

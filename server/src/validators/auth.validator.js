@@ -105,9 +105,28 @@ export const googleLoginSchema = z.object({
   credential: z.string().min(1, 'Google credential is required'),
 });
 
-export const forgotPasswordSchema = z.object({
-  email: z.string().email("Invalid email address").trim().toLowerCase(),
-});
+export const forgotPasswordSchema = z
+  .object({
+    email: z
+      .string()
+      .email("Invalid email address")
+      .trim()
+      .toLowerCase()
+      .optional(),
+    phone: z
+      .string()
+      .trim()
+      .regex(phoneRegex, "Invalid phone number")
+      .optional(),
+  })
+  .refine((data) => data.email || data.phone, {
+    message: "Email or phone is required",
+    path: ["email"],
+  })
+  .refine((data) => !(data.email && data.phone), {
+    message: "Provide either email or phone, not both",
+    path: ["email"],
+  });
 
 export const resetPasswordSchema = z
   .object({

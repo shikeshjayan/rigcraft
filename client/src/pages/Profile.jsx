@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '../context/AuthContext';
-import { getProfile } from '../api/auth';
+import { authService } from '../services/auth.service';
 import { useNavigate, useLocation } from 'react-router-dom';
 import apiClient from '../api/client';
-import { clearToken } from '../shared/auth/token';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -96,7 +95,7 @@ const SidebarGroup = ({ icon, label, open, onToggle, children }) => (
 );
 
 const Profile = () => {
-  const { isLoggedIn, user, logout } = useAuth();
+  const { isLoggedIn, isHydrating, user, logout } = useAuth();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
@@ -106,16 +105,16 @@ const Profile = () => {
   const [buildsTotalPages, setBuildsTotalPages] = useState(1);
   const [couponsTotalPages, setCouponsTotalPages] = useState(1);
 
-  // Redirect if not logged in
+  // Redirect if not logged in (wait for the cookie-based session check first)
   useEffect(() => {
-    if (!isLoggedIn) {
+    if (!isHydrating && !isLoggedIn) {
       navigate('/login');
     }
-  }, [isLoggedIn, navigate]);
+  }, [isLoggedIn, isHydrating, navigate]);
 
   const { data: profileData, isLoading } = useQuery({
     queryKey: ['profile'],
-    queryFn: getProfile,
+    queryFn: authService.getProfile,
     enabled: isLoggedIn,
     retry: false
   });
@@ -373,8 +372,9 @@ const handleCancelEdit = () => {
   const handleDeactivateAccount = async () => {
     setIsDeactivating(true);
     try {
-      await apiClient.post('/auth/deactivate');
-      clearToken();
+      await apiClient.post('/auth/deactivate', null, { _skipAuthRedirect: true });
+      localStorage.removeItem('rigcraft_token');
+      localStorage.removeItem('accessToken');
       localStorage.removeItem('rigcraft_auth');
       localStorage.removeItem('rigcraft_user');
       localStorage.removeItem('admin-auth-storage');
@@ -444,9 +444,10 @@ const handleCancelEdit = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = async () => {
+    // logout() now awaits the server-side revocation (cookie cleared) before
+    // performing its own full-page reload — no navigate() needed here.
+    await logout();
   };
 
   const handleAvatarChange = async (e) => {

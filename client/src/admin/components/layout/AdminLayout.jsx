@@ -10,7 +10,7 @@ import { useRouteMeta } from "../../../utils/seo";
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const { isAuthenticated, user } = useAuthStore();
+  const { isAuthenticated, user, isHydrating } = useAuthStore();
   const fetchUnreadCount = useNotificationStore((s) => s.fetchUnreadCount);
   const location = useLocation();
   useRouteMeta(location.pathname);
@@ -28,6 +28,10 @@ const AdminLayout = () => {
       if (sock) sock.off("notification:new", handleNotif);
     };
   }, [isAuthenticated, fetchUnreadCount]);
+
+  if (isHydrating) {
+    return null;
+  }
 
   if (!isAuthenticated || !user) {
     return <Navigate to="/login" replace />;
