@@ -37,6 +37,7 @@ import {
   Image as ImageIcon,
   Publish as PublishIcon,
   ToggleOn as ToggleOnIcon,
+  Chat as ChatIcon,
 } from "@mui/icons-material";
 import { PERMISSIONS, ROLE_PERMISSIONS } from "../../constants/permissions";
 import { userService } from "../../services/userService";
@@ -612,7 +613,6 @@ const UserDetails = () => {
           </Box>
           <Grid container spacing={3}>
             {(() => {
-              // Icon mapping
               const MODULE_ICONS = {
                 dashboard: <DashboardIcon sx={{ fontSize: 20 }} />,
                 users: <GroupIcon sx={{ fontSize: 20 }} />,
@@ -625,6 +625,13 @@ const UserDetails = () => {
                 customers: <GroupIcon sx={{ fontSize: 20 }} />,
                 reviews: <ReviewsIcon sx={{ fontSize: 20 }} />,
                 reports: <AssessmentIcon sx={{ fontSize: 20 }} />,
+                administration: <VpnKeyIcon sx={{ fontSize: 20 }} />,
+                roles: <VpnKeyIcon sx={{ fontSize: 20 }} />,
+                permissions: <VpnKeyIcon sx={{ fontSize: 20 }} />,
+                payments: <AttachMoneyIcon sx={{ fontSize: 20 }} />,
+                supportTickets: <InfoOutlinedIcon sx={{ fontSize: 20 }} />,
+                liveChat: <ChatIcon sx={{ fontSize: 20 }} />,
+                coupons: <LabelIcon sx={{ fontSize: 20 }} />,
               };
 
               const ACTION_ICONS = {
@@ -641,7 +648,241 @@ const UserDetails = () => {
                 toggleStatus: <ToggleOnIcon sx={{ fontSize: 16 }} />,
                 updateStock: <EditIcon sx={{ fontSize: 16 }} />,
                 productReports: <AssessmentIcon sx={{ fontSize: 16 }} />,
+                assignRole: <VpnKeyIcon sx={{ fontSize: 16 }} />,
+                manageRoles: <VpnKeyIcon sx={{ fontSize: 16 }} />,
+                managePermissions: <VpnKeyIcon sx={{ fontSize: 16 }} />,
+                block: <BlockIcon sx={{ fontSize: 16 }} />,
+                unblock: <CheckIcon sx={{ fontSize: 16 }} />,
+                cancel: <CloseIcon sx={{ fontSize: 16 }} />,
+                refund: <AttachMoneyIcon sx={{ fontSize: 16 }} />,
+                moderate: <CheckIcon sx={{ fontSize: 16 }} />,
+                confirm: <CheckIcon sx={{ fontSize: 16 }} />,
+                process: <ListAltIcon sx={{ fontSize: 16 }} />,
+                ship: <StorageIcon sx={{ fontSize: 16 }} />,
+                deliver: <CheckIcon sx={{ fontSize: 16 }} />,
+                handleReturn: <RestoreIcon sx={{ fontSize: 16 }} />,
+                readTransaction: <ViewIcon sx={{ fontSize: 16 }} />,
+                manage: <EditIcon sx={{ fontSize: 16 }} />,
+                salesReports: <AssessmentIcon sx={{ fontSize: 16 }} />,
+                readDetails: <ViewIcon sx={{ fontSize: 16 }} />,
+                readOrders: <OrdersIcon sx={{ fontSize: 16 }} />,
+                readAddresses: <AddressesIcon sx={{ fontSize: 16 }} />,
+                suspend: <BlockIcon sx={{ fontSize: 16 }} />,
+                readStatus: <ViewIcon sx={{ fontSize: 16 }} />,
+                readCompatibility: <ExtensionIcon sx={{ fontSize: 16 }} />,
+                approve: <CheckIcon sx={{ fontSize: 16 }} />,
+                reply: <ChatIcon sx={{ fontSize: 16 }} />,
+                assign: <GroupIcon sx={{ fontSize: 16 }} />,
+                close: <CloseIcon sx={{ fontSize: 16 }} />,
+                escalate: <PublishIcon sx={{ fontSize: 16 }} />,
+                chat: <ChatIcon sx={{ fontSize: 16 }} />,
+                transfer: <ArrowBackIcon sx={{ fontSize: 16 }} />,
+                supportReports: <AssessmentIcon sx={{ fontSize: 16 }} />,
               };
+
+              const ADMIN_CONFIG = [
+                {
+                  key: "administration", label: "Administration",
+                  permissions: [
+                    { key: "create", label: "Create Admin User", value: PERMISSIONS.users.create },
+                    { key: "update", label: "Update Admin User", value: PERMISSIONS.users.update },
+                    { key: "assignRole", label: "Assign Role", value: PERMISSIONS.users.assignRole },
+                  ]
+                },
+                {
+                  key: "roles", label: "Roles",
+                  permissions: [
+                    { key: "manageRoles", label: "Manage Roles", value: PERMISSIONS.roles.manage },
+                  ]
+                },
+                {
+                  key: "permissions", label: "Permissions",
+                  permissions: [
+                    { key: "managePermissions", label: "Manage Permissions", value: PERMISSIONS.permissions.manage },
+                  ]
+                },
+                {
+                  key: "customers", label: "Customers",
+                  permissions: [
+                    { key: "read", label: "Read", value: PERMISSIONS.users.read },
+                    { key: "update", label: "Update", value: PERMISSIONS.users.update },
+                    { key: "block", label: "Block", value: PERMISSIONS.users.block },
+                    { key: "unblock", label: "Unblock", value: PERMISSIONS.users.deactivate },
+                  ]
+                },
+                {
+                  key: "categories", label: "Categories",
+                  permissions: [
+                    { key: "read", label: "Read", value: PERMISSIONS.categories.read },
+                    { key: "create", label: "Create", value: PERMISSIONS.categories.create },
+                    { key: "update", label: "Update", value: PERMISSIONS.categories.update },
+                    { key: "delete", label: "Delete", value: PERMISSIONS.categories.delete },
+                  ]
+                },
+                {
+                  key: "brands", label: "Brands",
+                  permissions: [
+                    { key: "read", label: "Read", value: PERMISSIONS.brands.read },
+                    { key: "create", label: "Create", value: PERMISSIONS.brands.create },
+                    { key: "update", label: "Update", value: PERMISSIONS.brands.update },
+                    { key: "delete", label: "Delete", value: PERMISSIONS.brands.delete },
+                  ]
+                },
+                {
+                  key: "products", label: "Products",
+                  permissions: [
+                    { key: "create", label: "Create", value: PERMISSIONS.products.create },
+                    { key: "read", label: "Read", value: PERMISSIONS.products.read },
+                    { key: "update", label: "Update", value: PERMISSIONS.products.update },
+                    { key: "delete", label: "Delete", value: PERMISSIONS.products.delete },
+                    { key: "publish", label: "Publish", value: PERMISSIONS.products.publish },
+                  ]
+                },
+                {
+                  key: "orders", label: "Orders",
+                  permissions: [
+                    { key: "read", label: "Read", value: PERMISSIONS.orders.read },
+                    { key: "update", label: "Update", value: PERMISSIONS.orders.update },
+                    { key: "cancel", label: "Cancel", value: PERMISSIONS.orders.cancel },
+                    { key: "refund", label: "Refund", value: PERMISSIONS.orders.refund },
+                  ]
+                },
+                {
+                  key: "reviews", label: "Reviews",
+                  permissions: [
+                    { key: "moderate", label: "Approve / Reject", value: PERMISSIONS.reviews.moderate },
+                  ]
+                },
+                {
+                  key: "reports", label: "Reports",
+                  permissions: [
+                    { key: "read", label: "Read / Export", value: PERMISSIONS.reports?.product },
+                  ]
+                }
+              ];
+
+              const ORDER_MANAGER_CONFIG = [
+                {
+                  key: "orders", label: "Orders",
+                  permissions: [
+                    { key: "readDetails", label: "Read Details", value: PERMISSIONS.orders.read },
+                    { key: "update", label: "Update", value: PERMISSIONS.orders.update },
+                    { key: "confirm", label: "Confirm", value: PERMISSIONS.orders.manageStatus },
+                    { key: "process", label: "Process", value: PERMISSIONS.orders.process },
+                    { key: "ship", label: "Ship", value: PERMISSIONS.orders.ship },
+                    { key: "deliver", label: "Deliver", value: PERMISSIONS.orders.deliver },
+                    { key: "cancel", label: "Cancel", value: PERMISSIONS.orders.cancel },
+                    { key: "handleReturn", label: "Handle Return", value: PERMISSIONS.orders.return },
+                    { key: "refund", label: "Refund", value: PERMISSIONS.orders.refund },
+                  ]
+                },
+                {
+                  key: "payments", label: "Payments",
+                  permissions: [
+                    { key: "read", label: "Read", value: PERMISSIONS.orders.managePaymentStatus },
+                    { key: "readTransaction", label: "Read Transaction", value: PERMISSIONS.settings.managePaymentKeys },
+                  ]
+                },
+                {
+                  key: "inventory", label: "Inventory",
+                  permissions: [
+                    { key: "read", label: "Read", value: PERMISSIONS.inventory?.read },
+                  ]
+                },
+                {
+                  key: "customers", label: "Customers",
+                  permissions: [
+                    { key: "read", label: "Read", value: PERMISSIONS.users.read },
+                    { key: "block", label: "Block", value: PERMISSIONS.users.block },
+                  ]
+                },
+                {
+                  key: "products", label: "Products",
+                  permissions: [
+                    { key: "update", label: "Update", value: PERMISSIONS.products.update },
+                    { key: "delete", label: "Delete", value: PERMISSIONS.products.delete },
+                  ]
+                },
+                {
+                  key: "coupons", label: "Coupons",
+                  permissions: [
+                    { key: "manage", label: "Manage", value: PERMISSIONS.coupons.update },
+                  ]
+                },
+                {
+                  key: "reports", label: "Reports",
+                  permissions: [
+                    { key: "salesReports", label: "Sales Reports", value: PERMISSIONS.reports?.product },
+                  ]
+                }
+              ];
+
+              const SUPPORT_EXECUTIVE_CONFIG = [
+                {
+                  key: "customers", label: "Customers",
+                  permissions: [
+                    { key: "readDetails", label: "Read Details", value: PERMISSIONS.users.read },
+                    { key: "readOrders", label: "Read Orders", value: PERMISSIONS.orders.list },
+                    { key: "readAddresses", label: "Read Addresses", value: PERMISSIONS.addresses.read },
+                    { key: "suspend", label: "Suspend", value: PERMISSIONS.users.block },
+                  ]
+                },
+                {
+                  key: "orders", label: "Orders",
+                  permissions: [
+                    { key: "read", label: "Read", value: PERMISSIONS.orders.list },
+                    { key: "readDetails", label: "Read Details", value: PERMISSIONS.orders.read },
+                    { key: "update", label: "Update", value: PERMISSIONS.orders.update },
+                    { key: "cancel", label: "Cancel", value: PERMISSIONS.orders.cancel },
+                    { key: "refund", label: "Refund", value: PERMISSIONS.orders.refund },
+                  ]
+                },
+                {
+                  key: "payments", label: "Payments",
+                  permissions: [
+                    { key: "readStatus", label: "Read Status", value: PERMISSIONS.orders.managePaymentStatus },
+                    { key: "readTransaction", label: "Read Transaction", value: PERMISSIONS.settings.managePaymentKeys },
+                  ]
+                },
+                {
+                  key: "products", label: "Products",
+                  permissions: [
+                    { key: "readCompatibility", label: "Read Compatibility", value: PERMISSIONS.builds.compatibilityIssues },
+                  ]
+                },
+                {
+                  key: "reviews", label: "Reviews",
+                  permissions: [
+                    { key: "read", label: "Read", value: PERMISSIONS.reviews.read },
+                    { key: "approve", label: "Approve", value: PERMISSIONS.reviews.moderate },
+                  ]
+                },
+                {
+                  key: "supportTickets", label: "Support Tickets",
+                  permissions: [
+                    { key: "create", label: "Create", value: PERMISSIONS.support.createTicket },
+                    { key: "read", label: "Read", value: PERMISSIONS.support.read },
+                    { key: "update", label: "Update", value: PERMISSIONS.support.update },
+                    { key: "reply", label: "Reply", value: PERMISSIONS.support.reply },
+                    { key: "assign", label: "Assign", value: PERMISSIONS.support.assign },
+                    { key: "close", label: "Close", value: PERMISSIONS.support.updateStatus },
+                    { key: "escalate", label: "Escalate", value: PERMISSIONS.support.updatePriority },
+                  ]
+                },
+                {
+                  key: "liveChat", label: "Live Chat",
+                  permissions: [
+                    { key: "chat", label: "Chat", value: PERMISSIONS.ai.chat },
+                    { key: "transfer", label: "Transfer", value: PERMISSIONS.ai.chat },
+                  ]
+                },
+                {
+                  key: "reports", label: "Reports",
+                  permissions: [
+                    { key: "supportReports", label: "Support Reports", value: PERMISSIONS.reports?.product },
+                  ]
+                }
+              ];
 
               const PRODUCT_MANAGER_CONFIG = [
                 {
@@ -718,6 +959,12 @@ const UserDetails = () => {
               let renderConfig = [];
               if (user.role === STATUS_ROLES.PRODUCT_MANAGER) {
                 renderConfig = PRODUCT_MANAGER_CONFIG;
+              } else if (user.role === STATUS_ROLES.ADMIN) {
+                renderConfig = ADMIN_CONFIG;
+              } else if (user.role === STATUS_ROLES.ORDER_MANAGER) {
+                renderConfig = ORDER_MANAGER_CONFIG;
+              } else if (user.role === STATUS_ROLES.SUPPORT_EXECUTIVE) {
+                renderConfig = SUPPORT_EXECUTIVE_CONFIG;
               } else {
                 renderConfig = MODULES.map(module => {
                   const modPerms = PERMISSIONS[module.key];

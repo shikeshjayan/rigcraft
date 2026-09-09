@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import AdminLayout from "../components/layout/AdminLayout";
 import ProtectedRoute from "./ProtectedRoute";
@@ -46,6 +47,7 @@ import SupportDetails from "../pages/support/SupportDetails";
 import NotificationList from "../pages/notifications/NotificationList";
 import NotificationDetails from "../pages/notifications/NotificationDetails";
 import { ROLES } from "../constants/status";
+
 const RoleBasedRedirect = () => {
   const { user } = useAuthStore();
   const normalizedRole = user?.role ? user.role.replace(" ", "_") : "customer";
@@ -69,6 +71,12 @@ const PermissionRoute = ({ children, requiredPermissions }) => {
 };
 
 const AdminRoutes = () => {
+  const hydrate = useAuthStore((state) => state.hydrate);
+  
+  useEffect(() => {
+    hydrate();
+  }, [hydrate]);
+
   return (
     <Routes>
       <Route path="login" element={<Navigate to="/login" replace />} />
@@ -137,7 +145,7 @@ const AdminRoutes = () => {
         <Route path="settings" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.settings)}><Settings /></PermissionRoute>} />
         <Route path="profile" element={<Profile />} />
         
-        <Route path="roles" element={<ProtectedRoute allowedRoles={["super_admin"]}><PermissionRoute requiredPermissions={Object.values(PERMISSIONS.roles)}><RolesAccessList /></PermissionRoute></ProtectedRoute>} />
+        <Route path="roles" element={<ProtectedRoute allowedRoles={["super_admin", "admin"]}><PermissionRoute requiredPermissions={Object.values(PERMISSIONS.roles)}><RolesAccessList /></PermissionRoute></ProtectedRoute>} />
       </Route>
 
       <Route path="*" element={<RoleBasedRedirect />} />
