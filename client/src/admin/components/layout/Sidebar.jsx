@@ -23,6 +23,7 @@ import {
   Notifications as NotificationsIcon,
   ExitToApp as ExitToAppIcon,
   PrecisionManufacturing as PrecisionManufacturingIcon,
+  VpnKey as VpnKeyIcon,
 } from "@mui/icons-material";
 import useAuthStore from "../../store/authStore";
 import useNotificationStore from "../../store/notificationStore";
@@ -48,6 +49,7 @@ const iconMap = {
   QuestionAnswer: QuestionAnswerIcon,
   Notifications: NotificationsIcon,
   Person: PersonIcon,
+  VpnKey: VpnKeyIcon,
 };
 
 const sectionIconMap = {
@@ -163,10 +165,15 @@ const Sidebar = ({ open, onClose, collapsed }) => {
 
   const filteredSections = SIDEBAR_SECTIONS.map((section) => ({
     ...section,
-    items: section.items.filter((item) => 
-      item.roles.includes(user?.role) && 
-      (!item.requiredPermission || hasPermission(item.requiredPermission))
-    ),
+    items: section.items.filter((item) => {
+      // Exclude customer role from seeing admin sidebar items
+      if (user?.role === "customer") return false;
+      
+      if (item.requiredPermissions) {
+        return item.requiredPermissions.some(p => hasPermission(p));
+      }
+      return true;
+    }),
   })).filter((section) => section.items.length > 0);
 
   const sidebarContent = (

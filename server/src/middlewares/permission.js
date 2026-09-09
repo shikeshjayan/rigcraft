@@ -3,22 +3,33 @@ import { getPermissions } from '../services/role.service.js';
 import ApiError from '../utils/ApiError.js';
 import asyncHandler from '../utils/asyncHandler.js';
 
+export const getEffectivePermissions = async (user) => {
+  if (!user) return [];
+
+  // Explicit per-user permissions always win.
+  // [] means the user has no permissions.
+  if (user.permissions !== undefined) {
+    return Array.isArray(user.permissions) ? user.permissions : [];
+  }
+
+  // No custom permissions configured.
+  // Fall back to role permissions.
+  let rolePerms = await getPermissions(user.role);
+  if (!rolePerms) {
+    rolePerms = ROLE_PERMISSIONS[user.role];
+  }
+
+  return rolePerms || [];
+};
+
 export const hasPermission = (...requiredPermissions) =>
   asyncHandler(async (req, res, next) => {
     if (!req.user) throw ApiError.unauthorized('Not authorized');
 
-    const userRole = req.user.role;
-    let rolePerms = await getPermissions(userRole);
-
-    if (!rolePerms) {
-      rolePerms = ROLE_PERMISSIONS[userRole];
-    }
-    if (!rolePerms) {
-      throw ApiError.forbidden('Invalid role');
-    }
+    const effectivePermissions = await getEffectivePermissions(req.user);
 
     const hasAllPermissions = requiredPermissions.every((perm) =>
-      rolePerms.includes(perm)
+      effectivePermissions.includes(perm)
     );
 
     if (!hasAllPermissions) {
@@ -32,18 +43,10 @@ export const hasAnyPermission = (...requiredPermissions) =>
   asyncHandler(async (req, res, next) => {
     if (!req.user) throw ApiError.unauthorized('Not authorized');
 
-    const userRole = req.user.role;
-    let rolePerms = await getPermissions(userRole);
-
-    if (!rolePerms) {
-      rolePerms = ROLE_PERMISSIONS[userRole];
-    }
-    if (!rolePerms) {
-      throw ApiError.forbidden('Invalid role');
-    }
+    const effectivePermissions = await getEffectivePermissions(req.user);
 
     const hasAtLeastOne = requiredPermissions.some((perm) =>
-      rolePerms.includes(perm)
+      effectivePermissions.includes(perm)
     );
 
     if (!hasAtLeastOne) {
@@ -57,18 +60,10 @@ export const hasAllPermissions = (...requiredPermissions) =>
   asyncHandler(async (req, res, next) => {
     if (!req.user) throw ApiError.unauthorized('Not authorized');
 
-    const userRole = req.user.role;
-    let rolePerms = await getPermissions(userRole);
-
-    if (!rolePerms) {
-      rolePerms = ROLE_PERMISSIONS[userRole];
-    }
-    if (!rolePerms) {
-      throw ApiError.forbidden('Invalid role');
-    }
+    const effectivePermissions = await getEffectivePermissions(req.user);
 
     const hasAll = requiredPermissions.every((perm) =>
-      rolePerms.includes(perm)
+      effectivePermissions.includes(perm)
     );
 
     if (!hasAll) {
