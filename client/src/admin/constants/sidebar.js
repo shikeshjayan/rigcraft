@@ -126,13 +126,6 @@ export const SIDEBAR_SECTIONS = [
         roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
         requiredPermissions: [PERMISSIONS.users.read],
       },
-      {
-        label: "Roles & Access",
-        path: "/admin/roles",
-        icon: "VpnKey",
-        roles: [ROLES.SUPER_ADMIN],
-        requiredPermissions: [PERMISSIONS.roles.manage],
-      },
     ],
   },
   {
@@ -170,6 +163,18 @@ export const SIDEBAR_SECTIONS = [
         icon: "Settings",
         roles: [ROLES.SUPER_ADMIN],
         requiredPermissions: [PERMISSIONS.settings.read],
+      },
+    ],
+  },
+  {
+    section: null,
+    items: [
+      {
+        label: "Roles & Access",
+        path: "/admin/roles",
+        icon: "VpnKey",
+        roles: [ROLES.SUPER_ADMIN],
+        requiredPermissions: [PERMISSIONS.roles.manage],
       },
     ],
   },

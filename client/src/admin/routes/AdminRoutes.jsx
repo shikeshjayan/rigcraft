@@ -146,6 +146,7 @@ const AdminRoutes = () => {
         <Route path="profile" element={<Profile />} />
         
         <Route path="roles" element={<ProtectedRoute allowedRoles={["super_admin", "admin"]}><PermissionRoute requiredPermissions={Object.values(PERMISSIONS.roles)}><RolesAccessList /></PermissionRoute></ProtectedRoute>} />
+        <Route path="roles/:id" element={<ProtectedRoute allowedRoles={["super_admin", "admin"]}><PermissionRoute requiredPermissions={Object.values(PERMISSIONS.roles)}><UserDetails /></PermissionRoute></ProtectedRoute>} />
       </Route>
 
       <Route path="*" element={<RoleBasedRedirect />} />

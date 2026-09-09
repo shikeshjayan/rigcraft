@@ -23,6 +23,7 @@ import {
   Notifications as NotificationsIcon,
   ExitToApp as ExitToAppIcon,
   PrecisionManufacturing as PrecisionManufacturingIcon,
+  VpnKey as VpnKeyIcon,
 } from "@mui/icons-material";
 import useAuthStore from "../../store/authStore";
 import useNotificationStore from "../../store/notificationStore";
@@ -48,6 +49,7 @@ const iconMap = {
   QuestionAnswer: QuestionAnswerIcon,
   Notifications: NotificationsIcon,
   Person: PersonIcon,
+  VpnKey: VpnKeyIcon,
 };
 
 const sectionIconMap = {

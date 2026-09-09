@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom";
 import {
   Box, Typography, Grid, Chip, TextField, MenuItem, IconButton, Tabs, Tab, Rating, Tooltip,
   Card, CardContent, Switch, FormControlLabel,
@@ -123,6 +123,7 @@ const TabPanel = ({ children, value, index }) => (
 const UserDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const currentUser = useAuthStore((state) => state.user);
   const ROLES = ALL_ROLES;
@@ -317,7 +318,7 @@ const UserDetails = () => {
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3, flexWrap: "wrap" }}>
-        <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate("/admin/users")} />
+        <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate(location.pathname.startsWith("/admin/roles") ? "/admin/roles" : "/admin/users")} />
         <AdminThumbnail
           src={user.avatar}
           alt={user.name}
