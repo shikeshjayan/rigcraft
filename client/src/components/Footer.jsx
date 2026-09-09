@@ -209,7 +209,7 @@ const Footer = ({ hideNewsletter = false }) => {
                 {/* <li className="cursor-pointer hover:text-white transition-colors">Best Sellers</li>
                 <li className="cursor-pointer hover:text-white transition-colors">New Arrivals</li>
                 <li className="cursor-pointer hover:text-white transition-colors">Today's Deals</li> */}
-                {user && ['admin', 'manager'].includes(user.role) && (
+                {user && ['super_admin','admin','product_manager','order_manager','support_executive'].includes(user.role) && (
                   <li className="cursor-pointer hover:text-white transition-colors"><Link to="/admin" className="block w-full">Dashboard</Link></li>
                 )}
               </ul>
