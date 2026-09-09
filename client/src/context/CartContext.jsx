@@ -10,7 +10,7 @@ const CartContext = createContext();
 export const useCart = () => useContext(CartContext);
 
 export const CartProvider = ({ children }) => {
-  const { user } = useAuth();
+  const { user, isLoggingOutRef, isHydrating } = useAuth();
   const queryClient = useQueryClient();
 
   const storageKey = 'rigcraft_cart_guest';
@@ -38,7 +38,7 @@ export const CartProvider = ({ children }) => {
         };
       });
     },
-    enabled: !!user,
+    enabled: !!user && !isHydrating,
     retry: false,
   });
 
@@ -50,15 +50,15 @@ export const CartProvider = ({ children }) => {
     }
   });
 
-  const cartItems = user ? (serverItems ?? []) : guestCart;
+  const cartItems = isHydrating ? [] : user ? (serverItems ?? []) : guestCart;
 
   const { toast } = useToast();
 
   useEffect(() => {
-    if (!user) {
+    if (!user && !(isLoggingOutRef && isLoggingOutRef.current)) {
       localStorage.setItem(storageKey, JSON.stringify(guestCart));
     }
-  }, [guestCart, user]);
+  }, [guestCart, user, isLoggingOutRef]);
 
   const invalidateCart = () => queryClient.invalidateQueries({ queryKey: ['cart', user?._id] });
 

@@ -1,11 +1,4 @@
-import { getToken } from './auth/token'
-
-const SERVER_ORIGIN =
-  import.meta.env.VITE_SOCKET_URL ||
-  (import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000')
-    .replace(/\/api\/v1\/?$/, '')
-    .replace(/\/+$/, '') ||
-  window.location.origin
+const SERVER_ORIGIN = import.meta.env.VITE_SOCKET_URL || window.location.origin
 
 let socket = null
 let ioPromise = null
@@ -22,7 +15,6 @@ const getIO = () => {
 
 export const connectSocket = async () => {
   if (socket) {
-    socket.auth = { token: getToken() }
     if (!socket.connected) socket.connect()
     return socket
   }
@@ -36,7 +28,6 @@ export const connectSocket = async () => {
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
     })
-    socket.auth = { token: getToken() }
     if (!socket.connected) socket.connect()
   } catch (error) {
     console.error('Failed to load socket client', error)

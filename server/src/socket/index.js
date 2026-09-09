@@ -19,14 +19,10 @@ export const initSocket = (httpServer) => {
   });
 
   io.use((socket, next) => {
-    const token =
-      socket.handshake.auth?.token ||
-      socket.handshake.query?.token ||
-      (() => {
-        const cookie = socket.handshake.headers?.cookie || "";
-        const match = cookie.match(/(?:^|;\s*)token=([^;]+)/);
-        return match ? decodeURIComponent(match[1]) : null;
-      })();
+    // Cookies are now the only credential source (same-origin Socket.IO).
+    const cookie = socket.handshake.headers?.cookie || "";
+    const match = cookie.match(/(?:^|;\s*)token=([^;]+)/);
+    const token = match ? decodeURIComponent(match[1]) : null;
     if (!token) return next(new Error("Authentication required"));
 
     try {

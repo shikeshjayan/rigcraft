@@ -1,21 +1,3 @@
-import axios from "axios";
-import { getToken } from "../shared/auth/token";
-
-const apiClient = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1",
-  withCredentials: true,
-});
-
-apiClient.interceptors.request.use(
-  (config) => {
-    const token = getToken();
-    if (token) {
-      config.headers = config.headers || {};
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
-
-export default apiClient;
+// Single shared axios instance so every consumer (api/client, shared/api and
+// all pages) gets the same same-origin baseURL + refresh-on-401 interceptor.
+export { default } from "../shared/api/axios.js";

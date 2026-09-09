@@ -12,13 +12,13 @@ export const authService = {
     return data;
   },
 
-  logout: async () => {
-    const { data } = await api.post(ENDPOINTS.AUTH.LOGOUT);
+  logout: async (config) => {
+    const { data } = await api.post(ENDPOINTS.AUTH.LOGOUT, null, config);
     return data;
   },
 
-  deactivateAccount: async () => {
-    const { data } = await api.post(ENDPOINTS.AUTH.DEACTIVATE);
+  deactivateAccount: async (config) => {
+    const { data } = await api.post(ENDPOINTS.AUTH.DEACTIVATE, null, config);
     return data;
   },
 
@@ -27,8 +27,8 @@ export const authService = {
     return data;
   },
 
-  getProfile: async () => {
-    const { data } = await api.get(ENDPOINTS.AUTH.PROFILE);
+  getProfile: async (config) => {
+    const { data } = await api.get(ENDPOINTS.AUTH.PROFILE, config);
     return data;
   },
 

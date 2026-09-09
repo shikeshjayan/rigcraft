@@ -50,6 +50,7 @@ import aiRoutes from "./routes/ai.routes.js";
 import roleRoutes from "./routes/role.routes.js";
 import errorHandler from "./middlewares/error.js";
 import maintenanceMode from "./middlewares/maintenanceMode.js";
+import csrfProtection from "./middlewares/csrf.js";
 
 const { configureCloudinary } = await import("./config/cloudinary.js");
 configureCloudinary();
@@ -76,6 +77,9 @@ app.use(express.json({
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use("/uploads", express.static(uploadsDir));
+
+// Reject cross-site state-changing requests before any router runs.
+app.use(csrfProtection);
 
 app.use(maintenanceMode);
 

@@ -1,28 +1,38 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { clearToken } from '../shared/auth/token';
+import { createContext, useContext, useState, useEffect, useRef } from 'react';
+import { authService } from '../services/auth.service';
 
 const AuthContext = createContext();
 
 export const useAuth = () => useContext(AuthContext);
 
 export const AuthProvider = ({ children }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(() => {
-    try {
-      const stored = localStorage.getItem('rigcraft_auth');
-      return stored === 'true';
-    } catch {
-      return false;
-    }
-  });
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isHydrating, setIsHydrating] = useState(true);
+  const isLoggingOutRef = useRef(false);
 
-  const [user, setUser] = useState(() => {
-    try {
-      const storedUser = localStorage.getItem('rigcraft_user');
-      return storedUser ? JSON.parse(storedUser) : null;
-    } catch {
-      return null;
-    }
-  });
+  // Confirm the session on the server (HttpOnly cookie) instead of trusting
+  // anything stored client-side.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const data = await authService.getProfile({ _skipAuthRedirect: true });
+        if (!active) return;
+        setIsLoggedIn(true);
+        setUser(data.data);
+      } catch {
+        if (!active) return;
+        setIsLoggedIn(false);
+        setUser(null);
+      } finally {
+        if (active) setIsHydrating(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   useEffect(() => {
     const onAuthLogout = () => {
@@ -33,31 +43,38 @@ export const AuthProvider = ({ children }) => {
     return () => window.removeEventListener('rigcraft:auth-logout', onAuthLogout);
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('rigcraft_auth', isLoggedIn.toString());
-    if (user) {
-      localStorage.setItem('rigcraft_user', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('rigcraft_user');
-    }
-  }, [isLoggedIn, user]);
-
   const login = (userData) => {
     setIsLoggedIn(true);
     if (userData) {
       setUser(userData);
     }
   };
-   
-  const logout = () => {
+
+  const logout = async () => {
+    // Flag that we are logging out so CartContext / WishlistContext stop writing
+    // guest data to localStorage (a stale write after removal resurrects items).
+    isLoggingOutRef.current = true;
+    // Best-effort server-side session revocation. Suppresses the interceptor's
+    // redirect so the full-page navigation below handles it. Wait for the token
+    // cookie to be revoked BEFORE navigating away — a full-page reload right
+    // after a fire-and-forget request aborts it and hydration logs the user
+    // straight back in.
+    await Promise.race([
+      authService.logout({ _skipAuthRedirect: true }).catch(() => {}),
+      new Promise((resolve) => setTimeout(resolve, 3000)),
+    ]);
     setIsLoggedIn(false);
     setUser(null);
-    clearToken();
-    localStorage.removeItem('rigcraft_auth');
-    localStorage.removeItem('rigcraft_user');
-    localStorage.removeItem('admin-auth-storage');
+    ['rigcraft_token', 'accessToken', 'rigcraft_auth', 'rigcraft_user', 'admin-auth-storage'].forEach((key) => {
+      try {
+        localStorage.removeItem(key);
+      } catch {
+        // storage unavailable
+      }
+    });
     localStorage.removeItem('rigcraft_cart_guest');
     localStorage.removeItem('rigcraft_wishlist_guest');
+    window.dispatchEvent(new Event('rigcraft:auth-logout'));
     // Surface a "Logged out" toast after the full page reload below.
     sessionStorage.setItem(
       'rigcraft_pending_toast',
@@ -74,7 +91,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, user, login, logout, handlePasswordChange }}>
+    <AuthContext.Provider value={{ isLoggedIn, user, isHydrating, login, logout, handlePasswordChange, isLoggingOutRef }}>
       {children}
     </AuthContext.Provider>
   );

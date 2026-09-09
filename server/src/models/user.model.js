@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
+import crypto from 'crypto';
 import { USER_ROLES } from '../constants/constants.js';
 
 const avatarSchema = new mongoose.Schema(
@@ -94,6 +95,10 @@ const userSchema = new mongoose.Schema(
       type: Date,
       default: null,
     },
+    otpRequestWindowStart: {
+      type: Date,
+      default: null,
+    },
     resetTokenExpiry: {
       type: Date,
       default: null,
@@ -103,6 +108,10 @@ const userSchema = new mongoose.Schema(
       default: 0,
     },
     lastResetRequest: {
+      type: Date,
+      default: null,
+    },
+    resetRequestWindowStart: {
       type: Date,
       default: null,
     },
@@ -126,7 +135,9 @@ userSchema.pre('validate', function () {
 userSchema.pre('save', async function () {
   if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);
-  this.passwordChangedAt = new Date();
+  // Record the change one second in the past so tokens (which carry a
+  // second-granularity `iat`) are never misjudged as pre-change.
+  this.passwordChangedAt = new Date(Date.now() - 1000);
 });
 
 userSchema.methods.comparePassword = async function (candidate) {
@@ -134,9 +145,14 @@ userSchema.methods.comparePassword = async function (candidate) {
 };
 
 userSchema.methods.generateRefreshToken = function () {
-  return jwt.sign({ id: this._id }, process.env.JWT_REFRESH_SECRET, {
-    expiresIn: '30d',
-  });
+  // Unique `jti` per issuance: guarantees rotation produces a distinct token
+  // even within the same second (JWT `iat` is second-granular), so a replayed
+  // old token is always detectable.
+  return jwt.sign(
+    { id: this._id, jti: crypto.randomUUID() },
+    process.env.JWT_REFRESH_SECRET,
+    { expiresIn: '7d' }
+  );
 };
 
 userSchema.methods.generateAccessToken = function (expiresIn) {

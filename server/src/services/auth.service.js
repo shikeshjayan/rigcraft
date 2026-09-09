@@ -59,7 +59,6 @@ const createTokenResponse = async (user, statusCode, res, rememberMe = false) =>
       rememberMe,
       accessToken,
       permissions: permissions || [],
-      ...(user.refreshToken ? { refreshToken: user.refreshToken } : {}),
     },
   });
 };
@@ -74,12 +73,21 @@ export const refreshToken = async (token, res) => {
 
   const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
   const user = await userRepository.findByIdWithRefreshToken(decoded.id);
-  if (!user || user.refreshToken !== token)
+  if (!user) throw ApiError.unauthorized('Invalid or expired refresh token');
+
+  // Reuse detection: the presented token must be the current stored one.
+  // A mismatch means the token was rotated or an attacker replayed it, so
+  // revoke the whole session.
+  if (user.refreshToken !== token) {
+    await userRepository.clearRefreshToken(user._id);
     throw ApiError.unauthorized('Invalid or expired refresh token');
+  }
   if (user.isBlocked) throw ApiError.forbidden('Account is blocked');
   if (user.deactivatedAt)
     throw ApiError.forbidden('This account has been deactivated');
 
+  // Rotate: createTokenResponse(..., rememberMe = true) issues a new refresh
+  // token, persists it, and rotates the cookie.
   return createTokenResponse(user, 200, res, true);
 };
 
@@ -102,7 +110,11 @@ export const updateUserRole = async (userId, role) => {
   return userRepository.updateById(userId, { role });
 };
 
-export const logout = (res) => {
+export const logout = async (userId, res) => {
+  // Revoke the stored refresh token so a leaked token cannot be replayed
+  // after the user explicitly logs out.
+  if (userId) await userRepository.clearRefreshToken(userId);
+
   res.cookie('token', 'none', {
     ...cookieAttributes,
     expires: new Date(Date.now() + 5 * 1000),
@@ -131,19 +143,20 @@ export const login = async (body, res) => {
     if (!user) throw ApiError.unauthorized('Invalid credentials');
     if (!user.password)
       throw ApiError.unauthorized('This account uses Google sign-in. Please sign in with Google');
+    if (user.isBlocked) throw ApiError.forbidden('Account is blocked');
 
-    // Check if account is temporarily locked
+    // Check if account is temporarily locked; clear the lock once it expires
+    if (user.lockTimestamp && user.lockTimestamp <= Date.now()) {
+      user.failedAttempts = 0;
+      user.lockTimestamp = null;
+    }
     if (user.lockTimestamp && user.lockTimestamp > Date.now()) {
       throw ApiError.forbidden('Account temporarily locked due to too many failed attempts');
     }
 
     const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      user.failedAttempts = (user.failedAttempts || 0) + 1;
-      if (user.failedAttempts >= 5) {
-        user.lockTimestamp = Date.now() + 15 * 60 * 1000;
-      }
-      await user.save({ validateBeforeSave: false });
+      await userRepository.incrementFailedAttempts(user._id);
       throw ApiError.unauthorized('Invalid credentials');
     }
     if (user.deactivatedAt)
@@ -161,19 +174,20 @@ export const login = async (body, res) => {
   if (phone && password && !otp) {
     const user = await userRepository.findByPhoneWithPassword(phone);
     if (!user) throw ApiError.unauthorized('Invalid credentials');
+    if (user.isBlocked) throw ApiError.forbidden('Account is blocked');
 
-    // Check if account is temporarily locked
+    // Check if account is temporarily locked; clear the lock once it expires
+    if (user.lockTimestamp && user.lockTimestamp <= Date.now()) {
+      user.failedAttempts = 0;
+      user.lockTimestamp = null;
+    }
     if (user.lockTimestamp && user.lockTimestamp > Date.now()) {
       throw ApiError.forbidden('Account temporarily locked due to too many failed attempts');
     }
 
-    const isMatch = await user.comparePassword(password);
+const isMatch = await user.comparePassword(password);
     if (!isMatch) {
-      user.failedAttempts = (user.failedAttempts || 0) + 1;
-      if (user.failedAttempts >= 5) {
-        user.lockTimestamp = Date.now() + 15 * 60 * 1000;
-      }
-      await user.save({ validateBeforeSave: false });
+      await userRepository.incrementFailedAttempts(user._id);
       throw ApiError.unauthorized('Invalid credentials');
     }
     if (user.deactivatedAt)
@@ -188,60 +202,88 @@ export const login = async (body, res) => {
   }
 
 // ── Phone only — send OTP ────────────────────────────────────
-    if (phone && !password && !otp) {
-      const normalizedPhone = phone.replace(/\s+/g, ''); // Remove spaces from query
-      const user = await userRepository.findByPhone(normalizedPhone);
-     if (!user) throw ApiError.notFound('No account found with this phone number');
-     if (user.deactivatedAt)
-       throw ApiError.forbidden('This account has been deactivated');
+  if (phone && !password && !otp) {
+    const normalizedPhone = phone.replace(/\s+/g, ''); // Remove spaces from query
+    const user = await userRepository.findByPhone(normalizedPhone);
 
-     // Check resend cooldown (60 seconds)
-     if (user.lastOtpRequest && (Date.now() - user.lastOtpRequest < 60 * 1000)) {
-       throw ApiError.tooManyRequests('Please wait before requesting a new OTP');
-     }
+    // Generic response: never reveal whether the phone is registered. Delivery
+    // only happens for a known, active account; cooldown and hourly limits are
+    // enforced silently with the same 200 shape (mirrors forgotPassword).
+    if (user?.isBlocked) throw ApiError.forbidden('Account is blocked');
+    if (user?.deactivatedAt)
+      throw ApiError.forbidden('This account has been deactivated');
 
-     // Check hourly limit (5 requests/hour)
-     if (user.otpRequestCount >= 5) {
-       throw ApiError.tooManyRequests('Too many OTP requests. Please try again later.');
-     }
+    if (!user) {
+      return res.status(200).json({
+        success: true,
+        message: 'OTP sent to your registered email',
+        data: { email: null },
+      });
+    }
 
-     // Generate secure OTP
-     const otpCode = crypto.randomInt(100000, 1000000).toString().padStart(6, '0');
-     
-     // Hash OTP before storage
-     const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
-     user.otp = hashedOtp;
-     user.otpExpire = Date.now() + 5 * 60 * 1000; // Reduced to 5 minutes
-     
-     // Update tracking
-     user.otpRequestCount += 1;
-     user.lastOtpRequest = Date.now();
-     
-     // Invalidate previous OTP verification attempts
-     user.otpVerifyAttempts = 0;
-     
-     await user.save({ validateBeforeSave: false });
+    // Check resend cooldown (60 seconds) — silent to prevent enumeration
+    if (user.lastOtpRequest && Date.now() - user.lastOtpRequest < 60 * 1000) {
+      return res.status(200).json({
+        success: true,
+        message: 'OTP sent to your registered email',
+        data: { email: maskEmail(user.email) },
+      });
+    }
 
-     await sendEmail({
-       to: user.email,
-       subject: 'Your RigCraft Login OTP',
-       html: `<p>Your OTP for login is: <strong>${otpCode}</strong></p><p>This OTP expires in 5 minutes.</p>`,
-     });
+    // Hourly limit (5 requests/hour); counter resets at the start of each window
+    const otpWindowMs = 60 * 60 * 1000;
+    if (user.otpRequestWindowStart && Date.now() - user.otpRequestWindowStart < otpWindowMs) {
+      if (user.otpRequestCount >= 5) {
+        return res.status(200).json({
+          success: true,
+          message: 'OTP sent to your registered email',
+          data: { email: maskEmail(user.email) },
+        });
+      }
+    } else {
+      user.otpRequestCount = 0;
+      user.otpRequestWindowStart = Date.now();
+    }
 
-     return res.status(200).json({
-       success: true,
-       message: 'OTP sent to your registered email',
-       data: { email: maskEmail(user.email) },
-     });
-   }
+    // Generate secure OTP and hash it before storage
+    const otpCode = crypto.randomInt(100000, 1000000).toString().padStart(6, '0');
+    const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
+    user.otp = hashedOtp;
+    user.otpExpire = Date.now() + 5 * 60 * 1000; // Reduced to 5 minutes
+
+    // Invalidate previous OTP verification attempts
+    user.otpVerifyAttempts = 0;
+
+    await user.save({ validateBeforeSave: false });
+
+    await sendEmail({
+      to: user.email,
+      subject: 'Your RigCraft Login OTP',
+      html: `<p>Your OTP for login is: <strong>${otpCode}</strong></p><p>This OTP expires in 5 minutes.</p>`,
+    });
+
+    // Only count the request after the email was actually sent, so a failed
+    // send does not consume the user's quota.
+    user.otpRequestCount = (user.otpRequestCount || 0) + 1;
+    user.lastOtpRequest = Date.now();
+    await user.save({ validateBeforeSave: false });
+
+    return res.status(200).json({
+      success: true,
+      message: 'OTP sent to your registered email',
+      data: { email: maskEmail(user.email) },
+    });
+  }
 
 // ── Phone + OTP — verify and log in ──────────────────────────
     if (phone && otp) {
       const normalizedPhone = phone.replace(/\s+/g, '');
       const user = await userRepository.findByPhoneWithOtp(normalizedPhone);
-     if (!user) throw ApiError.notFound('No account found with this phone number');
+if (!user) throw ApiError.badRequest('Invalid OTP');
 
-     if (user.deactivatedAt)
+      if (user.isBlocked) throw ApiError.forbidden('Account is blocked');
+
+      if (user.deactivatedAt)
        throw ApiError.forbidden('This account has been deactivated');
      
      // Check verification attempt limit (5 attempts)
@@ -394,16 +436,20 @@ export const forgotPassword = async (emailOrPhone) => {
   }
   if (!user) return;
 
-  // Check if reset was recently requested (60-second cooldown)
+  // Silently enforce the 60-second cooldown to prevent enumeration
   if (user.lastResetRequest && (Date.now() - user.lastResetRequest < 60 * 1000)) {
-    // Still return success to prevent enumeration but log internally
-    console.log(`Reset request too soon for ${normalized}`);
+    return;
   }
 
-  // Check hourly limit (5 requests/hour)
-  if (user.resetRequestCount >= 5) {
-    // Still return success to prevent enumeration but log internally
-    console.log(`Reset request limit exceeded for ${normalized}`);
+  // Hourly limit (5 requests/hour), silently enforced; counter resets per window
+  const resetWindowMs = 60 * 60 * 1000;
+  if (user.resetRequestWindowStart && Date.now() - user.resetRequestWindowStart < resetWindowMs) {
+    if (user.resetRequestCount >= 5) {
+      return;
+    }
+  } else {
+    user.resetRequestCount = 0;
+    user.resetRequestWindowStart = Date.now();
   }
 
   // Invalidate previous token when new one is requested
@@ -417,17 +463,16 @@ export const forgotPassword = async (emailOrPhone) => {
     .update(resetToken)
     .digest('hex');
   user.resetPasswordExpire = Date.now() + 15 * 60 * 1000; // Increased to 15 minutes
-  user.resetRequestCount = (user.resetRequestCount || 0) + 1;
-  user.lastResetRequest = Date.now();
   await user.save({ validateBeforeSave: false });
 
   const resetUrl = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-  console.log(`\n========== PASSWORD RESET ==========`);
-  console.log(`Email: ${normalized}`);
-  console.log(`Reset URL: ${resetUrl}`);
-  console.log(`Token: ${resetToken}`);
-  console.log(`====================================\n`);
-  await sendResetPasswordEmail(normalized, resetUrl);
+  await sendResetPasswordEmail(user.email, resetUrl);
+
+  // Only count the request after the email was actually sent, so a failed
+  // send does not consume the user's quota.
+  user.resetRequestCount = (user.resetRequestCount || 0) + 1;
+  user.lastResetRequest = Date.now();
+  await user.save({ validateBeforeSave: false });
 };
 
 export const resetPassword = async (token, password) => {

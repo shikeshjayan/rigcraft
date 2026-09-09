@@ -1,7 +1,9 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE_URL || "http://localhost:5000/api/v1",
+  // Same-origin: the Vite dev proxy and the Vercel rewrite forward /api to the
+  // backend, so HttpOnly cookies remain first-party.
+  baseURL: "/api/v1",
   timeout: 30000,
   withCredentials: true,
 });

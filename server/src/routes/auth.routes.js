@@ -20,39 +20,44 @@ import {
 
 const router = Router();
 
+// Integration tests share a single app instance across the whole suite, so
+// keep per-route limits practically unbounded under `vitest` (NODE_ENV=test)
+// without loosening production throttling.
+const isTest = process.env.NODE_ENV === 'test';
+
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 50,
+  max: isTest ? 10000 : 50,
   message: { success: false, message: 'Too many attempts, try again later' },
 });
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: isTest ? 10000 : 10,
   message: { success: false, message: 'Too many login attempts, try again later' },
 });
 
 const otpRequestLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 5,
+  max: isTest ? 10000 : 5,
   message: { success: false, message: 'Too many OTP requests, try again later' },
 });
 
 const otpVerifyLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: isTest ? 10000 : 10,
   message: { success: false, message: 'Too many OTP verification attempts, try again later' },
 });
 
 const forgotPasswordLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  max: 5,
+  max: isTest ? 10000 : 5,
   message: { success: false, message: 'Too many reset requests, try again later' },
 });
 
 const resetPasswordLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: isTest ? 10000 : 10,
   message: { success: false, message: 'Too many reset attempts, try again later' },
 });
 

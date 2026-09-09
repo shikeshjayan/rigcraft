@@ -286,8 +286,8 @@ const Sidebar = ({ open, onClose, collapsed }) => {
         confirmLabel="Yes, Logout"
         cancelLabel="No, Stay Logged In"
         severity="danger"
-        onConfirm={() => {
-          logout();
+        onConfirm={async () => {
+          await logout();
           navigate("/login");
           setLogoutDialogOpen(false);
         }}
