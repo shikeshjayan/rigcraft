@@ -2,6 +2,8 @@ import { Routes, Route, Navigate } from "react-router-dom";
 import AdminLayout from "../components/layout/AdminLayout";
 import ProtectedRoute from "./ProtectedRoute";
 import useAuthStore from "../store/authStore";
+import { usePermissions } from "../hooks";
+import { PERMISSIONS } from "../constants/permissions";
 import Dashboard from "../pages/dashboard/Dashboard";
 import CategoryList from "../pages/categories/CategoryList";
 import CategoryCreate from "../pages/categories/CategoryCreate";
@@ -59,6 +61,13 @@ const RoleBasedRedirect = () => {
   return <Navigate to={rolePaths[normalizedRole] || 'dashboard'} replace />;
 };
 
+const PermissionRoute = ({ children, requiredPermissions }) => {
+  const { hasPermission } = usePermissions();
+  if (!requiredPermissions) return children;
+  const hasAccess = requiredPermissions.some(p => hasPermission(p));
+  return hasAccess ? children : <Navigate to="/admin/dashboard" replace />;
+};
+
 const AdminRoutes = () => {
   return (
     <Routes>
@@ -74,61 +83,61 @@ const AdminRoutes = () => {
         <Route index element={<RoleBasedRedirect />} />
         <Route path="dashboard" element={<Dashboard />} />
 
-        <Route path="categories" element={<CategoryList />} />
-        <Route path="categories/new" element={<CategoryCreate />} />
-        <Route path="categories/:id/edit" element={<CategoryEdit />} />
+        <Route path="categories" element={<PermissionRoute requiredPermissions={[PERMISSIONS.categories.read, PERMISSIONS.categories.create, PERMISSIONS.categories.update, PERMISSIONS.categories.delete, PERMISSIONS.categories.toggleStatus]}><CategoryList /></PermissionRoute>} />
+        <Route path="categories/new" element={<PermissionRoute requiredPermissions={[PERMISSIONS.categories.read, PERMISSIONS.categories.create, PERMISSIONS.categories.update, PERMISSIONS.categories.delete, PERMISSIONS.categories.toggleStatus]}><CategoryCreate /></PermissionRoute>} />
+        <Route path="categories/:id/edit" element={<PermissionRoute requiredPermissions={[PERMISSIONS.categories.read, PERMISSIONS.categories.create, PERMISSIONS.categories.update, PERMISSIONS.categories.delete, PERMISSIONS.categories.toggleStatus]}><CategoryEdit /></PermissionRoute>} />
 
-        <Route path="brands" element={<BrandList />} />
-        <Route path="brands/new" element={<BrandCreate />} />
-        <Route path="brands/:id/edit" element={<BrandEdit />} />
+        <Route path="brands" element={<PermissionRoute requiredPermissions={[PERMISSIONS.brands.read, PERMISSIONS.brands.create, PERMISSIONS.brands.update, PERMISSIONS.brands.delete]}><BrandList /></PermissionRoute>} />
+        <Route path="brands/new" element={<PermissionRoute requiredPermissions={[PERMISSIONS.brands.read, PERMISSIONS.brands.create, PERMISSIONS.brands.update, PERMISSIONS.brands.delete]}><BrandCreate /></PermissionRoute>} />
+        <Route path="brands/:id/edit" element={<PermissionRoute requiredPermissions={[PERMISSIONS.brands.read, PERMISSIONS.brands.create, PERMISSIONS.brands.update, PERMISSIONS.brands.delete]}><BrandEdit /></PermissionRoute>} />
 
-        <Route path="products" element={<ProductList />} />
-        <Route path="products/new" element={<ProductCreate />} />
-        <Route path="products/:id" element={<ProductDetails />} />
-        <Route path="products/:id/edit" element={<ProductEdit />} />
+        <Route path="products" element={<PermissionRoute requiredPermissions={[PERMISSIONS.products.read, PERMISSIONS.products.create, PERMISSIONS.products.update, PERMISSIONS.products.delete, PERMISSIONS.products.managePricing, PERMISSIONS.products.manageStock, PERMISSIONS.products.manageSpecifications, PERMISSIONS.products.manageCompatibility, PERMISSIONS.products.manageImages, PERMISSIONS.products.publish]}><ProductList /></PermissionRoute>} />
+        <Route path="products/new" element={<PermissionRoute requiredPermissions={[PERMISSIONS.products.read, PERMISSIONS.products.create, PERMISSIONS.products.update, PERMISSIONS.products.delete, PERMISSIONS.products.managePricing, PERMISSIONS.products.manageStock, PERMISSIONS.products.manageSpecifications, PERMISSIONS.products.manageCompatibility, PERMISSIONS.products.manageImages, PERMISSIONS.products.publish]}><ProductCreate /></PermissionRoute>} />
+        <Route path="products/:id" element={<PermissionRoute requiredPermissions={[PERMISSIONS.products.read, PERMISSIONS.products.create, PERMISSIONS.products.update, PERMISSIONS.products.delete, PERMISSIONS.products.managePricing, PERMISSIONS.products.manageStock, PERMISSIONS.products.manageSpecifications, PERMISSIONS.products.manageCompatibility, PERMISSIONS.products.manageImages, PERMISSIONS.products.publish]}><ProductDetails /></PermissionRoute>} />
+        <Route path="products/:id/edit" element={<PermissionRoute requiredPermissions={[PERMISSIONS.products.read, PERMISSIONS.products.create, PERMISSIONS.products.update, PERMISSIONS.products.delete, PERMISSIONS.products.managePricing, PERMISSIONS.products.manageStock, PERMISSIONS.products.manageSpecifications, PERMISSIONS.products.manageCompatibility, PERMISSIONS.products.manageImages, PERMISSIONS.products.publish]}><ProductEdit /></PermissionRoute>} />
 
-        <Route path="prebuilt" element={<PrebuiltList />} />
-        <Route path="prebuilt/new" element={<PrebuiltCreate />} />
-        <Route path="prebuilt/:id" element={<PrebuiltDetails />} />
-        <Route path="prebuilt/:id/edit" element={<PrebuiltEdit />} />
+        <Route path="prebuilt" element={<PermissionRoute requiredPermissions={[PERMISSIONS.prebuilts.read, PERMISSIONS.prebuilts.create, PERMISSIONS.prebuilts.update, PERMISSIONS.prebuilts.delete, PERMISSIONS.prebuilts.publish]}><PrebuiltList /></PermissionRoute>} />
+        <Route path="prebuilt/new" element={<PermissionRoute requiredPermissions={[PERMISSIONS.prebuilts.read, PERMISSIONS.prebuilts.create, PERMISSIONS.prebuilts.update, PERMISSIONS.prebuilts.delete, PERMISSIONS.prebuilts.publish]}><PrebuiltCreate /></PermissionRoute>} />
+        <Route path="prebuilt/:id" element={<PermissionRoute requiredPermissions={[PERMISSIONS.prebuilts.read, PERMISSIONS.prebuilts.create, PERMISSIONS.prebuilts.update, PERMISSIONS.prebuilts.delete, PERMISSIONS.prebuilts.publish]}><PrebuiltDetails /></PermissionRoute>} />
+        <Route path="prebuilt/:id/edit" element={<PermissionRoute requiredPermissions={[PERMISSIONS.prebuilts.read, PERMISSIONS.prebuilts.create, PERMISSIONS.prebuilts.update, PERMISSIONS.prebuilts.delete, PERMISSIONS.prebuilts.publish]}><PrebuiltEdit /></PermissionRoute>} />
 
-        <Route path="orders" element={<OrderList />} />
-        <Route path="orders/:id" element={<OrderDetails />} />
+        <Route path="orders" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.orders)}><OrderList /></PermissionRoute>} />
+        <Route path="orders/:id" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.orders)}><OrderDetails /></PermissionRoute>} />
 
-        <Route path="coupons" element={<CouponList />} />
-        <Route path="coupons/new" element={<CouponCreate />} />
-        <Route path="coupons/:id/edit" element={<CouponEdit />} />
+        <Route path="coupons" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.coupons)}><CouponList /></PermissionRoute>} />
+        <Route path="coupons/new" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.coupons)}><CouponCreate /></PermissionRoute>} />
+        <Route path="coupons/:id/edit" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.coupons)}><CouponEdit /></PermissionRoute>} />
 
-        <Route path="reviews" element={<ReviewList />} />
-        <Route path="reviews/:id" element={<ReviewDetails />} />
+        <Route path="reviews" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.reviews)}><ReviewList /></PermissionRoute>} />
+        <Route path="reviews/:id" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.reviews)}><ReviewDetails /></PermissionRoute>} />
 
-        <Route path="users" element={<UserList />} />
-        <Route path="users/:id" element={<UserDetails />} />
+        <Route path="users" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.users)}><UserList /></PermissionRoute>} />
+        <Route path="users/:id" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.users)}><UserDetails /></PermissionRoute>} />
 
-        <Route path="deals" element={<DealList />} />
-        <Route path="deals/new" element={<DealCreate />} />
-        <Route path="deals/:id/edit" element={<DealEdit />} />
+        <Route path="deals" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.deals)}><DealList /></PermissionRoute>} />
+        <Route path="deals/new" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.deals)}><DealCreate /></PermissionRoute>} />
+        <Route path="deals/:id/edit" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.deals)}><DealEdit /></PermissionRoute>} />
 
-        <Route path="bundles" element={<BundleList />} />
-        <Route path="bundles/new" element={<BundleCreate />} />
-        <Route path="bundles/:id/edit" element={<BundleEdit />} />
+        <Route path="bundles" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.bundles)}><BundleList /></PermissionRoute>} />
+        <Route path="bundles/new" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.bundles)}><BundleCreate /></PermissionRoute>} />
+        <Route path="bundles/:id/edit" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.bundles)}><BundleEdit /></PermissionRoute>} />
 
-        <Route path="faqs" element={<FaqList />} />
-        <Route path="faqs/new" element={<FaqCreate />} />
-        <Route path="faqs/:id/edit" element={<FaqEdit />} />
+        <Route path="faqs" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.faqs)}><FaqList /></PermissionRoute>} />
+        <Route path="faqs/new" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.faqs)}><FaqCreate /></PermissionRoute>} />
+        <Route path="faqs/:id/edit" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.faqs)}><FaqEdit /></PermissionRoute>} />
 
-        <Route path="support" element={<SupportList />} />
-        <Route path="support/:id" element={<SupportDetails />} />
+        <Route path="support" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.support)}><SupportList /></PermissionRoute>} />
+        <Route path="support/:id" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.support)}><SupportDetails /></PermissionRoute>} />
 
-        <Route path="notifications" element={<NotificationList />} />
-        <Route path="notifications/:id" element={<NotificationDetails />} />
+        <Route path="notifications" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.notifications)}><NotificationList /></PermissionRoute>} />
+        <Route path="notifications/:id" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.notifications)}><NotificationDetails /></PermissionRoute>} />
 
-        <Route path="newsletter" element={<NewsletterList />} />
+        <Route path="newsletter" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.newsletter)}><NewsletterList /></PermissionRoute>} />
 
-        <Route path="settings" element={<Settings />} />
+        <Route path="settings" element={<PermissionRoute requiredPermissions={Object.values(PERMISSIONS.settings)}><Settings /></PermissionRoute>} />
         <Route path="profile" element={<Profile />} />
         
-        <Route path="roles" element={<ProtectedRoute allowedRoles={["super_admin"]}><RolesAccessList /></ProtectedRoute>} />
+        <Route path="roles" element={<ProtectedRoute allowedRoles={["super_admin"]}><PermissionRoute requiredPermissions={Object.values(PERMISSIONS.roles)}><RolesAccessList /></PermissionRoute></ProtectedRoute>} />
       </Route>
 
       <Route path="*" element={<RoleBasedRedirect />} />

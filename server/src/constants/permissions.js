@@ -17,6 +17,11 @@ export const PERMISSIONS = {
     list: 'products.list',
     archive: 'products.archive',
     manageStock: 'products.stock.manage',
+    managePricing: 'products.pricing.manage',
+    manageSpecifications: 'products.specifications.manage',
+    manageCompatibility: 'products.compatibility.manage',
+    manageImages: 'products.images.manage',
+    publish: 'products.publish',
   },
   categories: {
     create: 'categories.create',
@@ -24,6 +29,7 @@ export const PERMISSIONS = {
     update: 'categories.update',
     delete: 'categories.delete',
     list: 'categories.list',
+    toggleStatus: 'categories.status.toggle',
   },
   brands: {
     create: 'brands.create',
@@ -39,6 +45,7 @@ export const PERMISSIONS = {
     delete: 'prebuilts.delete',
     list: 'prebuilts.list',
     archive: 'prebuilts.archive',
+    publish: 'prebuilts.publish',
   },
   bundles: {
     create: 'bundles.create',
@@ -185,6 +192,13 @@ export const PERMISSIONS = {
   audit: {
     logsRead: 'audit.logs.read',
   },
+  inventory: {
+    read: 'inventory.read',
+    updateStock: 'inventory.stock.update',
+  },
+  reports: {
+    product: 'reports.product',
+  },
 };
 
 export const PROTECTED_PERMISSIONS = [
@@ -222,4 +236,6 @@ export const PERMISSION_MODULE_MAP = {
   roles: Object.values(PERMISSIONS.roles),
   permissions: Object.values(PERMISSIONS.permissions),
   audit: Object.values(PERMISSIONS.audit),
+  inventory: Object.values(PERMISSIONS.inventory),
+  reports: Object.values(PERMISSIONS.reports),
 };

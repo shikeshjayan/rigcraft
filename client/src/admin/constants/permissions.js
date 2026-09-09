@@ -4,16 +4,16 @@ export const PERMISSIONS = {
     create: 'users.create', read: 'users.read', update: 'users.update', delete: 'users.delete', list: 'users.list', block: 'users.block', deactivate: 'users.deactivate', assignRole: 'users.role.assign',
   },
   products: {
-    create: 'products.create', read: 'products.read', update: 'products.update', delete: 'products.delete', list: 'products.list', archive: 'products.archive', manageStock: 'products.stock.manage',
+    create: 'products.create', read: 'products.read', update: 'products.update', delete: 'products.delete', list: 'products.list', archive: 'products.archive', manageStock: 'products.stock.manage', managePricing: 'products.pricing.manage', manageSpecifications: 'products.specifications.manage', manageCompatibility: 'products.compatibility.manage', manageImages: 'products.images.manage', publish: 'products.publish',
   },
   categories: {
-    create: 'categories.create', read: 'categories.read', update: 'categories.update', delete: 'categories.delete', list: 'categories.list',
+    create: 'categories.create', read: 'categories.read', update: 'categories.update', delete: 'categories.delete', list: 'categories.list', toggleStatus: 'categories.status.toggle',
   },
   brands: {
     create: 'brands.create', read: 'brands.read', update: 'brands.update', delete: 'brands.delete', list: 'brands.list',
   },
   prebuilts: {
-    create: 'prebuilts.create', read: 'prebuilts.read', update: 'prebuilts.update', delete: 'prebuilts.delete', list: 'prebuilts.list', archive: 'prebuilts.archive',
+    create: 'prebuilts.create', read: 'prebuilts.read', update: 'prebuilts.update', delete: 'prebuilts.delete', list: 'prebuilts.list', archive: 'prebuilts.archive', publish: 'prebuilts.publish',
   },
   bundles: {
     create: 'bundles.create', read: 'bundles.read', update: 'bundles.update', delete: 'bundles.delete', list: 'bundles.list', archive: 'bundles.archive', toggleStatus: 'bundles.status.toggle',
@@ -75,13 +75,19 @@ export const PERMISSIONS = {
   audit: {
     logsRead: 'audit.logs.read',
   },
+  inventory: {
+    read: 'inventory.read', updateStock: 'inventory.stock.update',
+  },
+  reports: {
+    product: 'reports.product',
+  },
 };
 
 const {
   users, products, categories, brands, prebuilts, bundles, orders,
   coupons, deals, reviews, support, settings, dashboard, notifications,
   search, faqs, newsletter, stockAlerts, addresses, builds, uploads, ai,
-  roles, permissions: permsNs, audit,
+  roles, permissions: permsNs, audit, inventory, reports,
 } = PERMISSIONS;
 
 export const ROLE_PERMISSIONS = {
@@ -111,6 +117,8 @@ export const ROLE_PERMISSIONS = {
     ...Object.values(roles),
     ...Object.values(permsNs),
     ...Object.values(audit),
+    ...Object.values(inventory),
+    ...Object.values(reports),
   ],
 
   admin: [
@@ -161,6 +169,8 @@ export const ROLE_PERMISSIONS = {
     newsletter.list, newsletter.read,
     uploads.image,
     ai.chat,
+    inventory.read, inventory.updateStock,
+    reports.product,
   ],
 
   order_manager: [
