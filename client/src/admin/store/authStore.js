@@ -88,6 +88,20 @@ const useAuthStore = create((set) => ({
   setUser: (userData) => {
     set({ user: normalizeUser(userData) });
   },
+
+  refreshUser: async () => {
+    try {
+      const { data } = await api.get("/auth/profile", { _skipAuthRedirect: true });
+      const serverUser = data?.data;
+      if (serverUser) {
+        const normalized = normalizeUser(serverUser);
+        const isAdmin = ADMIN_ROLES.includes(normalized.role);
+        set({ user: isAdmin ? normalized : null, isAuthenticated: isAdmin });
+      }
+    } catch {
+      // ignore
+    }
+  },
 }));
 
 export default useAuthStore;
