@@ -6,7 +6,6 @@ import ApiError from '../utils/ApiError.js';
 import * as uploadService from './upload.service.js';
 import { sendResetPasswordEmail, sendEmail } from './email.service.js';
 import { getPermissions } from './role.service.js';
-import { getPermissions } from './role.service.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -51,8 +50,6 @@ const createTokenResponse = async (user, statusCode, res, rememberMe = false) =>
 
   user.password = undefined;
   user.refreshToken = undefined;
-
-  const permissions = await getPermissions(user.role);
 
   const permissions = await getPermissions(user.role);
   return res.status(statusCode).json({
