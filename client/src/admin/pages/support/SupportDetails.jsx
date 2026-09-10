@@ -238,7 +238,7 @@ const SupportDetails = () => {
             )}
 
             {hasMessages && messages.map((msg, i) => {
-              const isAdmin = msg.sender?.role === "admin" || msg.sender?.role === "manager";
+              const isAdmin = ["super_admin", "admin", "product_manager", "order_manager", "support_executive"].includes(msg.sender?.role);
               return (
                 <Box
                   key={i}

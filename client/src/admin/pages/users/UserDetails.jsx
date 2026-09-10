@@ -318,7 +318,7 @@ const UserDetails = () => {
     <Box sx={{ p: 3 }}>
       {/* Header */}
       <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 3, flexWrap: "wrap" }}>
-        <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate(location.pathname.startsWith("/admin/roles") ? "/admin/roles" : "/admin/users")} />
+        <AdminButton variant="ghost" size="small" icon={<ArrowBackIcon />} onClick={() => navigate((location.pathname.startsWith("/admin/roles") || location.pathname.startsWith("/admin/settings/roles")) ? "/admin/settings/roles" : "/admin/users")} />
         <AdminThumbnail
           src={user.avatar}
           alt={user.name}

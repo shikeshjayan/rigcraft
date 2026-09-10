@@ -152,7 +152,7 @@ const RolesAccessList = () => {
         pageSize={pageSize}
         onPageChange={setPage}
         onPageSizeChange={setPageSize}
-        onRowClick={canManageRoles || canManagePermissions ? (row) => navigate(`/admin/roles/${row.id}`) : undefined}
+        onRowClick={canManageRoles || canManagePermissions ? (row) => navigate(`/admin/settings/roles/${row.id}`) : undefined}
         rowsPerPageOptions={[10, 25, 50, 100]}
         sx={{ mx: 3, mb: 3 }}
       />

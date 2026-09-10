@@ -23,12 +23,18 @@ import { getRecentSearches, addRecentSearch, clearRecentSearches } from "../../.
 
 const RECENT_SEARCHES_KEY = "rigcraft_admin_recent_searches";
 
+const SUPER_ADMIN = "super_admin";
+const ADMIN = "admin";
+const PRODUCT_MANAGER = "product_manager";
+const ORDER_MANAGER = "order_manager";
+const SUPPORT_EXECUTIVE = "support_executive";
+
 const MODULES = [
   {
     key: "products",
     label: "Products",
     icon: InventoryIcon,
-    roles: ["admin", "manager"],
+    roles: [SUPER_ADMIN, ADMIN, PRODUCT_MANAGER],
     path: (id) => `/admin/products/${id}`,
     primary: (i) => i.name,
     secondary: (i) => i.sku,
@@ -37,7 +43,7 @@ const MODULES = [
     key: "categories",
     label: "Categories",
     icon: CategoryIcon,
-    roles: ["admin", "manager"],
+    roles: [SUPER_ADMIN, ADMIN, PRODUCT_MANAGER],
     path: () => "/admin/categories",
     primary: (i) => i.name,
   },
@@ -45,7 +51,7 @@ const MODULES = [
     key: "brands",
     label: "Brands",
     icon: BrandingWatermarkIcon,
-    roles: ["admin", "manager"],
+    roles: [SUPER_ADMIN, ADMIN, PRODUCT_MANAGER],
     path: () => "/admin/brands",
     primary: (i) => i.name,
   },
@@ -53,7 +59,7 @@ const MODULES = [
     key: "prebuiltPCs",
     label: "Prebuilt PCs",
     icon: ComputerIcon,
-    roles: ["admin", "manager"],
+    roles: [SUPER_ADMIN, ADMIN, PRODUCT_MANAGER],
     path: (id) => `/admin/prebuilt/${id}`,
     primary: (i) => i.name,
     secondary: (i) => i.sku,
@@ -62,7 +68,7 @@ const MODULES = [
     key: "orders",
     label: "Orders",
     icon: ReceiptIcon,
-    roles: ["admin", "manager"],
+    roles: [SUPER_ADMIN, ADMIN, ORDER_MANAGER],
     path: (id) => `/admin/orders/${id}`,
     primary: (i) => i.orderNumber,
     secondary: (i) => i.customer?.name || i.customer?.email,
@@ -71,7 +77,7 @@ const MODULES = [
     key: "customers",
     label: "Customers",
     icon: PeopleIcon,
-    roles: ["admin"],
+    roles: [SUPER_ADMIN, ADMIN],
     path: (id) => `/admin/users/${id}`,
     primary: (i) => i.name,
     secondary: (i) => i.email,
@@ -80,7 +86,7 @@ const MODULES = [
     key: "reviews",
     label: "Reviews",
     icon: RateReviewIcon,
-    roles: ["admin", "manager"],
+    roles: [SUPER_ADMIN, ADMIN, SUPPORT_EXECUTIVE],
     path: (id) => `/admin/reviews/${id}`,
     primary: (i) => i.title || i.text,
     secondary: (i) => i.author,
@@ -89,7 +95,7 @@ const MODULES = [
     key: "deals",
     label: "Deals",
     icon: CampaignIcon,
-    roles: ["admin", "manager"],
+    roles: [SUPER_ADMIN, ADMIN],
     path: () => "/admin/deals",
     primary: (i) => i.title,
   },
@@ -97,7 +103,7 @@ const MODULES = [
     key: "coupons",
     label: "Coupons",
     icon: DiscountIcon,
-    roles: ["admin"],
+    roles: [SUPER_ADMIN, ADMIN],
     path: () => "/admin/coupons",
     primary: (i) => i.code,
     secondary: (i) => i.name,
@@ -106,7 +112,7 @@ const MODULES = [
     key: "supportTickets",
     label: "Support Tickets",
     icon: HeadsetMicIcon,
-    roles: ["admin", "manager"],
+    roles: [SUPER_ADMIN, ADMIN, SUPPORT_EXECUTIVE],
     path: (id) => `/admin/support/${id}`,
     primary: (i) => i.ticketNumber,
     secondary: (i) => i.subject,
@@ -115,7 +121,7 @@ const MODULES = [
     key: "newsletter",
     label: "Newsletter",
     icon: MailIcon,
-    roles: ["admin", "manager"],
+    roles: [SUPER_ADMIN, ADMIN],
     path: () => "/admin/newsletter",
     primary: (i) => i.email,
   },
@@ -123,7 +129,7 @@ const MODULES = [
     key: "notifications",
     label: "Notifications",
     icon: NotificationsIcon,
-    roles: ["admin", "manager"],
+    roles: [SUPER_ADMIN, ADMIN, PRODUCT_MANAGER, ORDER_MANAGER, SUPPORT_EXECUTIVE],
     path: (id) => `/admin/notifications/${id}`,
     primary: (i) => i.title,
     secondary: (i) => i.message,

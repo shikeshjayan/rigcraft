@@ -21,10 +21,18 @@ export default router;
 
 export const adminNotificationRoutes = Router();
 
+const ADMIN_ROLES = [
+  USER_ROLES.SUPER_ADMIN,
+  USER_ROLES.ADMIN,
+  USER_ROLES.PRODUCT_MANAGER,
+  USER_ROLES.ORDER_MANAGER,
+  USER_ROLES.SUPPORT_EXECUTIVE,
+];
+
 adminNotificationRoutes.get(
   "/",
   protect,
-  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+  authorize(...ADMIN_ROLES),
   hasPermission(PERMISSIONS.notifications.adminList),
   notificationController.adminGetNotifications
 );
@@ -32,7 +40,7 @@ adminNotificationRoutes.get(
 adminNotificationRoutes.get(
   "/unread",
   protect,
-  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+  authorize(...ADMIN_ROLES),
   hasPermission(PERMISSIONS.notifications.adminList),
   notificationController.adminGetUnreadCount
 );
@@ -40,7 +48,7 @@ adminNotificationRoutes.get(
 adminNotificationRoutes.get(
   "/:id",
   protect,
-  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+  authorize(...ADMIN_ROLES),
   hasPermission(PERMISSIONS.notifications.adminList),
   notificationController.adminGetNotification
 );
@@ -48,7 +56,7 @@ adminNotificationRoutes.get(
 adminNotificationRoutes.put(
   "/:id/read",
   protect,
-  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+  authorize(...ADMIN_ROLES),
   hasPermission(PERMISSIONS.notifications.adminList),
   notificationController.adminMarkAsRead
 );
@@ -56,7 +64,7 @@ adminNotificationRoutes.put(
 adminNotificationRoutes.put(
   "/read-all",
   protect,
-  authorize(USER_ROLES.SUPER_ADMIN, USER_ROLES.ADMIN),
+  authorize(...ADMIN_ROLES),
   hasPermission(PERMISSIONS.notifications.adminList),
   notificationController.adminMarkAllAsRead
 );

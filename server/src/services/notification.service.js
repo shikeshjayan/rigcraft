@@ -1,6 +1,15 @@
 import notificationRepository from "../repositories/notification.repository.js";
 import { getIO } from "../socket/index.js";
+import { USER_ROLES } from "../constants/constants.js";
 import ApiError from "../utils/ApiError.js";
+
+export const STAFF_ROLES = [
+  USER_ROLES.SUPER_ADMIN,
+  USER_ROLES.ADMIN,
+  USER_ROLES.PRODUCT_MANAGER,
+  USER_ROLES.ORDER_MANAGER,
+  USER_ROLES.SUPPORT_EXECUTIVE,
+];
 
 export const createNotification = async (data) => {
   const notification = await notificationRepository.create(data);
@@ -66,13 +75,13 @@ export const getAdminNotifications = async (role, query = {}) => {
   const skip = (page - 1) * limit;
 
   const [notifications, total, unreadCount] = await Promise.all([
-    notificationRepository.findByRole(role, {
+    notificationRepository.findByRoles(STAFF_ROLES, {
       sort: { createdAt: -1 },
       page,
       limit,
     }),
-    notificationRepository.countByRole(role),
-    notificationRepository.countUnreadByRole(role),
+    notificationRepository.countByRoles(STAFF_ROLES),
+    notificationRepository.countUnreadByRoles(STAFF_ROLES),
   ]);
 
   return {
@@ -92,7 +101,7 @@ export const getUnreadCount = async (userId) => {
 };
 
 export const getAdminUnreadCount = async (role) => {
-  return notificationRepository.countUnreadByRole(role);
+  return notificationRepository.countUnreadByRoles(STAFF_ROLES);
 };
 
 export const markAsRead = async (notificationId, userId) => {
@@ -114,7 +123,7 @@ export const adminMarkAsRead = async (notificationId) => {
 };
 
 export const markAllAdminAsRead = async (role) => {
-  return notificationRepository.markAllAsReadByRole(role);
+  return notificationRepository.markAllAsReadByRoles(STAFF_ROLES);
 };
 
 export const getNotificationById = async (notificationId) => {

@@ -360,10 +360,11 @@ const ProductForm = ({
               render={({ field }) => (
                 <AdminInput
                   label="Regular Price (₹)"
-                  type="number"
+                  type="text"
                   error={!!errors.regularPrice}
                   helperText={errors.regularPrice?.message}
                   {...field}
+                  value={field.value ?? ""}
                 />
               )}
             />
@@ -375,7 +376,7 @@ const ProductForm = ({
               render={({ field }) => (
                 <AdminInput
                   label="Sale Price (₹)"
-                  type="number"
+                  type="text"
                   {...field}
                   value={field.value ?? ""}
                 />
@@ -491,7 +492,7 @@ const ProductForm = ({
               name="stock"
               control={control}
               render={({ field }) => (
-                <AdminInput label="Stock Quantity" type="number" {...field} />
+                <AdminInput label="Stock Quantity" type="text" {...field} value={field.value ?? "0"} />
               )}
             />
           </Grid>
@@ -502,8 +503,9 @@ const ProductForm = ({
               render={({ field }) => (
                 <AdminInput
                   label="Low Stock Threshold"
-                  type="number"
+                  type="text"
                   {...field}
+                  value={field.value ?? "5"}
                 />
               )}
             />
@@ -518,7 +520,7 @@ const ProductForm = ({
               name="weight"
               control={control}
               render={({ field }) => (
-                <AdminInput label="Weight (kg)" type="number" {...field} />
+                <AdminInput label="Weight (kg)" type="text" {...field} value={field.value ?? ""} />
               )}
             />
           </Grid>
@@ -527,7 +529,7 @@ const ProductForm = ({
               name="length"
               control={control}
               render={({ field }) => (
-                <AdminInput label="Length (cm)" type="number" {...field} />
+                <AdminInput label="Length (cm)" type="text" {...field} value={field.value ?? ""} />
               )}
             />
           </Grid>
@@ -536,7 +538,7 @@ const ProductForm = ({
               name="width"
               control={control}
               render={({ field }) => (
-                <AdminInput label="Width (cm)" type="number" {...field} />
+                <AdminInput label="Width (cm)" type="text" {...field} value={field.value ?? ""} />
               )}
             />
           </Grid>
@@ -545,7 +547,7 @@ const ProductForm = ({
               name="height"
               control={control}
               render={({ field }) => (
-                <AdminInput label="Height (cm)" type="number" {...field} />
+                <AdminInput label="Height (cm)" type="text" {...field} value={field.value ?? ""} />
               )}
             />
           </Grid>

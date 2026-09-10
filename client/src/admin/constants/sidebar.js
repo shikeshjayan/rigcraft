@@ -111,7 +111,7 @@ export const SIDEBAR_SECTIONS = [
         label: "Reviews",
         path: "/admin/reviews",
         icon: "RateReview",
-        roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.PRODUCT_MANAGER],
+        roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN, ROLES.SUPPORT_EXECUTIVE],
         requiredPermissions: [PERMISSIONS.reviews.read],
       },
     ],
@@ -161,21 +161,21 @@ export const SIDEBAR_SECTIONS = [
         label: "Settings",
         path: "/admin/settings",
         icon: "Settings",
-        roles: [ROLES.SUPER_ADMIN],
+        roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
         requiredPermissions: [PERMISSIONS.settings.read],
+      },
+      {
+        label: "Roles & Permissions",
+        path: "/admin/settings/roles",
+        icon: "VpnKey",
+        roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
+        requiredPermissions: [PERMISSIONS.roles.manage],
       },
     ],
   },
   {
     section: null,
     items: [
-      {
-        label: "Roles & Access",
-        path: "/admin/roles",
-        icon: "VpnKey",
-        roles: [ROLES.SUPER_ADMIN],
-        requiredPermissions: [PERMISSIONS.roles.manage],
-      },
     ],
   },
 ];

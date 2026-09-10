@@ -285,7 +285,8 @@ const TicketDetail = () => {
                   messages.map((message) => {
                     const isOwn = message.senderRole === 'customer';
                     const senderName = [message.sender?.firstName, message.sender?.lastName].filter(Boolean).join(' ') || (isOwn ? ticket.name : 'RigCraft Support');
-                    const roleLabel = isOwn ? 'You' : message.senderRole === 'manager' ? 'Manager' : 'Support Team';
+                    const isStaff = ['super_admin', 'admin', 'product_manager', 'order_manager', 'support_executive'].includes(message.senderRole);
+                    const roleLabel = isOwn ? 'You' : isStaff ? 'Support Team' : 'RigCraft Support';
                     return (
                       <div key={message._id} className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}>
                         <div
