@@ -97,6 +97,56 @@ class NotificationRepository extends BaseRepository {
     );
   }
 
+  async findForAdmin(role, options = {}) {
+    const { sort = { createdAt: -1 }, page, limit } = options;
+    const filter = {
+      $or: [
+        { "metadata.isStaffActivity": { $ne: true } },
+        { "metadata.isStaffActivity": true, recipientRole: role },
+      ],
+    };
+    let query = this.model.find(filter).sort(sort);
+
+    if (page && limit) {
+      const skip = (page - 1) * limit;
+      query = query.skip(skip).limit(limit);
+    }
+
+    return query;
+  }
+
+  async countForAdmin(role) {
+    return this.model.countDocuments({
+      $or: [
+        { "metadata.isStaffActivity": { $ne: true } },
+        { "metadata.isStaffActivity": true, recipientRole: role },
+      ],
+    });
+  }
+
+  async countUnreadForAdmin(role) {
+    return this.model.countDocuments({
+      $or: [
+        { "metadata.isStaffActivity": { $ne: true } },
+        { "metadata.isStaffActivity": true, recipientRole: role },
+      ],
+      isRead: false,
+    });
+  }
+
+  async markAllAsReadForAdmin(role) {
+    return this.model.updateMany(
+      {
+        $or: [
+          { "metadata.isStaffActivity": { $ne: true } },
+          { "metadata.isStaffActivity": true, recipientRole: role },
+        ],
+        isRead: false,
+      },
+      { isRead: true }
+    );
+  }
+
   async deleteOldNotifications(days) {
     const cutoff = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
     return this.model.deleteMany({ createdAt: { $lt: cutoff } });

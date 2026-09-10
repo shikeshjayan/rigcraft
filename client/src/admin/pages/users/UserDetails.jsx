@@ -385,11 +385,7 @@ const UserDetails = () => {
                 <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500 }}>{user.phone ? formatPhoneForDisplay(user.phone) : "—"}</Typography>
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
-                <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", mb: 0.5 }}>Email Verified</Typography>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                  {user.isEmailVerified ? <VerifiedIcon sx={{ fontSize: 16, color: "var(--color-admin-success)" }} /> : <CloseIcon sx={{ fontSize: 16, color: "var(--color-admin-muted)" }} />}
-                  <Typography variant="body2" sx={{ color: "var(--color-admin-text)", fontWeight: 500 }}>{user.isEmailVerified ? "Yes" : "No"}</Typography>
-                </Box>
+
               </Grid>
               <Grid size={{ xs: 12, sm: 6, md: 4 }}>
                 <Typography variant="caption" sx={{ color: "var(--color-admin-muted)", display: "block", mb: 0.5 }}>Joined</Typography>
