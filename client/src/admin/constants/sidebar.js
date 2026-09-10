@@ -120,7 +120,7 @@ export const SIDEBAR_SECTIONS = [
     section: "Customers",
     items: [
       {
-        label: "Users",
+        label: "Customer List",
         path: "/admin/users",
         icon: "People",
         roles: [ROLES.SUPER_ADMIN, ROLES.ADMIN],
