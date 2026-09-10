@@ -18,6 +18,34 @@ class NotificationRepository extends BaseRepository {
     return query;
   }
 
+  async findByRoles(roles, options = {}) {
+    const { sort = { createdAt: -1 }, page, limit } = options;
+    const filter = { recipientRole: { $in: roles } };
+    let query = this.model.find(filter).sort(sort);
+
+    if (page && limit) {
+      const skip = (page - 1) * limit;
+      query = query.skip(skip).limit(limit);
+    }
+
+    return query;
+  }
+
+  async countByRoles(roles) {
+    return this.model.countDocuments({ recipientRole: { $in: roles } });
+  }
+
+  async countUnreadByRoles(roles) {
+    return this.model.countDocuments({ recipientRole: { $in: roles }, isRead: false });
+  }
+
+  async markAllAsReadByRoles(roles) {
+    return this.model.updateMany(
+      { recipientRole: { $in: roles }, isRead: false },
+      { isRead: true }
+    );
+  }
+
   async findByRole(role, options = {}) {
     const { sort = { createdAt: -1 }, page, limit } = options;
     const filter = { recipientRole: role };

@@ -38,35 +38,32 @@ const safeEmit = (fn) => {
 
 const toPlain = (doc) => (doc && typeof doc.toObject === "function" ? doc.toObject() : doc);
 
+const STAFF_ROLES = [
+  USER_ROLES.SUPER_ADMIN,
+  USER_ROLES.ADMIN,
+  USER_ROLES.PRODUCT_MANAGER,
+  USER_ROLES.ORDER_MANAGER,
+  USER_ROLES.SUPPORT_EXECUTIVE,
+];
+
 const notifyStaff = async (ticket, title, message) => {
   try {
-const [admin, supportExecutive] = await Promise.all([
-    User.findOne({ role: USER_ROLES.ADMIN, isBlocked: { $ne: true } }),
-    User.findOne({ role: USER_ROLES.SUPPORT_EXECUTIVE, isBlocked: { $ne: true } }),
-  ]);
+    const staffUser = await User.findOne({ role: { $in: STAFF_ROLES }, isBlocked: { $ne: true } });
+    if (!staffUser) return;
 
-    const targets = [
-      admin ? { userId: admin._id, role: USER_ROLES.ADMIN } : null,
-      supportExecutive ? { userId: supportExecutive._id, role: USER_ROLES.SUPPORT_EXECUTIVE } : null,
-    ].filter(Boolean);
-
-    await Promise.all(
-      targets.map(({ userId, role }) =>
-        createNotification({
-          recipient: userId,
-          recipientRole: role,
-          type: "support",
-          module: "Support",
-          reference: ticket._id,
-          referenceModel: "SupportTicket",
-          priority: "normal",
-          title,
-          message,
-          actionUrl: `/admin/support/${ticket._id}`,
-          metadata: { ticketId: ticket._id, ticketNumber: ticket.ticketNumber, issueType: ticket.issueType },
-        })
-      )
-    );
+    await createNotification({
+      recipient: staffUser._id,
+      recipientRole: USER_ROLES.ADMIN,
+      type: "support",
+      module: "Support",
+      reference: ticket._id,
+      referenceModel: "SupportTicket",
+      priority: "normal",
+      title,
+      message,
+      actionUrl: `/admin/support/${ticket._id}`,
+      metadata: { ticketId: ticket._id, ticketNumber: ticket.ticketNumber, issueType: ticket.issueType },
+    });
   } catch (err) {
     // Notification is best-effort
   }
