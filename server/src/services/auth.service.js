@@ -6,6 +6,8 @@ import ApiError from '../utils/ApiError.js';
 import * as uploadService from './upload.service.js';
 import { sendResetPasswordEmail, sendEmail } from './email.service.js';
 import { getPermissions } from './role.service.js';
+import { createNotification } from './notification.service.js';
+import User from '../models/user.model.js';
 
 const isProduction = process.env.NODE_ENV === 'production';
 
@@ -130,6 +132,11 @@ export const logout = async (userId, res) => {
     expires: new Date(Date.now() + 5 * 1000),
     path: '/api/v1/auth',
   });
+
+  try {
+    const user = await User.findById(userId);
+    if (user) await notifyStaffActivity(user, 'logged out');
+  } catch {}
 };
 
 export const register = async (userData, res) => {
@@ -138,6 +145,47 @@ export const register = async (userData, res) => {
 
   const user = await userRepository.create(userData);
   return createTokenResponse(user, 201, res);
+};
+
+
+const notifyStaffActivity = async (userDoc, action) => {
+  try {
+    const sessionUserRole = userDoc.role;
+    // Targets: staff (Admin/PM/OM) notify Super Admin; SE notifies both Super Admin and Admin
+    const targetRoles =
+      sessionUserRole === 'support_executive'
+        ? ['super_admin', 'admin']
+        : sessionUserRole === 'admin' ||
+          sessionUserRole === 'product_manager' ||
+          sessionUserRole === 'order_manager'
+        ? ['super_admin']
+        : [];
+
+    for (const targetRole of targetRoles) {
+      const target = await User.findOne({ role: targetRole, isBlocked: { $ne: true } });
+      if (!target) continue;
+      await createNotification({
+        recipient: target._id,
+        recipientRole: targetRole,
+        type: 'system',
+        module: 'System',
+        title: 'Staff ' + action,
+        message:
+          sessionUserRole +
+          ' ' +
+          (userDoc.firstName || '') +
+          ' ' +
+          (userDoc.lastName || '') +
+          ' ' +
+          action +
+          ' at ' +
+          new Date().toISOString(),
+        priority: 'low',
+        actionUrl: '/admin/dashboard',
+        metadata: { isStaffActivity: true },
+      });
+    }
+  } catch {}
 };
 
 export const login = async (body, res) => {
@@ -173,6 +221,7 @@ export const login = async (body, res) => {
     user.lockTimestamp = null;
     await user.save({ validateBeforeSave: false });
 
+    await notifyStaffActivity(user, "logged in");
     return createTokenResponse(user, 200, res, rememberMe);
   }
 
@@ -204,6 +253,7 @@ const isMatch = await user.comparePassword(password);
     user.lockTimestamp = null;
     await user.save({ validateBeforeSave: false });
 
+    await notifyStaffActivity(user, "logged in");
     return createTokenResponse(user, 200, res, rememberMe);
   }
 
@@ -316,6 +366,7 @@ if (!user) throw ApiError.badRequest('Invalid OTP');
      user.lastLogin = new Date();
      await user.save({ validateBeforeSave: false });
 
+     await notifyStaffActivity(user, "logged in");
      return createTokenResponse(user, 200, res, rememberMe);
    }
 
@@ -363,6 +414,7 @@ export const googleLogin = async (idToken, res) => {
     if (picture && !user.avatar?.url) user.avatar = { url: picture };
     user.lastLogin = new Date();
     await user.save({ validateBeforeSave: false });
+    await notifyStaffActivity(user, "logged in");
     return createTokenResponse(user, 200, res);
   }
 

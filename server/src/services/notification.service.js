@@ -72,16 +72,15 @@ export const getNotifications = async (userId, query = {}) => {
 
 export const getAdminNotifications = async (role, query = {}) => {
   const { page = 1, limit = 20 } = query;
-  const skip = (page - 1) * limit;
 
   const [notifications, total, unreadCount] = await Promise.all([
-    notificationRepository.findByRoles(STAFF_ROLES, {
+    notificationRepository.findForAdmin(role, {
       sort: { createdAt: -1 },
       page,
       limit,
     }),
-    notificationRepository.countByRoles(STAFF_ROLES),
-    notificationRepository.countUnreadByRoles(STAFF_ROLES),
+    notificationRepository.countForAdmin(role),
+    notificationRepository.countUnreadForAdmin(role),
   ]);
 
   return {
@@ -101,7 +100,7 @@ export const getUnreadCount = async (userId) => {
 };
 
 export const getAdminUnreadCount = async (role) => {
-  return notificationRepository.countUnreadByRoles(STAFF_ROLES);
+  return notificationRepository.countUnreadForAdmin(role);
 };
 
 export const markAsRead = async (notificationId, userId) => {
@@ -123,7 +122,7 @@ export const adminMarkAsRead = async (notificationId) => {
 };
 
 export const markAllAdminAsRead = async (role) => {
-  return notificationRepository.markAllAsReadByRoles(STAFF_ROLES);
+  return notificationRepository.markAllAsReadForAdmin(role);
 };
 
 export const getNotificationById = async (notificationId) => {
