@@ -30,7 +30,7 @@ const ROUTE_TITLES = {
   "/admin/orders": "Orders",
   "/admin/coupons": "Coupons",
   "/admin/reviews": "Reviews",
-  "/admin/users": "Users",
+  "/admin/users": "Customers",
   "/admin/settings": "Settings",
   "/admin/profile": "Profile",
 };

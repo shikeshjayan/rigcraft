@@ -168,7 +168,12 @@ const Sidebar = ({ open, onClose, collapsed }) => {
     items: section.items.filter((item) => {
       // Exclude customer role from seeing admin sidebar items
       if (user?.role === "customer") return false;
-      
+
+      const normalizedRole = user?.role ? user.role.replace(" ", "_") : "customer";
+      if (item.roles && item.roles.length > 0 && !item.roles.includes(normalizedRole)) {
+        return false;
+      }
+
       if (item.requiredPermissions) {
         return item.requiredPermissions.some(p => hasPermission(p));
       }
